@@ -33,4 +33,4 @@ pdfplumber>=0.10.0         # PDF table extraction (ASF reports)
 tqdm>=4.65.0               # Progress bars in long-running scripts
 
 # AI Memo Generation
-anthropic>=0.40.0          # ARIA memo generation (aria_generate_memos.py)
+anthropic>=2.6.0          # ARIA memo generation (aria_generate_memos.py)
