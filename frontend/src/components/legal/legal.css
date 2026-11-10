@@ -1,0 +1,26 @@
+/* /privacy · /terms in the Plataforma shell (DESIGN.md §2–§4). Legal prose at full measure:
+   one track would run ~200 characters a line on the 1760 sheet, so each section's
+   body is set in two balanced columns (~90–110 characters) — the measure without a cap. */
+.lg-body { columns: 2; column-gap: 48px; font-size: 16px; line-height: 1.6; color: var(--ct-ink); }
+.lg-body > * + * { margin-top: 12px; }
+.lg-body p, .lg-body li { text-wrap: pretty; }
+.lg-body strong { font-weight: 600; color: var(--ct-ink); }
+.lg-body ul { padding-left: 20px; list-style: disc; }
+.lg-body li { break-inside: avoid; }
+/* whole blocks per column, so every block in the left column has its neighbour on the right;
+   a lone paragraph may split (it then spans both); a list breaks between items, and the
+   sentence that introduces it runs across both columns above it */
+.lg-body > * { break-inside: avoid; }
+/* a lone paragraph, or the one after a list, runs across the whole section: never split mid-sentence */
+.lg-body > :only-child, .lg-body > ul + p { column-span: all; }
+/* a list is its own two-track grid across the section (items read left → right) */
+.lg-body > p:has(+ ul), .lg-body > ul { column-span: all; }
+.lg-body > ul { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 48px; }
+.lg-body > p:has(+ ul) + ul { margin-top: 8px; }
+.lg-body h3 { break-after: avoid; font: 600 16px/1.4 var(--font-serif); color: var(--ct-ink); }
+.lg-body h3 + p { margin-top: 4px; }
+.lg-tag { font: 400 13px/1.45 var(--font-mono); color: var(--ct-ink); }
+@media (max-width: 900px) { .lg-body { columns: 1; } .lg-body > ul { grid-template-columns: 1fr; } }
+/* a flow diagram runs across the section; its inner list keeps the diagram's own marks */
+.lg-body > .plt-flow { column-span: all; margin-bottom: 12px; }
+.lg-body .plt-flow-lv { padding-left: 0; list-style: none; }

@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- The social card plate (launch S1). Rendered to rubli-card.png (1200×630)
+     and rubli-square.png (600×600) by scripts/render-og.mjs, which fills the
+     {{…}} slots from the live API (/analysis/overview, /stats/data-cut, /analysis/model/metadata).
+     Opened directly, the slots print as-is. Colors are the index.css tokens. -->
+<html lang="es" class="{{VARIANT}}">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RUBLI · tarjeta social</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #faf9f6;        /* --color-background */
+    --paper-2: #f3f1ec;      /* --color-background-elevated */
+    --rule: #e2ddd6;         /* --color-border */
+    --ink: #1a1714;          /* --color-text-primary */
+    --muted: #736a65;        /* --color-text-muted */
+    --ochre: #a06820;        /* --color-accent */
+    --ochre-text: #835616;   /* --color-accent-text */
+    --serif: "EB Garamond", Georgia, serif;
+    --mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; font-style: normal; }
+  html, body { background: var(--paper); color: var(--ink); }
+  body { width: 1200px; height: 630px; overflow: hidden; }
+  .plate {
+    position: relative; width: 100%; height: 100%;
+    padding: 56px 72px 0;
+    display: flex; flex-direction: column;
+    border-left: 10px solid var(--ochre);
+  }
+  /* corner crop marks — the folio chrome */
+  .crop { position: absolute; width: 22px; height: 22px; border-color: var(--muted); border-style: solid; border-width: 0; }
+  .crop.tl { top: 22px; left: 22px; border-top-width: 1px; border-left-width: 1px; }
+  .crop.tr { top: 22px; right: 22px; border-top-width: 1px; border-right-width: 1px; }
+  .crop.bl { bottom: 22px; left: 22px; border-bottom-width: 1px; border-left-width: 1px; }
+  .crop.br { bottom: 22px; right: 22px; border-bottom-width: 1px; border-right-width: 1px; }
+  .kicker {
+    font-family: var(--mono); font-size: 18px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ochre-text);
+  }
+  .mast { display: flex; align-items: center; gap: 28px; margin-top: 34px; }
+  .mast svg { width: 132px; height: 132px; flex: none; }
+  .name {
+    font-family: var(--serif); font-weight: 600; font-size: 148px;
+    line-height: 0.9; letter-spacing: -0.01em;
+  }
+  .promise {
+    margin-top: 34px; max-width: 980px;
+    font-family: var(--serif); font-weight: 500; font-size: 44px; line-height: 1.15;
+  }
+  .promise-en {
+    margin-top: 14px; font-family: var(--mono); font-size: 20px;
+    letter-spacing: 0.04em; color: var(--muted);
+  }
+  .strip {
+    margin-top: auto; margin-left: -72px; margin-right: -72px;
+    padding: 20px 72px 24px;
+    border-top: 1px solid var(--rule); background: var(--paper-2);
+    font-family: var(--mono); font-size: 17px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink);
+    display: flex; justify-content: space-between; white-space: nowrap;
+  }
+  .strip .ver { text-transform: none; }
+  .crop.bl, .crop.br { display: none; } /* the strip is the bottom edge */
+  .strip .site { color: var(--ochre-text); }
+
+  /* 600×600 — the WhatsApp square */
+  .square body { width: 600px; height: 600px; }
+  .square .plate { padding: 44px 44px 0; border-left-width: 8px; }
+  .square .kicker { font-size: 13px; letter-spacing: 0.1em; }
+  .square .mast { margin-top: 30px; gap: 18px; }
+  .square .mast svg { width: 92px; height: 92px; }
+  .square .name { font-size: 104px; }
+  .square .promise { margin-top: 30px; font-size: 32px; }
+  .square .promise-en { font-size: 15px; line-height: 1.4; }
+  .square .strip {
+    margin-left: -44px; margin-right: -44px; padding: 16px 44px 20px;
+    font-size: 13px; line-height: 1.6; flex-direction: column; white-space: normal;
+  }
+</style>
+</head>
+<body>
+<main class="plate">
+  <span class="crop tl"></span><span class="crop tr"></span>
+  <span class="crop bl"></span><span class="crop br"></span>
+  <p class="kicker">Contratación pública federal · México · {{MIN_YEAR}}–{{MAX_YEAR}}</p>
+  <div class="mast">
+    <!-- «El Expediente Abierto» (components/ui/RubliLogoMark.tsx, LOCKED), its final still state:
+         three ledger records, the middle one pulled out in --color-risk-critical. -->
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <rect x="5" y="6" width="24" height="7" fill="#1a1714"/>
+      <rect x="11" y="16.5" width="24" height="7" fill="#dc2626"/>
+      <rect x="5" y="27" width="24" height="7" fill="#1a1714"/>
+    </svg>
+    <h1 class="name">RUBLI</h1>
+  </div>
+  <p class="promise">Indicadores de riesgo para cada contrato federal, con el método a la vista.</p>
+  <p class="promise-en">Risk indicators for every federal contract, with the method in plain view.</p>
+  <footer class="strip">
+    <span>Datos al {{CUT}} · Modelo <span class="ver">{{MODEL}}</span> · {{CONTRACTS}} contratos</span>
+    <span class="site">rubli.xyz</span>
+  </footer>
+</main>
+</body>
+</html>

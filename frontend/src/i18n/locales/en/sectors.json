@@ -1,0 +1,350 @@
+{
+  "salud": "Health",
+  "educacion": "Education",
+  "infraestructura": "Infrastructure",
+  "energia": "Energy",
+  "defensa": "Defense",
+  "tecnologia": "Technology",
+  "hacienda": "Treasury",
+  "gobernacion": "Governance",
+  "agricultura": "Agriculture",
+  "ambiente": "Environment",
+  "trabajo": "Labor",
+  "otros": "Other",
+  "page": {
+    "title": "The Exposure Ledger",
+    "titleCategories": "What Mexico Is Buying — by Category",
+    "subtitle": "{{totalValue}} across {{years}} years of COMPRANET data",
+    "subtitleCategories": "{{totalValue}} routed through 72 procurement categories",
+    "subtitleFallback": "~9.9T MXN across 23 years of COMPRANET data",
+    "subtitleCategoriesFallback": "72 procurement categories covering 99.7% of federal spend",
+    "rankedBy": "Ranked by avg risk score — click to inspect",
+    "sortBy": "Sort by",
+    "sortValue": "Total Spend",
+    "sortRisk": "Risk Score",
+    "sortContracts": "Contract Count",
+    "sortName": "Name (A–Z)",
+    "exploreLink": "Explore sector",
+    "modelNote": "Agriculture's elevated risk rate reflects structural market concentration (93% direct awards) and training set composition (Segalmex/DICONSA/LICONSA cases), not necessarily higher corruption prevalence. Health sector carries larger value-weighted risk exposure. Labor (Trabajo) ranks #1 in avg risk due to its small size (48K contracts): GT-labeled vendors from other sectors (DICONSA, Edenred, Toka, AXTEL) hold 31% of its spend, inflating sector averages — not evidence of elevated corruption in labor institutions.",
+    "clear": "Clear",
+    "fullProfile": "Full profile",
+    "compareWith": "Compare…",
+    "failedToLoad": "Failed to load sectors"
+  },
+  "statCards": {
+    "sectorsTracked": "SECTORS TRACKED",
+    "sectorsTrackedDetail": "Active government sectors",
+    "totalContracts": "TOTAL CONTRACTS",
+    "totalContractsDetail": "All sectors, all years",
+    "totalValue": "TOTAL VALUE",
+    "totalValueDetail": "Validated amounts only",
+    "avgRiskScore": "AVG RISK SCORE",
+    "avgRiskScoreDetail": "Weighted by contract count"
+  },
+  "card": {
+    "contracts": "contracts",
+    "vendors": "vendors",
+    "riskDist": "Risk distribution",
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "directAward": "direct award",
+    "singleBid": "single award",
+    "institutions": "institutions",
+    "providers": "providers"
+  },
+  "chips": {
+    "criticalRisk": "Critical Risk",
+    "decemberRush": "December Rush",
+    "coBiddingFlags": "Co-Bidding Flags",
+    "priceOutliers": "Amount outliers"
+  },
+  "heatmap": {
+    "title": "Sector Risk Heatmap",
+    "description": "Color encodes relative risk ranking per metric — red is highest risk, green is lowest. Click a row to open that sector's full profile.",
+    "avgRisk": "Avg Risk",
+    "directAward": "Direct Award %",
+    "singleBid": "Single award %",
+    "highRisk": "High Risk %"
+  },
+  "table": {
+    "title": "Sector Comparison",
+    "subtitle": "Click column headers to sort. Click a sector name to view its full profile.",
+    "sector": "Sector",
+    "vendor": "Vendor",
+    "totalContracts": "Total Contracts",
+    "totalValueMxn": "Total Value (MXN)",
+    "avgRiskScore": "Avg Risk Score",
+    "highRiskPct": "High-Risk %",
+    "directAwardPct": "Direct Award %",
+    "riskTrend": "Risk Trend",
+    "topRamo": "Top Ramo"
+  },
+  "valueChart": {
+    "title": "Contract Value by Sector"
+  },
+  "radar": {
+    "directAward": "Direct Award",
+    "singleBid": "Single award",
+    "avgRisk": "Avg Risk",
+    "highRisk": "High Risk %",
+    "valueShare": "Value Share",
+    "volume": "Volume",
+    "axisLabel": "all axes 0–100",
+    "vsLabel": "vs"
+  },
+  "asf": {
+    "totalQuestioned": "Total Questioned",
+    "yearsAudited": "Years Audited",
+    "institutions": "Institutions"
+  },
+  "scatter": {
+    "directAwardRate": "Direct Award Rate",
+    "directAwardPct": "Direct Award %",
+    "avgRisk": "Avg Risk",
+    "contracts": "Contracts"
+  },
+  "diagnostico": {
+    "reportLabel": "Diagnostic Report · 12 Sectors · 2001–2025",
+    "title": "The National Diagnostic",
+    "subtitleDynamic": "Systemic risk analysis by sector in federal public procurement. {{count}} sectors analyzed. Results based on {{contracts}} contracts.",
+    "subtitleFallback": "Systemic risk analysis by sector in federal public procurement. 12 sectors analyzed. Results based on 3.05 million contracts.",
+    "hallazgoLabel": "Key Finding",
+    "hallazgoText": "The <strong>Health</strong> sector carries the highest absolute risk: IMSS, ISSSTE and COVID-19 emergency purchases account for over MXN 200B in contracts with a high risk indicator.",
+    "signosVitales": "VITAL SIGNS",
+    "matrizRiesgo": "RISK MATRIX",
+    "paisajeInstitucional": "INSTITUTIONAL LANDSCAPE",
+    "gastoTotal": "Total Spend",
+    "riesgoPromedio": "Avg Risk",
+    "mayorGasto": "Top Sector",
+    "sourceFootnote": "Source: CompraNet + ComprasMX 2002–2026, risk model v0.9.2 · Values normalized min-max per metric"
+  },
+  "editorial": {
+    "kicker": "RUBLI · Sector Analysis · 2002-2026",
+    "headline": "Where risk concentrates in federal spending",
+    "body": "12 sectors. 3.06 million contracts. MXN 9.88 trillion. The v0.9.2 model assigns risk scores to each contract using 17 statistical indicators (vendor history looks only at earlier years; 16 carry weight), trained on RUBLI's labelled case set.",
+    "stat1Label": "DA in Agriculture · AMLO 2019-24",
+    "stat2Label": "value at risk · health sector",
+    "stat3Label": "above the EU 10% line"
+  },
+  "profile": {
+    "backToSectors": "All Sectors",
+    "prev": "Previous",
+    "next": "Next",
+    "sectorProfile": "Sector Profile",
+    "totalSpend": "total procurement value",
+    "overviewTab": "Overview",
+    "vendorsTab": "Top Vendors",
+    "riskTab": "Risk Analysis",
+    "spendTrend": "Spending Trend",
+    "spendTrendSubtitle": "Annual procurement value, 2010–{{year}}",
+    "topInstitutions": "Top Institutions",
+    "topInstitutionsSubtitle": "Ranked by total contract value in this sector",
+    "topVendors": "Top Vendors by Value",
+    "topVendorsSubtitle": "Ranked by total procurement value in this sector",
+    "riskDistribution": "Risk Distribution",
+    "riskDistributionSubtitle": "How contracts score across risk levels in this sector",
+    "topRiskFactors": "Top Risk Factors",
+    "topRiskFactorsSubtitle": "Most prevalent red flags driving risk scores",
+    "riskTrend": "Year-over-Year Risk Trend",
+    "riskTrendSubtitle": "Average risk score and high-risk rate by year, 2010–present",
+    "procurementPatterns": "Procurement Patterns",
+    "contracts": "contracts",
+    "vendors": "vendors",
+    "institutions": "institutions",
+    "avgRisk": "avg risk",
+    "directAward": "direct award",
+    "singleBid": "single award",
+    "highPlusCritical": "high+critical contracts",
+    "viewAll": "View all",
+    "investigate": "Investigate",
+    "noTrendData": "No trend data available for this sector",
+    "noVendorData": "No vendor data available",
+    "noInstitutionData": "No institution data available",
+    "noRiskData": "No risk distribution data",
+    "noFactorData": "No factor data available",
+    "sectorNotFound": "Sector Not Found",
+    "sectorNotFoundMsg": "The requested sector could not be found.",
+    "phiHeading": "Procurement Health Index",
+    "riskTrendOverTime": "Risk Profile Over Time",
+    "riskTrendOverTimeSubtitle": "Average risk score and high-risk contract share per year",
+    "avgRiskLegend": "Avg Risk Score ×100",
+    "highRiskLegend": "High-Risk %",
+    "marketConcentration": "Market Concentration Over Time",
+    "giniSubtitle": "Gini coefficient — 1.0 = full monopoly, 0 = perfect competition",
+    "lowConcentration": "Low concentration",
+    "noRiskTimelineData": "No risk timeline data available.",
+    "noConcentrationData": "No concentration history data available.",
+    "contractsTooltip": "contracts",
+    "riskSuffix": "% risk"
+  },
+  "investigation": {
+    "caseSingular": "Investigation Case",
+    "casePlural": "Investigation Cases",
+    "estimatedLoss": "est. loss:",
+    "viewAllCases": "View all cases",
+    "severity": "severity"
+  },
+  "phi": {
+    "competitionRate": "Competition Rate",
+    "avgBidders": "Avg awardees",
+    "singleBidRate": "Single-award Rate",
+    "oecdCompetition": "Reference: 75% competitive",
+    "oecdBidders": "Per competitive procedure · winners, not bidders",
+    "oecdSingleBid": "Of contracts in competitive procedures · no external line (winners, not bidders)"
+  },
+  "insight": {
+    "elevatedRisk": {
+      "title": "Elevated High-Risk Rate",
+      "body": "{{rate}}% high-risk rate is significantly above the platform average of {{baseline}}%."
+    },
+    "lowSignal": {
+      "title": "Low Model Risk Signal",
+      "body": "{{rate}}% high-risk rate is unusually low — may reflect data quality gaps or structural sector characteristics."
+    },
+    "highDA": {
+      "title": "High Direct Award Rate",
+      "body": "{{rate}}% of contracts are direct awards, limiting competitive transparency."
+    },
+    "singleBid": {
+      "title": "Single-award Procedures",
+      "body": "{{rate}}% of contracts in competitive procedures came from a procedure with only one winner."
+    }
+  },
+  "factors": {
+    "direct_award": "Direct Award",
+    "single_bid": "Single award",
+    "price_anomaly": "Amount anomaly",
+    "short_ad_period": "Short Ad Period",
+    "short_ad_lt5d": "Rushed Ad (<5 days)",
+    "short_ad_lt15d": "Short Ad (<15 days)",
+    "short_ad_lt30d": "Brief Ad (<30 days)",
+    "year_end": "Year-End Rush",
+    "vendor_concentration": "Vendor Concentration",
+    "threshold_splitting": "Contract Splitting",
+    "network_risk": "Network Connection",
+    "industry_mismatch": "Industry Mismatch",
+    "co_bid_high": "High Co-Bid Rate",
+    "co_bid_med": "Medium Co-Bid Rate",
+    "price_hyp": "Amount outlier",
+    "co_sid_high": "High Co-Bid Rate",
+    "co_sid_med": "Medium Co-Bid Rate"
+  },
+  "factorDesc": {
+    "direct_award": "Contract awarded without competitive bidding",
+    "single_bid": "Competitive procedure received only one offer",
+    "price_anomaly": "Contract value is 3x above sector median",
+    "short_ad_period": "Advertisement window too short for real competition",
+    "short_ad_lt5d": "Under 5 days between publication and award",
+    "short_ad_lt15d": "Under 15 days between publication and award",
+    "short_ad_lt30d": "Under 30 days between publication and award",
+    "year_end": "Awarded in December — budget-dump pattern",
+    "vendor_concentration": "One vendor controls >30% of sector contracts",
+    "threshold_splitting": "Multiple same-day contracts to avoid oversight thresholds",
+    "network_risk": "Vendor belongs to a connected group of related companies",
+    "industry_mismatch": "Vendor's primary industry doesn't match contract scope",
+    "co_bid_high": "Vendor co-bids in >80% of procedures with a partner",
+    "co_bid_med": "Vendor co-bids in 50–80% of procedures with a partner",
+    "price_hyp": "Statistical outlier flagged by the IQR amount model"
+  },
+  "charts": {
+    "allSectors": "All Sectors",
+    "trendTitle": "Sector Risk Trend",
+    "noTrendData": "No trend data available for the selected sectors"
+  },
+  "finding": {
+    "kicker": "RUBLI · Key Finding",
+    "headline": "The {{sector}} sector has the highest procurement risk in Mexico",
+    "avgRiskLeader": "avg risk — top sector",
+    "totalContracted": "total contracted value",
+    "ofTwelve": "of 12",
+    "sectorsExceedOECD": "sectors exceed the EU 10% line",
+    "competitionGapLabel": "Competition gap",
+    "directAwardVsOECD": "Direct award vs. the EU 10% line",
+    "tooltipDirectAward": "Direct award:",
+    "tooltipAboveOECD": "{{x}}x above the EU line",
+    "tooltipWithinOECD": "Within the EU line"
+  },
+  "trendChart": {
+    "eyebrow": "Temporal trend",
+    "title": "Avg risk by sector 2015–2025"
+  },
+  "riskRanking": {
+    "eyebrow": "RISK — ALL SECTORS"
+  },
+  "riskFactors": {
+    "eyebrow": "RUBLI · Risk factor analysis",
+    "title": "What drives risk in each sector",
+    "description": "Logistic model coefficients v0.9.2 — positive values increase risk, negative values are protective.",
+    "sectorLabel": "Sector:",
+    "sectorAriaLabel": "Select sector to view model coefficients",
+    "sectionAriaLabel": "Risk factor analysis by sector"
+  },
+  "slope": {
+    "dateline": "COMPETITION · A DECADE PAST THE EU LINE",
+    "title": "Ten years past the EU line",
+    "titleEn": "Ten years past the EU line",
+    "deck": "Direct-award % by sector, 2015–2025. The cyan dashed line is the EU scoreboard's 10% direct-award line. Sectors ending above are labeled in their sector color; those below are muted gray.",
+    "oecdLine": "EU 10%",
+    "covidBand": "COVID emergency",
+    "belowCeiling": "+ {{count}} below ceiling",
+    "aboveCeiling": "sectors above the EU line",
+    "showAll": "Show all 12",
+    "showCrossers": "Only EU-line crossers"
+  },
+  "swimlane": {
+    "kicker": "WHAT THE STATE BUYS · 12 LANES",
+    "headline": "Twelve markets, one sheet",
+    "deck": "Each lane is a sector; each dot, a category. Horizontal position is the v0.9.2 risk indicator; size encodes spend. The cyan line marks the high-risk threshold.",
+    "highRiskLabel": "HIGH RISK ≥ 25%",
+    "segalmexNote": "Score inflated by Segalmex — see /thread/segalmex",
+    "ariaLabel": "Swimlane diagram: categories by sector and risk",
+    "tooltipInvestigate": "Investigate →",
+    "tooltipValue": "Value",
+    "tooltipContracts": "Contracts",
+    "tooltipRisk": "Risk",
+    "tooltipDirect": "Direct",
+    "tooltipSingleBid": "Single award",
+    "tooltipTopVendor": "Top vendor"
+  },
+  "featured": {
+    "kicker": "Sector lede · {{sector}}",
+    "leadsRisk": "leads in risk with",
+    "avgRiskSuffix": "average risk",
+    "deck": "{{exceedingOECD}} of 12 sectors exceed the EU scoreboard's 10% direct-award line. The leader combines {{topRiskPct}}% risk with {{topDaPct}}% of contracts awarded without competitive bidding.",
+    "meta": {
+      "leaderRisk": "Leading sector risk",
+      "totalValue": "Total value 2002–2026",
+      "contracts": "Contracts",
+      "sectorsBeyond": "Sectors > EU 10%"
+    }
+  },
+  "treemap": {
+    "kicker": "THE DISTRIBUTION · WHERE THE MONEY GOES",
+    "headline": "Public spend is not uniform",
+    "deck": "Each rectangle is a sector. Area = total spend (MXN); color saturation = v0.9.2 risk indicator. Amber border marks sectors above the EU scoreboard's 10% direct-award line.",
+    "oecdViolatorNote": "Amber border = above the EU 10% line",
+    "saturationNote": "Saturation = risk indicator",
+    "ariaLabel": "Sector spend distribution treemap",
+    "segalmexCaveat": "Score inflated by Segalmex GT case — see Segalmex thread"
+  },
+  "beeswarm": {
+    "kicker": "THE CROSSING · RISK × SPEND",
+    "headline": "Where risk becomes expensive",
+    "deck": "Each sector as a circle: risk on the horizontal, spend on the vertical, size = number of contracts. The upper-right quadrant — high risk, high spend — is where to look first.",
+    "ariaLabel": "Bubble chart: risk × spend by sector",
+    "oecdRef": "EU 10%",
+    "priority": "PRIORITY",
+    "investigar": "Investigate →",
+    "agriculturaNote": "Score inflated by Segalmex (GT case) — see /thread/segalmex",
+    "keyboardHint": "↑ ↓ navigate sectors · Enter to open · click circle"
+  },
+  "tiers": {
+    "Excelente": "Excellent",
+    "Satisfactorio": "Satisfactory",
+    "Regular": "Adequate",
+    "Deficiente": "Deficient",
+    "Critico": "Critical"
+  }
+}

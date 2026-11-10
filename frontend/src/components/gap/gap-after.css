@@ -1,0 +1,161 @@
+/* «Después del apagón» — «El relevo» (DESIGN.md §2 type · §3 ladder · §6 v2 palette · §7 motion).
+   Object 8fr | text 4fr; the text column carries the claim, the sentences, the hundred-peso strip,
+   and becomes the record in place on L2 (nothing reflows). */
+.rl { --rl-ink: var(--color-text-primary); --rl-gray: var(--color-text-muted); --rl-rule: var(--color-border); --rl-seal: var(--color-accent); }
+.rl-grid { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 32px; align-items: stretch; }
+.rl-obj { position: relative; min-width: 0; }
+.rl-obj > svg { position: absolute; inset: 0; overflow: visible; }
+.rl-skel { height: 100%; border-top: 1px solid var(--rl-rule); border-bottom: 1px solid var(--rl-rule); }
+
+/* column heads */
+.rl-hdr { position: absolute; top: 0; font: 400 13px/1.45 var(--font-mono); color: var(--rl-gray); font-variant-numeric: tabular-nums; }
+.rl-hdr b { display: block; font: 600 14px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--rl-ink); margin-bottom: 2px; }
+
+/* reserved column frames (DESIGN.md §7 geometry is reserved) */
+.rl-frame { fill: none; stroke: var(--rl-rule); stroke-width: 1; transition: opacity 200ms var(--ease-out); }
+.rl.is-picked .rl-frame { opacity: 0; }
+
+/* L0 — left column grows, seam draws, ribbons sweep, right column grows (≤ 1.2 s); still = final state */
+.rl-blk { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); cursor: pointer;
+  transition: transform 400ms var(--ease-draw), opacity 120ms var(--ease-out); }
+.rl-rib { fill-opacity: .26; clip-path: inset(0 100% 0 0); cursor: pointer;
+  transition: clip-path 520ms var(--ease-draw), opacity 120ms var(--ease-out), fill-opacity 120ms var(--ease-out); }
+.rl-seam line { stroke: var(--rl-seal); stroke-width: 1.5; transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform 300ms var(--ease-draw) 300ms; }
+.rl-seam { pointer-events: none; transition: transform 600ms var(--ease-swap); }
+.rl-seam text { font: 400 12px var(--font-mono); fill: var(--rl-seal); opacity: 0; transition: opacity 200ms var(--ease-out) 450ms; }
+.rl-lbl { opacity: 0; transition: opacity 240ms var(--ease-out); }
+.rl-cells i { opacity: 0; transition: opacity 160ms var(--ease-out); }
+.rl.is-in .rl-blk { transform: scaleY(1); }
+.rl.is-in .rl-rib { clip-path: inset(0 0 0 0); }
+.rl.is-in .rl-seam line { transform: scaleY(1); }
+.rl.is-in .rl-seam text, .rl.is-in .rl-lbl, .rl.is-in .rl-cells i { opacity: 1; }
+.rl.is-still .rl-blk, .rl.is-still .rl-rib, .rl.is-still .rl-seam line, .rl.is-still .rl-seam text, .rl.is-still .rl-lbl, .rl.is-still .rl-cells i { transition-property: opacity, fill-opacity; }
+
+/* L1 — linked highlight: dim 0 ms, undim 120 ms */
+.rl .is-dim { opacity: .18 !important; transition-duration: 0ms; }
+.rl .rl-lbl.is-dim, .rl .rl-cells i.is-dim { opacity: .3 !important; }
+.rl-rib.is-on { fill-opacity: .55; }
+.rl-cells i.is-on { box-shadow: inset 0 -3px 0 var(--rl-seal); }
+.rl-grain { fill: var(--rl-ink); stroke: var(--color-background); stroke-width: 1.5; pointer-events: none; }
+
+/* L2 — the relevo fades, the picked ribbon (or block) morphs into its lane */
+.rl .is-gone { opacity: 0 !important; pointer-events: none; transition: opacity 200ms var(--ease-out); }
+.rl .rl-lbl.is-gone { opacity: 0 !important; }
+.rl-morph { fill-opacity: .12; pointer-events: none; }
+.rl-hdr { transition: opacity 200ms var(--ease-out); }
+.rl.is-picked .rl-hdr { opacity: 0; }
+.rl-lane-src { font: 600 13px var(--font-sc); letter-spacing: var(--track-sc); fill: var(--rl-gray); }
+.rl-lane-axis { stroke: var(--rl-rule); stroke-width: 1; }
+.rl-lane-tick { font: 400 12px var(--font-mono); fill: var(--rl-gray); }
+.rl-sq { cursor: pointer; opacity: 0; animation: rl-sweep 220ms var(--ease-out) forwards; animation-delay: inherit; }
+.rl-sq:hover, .rl-sq.is-card { stroke: var(--rl-seal); stroke-width: 2; }
+@keyframes rl-sweep { to { opacity: .92; } }
+.rl-lane-head { position: absolute; left: 0; top: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; pointer-events: auto; }
+.rl-lane-name { font: 600 22px/1.25 var(--font-serif); letter-spacing: -.01em; text-wrap: balance; }
+.rl-lane-chip { color: var(--rl-ink); }
+
+/* labels beside the columns */
+.rl-lbl { position: absolute; left: 0; top: 0; cursor: pointer; }
+.rl-lbl-l { text-align: right; }
+.rl-lbl-n { display: block; font: 600 14px/1.25 var(--font-serif); color: var(--rl-ink); text-wrap: pretty; }
+.rl-lbl-n .rl-risk { margin: 0 6px; }
+.rl-lbl-chip { color: inherit; }
+.rl-lbl-s { display: block; font: 400 12px/1.35 var(--font-mono); color: var(--rl-gray); font-variant-numeric: tabular-nums; }
+.rl-lbl.is-gonename .rl-lbl-n { color: var(--rl-gray); font-weight: 400; }
+.rl-ldr { position: absolute; pointer-events: none; }
+.rl-ldr path { stroke: var(--rl-rule); fill: none; }
+
+/* risk reading — red/amber only here (DESIGN.md §6.2); low is gray, never green */
+.rl-risk { font: 700 13px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.rl-risk-critical { color: var(--color-risk-critical-text); }
+.rl-risk-high { color: var(--color-risk-high-text); }
+.rl-risk-medium { color: var(--color-risk-medium-text); }
+.rl-risk-low { color: var(--color-risk-low); }
+
+/* tooltip + L3 card */
+.rl-tip { position: absolute; left: 0; top: 0; z-index: 3; max-width: 330px; padding: 8px 12px; background: var(--color-background); border: 1px solid var(--rl-ink);
+  font: 400 13px/1.45 var(--font-serif); color: var(--rl-ink); pointer-events: none; font-variant-numeric: tabular-nums; }
+.rl-tip b { display: block; font: 600 15px/1.3 var(--font-serif); margin-bottom: 2px; }
+.rl-hint { color: var(--rl-gray); }
+.rl-card { position: absolute; left: 0; top: 0; z-index: 4; padding: 12px 16px; background: var(--color-background); border-top: 2px solid var(--rl-ink); border-bottom: 1px solid var(--rl-rule);
+  animation: rl-card-in 280ms var(--ease-drawer); }
+@keyframes rl-card-in { from { opacity: 0; transform: var(--rl-card-from, translateY(8px)); } }
+.rl-card-top { display: flex; align-items: center; gap: 12px; }
+.rl-card-k { margin-top: 8px; font: 400 13px/1.45 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--rl-gray); }
+.rl-card-k b { color: var(--rl-ink); font: 600 15px var(--font-serif); }
+.rl-card-t { margin-top: 4px; font: 400 15px/1.5 var(--font-serif); color: var(--rl-ink); text-wrap: pretty; }
+.rl-link { display: inline-block; margin-top: 8px; font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-cat-blue-text); text-decoration: underline; text-underline-offset: 3px; }
+
+/* text column */
+.rl-txt { position: relative; min-width: 0; min-height: 520px; display: flex; flex-direction: column; }
+.rl-txt > .rl-strip { flex: 1 1 auto; display: flex; flex-direction: column; margin-top: 16px; }
+.rl-txt > .rl-strip .rl-cells { flex: 1 1 auto; grid-template-columns: repeat(10, minmax(0, 1fr)); grid-auto-rows: minmax(8px, 1fr); min-height: 80px; height: auto; border-bottom: 1px solid var(--rl-rule); } /* desktop: the 100 pesos are a 10x10 block that takes the column down to the object's bottom edge */
+.rl-claim { margin: 0; font: 600 24px/1.15 var(--font-serif); letter-spacing: -.015em; color: var(--rl-ink); text-wrap: pretty; }
+.rl-num { font-variant-numeric: tabular-nums; }
+.rl-sent { margin: 12px 0 0; font: 400 15px/1.55 var(--font-serif); color: var(--rl-ink); text-wrap: pretty; }
+.rl-sent b, .rl-claim b { font-weight: 600; }
+.rl-sent .rl-name, .rl-claim .rl-name { font-weight: 600; color: var(--rl-ink); }
+.rl-money { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rl-strip { margin-top: 16px; }
+.rl-cells { display: grid; grid-template-columns: repeat(100, minmax(0, 1fr)); gap: 1px; height: 16px; }
+.rl-cells i { display: block; cursor: pointer; }
+.rl-cells i.is-tail { filter: opacity(.55); cursor: default; }
+/* scoped: a bare .is-hatch (with !important) painted every .is-hatch on any page that loaded this chunk */
+.rl-cells i.is-hatch, .rl-key.is-hatch { background: repeating-linear-gradient(135deg, var(--color-cat-slate) 0 2px, var(--color-background) 2px 4px) !important; }
+.rl-lg, .rl-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 8px; font: 400 13px/1.45 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--rl-gray); }
+.rl-lg-h { color: var(--rl-ink); }
+.rl-lg b { color: var(--rl-ink); font-weight: 700; }
+.rl-legend { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--rl-rule); }
+.rl-key { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+.rl-note { margin: 12px 0 0; font: 400 13px/1.45 var(--font-serif); color: var(--rl-gray); }
+.rl-mono { font: 400 13px/1.45 var(--font-mono); color: var(--rl-gray); font-variant-numeric: tabular-nums; margin: 8px 0 0; }
+.rl-mono b { color: var(--rl-ink); font-weight: 700; }
+/* a sentence line in the same slot (DESIGN.md §2 mono rule: sentences take the body face) */
+.rl-line { font: 400 13px/1.45 var(--font-serif); color: var(--rl-gray); font-variant-numeric: tabular-nums; margin: 8px 0 0; }
+.rl-line b { color: var(--rl-ink); font-weight: 700; }
+.rl-sc { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--rl-gray); }
+
+/* the record, in place of the sentences (L2) */
+.rl-detail { position: absolute; inset: 0; background: var(--color-background); display: flex; flex-direction: column; animation: rl-fade 200ms var(--ease-out); }
+@keyframes rl-fade { from { opacity: 0; } }
+.rl-detail-top { display: flex; align-items: center; gap: 12px; }
+.rl-back { margin-left: auto; min-height: 40px; padding: 0 12px; border: 1px solid var(--rl-rule); font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--rl-ink); background: var(--color-background); transition: transform 120ms var(--ease-out); }
+.rl-back:active { transform: scale(.97); }
+.rl-back kbd { margin-left: 6px; font: 400 12px/1 var(--font-mono); color: var(--rl-gray); }
+.rl-detail-h { margin: 4px 0 0; font: 600 22px/1.25 var(--font-serif); letter-spacing: -.01em; text-wrap: balance; }
+.rl-detail-chip { color: var(--rl-ink); }
+.rl-dagger { color: var(--rl-gray); }
+.rl-pair { margin-top: 16px; display: grid; gap: 12px; }
+.rl-pair-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 150px; gap: 12px; align-items: center; }
+.rl-pair-v { margin: 0; text-align: right; }
+.rl-rule { position: relative; height: 16px; border-bottom: 1px solid var(--rl-rule); }
+.rl-rule i { position: absolute; left: 0; right: 0; top: 7px; height: 2px; background: var(--rl-ink); transform-origin: 0 50%; animation: rl-carve 700ms var(--ease-draw) both; animation-delay: inherit; }
+@keyframes rl-carve { from { transform: scaleX(0); } }
+
+/* phone: object then text; names as a ruled list */
+.rl-list { list-style: none; margin: 0 0 16px; padding: 0; border-top: 1px solid var(--rl-ink); }
+.rl-list li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 0 8px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--rl-rule); font: 600 15px/1.3 var(--font-serif); }
+.rl-rowbtn { margin: 0; min-height: 40px; text-align: right; white-space: nowrap; background: none; border: 0; padding: 0; }
+@media (max-width: 900px) {
+  .rl-grid { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .rl-txt { min-height: 0; display: block; }
+  .rl-txt > .rl-strip, .rl-txt > .rl-strip .rl-cells { display: block; }
+  .rl-txt > .rl-strip .rl-cells { display: grid; grid-template-columns: repeat(100, minmax(0, 1fr)); grid-auto-rows: auto; min-height: 0; height: 16px; border-bottom: 0; }
+  .rl-claim { font-size: 20px; }
+  .rl-detail { position: fixed; inset: auto 0 0 0; max-height: 70dvh; overflow: auto; padding: 16px; border-top: 2px solid var(--rl-ink); z-index: 20; }
+  .rl-pair-row { grid-template-columns: 96px minmax(0, 1fr) 128px; }
+}
+/* phone (owner 2026-10-21 density): names one tight line each, claim 20, the fold carries the long tail */
+@media (max-width: 760px) {
+  .rl-grid { gap: 12px; }
+  .rl-list { margin-bottom: 4px; }
+  .rl-list li { padding: 0; font-size: 14px; line-height: 1.35; align-items: center; }
+  .rl-list li .rl-rowbtn { min-height: 44px; max-width: 108px; white-space: normal; line-height: 1.3; font-size: 12px; }
+  .rl-claim { margin-top: 8px; font-size: 20px; line-height: 1.2; }
+  .rl-sent { margin-top: 8px; line-height: 1.45; }
+  .rl-legend { margin-top: 8px; padding-top: 4px; }
+  .rl-note { margin-top: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rl *, .rl *::before { transition-duration: 0ms !important; animation-duration: 0ms !important; }
+}

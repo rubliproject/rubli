@@ -1,0 +1,249 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+!frontend/src/lib/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+
+# Original data (large files)
+original_data/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+.env.prod
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Build outputs
+frontend/dist/
+frontend/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+*.tmp
+*.temp
+# Per-user Claude state (settings.local.json, scheduled_tasks.lock, agent
+# scratch, etc.) stays out of git. Project-level skills DO ship with the
+# repo so future Claude sessions inherit our vocabulary
+# (e.g. rubli-folio-aesthetic).
+.claude/*
+!.claude/skills
+!.claude/skills/**
+tmpclaude-*/
+backend/tmpclaude-*/
+nul
+
+# ETL checkpoints (transient)
+.etl_checkpoints/
+
+# Database backups (keep in separate location)
+*.db.backup_*
+*.db.currency_backup_*
+*.db.corrupt_*
+*.db.bak
+*.db.prev
+*.db.pre_v*
+*.backup_*
+backend/*.backup_*
+
+# Analysis output files (regeneratable)
+*_output.txt
+structure_analysis.json
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Claude configuration (private)
+CLAUDE.md
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Strategic planning docs (out of scope for Mexico project)
+docs/EXPANSION_FEASIBILITY.md
+
+# Temporary/debug files
+backend/DEBUG_LOG.txt
+frontend/npm-cache/
+npm-cache/
+=0.45.0
+
+# Vite cache
+.vite/
+
+# Database backup directories
+backend/backups/
+
+# Audit/investigation reports (local only)
+AUDIT_API_FINDINGS.md
+audit_report_task3.md
+
+# Rollback/recovery scripts (local only)
+backend/scripts/rollback_v5_scores.py
+
+# Claude Code / IDE config (internal dev tooling)
+CLAUDE.md
+CLAUDE.local.md
+CLAUDE.local.md.template
+.mcp.json
+.cursorignore
+.cursorrules
+
+# Internal analysis & investigation scripts
+analyze_structures.py
+audit_queries.py
+check_if_problem_exists.py
+column_mapping.csv
+column_mapping.py
+investigate_structure_c.py
+investigate_structure_c_v2.py
+tmp_*.py
+
+# Internal audit / working documents
+AUDIT_*.md
+CLASSIFICATION_REPORT*.md
+COMPRANET_DATA_QUALITY_REPORT.md
+COMPRANET_DEEP_ANALYSIS_REPORT.txt
+CRITICAL_FINDINGS.md
+DATA_QUALITY_*.md
+DATA_QUALITY_REPORT.md
+DATA_STRUCTURE_REPORT.md
+INVESTIGATION_REPORT_*.md
+PATTERN_FIX_GUIDE.md
+PROJECT_STATUS.md
+RUBLI_TECHNICAL_SPEC.md
+RUBLI_ROADMAP.md
+RUBLI_LITERATURE_REVIEW.md
+VENDOR_DEDUPLICATION_RESULTS.md
+VENDOR_DUPLICATES_REPORT.md
+
+# Internal docs
+docs/AGENTS.md
+docs/CLAUDE_CODE_GUIDE.md
+docs/CONFIGURATION_REFERENCE.md
+docs/WORKFLOW_PATTERNS.md
+docs/FRONTEND_RENOVATION_PLAN.md
+docs/LAUNCH_CONTENT.md
+docs/POST_ASF_CLEANUP_RUNBOOK.md
+docs/RESEARCH_SUMMARY.md
+docs/VALIDATION_REPORT.md
+docs/PATTERNS_DETECTED.md
+docs/RISK_METHODOLOGY_v5.1_EXPLORATION.md
+scripts/headless-pipeline.sh
+backend/scripts/_subcategory_results.json
+backend/DUPLICATE_INVESTIGATION_REPORT.md
+
+# Screenshots and visual artifacts (root-level)
+*.png
+*.pdf
+*.b64
+.audit_report.txt
+.playwright-mcp/
+
+# Temp GT batch generation helpers (not insertion scripts)
+backend/scripts/_gen_batch*.py
+backend/scripts/_write_batch_*.py
+backend/scripts/_build_batch_*.py
+backend/scripts/_check_*.py
+backend/scripts/_tmp_*.py
+backend/scripts/_tmp_*.txt
+backend/scripts/_write_batch*_helper.py
+backend/precompute_log*.txt
+backend/precompute_err*.txt
+fix_accents.py
+
+# ComprasMX bulk data files (large CSVs)
+backend/data/comprasmx/*.csv
+
+# Auto-memory (user-specific)
+memory/
+scripts/resumable_upload.py
+
+# Audit artifacts — Playwright screenshots, session captures
+audit/
+.playwright-mcp/
+
+# Local audit + harness runs (large image dirs, JSONL transcripts)
+data/audit_runs/
+data/explore_runs/
+*.db.gz
+
+# public-dataset exporter: operator identity markers (local only)
+backend/scripts/.identity_markers
+
+# ship_institution_grades_v3.py dumps (DB extracts, never commit)
+backend/_ship/
+frontend/_ui_v4/concepts/newdata/_cache/
+
+# institution logos (Wikimedia Commons, see frontend/public/logos/SOURCES.md) ship with the site
+!frontend/public/logos/*.png
+
+# Secrets + data never committed (SECURITY_HARDENING_2026-10-28 § 2)
+.env*
+!.env*.example
+**/.env*
+!**/.env*.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db.gz
+*.db.zst
+backups/
+
+# DQ1: RFC-bearing ComprasMX extracts — never commit
+*dq1*.csv
+# playwright output
+frontend/test-results/

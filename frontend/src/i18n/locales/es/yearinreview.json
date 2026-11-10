@@ -1,0 +1,97 @@
+{
+  "yearSelector": "Seleccionar año",
+  "noData": "Sin datos disponibles para este año",
+  "contracts": "contratos",
+  "riskLabel": "Riesgo",
+  "allYears": "Todos los años",
+  "goToYear": "Ver el año {{year}}",
+  "sexenioYear": "Año {{current}}/{{total}}",
+  "heroStats": {
+    "totalContracts": "Total de contratos",
+    "totalSpending": "Gasto total",
+    "highRiskRate": "Tasa de alto riesgo",
+    "topSector": "Sector líder",
+    "yoyChange": "Cambio anual"
+  },
+  "lede": {
+    "pandemic": "{{year}} estuvo marcado por la emergencia sanitaria. Con {{contracts}} contratos y un {{directPct}}% de adjudicación directa, el gasto de emergencia redefinió los patrones de contratación pública.",
+    "transition": "{{year}} fue un año de transición presidencial. {{contracts}} contratos por {{spending}} reflejan el cierre de una administración y el inicio de otra.",
+    "highRisk": "{{year}} registró una tasa de alto riesgo del {{riskPct}}%. {{contracts}} contratos por {{spending}} requieren atención.",
+    "default": "En {{year}}, el gobierno federal procesó {{contracts}} contratos por un total de {{spending}}. La tasa de adjudicación directa fue del {{directPct}}%."
+  },
+  "spotlight": {
+    "label": "Momento más destacado",
+    "topVendorLabel": "Proveedor con mayor gasto en {{year}}"
+  },
+  "yoyDeltas": {
+    "directAward": "Adjudicación directa",
+    "avgRisk": "Riesgo promedio"
+  },
+  "findings": {
+    "highDirectAward": "{{pct}}% de contratos por adjudicación directa — concentración de poder discrecional"
+  },
+  "administrationBanner": {
+    "title": "Administración presidencial"
+  },
+  "sectorAll": {
+    "sectionLabel": "Panorama sectorial completo",
+    "headline": "Los 12 sectores en {{year}} — distribución total del gasto",
+    "subtitle": "Valor contratado y número de contratos por sector. Haga clic en una barra para explorar ese sector a detalle.",
+    "footerHint": "Haga clic en cualquier sector para abrir su perfil detallado"
+  },
+  "sectorGrowthFull": {
+    "sectionLabel": "Crecimiento vs contracción",
+    "headline": "Qué sectores crecieron y cuáles se contrajeron vs {{prior}}",
+    "subtitle": "Cambio porcentual interanual en valor contratado. Verde = crecimiento, rojo = contracción.",
+    "noComparison": "No hay datos del año anterior ({{prior}}) para comparar."
+  },
+  "riskEvolution": {
+    "sectionLabel": "Evolución del riesgo",
+    "headline": "Perfil de riesgo de {{year}} vs promedio histórico",
+    "subtitle": "Distribución de niveles de riesgo comparada con el promedio 2002-2026 y el techo de calibración de RUBLI.",
+    "thisYear": "Este año",
+    "historicalAvg": "Promedio 2002-2026",
+    "oecdTarget": "Techo de calibración (15%)",
+    "aboveOECD": "Por encima del techo de calibración",
+    "belowOECD": "Dentro de la meta de calibración"
+  },
+  "procedureType": {
+    "sectionLabel": "Tipo de procedimiento",
+    "headline": "Adjudicación directa vs licitación competitiva",
+    "subtitle": "En {{year}}, el {{directPct}}% de los contratos se adjudicaron directamente, sin licitación.",
+    "direct": "Adjudicación directa",
+    "competitive": "Competitiva",
+    "historicalContext": "El promedio histórico 2002-2026 es {{avg}}%. El Tablero UE considera insatisfactorio 10% o más.",
+    "oecdLimit": "Tablero UE: 10%"
+  },
+  "topVendorsFull": {
+    "sectionLabel": "Principales beneficiarios",
+    "headline": "Los mayores proveedores de {{year}}",
+    "subtitle": "Ordenados por valor total contratado. Cobertura de RFC limitada antes de 2018.",
+    "showAll": "Ver los {{count}} proveedores",
+    "showLess": "Mostrar menos",
+    "rankColumn": "#",
+    "vendorColumn": "Proveedor",
+    "valueColumn": "Valor",
+    "contractsColumn": "Contratos",
+    "riskColumn": "Riesgo"
+  },
+  "notableRisks": {
+    "sectionLabel": "Contratos notables por riesgo",
+    "headline": "Los 10 contratos de mayor riesgo en {{year}}",
+    "subtitle": "Contratos con los puntajes de riesgo más altos según el modelo v0.9.2. No son prueba de irregularidad — son prioridades de investigación.",
+    "noRiskContracts": "No se encontraron contratos de alto riesgo para este año.",
+    "vendor": "Proveedor",
+    "institution": "Institución"
+  },
+  "monthly": {
+    "sectionLabel": "Gasto mes por mes",
+    "headline": "Cuándo se gastó el dinero en {{year}}",
+    "subtitle": "Distribución mensual del gasto contratado. Diciembre se colorea en ámbar — el pico de fin de año es una bandera roja clásica.",
+    "decemberSpike": "Pico de Diciembre",
+    "decemberSpikeNote": "{{pct}}% del gasto anual se concentró en diciembre — {{label}}",
+    "abnormal": "anómalo",
+    "elevated": "elevado",
+    "normal": "normal"
+  }
+}

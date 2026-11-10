@@ -1,0 +1,5674 @@
+{
+ "en": {
+  "peak": {
+   "ms": 10512,
+   "words": [
+    [
+     "In 2017",
+     180,
+     1268
+    ],
+    [
+     "a",
+     1705,
+     1742
+    ],
+    [
+     "single",
+     1742,
+     2092
+    ],
+    [
+     "company",
+     2092,
+     2455
+    ],
+    [
+     "was",
+     2468,
+     2630
+    ],
+    [
+     "awarded",
+     2630,
+     3155
+    ],
+    [
+     "19.9",
+     3242,
+     4468
+    ],
+    [
+     "billion",
+     4542,
+     4930
+    ],
+    [
+     "pesos",
+     4930,
+     5542
+    ],
+    [
+     "in",
+     5642,
+     5818
+    ],
+    [
+     "federal",
+     5830,
+     6205
+    ],
+    [
+     "contracts",
+     6218,
+     6830
+    ],
+    [
+     "for",
+     6830,
+     6918
+    ],
+    [
+     "medicine",
+     6918,
+     7368
+    ],
+    [
+     "Grupo",
+     7880,
+     8280
+    ],
+    [
+     "Fármacos",
+     8292,
+     8930
+    ],
+    [
+     "Especializados",
+     8992,
+     10142
+    ]
+   ],
+   "captions": [
+    {
+     "text": "In 2017,",
+     "startMs": 180,
+     "endMs": 1705,
+     "timestampMs": 724,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 1705,
+     "endMs": 1742,
+     "timestampMs": 1724,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " single",
+     "startMs": 1742,
+     "endMs": 2092,
+     "timestampMs": 1918,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " company",
+     "startMs": 2092,
+     "endMs": 2468,
+     "timestampMs": 2274,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " was",
+     "startMs": 2468,
+     "endMs": 2630,
+     "timestampMs": 2549,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " awarded",
+     "startMs": 2630,
+     "endMs": 3242,
+     "timestampMs": 2892,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 19.9",
+     "startMs": 3242,
+     "endMs": 4542,
+     "timestampMs": 3855,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " billion",
+     "startMs": 4542,
+     "endMs": 4930,
+     "timestampMs": 4736,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos",
+     "startMs": 4930,
+     "endMs": 5642,
+     "timestampMs": 5236,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in",
+     "startMs": 5642,
+     "endMs": 5830,
+     "timestampMs": 5730,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " federal",
+     "startMs": 5830,
+     "endMs": 6218,
+     "timestampMs": 6018,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contracts",
+     "startMs": 6218,
+     "endMs": 6830,
+     "timestampMs": 6524,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " for",
+     "startMs": 6830,
+     "endMs": 6918,
+     "timestampMs": 6874,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicine:",
+     "startMs": 6918,
+     "endMs": 7880,
+     "timestampMs": 7142,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Grupo",
+     "startMs": 7880,
+     "endMs": 8292,
+     "timestampMs": 8080,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos",
+     "startMs": 8292,
+     "endMs": 8992,
+     "timestampMs": 8611,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Especializados.",
+     "startMs": 8992,
+     "endMs": 10142,
+     "timestampMs": 9568,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "four": {
+   "ms": 13512,
+   "words": [
+    [
+     "It",
+     180,
+     255
+    ],
+    [
+     "was",
+     255,
+     368
+    ],
+    [
+     "one",
+     368,
+     492
+    ],
+    [
+     "of",
+     505,
+     580
+    ],
+    [
+     "four",
+     580,
+     968
+    ],
+    [
+     "large",
+     968,
+     1442
+    ],
+    [
+     "IMSS",
+     1568,
+     1855
+    ],
+    [
+     "suppliers",
+     1855,
+     2618
+    ],
+    [
+     "with",
+     2842,
+     3005
+    ],
+    [
+     "Farmacéuticos",
+     3018,
+     3742
+    ],
+    [
+     "Maypo",
+     3742,
+     4318
+    ],
+    [
+     "Laboratorios",
+     4905,
+     5480
+    ],
+    [
+     "PISA",
+     5492,
+     6180
+    ],
+    [
+     "and",
+     6380,
+     6492
+    ],
+    [
+     "the",
+     6505,
+     6580
+    ],
+    [
+     "distributor",
+     6580,
+     7080
+    ],
+    [
+     "Dimesa",
+     7080,
+     7818
+    ],
+    [
+     "Since 2002",
+     8218,
+     9542
+    ],
+    [
+     "the",
+     9955,
+     10055
+    ],
+    [
+     "four",
+     10055,
+     10318
+    ],
+    [
+     "have",
+     10318,
+     10418
+    ],
+    [
+     "been",
+     10418,
+     10530
+    ],
+    [
+     "awarded",
+     10530,
+     10968
+    ],
+    [
+     "326",
+     11030,
+     12118
+    ],
+    [
+     "billion",
+     12130,
+     12442
+    ],
+    [
+     "pesos",
+     12442,
+     13142
+    ]
+   ],
+   "captions": [
+    {
+     "text": "It",
+     "startMs": 180,
+     "endMs": 255,
+     "timestampMs": 218,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " was",
+     "startMs": 255,
+     "endMs": 368,
+     "timestampMs": 311,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " one",
+     "startMs": 368,
+     "endMs": 505,
+     "timestampMs": 430,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " of",
+     "startMs": 505,
+     "endMs": 580,
+     "timestampMs": 542,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " four",
+     "startMs": 580,
+     "endMs": 968,
+     "timestampMs": 774,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " large",
+     "startMs": 968,
+     "endMs": 1568,
+     "timestampMs": 1205,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS",
+     "startMs": 1568,
+     "endMs": 1855,
+     "timestampMs": 1711,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " suppliers,",
+     "startMs": 1855,
+     "endMs": 2842,
+     "timestampMs": 2236,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " with",
+     "startMs": 2842,
+     "endMs": 3018,
+     "timestampMs": 2924,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Farmacéuticos",
+     "startMs": 3018,
+     "endMs": 3742,
+     "timestampMs": 3380,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo,",
+     "startMs": 3742,
+     "endMs": 4905,
+     "timestampMs": 4030,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Laboratorios",
+     "startMs": 4905,
+     "endMs": 5492,
+     "timestampMs": 5192,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " PISA",
+     "startMs": 5492,
+     "endMs": 6380,
+     "timestampMs": 5836,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " and",
+     "startMs": 6380,
+     "endMs": 6505,
+     "timestampMs": 6436,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 6505,
+     "endMs": 6580,
+     "timestampMs": 6542,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " distributor",
+     "startMs": 6580,
+     "endMs": 7080,
+     "timestampMs": 6830,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa.",
+     "startMs": 7080,
+     "endMs": 8218,
+     "timestampMs": 7449,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Since 2002,",
+     "startMs": 8218,
+     "endMs": 9955,
+     "timestampMs": 8880,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 9955,
+     "endMs": 10055,
+     "timestampMs": 10005,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " four",
+     "startMs": 10055,
+     "endMs": 10318,
+     "timestampMs": 10186,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " have",
+     "startMs": 10318,
+     "endMs": 10418,
+     "timestampMs": 10368,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " been",
+     "startMs": 10418,
+     "endMs": 10530,
+     "timestampMs": 10474,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " awarded",
+     "startMs": 10530,
+     "endMs": 11030,
+     "timestampMs": 10749,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 326",
+     "startMs": 11030,
+     "endMs": 12130,
+     "timestampMs": 11574,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " billion",
+     "startMs": 12130,
+     "endMs": 12442,
+     "timestampMs": 12286,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos.",
+     "startMs": 12442,
+     "endMs": 13142,
+     "timestampMs": 12792,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "buyer": {
+   "ms": 5208,
+   "words": [
+    [
+     "That",
+     180,
+     268
+    ],
+    [
+     "is",
+     280,
+     368
+    ],
+    [
+     "about",
+     368,
+     718
+    ],
+    [
+     "one",
+     730,
+     1055
+    ],
+    [
+     "peso",
+     1055,
+     1580
+    ],
+    [
+     "in",
+     1580,
+     1742
+    ],
+    [
+     "ten",
+     1742,
+     2168
+    ],
+    [
+     "that",
+     2380,
+     2505
+    ],
+    [
+     "the",
+     2505,
+     2580
+    ],
+    [
+     "Social",
+     2580,
+     3005
+    ],
+    [
+     "Security",
+     3018,
+     3542
+    ],
+    [
+     "Institute",
+     3555,
+     4142
+    ],
+    [
+     "contracted",
+     4155,
+     4830
+    ]
+   ],
+   "captions": [
+    {
+     "text": "That",
+     "startMs": 180,
+     "endMs": 280,
+     "timestampMs": 224,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " is",
+     "startMs": 280,
+     "endMs": 368,
+     "timestampMs": 324,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " about",
+     "startMs": 368,
+     "endMs": 730,
+     "timestampMs": 542,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " one",
+     "startMs": 730,
+     "endMs": 1055,
+     "timestampMs": 892,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " peso",
+     "startMs": 1055,
+     "endMs": 1580,
+     "timestampMs": 1318,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in",
+     "startMs": 1580,
+     "endMs": 1742,
+     "timestampMs": 1661,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ten",
+     "startMs": 1742,
+     "endMs": 2380,
+     "timestampMs": 1955,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " that",
+     "startMs": 2380,
+     "endMs": 2505,
+     "timestampMs": 2442,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 2505,
+     "endMs": 2580,
+     "timestampMs": 2542,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Social",
+     "startMs": 2580,
+     "endMs": 3018,
+     "timestampMs": 2792,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Security",
+     "startMs": 3018,
+     "endMs": 3555,
+     "timestampMs": 3280,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Institute",
+     "startMs": 3555,
+     "endMs": 4155,
+     "timestampMs": 3849,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contracted.",
+     "startMs": 4155,
+     "endMs": 4830,
+     "timestampMs": 4492,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "relay": {
+   "ms": 4368,
+   "words": [
+    [
+     "From 2011",
+     218,
+     1255
+    ],
+    [
+     "Grupo",
+     1655,
+     2005
+    ],
+    [
+     "Fármacos",
+     2005,
+     2742
+    ],
+    [
+     "led",
+     2955,
+     3142
+    ],
+    [
+     "every",
+     3305,
+     3592
+    ],
+    [
+     "year",
+     3592,
+     4005
+    ]
+   ],
+   "captions": [
+    {
+     "text": "From 2011,",
+     "startMs": 218,
+     "endMs": 1655,
+     "timestampMs": 736,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 1655,
+     "endMs": 2005,
+     "timestampMs": 1830,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos",
+     "startMs": 2005,
+     "endMs": 2955,
+     "timestampMs": 2374,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " led",
+     "startMs": 2955,
+     "endMs": 3305,
+     "timestampMs": 3049,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " every",
+     "startMs": 3305,
+     "endMs": 3592,
+     "timestampMs": 3449,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " year.",
+     "startMs": 3592,
+     "endMs": 4005,
+     "timestampMs": 3799,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "order": {
+   "ms": 17208,
+   "words": [
+    [
+     "In 2019",
+     180,
+     1218
+    ],
+    [
+     "the",
+     1492,
+     1568
+    ],
+    [
+     "new",
+     1568,
+     1805
+    ],
+    [
+     "government",
+     1805,
+     2280
+    ],
+    [
+     "ordered",
+     2292,
+     2592
+    ],
+    [
+     "it",
+     2592,
+     2768
+    ],
+    [
+     "Maypo",
+     2955,
+     3580
+    ],
+    [
+     "and",
+     3705,
+     3855
+    ],
+    [
+     "Dimesa",
+     3868,
+     4330
+    ],
+    [
+     "kept",
+     4342,
+     4705
+    ],
+    [
+     "out",
+     4918,
+     5042
+    ],
+    [
+     "of",
+     5042,
+     5118
+    ],
+    [
+     "government",
+     5130,
+     5442
+    ],
+    [
+     "contracts",
+     5442,
+     6342
+    ],
+    [
+     "A",
+     6742,
+     6805
+    ],
+    [
+     "judge",
+     6805,
+     7130
+    ],
+    [
+     "ruled",
+     7130,
+     7505
+    ],
+    [
+     "the",
+     7518,
+     7605
+    ],
+    [
+     "order",
+     7618,
+     7955
+    ],
+    [
+     "illegal",
+     7955,
+     8418
+    ],
+    [
+     "But",
+     8842,
+     8955
+    ],
+    [
+     "that",
+     8955,
+     9142
+    ],
+    [
+     "July",
+     9142,
+     9718
+    ],
+    [
+     "the",
+     9968,
+     10080
+    ],
+    [
+     "public-administration",
+     10092,
+     11030
+    ],
+    [
+     "ministry",
+     11030,
+     11468
+    ],
+    [
+     "barred",
+     11468,
+     11780
+    ],
+    [
+     "it",
+     11780,
+     11868
+    ],
+    [
+     "for",
+     11968,
+     12130
+    ],
+    [
+     "two",
+     12130,
+     12392
+    ],
+    [
+     "years",
+     12392,
+     12942
+    ],
+    [
+     "for",
+     13168,
+     13318
+    ],
+    [
+     "false",
+     13318,
+     13655
+    ],
+    [
+     "information",
+     13668,
+     14230
+    ],
+    [
+     "about",
+     14242,
+     14430
+    ],
+    [
+     "a",
+     14430,
+     14455
+    ],
+    [
+     "medicine's",
+     14455,
+     15192
+    ],
+    [
+     "origin",
+     15205,
+     15755
+    ],
+    [
+     "in",
+     15905,
+     16018
+    ],
+    [
+     "an",
+     16018,
+     16105
+    ],
+    [
+     "IMSS",
+     16118,
+     16368
+    ],
+    [
+     "tender",
+     16368,
+     16842
+    ]
+   ],
+   "captions": [
+    {
+     "text": "In 2019,",
+     "startMs": 180,
+     "endMs": 1492,
+     "timestampMs": 699,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 1492,
+     "endMs": 1568,
+     "timestampMs": 1530,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " new",
+     "startMs": 1568,
+     "endMs": 1805,
+     "timestampMs": 1686,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " government",
+     "startMs": 1805,
+     "endMs": 2292,
+     "timestampMs": 2042,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ordered",
+     "startMs": 2292,
+     "endMs": 2592,
+     "timestampMs": 2442,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " it,",
+     "startMs": 2592,
+     "endMs": 2955,
+     "timestampMs": 2680,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo",
+     "startMs": 2955,
+     "endMs": 3705,
+     "timestampMs": 3268,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " and",
+     "startMs": 3705,
+     "endMs": 3868,
+     "timestampMs": 3780,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa",
+     "startMs": 3868,
+     "endMs": 4342,
+     "timestampMs": 4099,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " kept",
+     "startMs": 4342,
+     "endMs": 4918,
+     "timestampMs": 4524,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " out",
+     "startMs": 4918,
+     "endMs": 5042,
+     "timestampMs": 4980,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " of",
+     "startMs": 5042,
+     "endMs": 5130,
+     "timestampMs": 5080,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " government",
+     "startMs": 5130,
+     "endMs": 5442,
+     "timestampMs": 5286,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contracts.",
+     "startMs": 5442,
+     "endMs": 6742,
+     "timestampMs": 5892,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " A",
+     "startMs": 6742,
+     "endMs": 6805,
+     "timestampMs": 6774,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " judge",
+     "startMs": 6805,
+     "endMs": 7130,
+     "timestampMs": 6968,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ruled",
+     "startMs": 7130,
+     "endMs": 7518,
+     "timestampMs": 7318,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 7518,
+     "endMs": 7618,
+     "timestampMs": 7561,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " order",
+     "startMs": 7618,
+     "endMs": 7955,
+     "timestampMs": 7786,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " illegal.",
+     "startMs": 7955,
+     "endMs": 8842,
+     "timestampMs": 8186,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " But",
+     "startMs": 8842,
+     "endMs": 8955,
+     "timestampMs": 8899,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " that",
+     "startMs": 8955,
+     "endMs": 9142,
+     "timestampMs": 9049,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " July,",
+     "startMs": 9142,
+     "endMs": 9968,
+     "timestampMs": 9430,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 9968,
+     "endMs": 10092,
+     "timestampMs": 10024,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " public-administration",
+     "startMs": 10092,
+     "endMs": 11030,
+     "timestampMs": 10561,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ministry",
+     "startMs": 11030,
+     "endMs": 11468,
+     "timestampMs": 11249,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " barred",
+     "startMs": 11468,
+     "endMs": 11780,
+     "timestampMs": 11624,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " it",
+     "startMs": 11780,
+     "endMs": 11968,
+     "timestampMs": 11824,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " for",
+     "startMs": 11968,
+     "endMs": 12130,
+     "timestampMs": 12049,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " two",
+     "startMs": 12130,
+     "endMs": 12392,
+     "timestampMs": 12261,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " years,",
+     "startMs": 12392,
+     "endMs": 13168,
+     "timestampMs": 12668,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " for",
+     "startMs": 13168,
+     "endMs": 13318,
+     "timestampMs": 13242,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " false",
+     "startMs": 13318,
+     "endMs": 13668,
+     "timestampMs": 13486,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " information",
+     "startMs": 13668,
+     "endMs": 14242,
+     "timestampMs": 13949,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " about",
+     "startMs": 14242,
+     "endMs": 14430,
+     "timestampMs": 14336,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 14430,
+     "endMs": 14455,
+     "timestampMs": 14442,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicine's",
+     "startMs": 14455,
+     "endMs": 15205,
+     "timestampMs": 14824,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " origin",
+     "startMs": 15205,
+     "endMs": 15905,
+     "timestampMs": 15480,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in",
+     "startMs": 15905,
+     "endMs": 16018,
+     "timestampMs": 15961,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " an",
+     "startMs": 16018,
+     "endMs": 16118,
+     "timestampMs": 16061,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS",
+     "startMs": 16118,
+     "endMs": 16368,
+     "timestampMs": 16242,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " tender.",
+     "startMs": 16368,
+     "endMs": 16842,
+     "timestampMs": 16605,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "cliff": {
+   "ms": 8856,
+   "words": [
+    [
+     "Its",
+     180,
+     280
+    ],
+    [
+     "contracts",
+     280,
+     1005
+    ],
+    [
+     "fell",
+     1018,
+     1318
+    ],
+    [
+     "from",
+     1318,
+     1480
+    ],
+    [
+     "17.6",
+     1480,
+     2780
+    ],
+    [
+     "billion",
+     2842,
+     3205
+    ],
+    [
+     "pesos",
+     3205,
+     3855
+    ],
+    [
+     "in 2019",
+     4092,
+     5318
+    ],
+    [
+     "to",
+     5542,
+     5618
+    ],
+    [
+     "half",
+     5618,
+     5968
+    ],
+    [
+     "a",
+     5980,
+     6018
+    ],
+    [
+     "million",
+     6030,
+     6642
+    ],
+    [
+     "in 2020",
+     6642,
+     7368
+    ],
+    [
+     "Then",
+     7792,
+     7868
+    ],
+    [
+     "they",
+     7868,
+     7968
+    ],
+    [
+     "stopped",
+     7980,
+     8492
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Its",
+     "startMs": 180,
+     "endMs": 280,
+     "timestampMs": 230,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contracts",
+     "startMs": 280,
+     "endMs": 1018,
+     "timestampMs": 642,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " fell",
+     "startMs": 1018,
+     "endMs": 1318,
+     "timestampMs": 1168,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " from",
+     "startMs": 1318,
+     "endMs": 1480,
+     "timestampMs": 1399,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 17.6",
+     "startMs": 1480,
+     "endMs": 2842,
+     "timestampMs": 2130,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " billion",
+     "startMs": 2842,
+     "endMs": 3205,
+     "timestampMs": 3024,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos",
+     "startMs": 3205,
+     "endMs": 4092,
+     "timestampMs": 3530,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in 2019",
+     "startMs": 4092,
+     "endMs": 5542,
+     "timestampMs": 4705,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " to",
+     "startMs": 5542,
+     "endMs": 5618,
+     "timestampMs": 5580,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " half",
+     "startMs": 5618,
+     "endMs": 5980,
+     "timestampMs": 5792,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 5980,
+     "endMs": 6030,
+     "timestampMs": 5999,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " million",
+     "startMs": 6030,
+     "endMs": 6642,
+     "timestampMs": 6336,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in 2020.",
+     "startMs": 6642,
+     "endMs": 7792,
+     "timestampMs": 7005,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Then",
+     "startMs": 7792,
+     "endMs": 7868,
+     "timestampMs": 7830,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " they",
+     "startMs": 7868,
+     "endMs": 7980,
+     "timestampMs": 7918,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " stopped.",
+     "startMs": 7980,
+     "endMs": 8492,
+     "timestampMs": 8236,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "after": {
+   "ms": 8784,
+   "words": [
+    [
+     "Dimesa",
+     168,
+     742
+    ],
+    [
+     "fell",
+     842,
+     1255
+    ],
+    [
+     "97 percent",
+     1318,
+     2655
+    ],
+    [
+     "and",
+     2930,
+     3042
+    ],
+    [
+     "Maypo",
+     3042,
+     3468
+    ],
+    [
+     "by",
+     3468,
+     3655
+    ],
+    [
+     "half",
+     3668,
+     4218
+    ],
+    [
+     "Meanwhile",
+     4618,
+     5142
+    ],
+    [
+     "the",
+     5155,
+     5242
+    ],
+    [
+     "government",
+     5255,
+     5705
+    ],
+    [
+     "changed",
+     5718,
+     6118
+    ],
+    [
+     "how",
+     6118,
+     6292
+    ],
+    [
+     "it",
+     6292,
+     6405
+    ],
+    [
+     "buys",
+     6405,
+     6705
+    ],
+    [
+     "medicine",
+     6718,
+     7230
+    ],
+    [
+     "three",
+     7392,
+     7755
+    ],
+    [
+     "times",
+     7755,
+     8430
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Dimesa",
+     "startMs": 168,
+     "endMs": 842,
+     "timestampMs": 455,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " fell",
+     "startMs": 842,
+     "endMs": 1318,
+     "timestampMs": 1049,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 97 percent,",
+     "startMs": 1318,
+     "endMs": 2930,
+     "timestampMs": 1986,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " and",
+     "startMs": 2930,
+     "endMs": 3042,
+     "timestampMs": 2986,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo",
+     "startMs": 3042,
+     "endMs": 3468,
+     "timestampMs": 3255,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " by",
+     "startMs": 3468,
+     "endMs": 3668,
+     "timestampMs": 3561,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " half.",
+     "startMs": 3668,
+     "endMs": 4618,
+     "timestampMs": 3942,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Meanwhile,",
+     "startMs": 4618,
+     "endMs": 5155,
+     "timestampMs": 4880,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 5155,
+     "endMs": 5255,
+     "timestampMs": 5199,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " government",
+     "startMs": 5255,
+     "endMs": 5718,
+     "timestampMs": 5480,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " changed",
+     "startMs": 5718,
+     "endMs": 6118,
+     "timestampMs": 5918,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " how",
+     "startMs": 6118,
+     "endMs": 6292,
+     "timestampMs": 6205,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " it",
+     "startMs": 6292,
+     "endMs": 6405,
+     "timestampMs": 6349,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " buys",
+     "startMs": 6405,
+     "endMs": 6718,
+     "timestampMs": 6555,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicine",
+     "startMs": 6718,
+     "endMs": 7392,
+     "timestampMs": 6974,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " three",
+     "startMs": 7392,
+     "endMs": 7755,
+     "timestampMs": 7574,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " times.",
+     "startMs": 7755,
+     "endMs": 8430,
+     "timestampMs": 8092,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "return": {
+   "ms": 11760,
+   "words": [
+    [
+     "PISA",
+     180,
+     518
+    ],
+    [
+     "was",
+     518,
+     668
+    ],
+    [
+     "not",
+     680,
+     1105
+    ],
+    [
+     "named",
+     1105,
+     1555
+    ],
+    [
+     "in",
+     1555,
+     1630
+    ],
+    [
+     "the",
+     1630,
+     1705
+    ],
+    [
+     "2019",
+     1705,
+     2668
+    ],
+    [
+     "order",
+     2668,
+     3030
+    ],
+    [
+     "By",
+     3455,
+     3568
+    ],
+    [
+     "September 2025",
+     3580,
+     4942
+    ],
+    [
+     "it",
+     5380,
+     5442
+    ],
+    [
+     "had",
+     5442,
+     5592
+    ],
+    [
+     "been",
+     5592,
+     5705
+    ],
+    [
+     "awarded",
+     5705,
+     6268
+    ],
+    [
+     "19.5",
+     6380,
+     7642
+    ],
+    [
+     "billion",
+     7655,
+     7980
+    ],
+    [
+     "pesos",
+     7980,
+     8618
+    ],
+    [
+     "nearly",
+     9042,
+     9342
+    ],
+    [
+     "the",
+     9342,
+     9455
+    ],
+    [
+     "best",
+     9468,
+     9842
+    ],
+    [
+     "year",
+     9842,
+     10142
+    ],
+    [
+     "of",
+     10155,
+     10230
+    ],
+    [
+     "Grupo",
+     10230,
+     10505
+    ],
+    [
+     "Fármacos",
+     10505,
+     11380
+    ]
+   ],
+   "captions": [
+    {
+     "text": "PISA",
+     "startMs": 180,
+     "endMs": 518,
+     "timestampMs": 349,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " was",
+     "startMs": 518,
+     "endMs": 680,
+     "timestampMs": 592,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " not",
+     "startMs": 680,
+     "endMs": 1105,
+     "timestampMs": 892,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " named",
+     "startMs": 1105,
+     "endMs": 1555,
+     "timestampMs": 1330,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " in",
+     "startMs": 1555,
+     "endMs": 1630,
+     "timestampMs": 1592,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 1630,
+     "endMs": 1705,
+     "timestampMs": 1668,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2019",
+     "startMs": 1705,
+     "endMs": 2668,
+     "timestampMs": 2186,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " order.",
+     "startMs": 2668,
+     "endMs": 3455,
+     "timestampMs": 2849,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " By",
+     "startMs": 3455,
+     "endMs": 3580,
+     "timestampMs": 3511,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " September 2025,",
+     "startMs": 3580,
+     "endMs": 5380,
+     "timestampMs": 4261,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " it",
+     "startMs": 5380,
+     "endMs": 5442,
+     "timestampMs": 5411,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " had",
+     "startMs": 5442,
+     "endMs": 5592,
+     "timestampMs": 5518,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " been",
+     "startMs": 5592,
+     "endMs": 5705,
+     "timestampMs": 5649,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " awarded",
+     "startMs": 5705,
+     "endMs": 6380,
+     "timestampMs": 5986,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 19.5",
+     "startMs": 6380,
+     "endMs": 7655,
+     "timestampMs": 7011,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " billion",
+     "startMs": 7655,
+     "endMs": 7980,
+     "timestampMs": 7818,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos,",
+     "startMs": 7980,
+     "endMs": 9042,
+     "timestampMs": 8299,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " nearly",
+     "startMs": 9042,
+     "endMs": 9342,
+     "timestampMs": 9192,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 9342,
+     "endMs": 9468,
+     "timestampMs": 9399,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " best",
+     "startMs": 9468,
+     "endMs": 9842,
+     "timestampMs": 9655,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " year",
+     "startMs": 9842,
+     "endMs": 10155,
+     "timestampMs": 9992,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " of",
+     "startMs": 10155,
+     "endMs": 10230,
+     "timestampMs": 10192,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 10230,
+     "endMs": 10505,
+     "timestampMs": 10368,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos.",
+     "startMs": 10505,
+     "endMs": 11380,
+     "timestampMs": 10942,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "end": {
+   "ms": 20616,
+   "words": [
+    [
+     "Few",
+     218,
+     418
+    ],
+    [
+     "companies",
+     430,
+     855
+    ],
+    [
+     "can",
+     855,
+     968
+    ],
+    [
+     "supply",
+     968,
+     1418
+    ],
+    [
+     "what",
+     1430,
+     1592
+    ],
+    [
+     "IMSS",
+     1592,
+     1818
+    ],
+    [
+     "buys",
+     1818,
+     2368
+    ],
+    [
+     "so",
+     2755,
+     2955
+    ],
+    [
+     "none",
+     2968,
+     3280
+    ],
+    [
+     "of",
+     3280,
+     3380
+    ],
+    [
+     "this",
+     3380,
+     3655
+    ],
+    [
+     "alone",
+     3705,
+     4242
+    ],
+    [
+     "points",
+     4530,
+     4842
+    ],
+    [
+     "to",
+     4842,
+     4942
+    ],
+    [
+     "wrongdoing",
+     4942,
+     5692
+    ],
+    [
+     "From 2012 to 2019",
+     6142,
+     8480
+    ],
+    [
+     "Grupo",
+     8742,
+     9168
+    ],
+    [
+     "Fármacos",
+     9180,
+     10018
+    ],
+    [
+     "Maypo",
+     10242,
+     10830
+    ],
+    [
+     "and",
+     10980,
+     11105
+    ],
+    [
+     "Dimesa",
+     11118,
+     11642
+    ],
+    [
+     "took",
+     11880,
+     12092
+    ],
+    [
+     "about",
+     12092,
+     12368
+    ],
+    [
+     "half",
+     12368,
+     12868
+    ],
+    [
+     "of",
+     13030,
+     13118
+    ],
+    [
+     "what",
+     13118,
+     13318
+    ],
+    [
+     "IMSS",
+     13405,
+     13668
+    ],
+    [
+     "contracted",
+     13668,
+     14192
+    ],
+    [
+     "for",
+     14192,
+     14318
+    ],
+    [
+     "medicine",
+     14318,
+     14755
+    ],
+    [
+     "Since 2020",
+     15155,
+     16142
+    ],
+    [
+     "the",
+     16442,
+     16542
+    ],
+    [
+     "four",
+     16542,
+     16842
+    ],
+    [
+     "largest",
+     16842,
+     17305
+    ],
+    [
+     "suppliers",
+     17318,
+     17780
+    ],
+    [
+     "together",
+     17792,
+     18230
+    ],
+    [
+     "have",
+     18442,
+     18580
+    ],
+    [
+     "taken",
+     18592,
+     19055
+    ],
+    [
+     "less",
+     19055,
+     19492
+    ],
+    [
+     "than",
+     19505,
+     19630
+    ],
+    [
+     "a",
+     19630,
+     19668
+    ],
+    [
+     "quarter",
+     19680,
+     20255
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Few",
+     "startMs": 218,
+     "endMs": 430,
+     "timestampMs": 318,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " companies",
+     "startMs": 430,
+     "endMs": 855,
+     "timestampMs": 642,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " can",
+     "startMs": 855,
+     "endMs": 968,
+     "timestampMs": 911,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " supply",
+     "startMs": 968,
+     "endMs": 1430,
+     "timestampMs": 1192,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " what",
+     "startMs": 1430,
+     "endMs": 1592,
+     "timestampMs": 1511,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS",
+     "startMs": 1592,
+     "endMs": 1818,
+     "timestampMs": 1705,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " buys,",
+     "startMs": 1818,
+     "endMs": 2755,
+     "timestampMs": 2092,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " so",
+     "startMs": 2755,
+     "endMs": 2968,
+     "timestampMs": 2855,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " none",
+     "startMs": 2968,
+     "endMs": 3280,
+     "timestampMs": 3124,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " of",
+     "startMs": 3280,
+     "endMs": 3380,
+     "timestampMs": 3330,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " this,",
+     "startMs": 3380,
+     "endMs": 3705,
+     "timestampMs": 3518,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " alone,",
+     "startMs": 3705,
+     "endMs": 4530,
+     "timestampMs": 3974,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " points",
+     "startMs": 4530,
+     "endMs": 4842,
+     "timestampMs": 4686,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " to",
+     "startMs": 4842,
+     "endMs": 4942,
+     "timestampMs": 4892,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " wrongdoing.",
+     "startMs": 4942,
+     "endMs": 6142,
+     "timestampMs": 5318,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " From 2012 to 2019,",
+     "startMs": 6142,
+     "endMs": 8742,
+     "timestampMs": 7311,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 8742,
+     "endMs": 9180,
+     "timestampMs": 8955,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos,",
+     "startMs": 9180,
+     "endMs": 10242,
+     "timestampMs": 9599,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo",
+     "startMs": 10242,
+     "endMs": 10980,
+     "timestampMs": 10536,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " and",
+     "startMs": 10980,
+     "endMs": 11118,
+     "timestampMs": 11042,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa",
+     "startMs": 11118,
+     "endMs": 11880,
+     "timestampMs": 11380,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " took",
+     "startMs": 11880,
+     "endMs": 12092,
+     "timestampMs": 11986,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " about",
+     "startMs": 12092,
+     "endMs": 12368,
+     "timestampMs": 12230,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " half",
+     "startMs": 12368,
+     "endMs": 13030,
+     "timestampMs": 12618,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " of",
+     "startMs": 13030,
+     "endMs": 13118,
+     "timestampMs": 13074,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " what",
+     "startMs": 13118,
+     "endMs": 13405,
+     "timestampMs": 13218,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS",
+     "startMs": 13405,
+     "endMs": 13668,
+     "timestampMs": 13536,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contracted",
+     "startMs": 13668,
+     "endMs": 14192,
+     "timestampMs": 13930,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " for",
+     "startMs": 14192,
+     "endMs": 14318,
+     "timestampMs": 14255,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicine.",
+     "startMs": 14318,
+     "endMs": 15155,
+     "timestampMs": 14536,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Since 2020,",
+     "startMs": 15155,
+     "endMs": 16442,
+     "timestampMs": 15649,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " the",
+     "startMs": 16442,
+     "endMs": 16542,
+     "timestampMs": 16492,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " four",
+     "startMs": 16542,
+     "endMs": 16842,
+     "timestampMs": 16692,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " largest",
+     "startMs": 16842,
+     "endMs": 17318,
+     "timestampMs": 17074,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " suppliers",
+     "startMs": 17318,
+     "endMs": 17792,
+     "timestampMs": 17549,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " together",
+     "startMs": 17792,
+     "endMs": 18442,
+     "timestampMs": 18011,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " have",
+     "startMs": 18442,
+     "endMs": 18592,
+     "timestampMs": 18511,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " taken",
+     "startMs": 18592,
+     "endMs": 19055,
+     "timestampMs": 18824,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " less",
+     "startMs": 19055,
+     "endMs": 19505,
+     "timestampMs": 19274,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " than",
+     "startMs": 19505,
+     "endMs": 19630,
+     "timestampMs": 19568,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 19630,
+     "endMs": 19680,
+     "timestampMs": 19649,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " quarter.",
+     "startMs": 19680,
+     "endMs": 20255,
+     "timestampMs": 19968,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  }
+ },
+ "es": {
+  "peak": {
+   "ms": 9600,
+   "words": [
+    [
+     "En",
+     97,
+     227
+    ],
+    [
+     "2017",
+     239,
+     1170
+    ],
+    [
+     "una",
+     1418,
+     1548
+    ],
+    [
+     "sola",
+     1559,
+     1736
+    ],
+    [
+     "empresa",
+     1748,
+     2055
+    ],
+    [
+     "obtuvo",
+     2066,
+     2397
+    ],
+    [
+     "contratos",
+     2408,
+     2880
+    ],
+    [
+     "federales",
+     2892,
+     3376
+    ],
+    [
+     "de",
+     3387,
+     3458
+    ],
+    [
+     "medicamentos",
+     3470,
+     4118
+    ],
+    [
+     "por",
+     4130,
+     4260
+    ],
+    [
+     "19,900 millones",
+     4272,
+     6029
+    ],
+    [
+     "de",
+     6041,
+     6123
+    ],
+    [
+     "pesos",
+     6135,
+     6630
+    ],
+    [
+     "Grupo",
+     6878,
+     7149
+    ],
+    [
+     "Fármacos",
+     7161,
+     7656
+    ],
+    [
+     "Especializados",
+     7668,
+     8706
+    ]
+   ],
+   "captions": [
+    {
+     "text": "En",
+     "startMs": 97,
+     "endMs": 239,
+     "timestampMs": 162,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2017,",
+     "startMs": 239,
+     "endMs": 1418,
+     "timestampMs": 704,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " una",
+     "startMs": 1418,
+     "endMs": 1559,
+     "timestampMs": 1483,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " sola",
+     "startMs": 1559,
+     "endMs": 1748,
+     "timestampMs": 1648,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " empresa",
+     "startMs": 1748,
+     "endMs": 2066,
+     "timestampMs": 1901,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " obtuvo",
+     "startMs": 2066,
+     "endMs": 2408,
+     "timestampMs": 2232,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contratos",
+     "startMs": 2408,
+     "endMs": 2892,
+     "timestampMs": 2644,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " federales",
+     "startMs": 2892,
+     "endMs": 3387,
+     "timestampMs": 3134,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 3387,
+     "endMs": 3470,
+     "timestampMs": 3423,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicamentos",
+     "startMs": 3470,
+     "endMs": 4130,
+     "timestampMs": 3794,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " por",
+     "startMs": 4130,
+     "endMs": 4272,
+     "timestampMs": 4195,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 19,900 millones",
+     "startMs": 4272,
+     "endMs": 6041,
+     "timestampMs": 5150,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 6041,
+     "endMs": 6135,
+     "timestampMs": 6082,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos:",
+     "startMs": 6135,
+     "endMs": 6878,
+     "timestampMs": 6383,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Grupo",
+     "startMs": 6878,
+     "endMs": 7161,
+     "timestampMs": 7013,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos",
+     "startMs": 7161,
+     "endMs": 7668,
+     "timestampMs": 7408,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Especializados.",
+     "startMs": 7668,
+     "endMs": 8706,
+     "timestampMs": 8187,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "four": {
+   "ms": 13560,
+   "words": [
+    [
+     "Era",
+     97,
+     286
+    ],
+    [
+     "una",
+     298,
+     463
+    ],
+    [
+     "de",
+     475,
+     557
+    ],
+    [
+     "las",
+     569,
+     734
+    ],
+    [
+     "cuatro",
+     746,
+     1017
+    ],
+    [
+     "grandes",
+     1029,
+     1371
+    ],
+    [
+     "proveedoras",
+     1383,
+     1890
+    ],
+    [
+     "del",
+     1901,
+     2019
+    ],
+    [
+     "IMSS",
+     2031,
+     2408
+    ],
+    [
+     "junto",
+     2621,
+     2857
+    ],
+    [
+     "con",
+     2868,
+     2998
+    ],
+    [
+     "Farmacéuticos",
+     3010,
+     3741
+    ],
+    [
+     "Maypo",
+     3753,
+     4095
+    ],
+    [
+     "Laboratorios",
+     4354,
+     5038
+    ],
+    [
+     "PISA",
+     5050,
+     5404
+    ],
+    [
+     "y",
+     5416,
+     5475
+    ],
+    [
+     "la",
+     5486,
+     5581
+    ],
+    [
+     "distribuidora",
+     5592,
+     6288
+    ],
+    [
+     "Dimesa",
+     6300,
+     6807
+    ],
+    [
+     "Desde",
+     7630,
+     7913
+    ],
+    [
+     "2002",
+     7925,
+     8549
+    ],
+    [
+     "las",
+     8844,
+     8986
+    ],
+    [
+     "cuatro",
+     8998,
+     9269
+    ],
+    [
+     "suman",
+     9281,
+     9587
+    ],
+    [
+     "contratos",
+     9599,
+     10130
+    ],
+    [
+     "por",
+     10142,
+     10283
+    ],
+    [
+     "326 mil",
+     10295,
+     11568
+    ],
+    [
+     "millones",
+     11580,
+     12040
+    ],
+    [
+     "de",
+     12052,
+     12134
+    ],
+    [
+     "pesos",
+     12146,
+     12665
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Era",
+     "startMs": 97,
+     "endMs": 298,
+     "timestampMs": 191,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " una",
+     "startMs": 298,
+     "endMs": 475,
+     "timestampMs": 380,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 475,
+     "endMs": 569,
+     "timestampMs": 516,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " las",
+     "startMs": 569,
+     "endMs": 746,
+     "timestampMs": 651,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cuatro",
+     "startMs": 746,
+     "endMs": 1029,
+     "timestampMs": 881,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " grandes",
+     "startMs": 1029,
+     "endMs": 1383,
+     "timestampMs": 1200,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " proveedoras",
+     "startMs": 1383,
+     "endMs": 1901,
+     "timestampMs": 1636,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " del",
+     "startMs": 1901,
+     "endMs": 2031,
+     "timestampMs": 1960,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS,",
+     "startMs": 2031,
+     "endMs": 2621,
+     "timestampMs": 2220,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " junto",
+     "startMs": 2621,
+     "endMs": 2868,
+     "timestampMs": 2739,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " con",
+     "startMs": 2868,
+     "endMs": 3010,
+     "timestampMs": 2933,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Farmacéuticos",
+     "startMs": 3010,
+     "endMs": 3753,
+     "timestampMs": 3375,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo,",
+     "startMs": 3753,
+     "endMs": 4354,
+     "timestampMs": 3924,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Laboratorios",
+     "startMs": 4354,
+     "endMs": 5050,
+     "timestampMs": 4696,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " PISA",
+     "startMs": 5050,
+     "endMs": 5416,
+     "timestampMs": 5227,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " y",
+     "startMs": 5416,
+     "endMs": 5486,
+     "timestampMs": 5445,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 5486,
+     "endMs": 5592,
+     "timestampMs": 5533,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " distribuidora",
+     "startMs": 5592,
+     "endMs": 6300,
+     "timestampMs": 5940,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa.",
+     "startMs": 6300,
+     "endMs": 7630,
+     "timestampMs": 6554,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Desde",
+     "startMs": 7630,
+     "endMs": 7925,
+     "timestampMs": 7771,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2002,",
+     "startMs": 7925,
+     "endMs": 8844,
+     "timestampMs": 8237,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " las",
+     "startMs": 8844,
+     "endMs": 8998,
+     "timestampMs": 8915,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cuatro",
+     "startMs": 8998,
+     "endMs": 9281,
+     "timestampMs": 9133,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " suman",
+     "startMs": 9281,
+     "endMs": 9599,
+     "timestampMs": 9434,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contratos",
+     "startMs": 9599,
+     "endMs": 10142,
+     "timestampMs": 9864,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " por",
+     "startMs": 10142,
+     "endMs": 10295,
+     "timestampMs": 10212,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 326 mil",
+     "startMs": 10295,
+     "endMs": 11580,
+     "timestampMs": 10932,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " millones",
+     "startMs": 11580,
+     "endMs": 12052,
+     "timestampMs": 11810,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 12052,
+     "endMs": 12146,
+     "timestampMs": 12093,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos.",
+     "startMs": 12146,
+     "endMs": 12665,
+     "timestampMs": 12406,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "buyer": {
+   "ms": 4128,
+   "words": [
+    [
+     "Casi",
+     97,
+     357
+    ],
+    [
+     "uno",
+     368,
+     557
+    ],
+    [
+     "de",
+     569,
+     687
+    ],
+    [
+     "cada",
+     699,
+     958
+    ],
+    [
+     "diez",
+     970,
+     1335
+    ],
+    [
+     "pesos",
+     1347,
+     1677
+    ],
+    [
+     "que",
+     1689,
+     1795
+    ],
+    [
+     "contrató",
+     1807,
+     2255
+    ],
+    [
+     "el",
+     2267,
+     2373
+    ],
+    [
+     "Seguro",
+     2385,
+     2762
+    ],
+    [
+     "Social",
+     2774,
+     3234
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Casi",
+     "startMs": 97,
+     "endMs": 368,
+     "timestampMs": 227,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " uno",
+     "startMs": 368,
+     "endMs": 569,
+     "timestampMs": 463,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 569,
+     "endMs": 699,
+     "timestampMs": 628,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cada",
+     "startMs": 699,
+     "endMs": 970,
+     "timestampMs": 828,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " diez",
+     "startMs": 970,
+     "endMs": 1347,
+     "timestampMs": 1153,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos",
+     "startMs": 1347,
+     "endMs": 1689,
+     "timestampMs": 1512,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " que",
+     "startMs": 1689,
+     "endMs": 1807,
+     "timestampMs": 1742,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contrató",
+     "startMs": 1807,
+     "endMs": 2267,
+     "timestampMs": 2031,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 2267,
+     "endMs": 2385,
+     "timestampMs": 2320,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Seguro",
+     "startMs": 2385,
+     "endMs": 2774,
+     "timestampMs": 2574,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Social.",
+     "startMs": 2774,
+     "endMs": 3234,
+     "timestampMs": 3004,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "relay": {
+   "ms": 4344,
+   "words": [
+    [
+     "Desde",
+     97,
+     357
+    ],
+    [
+     "2011",
+     368,
+     1041
+    ],
+    [
+     "Grupo",
+     1359,
+     1618
+    ],
+    [
+     "Fármacos",
+     1630,
+     2149
+    ],
+    [
+     "fue",
+     2161,
+     2326
+    ],
+    [
+     "la",
+     2338,
+     2420
+    ],
+    [
+     "primera",
+     2432,
+     2798
+    ],
+    [
+     "cada",
+     2809,
+     3199
+    ],
+    [
+     "año",
+     3210,
+     3470
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Desde",
+     "startMs": 97,
+     "endMs": 368,
+     "timestampMs": 227,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2011,",
+     "startMs": 368,
+     "endMs": 1359,
+     "timestampMs": 704,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 1359,
+     "endMs": 1630,
+     "timestampMs": 1489,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos",
+     "startMs": 1630,
+     "endMs": 2161,
+     "timestampMs": 1890,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " fue",
+     "startMs": 2161,
+     "endMs": 2338,
+     "timestampMs": 2243,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 2338,
+     "endMs": 2432,
+     "timestampMs": 2379,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " primera",
+     "startMs": 2432,
+     "endMs": 2809,
+     "timestampMs": 2615,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cada",
+     "startMs": 2809,
+     "endMs": 3210,
+     "timestampMs": 3004,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " año.",
+     "startMs": 3210,
+     "endMs": 3470,
+     "timestampMs": 3340,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "order": {
+   "ms": 16800,
+   "words": [
+    [
+     "En",
+     97,
+     215
+    ],
+    [
+     "2019",
+     227,
+     1041
+    ],
+    [
+     "el",
+     1347,
+     1477
+    ],
+    [
+     "nuevo",
+     1489,
+     1689
+    ],
+    [
+     "gobierno",
+     1701,
+     2137
+    ],
+    [
+     "ordenó",
+     2149,
+     2456
+    ],
+    [
+     "dejarla",
+     2467,
+     2892
+    ],
+    [
+     "fuera",
+     2904,
+     3140
+    ],
+    [
+     "de",
+     3151,
+     3234
+    ],
+    [
+     "los",
+     3246,
+     3399
+    ],
+    [
+     "contratos",
+     3411,
+     3883
+    ],
+    [
+     "federales",
+     3894,
+     4472
+    ],
+    [
+     "junto",
+     4767,
+     5015
+    ],
+    [
+     "con",
+     5026,
+     5191
+    ],
+    [
+     "Maypo",
+     5203,
+     5557
+    ],
+    [
+     "y",
+     5569,
+     5628
+    ],
+    [
+     "Dimesa",
+     5640,
+     6111
+    ],
+    [
+     "Un",
+     6934,
+     7075
+    ],
+    [
+     "juez",
+     7087,
+     7300
+    ],
+    [
+     "declaró",
+     7311,
+     7748
+    ],
+    [
+     "ilegal",
+     7759,
+     8208
+    ],
+    [
+     "la",
+     8219,
+     8349
+    ],
+    [
+     "orden",
+     8361,
+     8750
+    ],
+    [
+     "Pero",
+     9564,
+     9705
+    ],
+    [
+     "en",
+     9717,
+     9811
+    ],
+    [
+     "julio",
+     9823,
+     10142
+    ],
+    [
+     "la",
+     10377,
+     10436
+    ],
+    [
+     "Función",
+     10448,
+     10814
+    ],
+    [
+     "Pública",
+     10825,
+     11215
+    ],
+    [
+     "la",
+     11226,
+     11321
+    ],
+    [
+     "inhabilitó",
+     11333,
+     11863
+    ],
+    [
+     "dos",
+     11875,
+     12134
+    ],
+    [
+     "años",
+     12146,
+     12417
+    ],
+    [
+     "por",
+     12429,
+     12571
+    ],
+    [
+     "falsear",
+     12583,
+     12948
+    ],
+    [
+     "el",
+     12960,
+     13054
+    ],
+    [
+     "origen",
+     13066,
+     13443
+    ],
+    [
+     "de",
+     13455,
+     13550
+    ],
+    [
+     "un",
+     13561,
+     13703
+    ],
+    [
+     "medicamento",
+     13715,
+     14375
+    ],
+    [
+     "en",
+     14387,
+     14493
+    ],
+    [
+     "una",
+     14505,
+     14658
+    ],
+    [
+     "licitación",
+     14670,
+     15307
+    ],
+    [
+     "del",
+     15318,
+     15436
+    ],
+    [
+     "IMSS",
+     15448,
+     15932
+    ]
+   ],
+   "captions": [
+    {
+     "text": "En",
+     "startMs": 97,
+     "endMs": 227,
+     "timestampMs": 156,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2019,",
+     "startMs": 227,
+     "endMs": 1347,
+     "timestampMs": 634,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 1347,
+     "endMs": 1489,
+     "timestampMs": 1412,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " nuevo",
+     "startMs": 1489,
+     "endMs": 1701,
+     "timestampMs": 1589,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " gobierno",
+     "startMs": 1701,
+     "endMs": 2149,
+     "timestampMs": 1919,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ordenó",
+     "startMs": 2149,
+     "endMs": 2467,
+     "timestampMs": 2302,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " dejarla",
+     "startMs": 2467,
+     "endMs": 2904,
+     "timestampMs": 2680,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " fuera",
+     "startMs": 2904,
+     "endMs": 3151,
+     "timestampMs": 3022,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 3151,
+     "endMs": 3246,
+     "timestampMs": 3193,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " los",
+     "startMs": 3246,
+     "endMs": 3411,
+     "timestampMs": 3322,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contratos",
+     "startMs": 3411,
+     "endMs": 3894,
+     "timestampMs": 3647,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " federales,",
+     "startMs": 3894,
+     "endMs": 4767,
+     "timestampMs": 4183,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " junto",
+     "startMs": 4767,
+     "endMs": 5026,
+     "timestampMs": 4891,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " con",
+     "startMs": 5026,
+     "endMs": 5203,
+     "timestampMs": 5109,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo",
+     "startMs": 5203,
+     "endMs": 5569,
+     "timestampMs": 5380,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " y",
+     "startMs": 5569,
+     "endMs": 5640,
+     "timestampMs": 5598,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa.",
+     "startMs": 5640,
+     "endMs": 6934,
+     "timestampMs": 5875,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Un",
+     "startMs": 6934,
+     "endMs": 7087,
+     "timestampMs": 7005,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " juez",
+     "startMs": 7087,
+     "endMs": 7311,
+     "timestampMs": 7193,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " declaró",
+     "startMs": 7311,
+     "endMs": 7759,
+     "timestampMs": 7529,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ilegal",
+     "startMs": 7759,
+     "endMs": 8219,
+     "timestampMs": 7983,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 8219,
+     "endMs": 8361,
+     "timestampMs": 8284,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " orden.",
+     "startMs": 8361,
+     "endMs": 9564,
+     "timestampMs": 8555,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Pero",
+     "startMs": 9564,
+     "endMs": 9717,
+     "timestampMs": 9634,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 9717,
+     "endMs": 9823,
+     "timestampMs": 9764,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " julio,",
+     "startMs": 9823,
+     "endMs": 10377,
+     "timestampMs": 9982,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 10377,
+     "endMs": 10448,
+     "timestampMs": 10407,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Función",
+     "startMs": 10448,
+     "endMs": 10825,
+     "timestampMs": 10631,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Pública",
+     "startMs": 10825,
+     "endMs": 11226,
+     "timestampMs": 11020,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 11226,
+     "endMs": 11333,
+     "timestampMs": 11274,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " inhabilitó",
+     "startMs": 11333,
+     "endMs": 11875,
+     "timestampMs": 11598,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " dos",
+     "startMs": 11875,
+     "endMs": 12146,
+     "timestampMs": 12005,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " años",
+     "startMs": 12146,
+     "endMs": 12429,
+     "timestampMs": 12282,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " por",
+     "startMs": 12429,
+     "endMs": 12583,
+     "timestampMs": 12500,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " falsear",
+     "startMs": 12583,
+     "endMs": 12960,
+     "timestampMs": 12765,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 12960,
+     "endMs": 13066,
+     "timestampMs": 13007,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " origen",
+     "startMs": 13066,
+     "endMs": 13455,
+     "timestampMs": 13255,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 13455,
+     "endMs": 13561,
+     "timestampMs": 13502,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " un",
+     "startMs": 13561,
+     "endMs": 13715,
+     "timestampMs": 13632,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicamento",
+     "startMs": 13715,
+     "endMs": 14387,
+     "timestampMs": 14045,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 14387,
+     "endMs": 14505,
+     "timestampMs": 14440,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " una",
+     "startMs": 14505,
+     "endMs": 14670,
+     "timestampMs": 14581,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " licitación",
+     "startMs": 14670,
+     "endMs": 15318,
+     "timestampMs": 14988,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " del",
+     "startMs": 15318,
+     "endMs": 15448,
+     "timestampMs": 15377,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS.",
+     "startMs": 15448,
+     "endMs": 15932,
+     "timestampMs": 15690,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "cliff": {
+   "ms": 9408,
+   "words": [
+    [
+     "Sus",
+     97,
+     274
+    ],
+    [
+     "contratos",
+     286,
+     769
+    ],
+    [
+     "pasaron",
+     781,
+     1158
+    ],
+    [
+     "de",
+     1170,
+     1229
+    ],
+    [
+     "17,600 millones",
+     1241,
+     2975
+    ],
+    [
+     "de",
+     2986,
+     3069
+    ],
+    [
+     "pesos",
+     3081,
+     3411
+    ],
+    [
+     "en",
+     3423,
+     3517
+    ],
+    [
+     "2019 a",
+     3529,
+     4472
+    ],
+    [
+     "medio",
+     4484,
+     4755
+    ],
+    [
+     "millón",
+     4767,
+     5133
+    ],
+    [
+     "en",
+     5144,
+     5250
+    ],
+    [
+     "2020",
+     5262,
+     6041
+    ],
+    [
+     "Después",
+     6851,
+     7441
+    ],
+    [
+     "ninguno",
+     7653,
+     8090
+    ],
+    [
+     "más",
+     8101,
+     8526
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Sus",
+     "startMs": 97,
+     "endMs": 286,
+     "timestampMs": 186,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contratos",
+     "startMs": 286,
+     "endMs": 781,
+     "timestampMs": 528,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pasaron",
+     "startMs": 781,
+     "endMs": 1170,
+     "timestampMs": 970,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 1170,
+     "endMs": 1241,
+     "timestampMs": 1200,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 17,600 millones",
+     "startMs": 1241,
+     "endMs": 2986,
+     "timestampMs": 2108,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 2986,
+     "endMs": 3081,
+     "timestampMs": 3028,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pesos",
+     "startMs": 3081,
+     "endMs": 3423,
+     "timestampMs": 3246,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 3423,
+     "endMs": 3529,
+     "timestampMs": 3470,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2019 a",
+     "startMs": 3529,
+     "endMs": 4484,
+     "timestampMs": 4000,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medio",
+     "startMs": 4484,
+     "endMs": 4767,
+     "timestampMs": 4620,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " millón",
+     "startMs": 4767,
+     "endMs": 5144,
+     "timestampMs": 4950,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 5144,
+     "endMs": 5262,
+     "timestampMs": 5197,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2020.",
+     "startMs": 5262,
+     "endMs": 6851,
+     "timestampMs": 5651,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Después,",
+     "startMs": 6851,
+     "endMs": 7653,
+     "timestampMs": 7146,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ninguno",
+     "startMs": 7653,
+     "endMs": 8101,
+     "timestampMs": 7871,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " más.",
+     "startMs": 8101,
+     "endMs": 8526,
+     "timestampMs": 8314,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "after": {
+   "ms": 9336,
+   "words": [
+    [
+     "Dimesa",
+     97,
+     522
+    ],
+    [
+     "cayó",
+     534,
+     805
+    ],
+    [
+     "97%",
+     816,
+     2114
+    ],
+    [
+     "y",
+     2125,
+     2184
+    ],
+    [
+     "Maypo",
+     2196,
+     2621
+    ],
+    [
+     "a",
+     2845,
+     2939
+    ],
+    [
+     "la",
+     2951,
+     3045
+    ],
+    [
+     "mitad",
+     3057,
+     3458
+    ],
+    [
+     "Entretanto",
+     4281,
+     4906
+    ],
+    [
+     "el",
+     5224,
+     5354
+    ],
+    [
+     "gobierno",
+     5366,
+     5790
+    ],
+    [
+     "cambió",
+     5802,
+     6144
+    ],
+    [
+     "tres",
+     6156,
+     6439
+    ],
+    [
+     "veces",
+     6450,
+     6745
+    ],
+    [
+     "su",
+     6757,
+     6863
+    ],
+    [
+     "forma",
+     6875,
+     7182
+    ],
+    [
+     "de",
+     7193,
+     7300
+    ],
+    [
+     "comprar",
+     7311,
+     7689
+    ],
+    [
+     "medicinas",
+     7700,
+     8443
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Dimesa",
+     "startMs": 97,
+     "endMs": 534,
+     "timestampMs": 309,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cayó",
+     "startMs": 534,
+     "endMs": 816,
+     "timestampMs": 669,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 97%",
+     "startMs": 816,
+     "endMs": 2125,
+     "timestampMs": 1465,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " y",
+     "startMs": 2125,
+     "endMs": 2196,
+     "timestampMs": 2155,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo,",
+     "startMs": 2196,
+     "endMs": 2845,
+     "timestampMs": 2408,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 2845,
+     "endMs": 2951,
+     "timestampMs": 2892,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 2951,
+     "endMs": 3057,
+     "timestampMs": 2998,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " mitad.",
+     "startMs": 3057,
+     "endMs": 4281,
+     "timestampMs": 3258,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Entretanto,",
+     "startMs": 4281,
+     "endMs": 5224,
+     "timestampMs": 4593,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 5224,
+     "endMs": 5366,
+     "timestampMs": 5289,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " gobierno",
+     "startMs": 5366,
+     "endMs": 5802,
+     "timestampMs": 5578,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cambió",
+     "startMs": 5802,
+     "endMs": 6156,
+     "timestampMs": 5973,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " tres",
+     "startMs": 6156,
+     "endMs": 6450,
+     "timestampMs": 6297,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " veces",
+     "startMs": 6450,
+     "endMs": 6757,
+     "timestampMs": 6598,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " su",
+     "startMs": 6757,
+     "endMs": 6875,
+     "timestampMs": 6810,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " forma",
+     "startMs": 6875,
+     "endMs": 7193,
+     "timestampMs": 7028,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 7193,
+     "endMs": 7311,
+     "timestampMs": 7246,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " comprar",
+     "startMs": 7311,
+     "endMs": 7700,
+     "timestampMs": 7500,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicinas.",
+     "startMs": 7700,
+     "endMs": 8443,
+     "timestampMs": 8072,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "return": {
+   "ms": 11688,
+   "words": [
+    [
+     "PISA",
+     97,
+     368
+    ],
+    [
+     "no",
+     380,
+     486
+    ],
+    [
+     "figuraba",
+     498,
+     1005
+    ],
+    [
+     "en",
+     1017,
+     1076
+    ],
+    [
+     "la",
+     1088,
+     1229
+    ],
+    [
+     "orden",
+     1241,
+     1559
+    ],
+    [
+     "de",
+     1571,
+     1642
+    ],
+    [
+     "2019",
+     1654,
+     2668
+    ],
+    [
+     "Para",
+     3479,
+     3620
+    ],
+    [
+     "septiembre de 2025",
+     3632,
+     5248
+    ],
+    [
+     "ya",
+     5531,
+     5649
+    ],
+    [
+     "sumaba",
+     5660,
+     6014
+    ],
+    [
+     "contratos",
+     6026,
+     6521
+    ],
+    [
+     "por",
+     6533,
+     6674
+    ],
+    [
+     "19,500 millones",
+     6686,
+     8502
+    ],
+    [
+     "casi",
+     8750,
+     9009
+    ],
+    [
+     "el",
+     9021,
+     9127
+    ],
+    [
+     "mejor",
+     9139,
+     9434
+    ],
+    [
+     "año",
+     9446,
+     9646
+    ],
+    [
+     "de",
+     9658,
+     9764
+    ],
+    [
+     "Grupo",
+     9776,
+     10083
+    ],
+    [
+     "Fármacos",
+     10094,
+     10814
+    ]
+   ],
+   "captions": [
+    {
+     "text": "PISA",
+     "startMs": 97,
+     "endMs": 380,
+     "timestampMs": 233,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " no",
+     "startMs": 380,
+     "endMs": 498,
+     "timestampMs": 433,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " figuraba",
+     "startMs": 498,
+     "endMs": 1017,
+     "timestampMs": 752,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 1017,
+     "endMs": 1088,
+     "timestampMs": 1046,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 1088,
+     "endMs": 1241,
+     "timestampMs": 1158,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " orden",
+     "startMs": 1241,
+     "endMs": 1571,
+     "timestampMs": 1400,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 1571,
+     "endMs": 1654,
+     "timestampMs": 1607,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2019.",
+     "startMs": 1654,
+     "endMs": 3479,
+     "timestampMs": 2161,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Para",
+     "startMs": 3479,
+     "endMs": 3632,
+     "timestampMs": 3550,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " septiembre de 2025,",
+     "startMs": 3632,
+     "endMs": 5531,
+     "timestampMs": 4440,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ya",
+     "startMs": 5531,
+     "endMs": 5660,
+     "timestampMs": 5590,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " sumaba",
+     "startMs": 5660,
+     "endMs": 6026,
+     "timestampMs": 5837,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contratos",
+     "startMs": 6026,
+     "endMs": 6533,
+     "timestampMs": 6274,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " por",
+     "startMs": 6533,
+     "endMs": 6686,
+     "timestampMs": 6604,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 19,500 millones:",
+     "startMs": 6686,
+     "endMs": 8750,
+     "timestampMs": 7594,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " casi",
+     "startMs": 8750,
+     "endMs": 9021,
+     "timestampMs": 8880,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 9021,
+     "endMs": 9139,
+     "timestampMs": 9074,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " mejor",
+     "startMs": 9139,
+     "endMs": 9446,
+     "timestampMs": 9287,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " año",
+     "startMs": 9446,
+     "endMs": 9658,
+     "timestampMs": 9546,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 9658,
+     "endMs": 9776,
+     "timestampMs": 9711,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 9776,
+     "endMs": 10094,
+     "timestampMs": 9929,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos.",
+     "startMs": 10094,
+     "endMs": 10814,
+     "timestampMs": 10454,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  },
+  "end": {
+   "ms": 21048,
+   "words": [
+    [
+     "Pocas",
+     97,
+     357
+    ],
+    [
+     "empresas",
+     368,
+     793
+    ],
+    [
+     "pueden",
+     805,
+     1052
+    ],
+    [
+     "surtir",
+     1064,
+     1418
+    ],
+    [
+     "lo",
+     1430,
+     1500
+    ],
+    [
+     "que",
+     1512,
+     1618
+    ],
+    [
+     "compra",
+     1630,
+     1937
+    ],
+    [
+     "el",
+     1949,
+     2031
+    ],
+    [
+     "IMSS",
+     2043,
+     2479
+    ],
+    [
+     "nada",
+     2750,
+     3057
+    ],
+    [
+     "de",
+     3069,
+     3269
+    ],
+    [
+     "esto",
+     3281,
+     3517
+    ],
+    [
+     "por",
+     3729,
+     3883
+    ],
+    [
+     "sí",
+     3894,
+     4000
+    ],
+    [
+     "solo",
+     4012,
+     4354
+    ],
+    [
+     "indica",
+     4625,
+     5050
+    ],
+    [
+     "una",
+     5062,
+     5262
+    ],
+    [
+     "irregularidad",
+     5274,
+     5993
+    ],
+    [
+     "De",
+     6816,
+     6934
+    ],
+    [
+     "2012 a 2019",
+     6946,
+     8667
+    ],
+    [
+     "Grupo",
+     8915,
+     9163
+    ],
+    [
+     "Fármacos",
+     9175,
+     9752
+    ],
+    [
+     "Maypo",
+     10012,
+     10318
+    ],
+    [
+     "y",
+     10330,
+     10377
+    ],
+    [
+     "Dimesa",
+     10389,
+     10778
+    ],
+    [
+     "se",
+     10790,
+     10884
+    ],
+    [
+     "llevaron",
+     10896,
+     11238
+    ],
+    [
+     "cerca",
+     11250,
+     11557
+    ],
+    [
+     "de",
+     11568,
+     11651
+    ],
+    [
+     "la",
+     11663,
+     11745
+    ],
+    [
+     "mitad",
+     11757,
+     12064
+    ],
+    [
+     "de",
+     12075,
+     12146
+    ],
+    [
+     "lo",
+     12158,
+     12252
+    ],
+    [
+     "que",
+     12264,
+     12441
+    ],
+    [
+     "el",
+     12453,
+     12547
+    ],
+    [
+     "IMSS",
+     12559,
+     12936
+    ],
+    [
+     "contrató",
+     12948,
+     13420
+    ],
+    [
+     "en",
+     13432,
+     13514
+    ],
+    [
+     "medicamentos",
+     13526,
+     14387
+    ],
+    [
+     "Desde",
+     15212,
+     15483
+    ],
+    [
+     "2020",
+     15495,
+     16167
+    ],
+    [
+     "las",
+     16486,
+     16616
+    ],
+    [
+     "cuatro",
+     16627,
+     16887
+    ],
+    [
+     "mayores",
+     16899,
+     17276
+    ],
+    [
+     "proveedoras",
+     17288,
+     17807
+    ],
+    [
+     "juntas",
+     17818,
+     18243
+    ],
+    [
+     "no",
+     18255,
+     18467
+    ],
+    [
+     "han",
+     18479,
+     18608
+    ],
+    [
+     "llegado",
+     18620,
+     19009
+    ],
+    [
+     "ni",
+     19021,
+     19198
+    ],
+    [
+     "a",
+     19210,
+     19257
+    ],
+    [
+     "la",
+     19269,
+     19375
+    ],
+    [
+     "cuarta",
+     19387,
+     19741
+    ],
+    [
+     "parte",
+     19752,
+     20165
+    ]
+   ],
+   "captions": [
+    {
+     "text": "Pocas",
+     "startMs": 97,
+     "endMs": 368,
+     "timestampMs": 227,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " empresas",
+     "startMs": 368,
+     "endMs": 805,
+     "timestampMs": 581,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " pueden",
+     "startMs": 805,
+     "endMs": 1064,
+     "timestampMs": 929,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " surtir",
+     "startMs": 1064,
+     "endMs": 1430,
+     "timestampMs": 1241,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " lo",
+     "startMs": 1430,
+     "endMs": 1512,
+     "timestampMs": 1465,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " que",
+     "startMs": 1512,
+     "endMs": 1630,
+     "timestampMs": 1565,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " compra",
+     "startMs": 1630,
+     "endMs": 1949,
+     "timestampMs": 1783,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 1949,
+     "endMs": 2043,
+     "timestampMs": 1990,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS;",
+     "startMs": 2043,
+     "endMs": 2750,
+     "timestampMs": 2261,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " nada",
+     "startMs": 2750,
+     "endMs": 3069,
+     "timestampMs": 2904,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 3069,
+     "endMs": 3281,
+     "timestampMs": 3169,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " esto,",
+     "startMs": 3281,
+     "endMs": 3729,
+     "timestampMs": 3399,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " por",
+     "startMs": 3729,
+     "endMs": 3894,
+     "timestampMs": 3806,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " sí",
+     "startMs": 3894,
+     "endMs": 4012,
+     "timestampMs": 3947,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " solo,",
+     "startMs": 4012,
+     "endMs": 4625,
+     "timestampMs": 4183,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " indica",
+     "startMs": 4625,
+     "endMs": 5062,
+     "timestampMs": 4838,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " una",
+     "startMs": 5062,
+     "endMs": 5274,
+     "timestampMs": 5162,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " irregularidad.",
+     "startMs": 5274,
+     "endMs": 6816,
+     "timestampMs": 5634,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " De",
+     "startMs": 6816,
+     "endMs": 6946,
+     "timestampMs": 6875,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2012 a 2019,",
+     "startMs": 6946,
+     "endMs": 8915,
+     "timestampMs": 7807,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Grupo",
+     "startMs": 8915,
+     "endMs": 9175,
+     "timestampMs": 9039,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Fármacos,",
+     "startMs": 9175,
+     "endMs": 10012,
+     "timestampMs": 9463,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Maypo",
+     "startMs": 10012,
+     "endMs": 10330,
+     "timestampMs": 10165,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " y",
+     "startMs": 10330,
+     "endMs": 10389,
+     "timestampMs": 10354,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " Dimesa",
+     "startMs": 10389,
+     "endMs": 10790,
+     "timestampMs": 10584,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " se",
+     "startMs": 10790,
+     "endMs": 10896,
+     "timestampMs": 10837,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " llevaron",
+     "startMs": 10896,
+     "endMs": 11250,
+     "timestampMs": 11067,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cerca",
+     "startMs": 11250,
+     "endMs": 11568,
+     "timestampMs": 11403,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 11568,
+     "endMs": 11663,
+     "timestampMs": 11610,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 11663,
+     "endMs": 11757,
+     "timestampMs": 11704,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " mitad",
+     "startMs": 11757,
+     "endMs": 12075,
+     "timestampMs": 11910,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " de",
+     "startMs": 12075,
+     "endMs": 12158,
+     "timestampMs": 12111,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " lo",
+     "startMs": 12158,
+     "endMs": 12264,
+     "timestampMs": 12205,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " que",
+     "startMs": 12264,
+     "endMs": 12453,
+     "timestampMs": 12353,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " el",
+     "startMs": 12453,
+     "endMs": 12559,
+     "timestampMs": 12500,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " IMSS",
+     "startMs": 12559,
+     "endMs": 12948,
+     "timestampMs": 12748,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " contrató",
+     "startMs": 12948,
+     "endMs": 13432,
+     "timestampMs": 13184,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " en",
+     "startMs": 13432,
+     "endMs": 13526,
+     "timestampMs": 13473,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " medicamentos.",
+     "startMs": 13526,
+     "endMs": 15212,
+     "timestampMs": 13956,
+     "confidence": null,
+     "pageBreakAfter": true
+    },
+    {
+     "text": " Desde",
+     "startMs": 15212,
+     "endMs": 15495,
+     "timestampMs": 15348,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " 2020,",
+     "startMs": 15495,
+     "endMs": 16486,
+     "timestampMs": 15831,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " las",
+     "startMs": 16486,
+     "endMs": 16627,
+     "timestampMs": 16551,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cuatro",
+     "startMs": 16627,
+     "endMs": 16899,
+     "timestampMs": 16757,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " mayores",
+     "startMs": 16899,
+     "endMs": 17288,
+     "timestampMs": 17087,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " proveedoras",
+     "startMs": 17288,
+     "endMs": 17818,
+     "timestampMs": 17547,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " juntas",
+     "startMs": 17818,
+     "endMs": 18255,
+     "timestampMs": 18031,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " no",
+     "startMs": 18255,
+     "endMs": 18479,
+     "timestampMs": 18361,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " han",
+     "startMs": 18479,
+     "endMs": 18620,
+     "timestampMs": 18544,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " llegado",
+     "startMs": 18620,
+     "endMs": 19021,
+     "timestampMs": 18815,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " ni",
+     "startMs": 19021,
+     "endMs": 19210,
+     "timestampMs": 19110,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " a",
+     "startMs": 19210,
+     "endMs": 19269,
+     "timestampMs": 19233,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " la",
+     "startMs": 19269,
+     "endMs": 19387,
+     "timestampMs": 19322,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " cuarta",
+     "startMs": 19387,
+     "endMs": 19752,
+     "timestampMs": 19564,
+     "confidence": null,
+     "pageBreakAfter": false
+    },
+    {
+     "text": " parte.",
+     "startMs": 19752,
+     "endMs": 20165,
+     "timestampMs": 19959,
+     "confidence": null,
+     "pageBreakAfter": true
+    }
+   ]
+  }
+ },
+ "engine": {
+  "en": "azure:en-US-AndrewMultilingualNeural + <lang es-MX> names, IMSS=lang",
+  "es": "edge:es-MX-DaliaNeural"
+ }
+}

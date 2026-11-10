@@ -1,0 +1,3586 @@
+{
+ "el-registro": {
+  "title": [
+   "Intro",
+   "Intro"
+  ],
+  "subtitle": [
+   "Twenty-three years of federal spending, read at last.",
+   "Veintitrés años de gasto federal, leídos por fin."
+  ],
+  "kicker": [
+   "Start here",
+   "Empieza aquí"
+  ],
+  "beats": [
+   {
+    "id": "ledger",
+    "mode": "field",
+    "tag": [
+     "THE RECORD",
+     "EL REGISTRO"
+    ],
+    "cap": [
+     "9.9 trillion pesos. Three million federal contracts, over twenty-three years. All of it public. Almost none of it ever read.",
+     "9.9 billones de pesos. Tres millones de contratos federales, en veintitrés años. Todo público. Casi nada leído."
+    ],
+    "slot": "hero",
+    "stat": {
+     "format": "text",
+     "label": [
+      "MXN · 3,057,143 federal contracts · 2002–2025",
+      "de pesos · 3,057,143 contratos federales · 2002–2025"
+     ],
+     "text": "9.9T",
+     "textEs": "9.9 billones",
+     "mxn": 9900000000000
+    },
+    "durationMs": 10500,
+    "cues": {
+     "en": [
+      0.0053,
+      0.2657,
+      0.6882,
+      0.8131
+     ],
+     "es": [
+      0.0094,
+      0.2782,
+      0.6448,
+      0.8082
+     ]
+    },
+    "clip": {
+     "en": 9408,
+     "es": 10680
+    }
+   },
+   {
+    "id": "machine",
+    "mode": "modelnet",
+    "tag": [
+     "THE METHOD",
+     "EL MÉTODO"
+    ],
+    "cap": [
+     "So we built a reader. One model, eighteen signals, scoring every contract by how closely it resembles corruption already documented. It does not accuse. It ranks.",
+     "Así que construimos un lector. Un modelo, dieciocho señales, que califica cada contrato según cuánto se parece a la corrupción ya documentada. No acusa. Ordena."
+    ],
+    "slot": "rail-right",
+    "stat": {
+     "format": "text",
+     "label": [
+      "signals · 1,417 labelled cases · AUC 0.656 out of sample",
+      "señales · 1,417 casos etiquetados · AUC 0.656 fuera de muestra"
+     ],
+     "text": "18"
+    },
+    "durationMs": 12500,
+    "cues": {
+     "en": [
+      0.0043,
+      0.118,
+      0.7796,
+      0.9009
+     ],
+     "es": [
+      0.008,
+      0.1979,
+      0.7489,
+      0.8786
+     ]
+    },
+    "clip": {
+     "en": 11544,
+     "es": 12456
+    }
+   },
+   {
+    "id": "distribution",
+    "mode": "strata",
+    "tag": [
+     "ONE IN NINE",
+     "UNO DE CADA NUEVE"
+    ],
+    "cap": [
+     "Most of the record looks routine. One contract in nine does not.",
+     "La mayor parte del registro parece rutinaria. Uno de cada nueve contratos, no."
+    ],
+    "slot": "rail-left",
+    "stat": {
+     "format": "pct",
+     "label": [
+      "high-risk · a risk indicator, not a verdict",
+      "de alto riesgo · indicador de riesgo, no un veredicto"
+     ],
+     "target": 11.1,
+     "countMs": 1400
+    },
+    "durationMs": 5900,
+    "cues": {
+     "en": [
+      0.0114,
+      0.5094
+     ],
+     "es": [
+      0.0158,
+      0.5323
+     ]
+    },
+    "clip": {
+     "en": 4368,
+     "es": 6336
+    }
+   },
+   {
+    "id": "directaward",
+    "mode": "split",
+    "tag": [
+     "NO COMPETITION",
+     "SIN COMPETENCIA"
+    ],
+    "cap": [
+     "At the peak, more than four in five contracts were handed out directly. No tender. No rival bid.",
+     "En el punto más alto, más de cuatro de cada cinco contratos se adjudicaron de forma directa. Sin licitación. Sin oferta rival."
+    ],
+    "slot": "rail-right",
+    "stat": {
+     "format": "pct",
+     "label": [
+      "awarded directly at the 2023 peak · 75% since 2011",
+      "adjudicación directa en el máximo de 2023 · 75% desde 2011"
+     ],
+     "target": 82,
+     "countMs": 1600
+    },
+    "frac": 0.82,
+    "durationMs": 8700,
+    "cues": {
+     "en": [
+      0.0072,
+      0.6658,
+      0.8126
+     ],
+     "es": [
+      0.0106,
+      0.5951,
+      0.7814
+     ]
+    },
+    "clip": {
+     "en": 6984,
+     "es": 9432
+    }
+   },
+   {
+    "id": "ghosts",
+    "mode": "ghosts",
+    "tag": [
+     "GHOST VENDORS",
+     "PROVEEDORES FANTASMA"
+    ],
+    "cap": [
+     "Almost six thousand vendors fit the pattern of a ghost company: the shape of a firm, and none of the substance. Together, they billed almost 34 billion pesos.",
+     "Casi seis mil proveedores encajan en el patrón de una empresa fantasma: la forma de una compañía, y nada de su sustancia. Juntos, facturaron casi 34 mil millones de pesos."
+    ],
+    "slot": "rail-right",
+    "stat": {
+     "format": "int",
+     "label": [
+      "ghost-pattern vendors · 33.7B MXN billed · a risk pattern, not a verdict",
+      "proveedores patrón fantasma · 33,700 MDP facturados · un patrón de riesgo, no un veredicto"
+     ],
+     "target": 5869,
+     "countMs": 1600
+    },
+    "renderer": "objects",
+    "durationMs": 11900,
+    "cues": {
+     "en": [
+      0.0046,
+      0.3596,
+      0.6259
+     ],
+     "es": [
+      0.0084,
+      0.3688,
+      0.6191
+     ]
+    },
+    "clip": {
+     "en": 10944,
+     "es": 11904
+    }
+   },
+   {
+    "id": "scale",
+    "mode": "mass",
+    "tag": [
+     "THE SCALE",
+     "LA ESCALA"
+    ],
+    "cap": [
+     "The vendors named in documented corruption cases hold close to a trillion pesos in contracts. That is contract value, not a fraud estimate.",
+     "Los proveedores nombrados en casos de corrupción documentados suman cerca de un billón de pesos en contratos. Es valor contratado, no una estimación de fraude."
+    ],
+    "slot": "rail-left",
+    "stat": {
+     "format": "currencyT",
+     "label": [
+      "contract value · vendors in 387 sourced cases · not a fraud estimate",
+      "valor contratado · proveedores en 387 casos con fuente · no es un monto de fraude"
+     ],
+     "target": 0.98,
+     "red": true,
+     "mxn": 976323154595
+    },
+    "durationMs": 10200,
+    "cues": {
+     "en": [
+      0.0052,
+      0.6806
+     ],
+     "es": [
+      0.0103,
+      0.6357
+     ]
+    },
+    "clip": {
+     "en": 9624,
+     "es": 9720
+    }
+   },
+   {
+    "id": "blackout",
+    "mode": "dissolve",
+    "tag": [
+     "THE BLACKOUT",
+     "EL APAGÓN"
+    ],
+    "cap": [
+     "Then, in 2025, the open data stopped. On September 28, the federal feed moved for the last time.",
+     "Entonces, en 2025, los datos abiertos se detuvieron. El 28 de septiembre, el flujo federal se movió por última vez."
+    ],
+    "slot": "hero",
+    "stat": {
+     "format": "text",
+     "label": [
+      "the last update of the federal file",
+      "la última actualización del archivo federal"
+     ],
+     "text": "28 · SEP · 2025",
+     "red": true
+    },
+    "mono": true,
+    "hush": true,
+    "durationMs": 8900,
+    "cues": {
+     "en": [
+      0.0068,
+      0.4068
+     ],
+     "es": [
+      0.0106,
+      0.5051
+     ]
+    },
+    "clip": {
+     "en": 7344,
+     "es": 9408
+    }
+   },
+   {
+    "id": "recovered",
+    "mode": "reassemble",
+    "tag": [
+     "RECOVERED",
+     "RECUPERADO"
+    ],
+    "cap": [
+     "The buying continued. Its winners and prices now sit inside scanned award letters. We read more than 76,000 of them, page by page.",
+     "Las compras siguieron. Sus ganadores y montos quedaron dentro de actas escaneadas. Leímos más de 76,000, página por página."
+    ],
+    "slot": "rail-left",
+    "stat": {
+     "format": "int",
+     "label": [
+      "award letters read · 98,290 procedures since the freeze",
+      "actas leídas · 98,290 procedimientos desde el congelamiento"
+     ],
+     "target": 76774
+    },
+    "durationMs": 10500,
+    "cues": {
+     "en": [
+      0.005,
+      0.1461,
+      0.597
+     ],
+     "es": [
+      0.01,
+      0.2008,
+      0.6036
+     ]
+    },
+    "clip": {
+     "en": 10008,
+     "es": 9984
+    }
+   },
+   {
+    "id": "rubli",
+    "mode": "halo",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The model is open. The data is open. The record now belongs to anyone who wants to read it. This is RUBLI.",
+     "El modelo es abierto. Los datos son abiertos. El registro ahora es de cualquiera que quiera leerlo. Esto es RUBLI."
+    ],
+    "slot": "hero",
+    "stat": {
+     "format": "text",
+     "label": [
+      "open-source procurement intelligence",
+      "análisis abierto de las compras públicas"
+     ],
+     "text": "RUBLI"
+    },
+    "verdict": [
+     "The record stays open.",
+     "El registro queda abierto."
+    ],
+    "durationMs": 9100,
+    "cues": {
+     "en": [
+      0.0066,
+      0.172,
+      0.4051,
+      0.8416
+     ],
+     "es": [
+      0.0105,
+      0.2247,
+      0.4654,
+      0.816
+     ]
+    },
+    "clip": {
+     "en": 7560,
+     "es": 9552
+    }
+   }
+  ]
+ },
+ "como-compra-mexico": {
+  "title": [
+   "How Mexico Buys",
+   "Cómo compra México"
+  ],
+  "subtitle": [
+   "2002–2025. Five governments, three million contracts, and one line that only climbs.",
+   "2002–2025. Cinco gobiernos, tres millones de contratos, y una línea que solo sube."
+  ],
+  "kicker": [
+   "The feature · 2002–2025",
+   "La película · 2002–2025"
+  ],
+  "story": "el-sexenio-del-riesgo",
+  "beats": [
+   {
+    "id": "open",
+    "mode": "scene",
+    "scene": "open",
+    "tag": [
+     "THE LEDGER",
+     "EL LIBRO"
+    ],
+    "cap": [
+     "This is every federal contract Mexico has put on the public record since 2002. Three million of them. 9.9 trillion pesos. Five governments. Watch how the way of buying changes.",
+     "Este es cada contrato federal que México ha puesto en el registro público desde 2002. Tres millones. 9.9 billones de pesos. Cinco gobiernos. Miren cómo cambia la forma de comprar."
+    ],
+    "durationMs": 14700,
+    "cues": {
+     "en": [
+      0.0038,
+      0.453,
+      0.5576,
+      0.7375,
+      0.8363
+     ],
+     "es": [
+      0.0066,
+      0.3677,
+      0.4867,
+      0.6807,
+      0.8114
+     ]
+    },
+    "clip": {
+     "en": 13272,
+     "es": 15072
+    }
+   },
+   {
+    "id": "fox",
+    "mode": "scene",
+    "scene": "fox",
+    "tag": [
+     "FOX · 2002–2006",
+     "FOX · 2002–2006"
+    ],
+    "cap": [
+     "Under Fox, the record is thin. About fifty thousand contracts a year. A tax ID on one contract in a thousand. The files do not even say how each contract was awarded.",
+     "Con Fox, el registro es delgado. Unos cincuenta mil contratos al año. Un registro fiscal en uno de cada mil contratos. Los archivos ni siquiera dicen cómo se adjudicó cada contrato."
+    ],
+    "durationMs": 12800,
+    "cues": {
+     "en": [
+      0.0044,
+      0.2021,
+      0.4098,
+      0.7096
+     ],
+     "es": [
+      0.0075,
+      0.2289,
+      0.4341,
+      0.6992
+     ]
+    },
+    "clip": {
+     "en": 11256,
+     "es": 13392
+    }
+   },
+   {
+    "id": "calderon",
+    "mode": "scene",
+    "scene": "calderon",
+    "tag": [
+     "CALDERÓN · 2006–2012",
+     "CALDERÓN · 2006–2012"
+    ],
+    "cap": [
+     "Under Calderón, CompraNet becomes mandatory. The recorded contracts triple in a year. And from 2011, the files finally say how each one was awarded. The first full reading: 71% handed out with no contest.",
+     "Con Calderón, CompraNet se vuelve obligatorio. Los contratos registrados se triplican en un año. Y desde 2011, los archivos por fin dicen cómo se adjudicó cada uno. La primera lectura completa: 71% entregado sin concurso."
+    ],
+    "durationMs": 16800,
+    "cues": {
+     "en": [
+      0.0032,
+      0.2212,
+      0.3829,
+      0.6849,
+      0.8224
+     ],
+     "es": [
+      0.0059,
+      0.2068,
+      0.4002,
+      0.6981,
+      0.8545
+     ]
+    },
+    "clip": {
+     "en": 15768,
+     "es": 16824
+    }
+   },
+   {
+    "id": "boom",
+    "mode": "scene",
+    "scene": "boom",
+    "tag": [
+     "PEÑA NIETO · 2012–2018",
+     "PEÑA NIETO · 2012–2018"
+    ],
+    "cap": [
+     "Under Peña Nieto, the volume peaks. 1.2 million contracts. Three trillion pesos. A third of it in infrastructure.",
+     "Con Peña Nieto, el volumen llega a su máximo. 1.2 millones de contratos. Tres billones de pesos. Un tercio, en infraestructura."
+    ],
+    "durationMs": 10600,
+    "cues": {
+     "en": [
+      0.0056,
+      0.3136,
+      0.5628,
+      0.7784
+     ],
+     "es": [
+      0.0089,
+      0.3178,
+      0.5635,
+      0.7611
+     ]
+    },
+    "clip": {
+     "en": 8928,
+     "es": 11280
+    }
+   },
+   {
+    "id": "paper",
+    "mode": "scene",
+    "scene": "paper",
+    "tag": [
+     "COMPETITION, ON PAPER",
+     "COMPETENCIA, EN EL PAPEL"
+    ],
+    "cap": [
+     "These are also the years of La Estafa Maestra, which federal auditors and reporters traced through eleven agencies.",
+     "Son también los años de La Estafa Maestra, que auditores federales y periodistas rastrearon en once dependencias."
+    ],
+    "durationMs": 7400,
+    "cues": {
+     "en": [
+      0.007
+     ],
+     "es": [
+      0.0148
+     ]
+    },
+    "clip": {
+     "en": 7128,
+     "es": 6744
+    }
+   },
+   {
+    "id": "reorg",
+    "mode": "scene",
+    "scene": "reorg",
+    "tag": [
+     "LÓPEZ OBRADOR · 2018–2024",
+     "LÓPEZ OBRADOR · 2018–2024"
+    ],
+    "cap": [
+     "López Obrador reorganizes the books. Civilian infrastructure falls 45%. Energy contracting falls 85. Defense triples.",
+     "López Obrador reorganiza el gasto. La infraestructura civil cae 45%. La contratación en energía cae 85. Defensa se triplica."
+    ],
+    "durationMs": 12300,
+    "cues": {
+     "en": [
+      0.0043,
+      0.2691,
+      0.6008,
+      0.8709
+     ],
+     "es": [
+      0.0083,
+      0.2408,
+      0.5381,
+      0.8238
+     ]
+    },
+    "clip": {
+     "en": 11568,
+     "es": 12096
+    }
+   },
+   {
+    "id": "army",
+    "mode": "scene",
+    "scene": "army",
+    "tag": [
+     "THE ARMY",
+     "EL EJÉRCITO"
+    ],
+    "cap": [
+     "The army takes on airports, a railway, customs. Its share of federal contracting more than doubles, from 2.2% to 5.4.",
+     "El ejército asume aeropuertos, un tren, las aduanas. Su participación en la contratación federal crece a más del doble, de 2.2% a 5.4."
+    ],
+    "durationMs": 10800,
+    "cues": {
+     "en": [
+      0.0051,
+      0.3688
+     ],
+     "es": [
+      0.0092,
+      0.3835
+     ]
+    },
+    "clip": {
+     "en": 9864,
+     "es": 10824
+    }
+   },
+   {
+    "id": "medicine",
+    "mode": "scene",
+    "scene": "medicine",
+    "tag": [
+     "MEDICINE",
+     "MEDICINAS"
+    ],
+    "cap": [
+     "Medicine buying is centralized. The old leading distributor falls to zero. Health becomes the largest line in the book. 1.19 trillion pesos.",
+     "La compra de medicinas se centraliza. La vieja distribuidora líder cae a cero. Salud se vuelve la partida más grande del registro. 1.19 billones de pesos."
+    ],
+    "durationMs": 12300,
+    "cues": {
+     "en": [
+      0.0045,
+      0.2149,
+      0.4972,
+      0.7548
+     ],
+     "es": [
+      0.008,
+      0.2287,
+      0.4885,
+      0.7484
+     ]
+    },
+    "clip": {
+     "en": 11112,
+     "es": 12480
+    }
+   },
+   {
+    "id": "covid",
+    "mode": "scene",
+    "scene": "covid",
+    "tag": [
+     "MARCH 30, 2020",
+     "30 DE MARZO DE 2020"
+    ],
+    "cap": [
+     "Then the pandemic. An emergency decree suspends the bidding rules. Fewer contracts are signed. Far more money moves. Up 45% in a year.",
+     "Luego, la pandemia. Un decreto de emergencia suspende las reglas de licitación. Se firman menos contratos. Se mueve mucho más dinero. 45% más en un año."
+    ],
+    "durationMs": 12400,
+    "cues": {
+     "en": [
+      0.0049,
+      0.1234,
+      0.4591,
+      0.6245,
+      0.7751
+     ],
+     "es": [
+      0.0073,
+      0.1623,
+      0.4344,
+      0.6166,
+      0.7858
+     ]
+    },
+    "clip": {
+     "en": 10128,
+     "es": 13656
+    }
+   },
+   {
+    "id": "line",
+    "mode": "scene",
+    "scene": "line",
+    "tag": [
+     "THE LINE",
+     "LA LÍNEA"
+    ],
+    "cap": [
+     "And through every one of these governments, one line climbs. The share of contracts awarded with no competition. 71% in 2011. 77 in 2017. 82 in 2023.",
+     "Y a través de todos estos gobiernos, una línea sube. La proporción de contratos adjudicados sin competencia. 71% en 2011. 77 en 2017. 82 en 2023."
+    ],
+    "durationMs": 15900,
+    "cues": {
+     "en": [
+      0.0034,
+      0.2676,
+      0.4683,
+      0.6572,
+      0.8486
+     ],
+     "es": [
+      0.0062,
+      0.2405,
+      0.4627,
+      0.6414,
+      0.8238
+     ]
+    },
+    "clip": {
+     "en": 14760,
+     "es": 16032
+    }
+   },
+   {
+    "id": "value",
+    "mode": "scene",
+    "scene": "value",
+    "tag": [
+     "COUNT AND MONEY",
+     "CONTRATOS Y DINERO"
+    ],
+    "cap": [
+     "Measured by count, the climb was steepest under Peña Nieto. Nine points in six years. Measured by money, it was steepest under López Obrador. From about 28 of every 100 pesos to about 39.",
+     "Medida por número de contratos, la subida fue mayor con Peña Nieto. Nueve puntos en seis años. Medida en dinero, fue mayor con López Obrador. De unos 28 de cada 100 pesos a unos 39."
+    ],
+    "durationMs": 15000,
+    "cues": {
+     "en": [
+      0.0035,
+      0.2786,
+      0.4149,
+      0.6745
+     ],
+     "es": [
+      0.0069,
+      0.3211,
+      0.4914,
+      0.7289
+     ]
+    },
+    "clip": {
+     "en": 14400,
+     "es": 14544
+    }
+   },
+   {
+    "id": "sheinbaum",
+    "mode": "scene",
+    "scene": "sheinbaum",
+    "tag": [
+     "SHEINBAUM · 2024–",
+     "SHEINBAUM · 2024–"
+    ],
+    "cap": [
+     "Sheinbaum takes office in October 2024. In April 2025, a new procurement law replaces CompraNet.",
+     "Sheinbaum asume en octubre de 2024. En abril de 2025, una nueva ley de adquisiciones sustituye a CompraNet."
+    ],
+    "durationMs": 9100,
+    "cues": {
+     "en": [
+      0.006,
+      0.4287
+     ],
+     "es": [
+      0.0112,
+      0.4
+     ]
+    },
+    "clip": {
+     "en": 8280,
+     "es": 8904
+    }
+   },
+   {
+    "id": "blank",
+    "mode": "scene",
+    "scene": "blank",
+    "tag": [
+     "SEPTEMBER 28, 2025",
+     "28 DE SEPTIEMBRE DE 2025"
+    ],
+    "cap": [
+     "On September 28, the federal file stops. The buying goes on. But who won, and for how much, moves into scanned letters.",
+     "El 28 de septiembre, el archivo federal se detiene. Las compras siguen. Pero quién ganó, y por cuánto, se muda a actas escaneadas."
+    ],
+    "hush": true,
+    "durationMs": 10100,
+    "cues": {
+     "en": [
+      0.0056,
+      0.3792,
+      0.5292
+     ],
+     "es": [
+      0.0098,
+      0.3864,
+      0.5686
+     ]
+    },
+    "clip": {
+     "en": 9000,
+     "es": 10224
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "Five governments. Three parties. The names changed. The way of buying barely did. The other films show what that looks like up close.",
+     "Cinco gobiernos. Tres partidos. Los nombres cambiaron. La forma de comprar, casi nada. Las otras películas muestran cómo se ve eso de cerca."
+    ],
+    "durationMs": 11100,
+    "cues": {
+     "en": [
+      0.0057,
+      0.1498,
+      0.3039,
+      0.4623,
+      0.6664
+     ],
+     "es": [
+      0.008,
+      0.1616,
+      0.3118,
+      0.4762,
+      0.7077
+     ]
+    },
+    "clip": {
+     "en": 8760,
+     "es": 12480
+    }
+   }
+  ]
+ },
+ "la-maquina": {
+  "title": [
+   "How Far the Machine Sees",
+   "Hasta dónde ve la máquina"
+  ],
+  "subtitle": [
+   "Four machines read the record for us. Here is what each one can, and cannot, do.",
+   "Cuatro máquinas leen el registro por nosotros. Esto es lo que cada una puede, y no puede, hacer."
+  ],
+  "kicker": [
+   "Our method",
+   "Nuestro método"
+  ],
+  "beats": [
+   {
+    "id": "pile",
+    "mode": "scene",
+    "scene": "pile",
+    "tag": [
+     "THE PILE",
+     "LA PILA"
+    ],
+    "cap": [
+     "Three million contracts. Nobody can read them all. So we built machines to read them for us. Four of them.",
+     "Tres millones de contratos. Nadie puede leerlos todos. Así que construimos máquinas que los leen por nosotros. Cuatro."
+    ],
+    "durationMs": 8900,
+    "cues": {
+     "en": [
+      0.0072,
+      0.2703,
+      0.4725,
+      0.8537
+     ],
+     "es": [
+      0.0102,
+      0.2421,
+      0.4974,
+      0.8623
+     ]
+    },
+    "clip": {
+     "en": 6984,
+     "es": 9792
+    }
+   },
+   {
+    "id": "names",
+    "mode": "scene",
+    "scene": "names",
+    "tag": [
+     "MACHINE ONE · NAMES",
+     "MÁQUINA UNO · NOMBRES"
+    ],
+    "cap": [
+     "The first learns names. The same company turns up under dozens of spellings. Matching on tax IDs, the firms we can identify with confidence went from 44,000 to almost 100,000.",
+     "La primera aprende nombres. La misma empresa aparece escrita de decenas de maneras. Cruzando RFC, las empresas que podemos identificar con certeza pasaron de 44 mil a casi 100 mil."
+    ],
+    "durationMs": 13200,
+    "cues": {
+     "en": [
+      0.004,
+      0.1315,
+      0.3734
+     ],
+     "es": [
+      0.0077,
+      0.1872,
+      0.4713
+     ]
+    },
+    "clip": {
+     "en": 12552,
+     "es": 12912
+    }
+   },
+   {
+    "id": "fuzzy",
+    "mode": "scene",
+    "scene": "fuzzy",
+    "tag": [
+     "THE SHORTCUT",
+     "EL ATAJO"
+    ],
+    "cap": [
+     "The obvious shortcut, joining names that look alike, was usually wrong. Right somewhere between 19 and 43 times in a hundred. Two firms one letter apart are usually two firms.",
+     "El atajo obvio, unir nombres que se parecen, casi siempre fallaba. Acertaba entre 19 y 43 veces de cada cien. Dos empresas que difieren en una letra suelen ser dos empresas."
+    ],
+    "durationMs": 12900,
+    "cues": {
+     "en": [
+      0.0043,
+      0.368,
+      0.6898
+     ],
+     "es": [
+      0.0076,
+      0.3678,
+      0.6829
+     ]
+    },
+    "clip": {
+     "en": 11616,
+     "es": 13176
+    }
+   },
+   {
+    "id": "sort",
+    "mode": "scene",
+    "scene": "sort",
+    "tag": [
+     "MACHINE TWO · CATEGORIES",
+     "MÁQUINA DOS · CATEGORÍAS"
+    ],
+    "cap": [
+     "The second sorts. It reads each contract's description and files it into one of 72 categories. Together they cover 99.7% of the record.",
+     "La segunda clasifica. Lee la descripción de cada contrato y la archiva en una de 72 categorías. Juntas cubren 99.7% del registro."
+    ],
+    "durationMs": 12100,
+    "cues": {
+     "en": [
+      0.0043,
+      0.1233,
+      0.6378
+     ],
+     "es": [
+      0.0087,
+      0.1916,
+      0.6335
+     ]
+    },
+    "clip": {
+     "en": 11760,
+     "es": 11448
+    }
+   },
+   {
+    "id": "scan",
+    "mode": "scene",
+    "scene": "scan",
+    "tag": [
+     "MACHINE THREE · SCANS",
+     "MÁQUINA TRES · ESCANEOS"
+    ],
+    "cap": [
+     "The third reads pictures. Since the federal file froze, prices sit inside scanned letters. It has read 76,774 of them, and recovered 52,537 prices.",
+     "La tercera lee imágenes. Desde que se congeló el archivo federal, los montos están dentro de actas escaneadas. Ha leído 76,774, y recuperado 52,537 montos."
+    ],
+    "durationMs": 15800,
+    "cues": {
+     "en": [
+      0.0032,
+      0.1131,
+      0.4372
+     ],
+     "es": [
+      0.0067,
+      0.164,
+      0.5254
+     ]
+    },
+    "clip": {
+     "en": 15696,
+     "es": 14880
+    }
+   },
+   {
+    "id": "judge",
+    "mode": "scene",
+    "scene": "judge",
+    "tag": [
+     "MACHINE FOUR · RESEMBLANCE",
+     "MÁQUINA CUATRO · PARECIDO"
+    ],
+    "cap": [
+     "The fourth is the one people ask about. It looks at eighteen signals in each contract and asks one question. How much does this resemble contracts tied to documented cases?",
+     "La cuarta es por la que todos preguntan. Mira dieciocho señales en cada contrato y hace una sola pregunta. ¿Cuánto se parece a contratos ligados a casos documentados?"
+    ],
+    "durationMs": 11700,
+    "cues": {
+     "en": [
+      0.0044,
+      0.1946,
+      0.5861
+     ],
+     "es": [
+      0.009,
+      0.2686,
+      0.6529
+     ]
+    },
+    "clip": {
+     "en": 11304,
+     "es": 11064
+    }
+   },
+   {
+    "id": "teach",
+    "mode": "scene",
+    "scene": "teach",
+    "tag": [
+     "WHAT IT LEARNED FROM",
+     "DE QUÉ APRENDIÓ"
+    ],
+    "cap": [
+     "It learned from 1,417 labelled cases. Only 387 of them come from the press or official records. Most were leads the model itself had raised, written up by analysts.",
+     "Aprendió de 1,417 casos etiquetados. Solo 387 vienen de la prensa o de registros oficiales. La mayoría eran pistas que el propio modelo había levantado, documentadas por analistas."
+    ],
+    "durationMs": 14300,
+    "cues": {
+     "en": [
+      0.0038,
+      0.3047,
+      0.6722
+     ],
+     "es": [
+      0.0069,
+      0.2811,
+      0.6071
+     ]
+    },
+    "clip": {
+     "en": 13128,
+     "es": 14472
+    }
+   },
+   {
+    "id": "test",
+    "mode": "scene",
+    "scene": "test",
+    "tag": [
+     "THE BLIND TEST",
+     "LA PRUEBA A CIEGAS"
+    ],
+    "cap": [
+     "So we tested it the hard way. We hid whole companies from it, and asked it to rank them blind. It put the right one higher about two times in three.",
+     "Así que la probamos por las malas. Le escondimos empresas completas y le pedimos ordenarlas a ciegas. Puso arriba a la correcta unas dos de cada tres veces."
+    ],
+    "durationMs": 10400,
+    "cues": {
+     "en": [
+      0.0055,
+      0.1939,
+      0.6497
+     ],
+     "es": [
+      0.0092,
+      0.2457,
+      0.637
+     ]
+    },
+    "clip": {
+     "en": 9024,
+     "es": 10848
+    }
+   },
+   {
+    "id": "size",
+    "mode": "scene",
+    "scene": "size",
+    "tag": [
+     "THE HUMBLING PART",
+     "LA PARTE QUE HUMILLA"
+    ],
+    "cap": [
+     "Then the humbling part. Ranking the same companies by size alone did about as well. Slightly better, in fact.",
+     "Luego, la parte que humilla. Ordenar las mismas empresas solo por su tamaño funcionó casi igual. De hecho, un poco mejor."
+    ],
+    "durationMs": 9000,
+    "cues": {
+     "en": [
+      0.0067,
+      0.1792,
+      0.7067
+     ],
+     "es": [
+      0.0104,
+      0.2769,
+      0.7266
+     ]
+    },
+    "clip": {
+     "en": 7464,
+     "es": 9624
+    }
+   },
+   {
+    "id": "flaw",
+    "mode": "scene",
+    "scene": "flaw",
+    "tag": [
+     "A KNOWN FLAW",
+     "UNA FALLA CONOCIDA"
+    ],
+    "cap": [
+     "And one of its eighteen signals rests on a grouping of related firms that we now know is wrong about four times in five.",
+     "Y una de sus dieciocho señales depende de una agrupación de empresas relacionadas que ahora sabemos que falla cerca de cuatro de cada cinco veces."
+    ],
+    "durationMs": 8600,
+    "cues": {
+     "en": [
+      0.0062
+     ],
+     "es": [
+      0.0121
+     ]
+    },
+    "clip": {
+     "en": 8064,
+     "es": 8232
+    }
+   },
+   {
+    "id": "use",
+    "mode": "scene",
+    "scene": "use",
+    "tag": [
+     "WHAT IT IS FOR",
+     "PARA QUÉ SIRVE"
+    ],
+    "cap": [
+     "So here is what it is for. Deciding what to read first, inside one sector and one year. Never deciding what a company did.",
+     "Así que para esto sirve. Para decidir qué leer primero, dentro de un sector y un año. Nunca para decidir qué hizo una empresa."
+    ],
+    "durationMs": 9100,
+    "cues": {
+     "en": [
+      0.0063,
+      0.1957,
+      0.756
+     ],
+     "es": [
+      0.0108,
+      0.2412,
+      0.678
+     ]
+    },
+    "clip": {
+     "en": 7920,
+     "es": 9288
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The machines read. People decide.",
+     "Las máquinas leen. Las personas deciden."
+    ],
+    "durationMs": 3800,
+    "cues": {
+     "en": [
+      0.0195,
+      0.5208
+     ],
+     "es": [
+      0.0245,
+      0.4885
+     ]
+    },
+    "clip": {
+     "en": 2568,
+     "es": 4080
+    }
+   }
+  ]
+ },
+ "la-estafa-maestra": {
+  "title": [
+   "The Master Scam",
+   "La Estafa Maestra"
+  ],
+  "subtitle": [
+   "How 7.67 billion pesos walked out through a university door.",
+   "Cómo 7,670 millones de pesos salieron por la puerta de una universidad."
+  ],
+  "kicker": [
+   "Microcosm · the heist",
+   "Microcosmos · el atraco"
+  ],
+  "story": "la-industria-del-intermediario",
+  "beats": [
+   {
+    "id": "need",
+    "mode": "scene",
+    "scene": "need",
+    "tag": [
+     "THE CONTRACT",
+     "EL CONTRATO"
+    ],
+    "cap": [
+     "In 2013, a federal ministry in Mexico needed a service. It did not put the job out to tender. It did not hire a company. It hired a university.",
+     "En 2013, una secretaría federal en México necesitaba un servicio. No lo sacó a licitación. No contrató a una empresa. Contrató a una universidad."
+    ],
+    "durationMs": 11700,
+    "cues": {
+     "en": [
+      0.0049,
+      0.4881,
+      0.6872,
+      0.8511
+     ],
+     "es": [
+      0.0083,
+      0.41,
+      0.5983,
+      0.7885
+     ]
+    },
+    "clip": {
+     "en": 10296,
+     "es": 12024
+    }
+   },
+   {
+    "id": "loophole",
+    "mode": "scene",
+    "scene": "loophole",
+    "tag": [
+     "THE LOOPHOLE",
+     "EL RESQUICIO"
+    ],
+    "cap": [
+     "That was legal. The procurement law exempted contracts with public universities from competitive bidding. A trusted public institution. No contest required.",
+     "Eso era legal. La ley de adquisiciones exentaba de licitación los contratos con universidades públicas. Una institución pública de confianza. Sin concurso."
+    ],
+    "durationMs": 11500,
+    "cues": {
+     "en": [
+      0.0049,
+      0.1138,
+      0.6235,
+      0.8276
+     ],
+     "es": [
+      0.0084,
+      0.1611,
+      0.613,
+      0.8463
+     ]
+    },
+    "clip": {
+     "en": 10104,
+     "es": 11928
+    }
+   },
+   {
+    "id": "pass",
+    "mode": "scene",
+    "scene": "pass",
+    "tag": [
+     "THE PASS",
+     "EL PASE"
+    ],
+    "cap": [
+     "But the university did not do the work. It passed the contract on. To companies with no staff. No offices. No history.",
+     "Pero la universidad no hizo el trabajo. Pasó el contrato a otros. A empresas sin personal. Sin oficinas. Sin historia."
+    ],
+    "durationMs": 10300,
+    "cues": {
+     "en": [
+      0.0058,
+      0.3012,
+      0.4917,
+      0.7158,
+      0.8656
+     ],
+     "es": [
+      0.0091,
+      0.2644,
+      0.4828,
+      0.6755,
+      0.8446
+     ]
+    },
+    "clip": {
+     "en": 8592,
+     "es": 11016
+    }
+   },
+   {
+    "id": "shells",
+    "mode": "scene",
+    "scene": "shells",
+    "tag": [
+     "186",
+     "186"
+    ],
+    "cap": [
+     "186 of them. Paper companies, built to receive money and pass it on. Their tax IDs matched nothing in the federal registry.",
+     "186 en total. Empresas de papel, hechas para recibir dinero y pasarlo. Sus registros fiscales no coincidían con nada en el padrón federal."
+    ],
+    "durationMs": 10800,
+    "cues": {
+     "en": [
+      0.0051,
+      0.1655,
+      0.5683
+     ],
+     "es": [
+      0.0093,
+      0.2282,
+      0.5907
+     ]
+    },
+    "clip": {
+     "en": 9744,
+     "es": 10800
+    }
+   },
+   {
+    "id": "scale",
+    "mode": "scene",
+    "scene": "scale",
+    "tag": [
+     "ELEVEN AGENCIES",
+     "ONCE DEPENDENCIAS"
+    ],
+    "cap": [
+     "And it was not one ministry. It was eleven federal agencies. Two years. 7.67 billion pesos.",
+     "Y no fue una sola secretaría. Fueron once dependencias federales. Dos años. 7,670 millones de pesos."
+    ],
+    "durationMs": 9900,
+    "cues": {
+     "en": [
+      0.0061,
+      0.201,
+      0.4797,
+      0.6153
+     ],
+     "es": [
+      0.0094,
+      0.2418,
+      0.508,
+      0.6711
+     ]
+    },
+    "clip": {
+     "en": 8208,
+     "es": 10632
+    }
+   },
+   {
+    "id": "loop",
+    "mode": "scene",
+    "scene": "loop",
+    "tag": [
+     "THE RETURN",
+     "EL REGRESO"
+    ],
+    "cap": [
+     "At the end of the chain, the money came back. To officials inside the same agencies that had sent it.",
+     "Al final de la cadena, el dinero regresó. A funcionarios dentro de las mismas dependencias que lo habían enviado."
+    ],
+    "durationMs": 7500,
+    "cues": {
+     "en": [
+      0.0074,
+      0.4185
+     ],
+     "es": [
+      0.0136,
+      0.4385
+     ]
+    },
+    "clip": {
+     "en": 6720,
+     "es": 7368
+    }
+   },
+   {
+    "id": "press",
+    "mode": "scene",
+    "scene": "press",
+    "tag": [
+     "2017",
+     "2017"
+    ],
+    "cap": [
+     "In 2017, reporters at Animal Político and the anticorruption group MCCI laid the whole thing out. They gave it a name. La Estafa Maestra. The Master Scam.",
+     "En 2017, periodistas de Animal Político y de Mexicanos Contra la Corrupción lo documentaron todo. Le pusieron nombre. La Estafa Maestra."
+    ],
+    "durationMs": 11500,
+    "cues": {
+     "en": [
+      0.0042,
+      0.6524,
+      0.7489,
+      0.8751
+     ],
+     "es": [
+      0.0097,
+      0.613,
+      0.7933
+     ]
+    },
+    "clip": {
+     "en": 11784,
+     "es": 10272
+    }
+   },
+   {
+    "id": "court",
+    "mode": "scene",
+    "scene": "court",
+    "tag": [
+     "THE CASE",
+     "EL CASO"
+    ],
+    "cap": [
+     "The minister at the centre of it was arrested in 2019. In 2024, the Supreme Court let her acquittal stand. A first conviction in the case was overturned. A second came in December 2025, eight years after the story ran.",
+     "La secretaria en el centro del caso fue detenida en 2019. En 2024, la Suprema Corte dejó firme su absolución. Una primera condena en el caso fue revocada. La segunda llegó en diciembre de 2025, ocho años después del reportaje."
+    ],
+    "durationMs": 17000,
+    "cues": {
+     "en": [
+      0.0032,
+      0.2343,
+      0.4944,
+      0.6878
+     ],
+     "es": [
+      0.0058,
+      0.2559,
+      0.5111,
+      0.6914
+     ]
+    },
+    "clip": {
+     "en": 15576,
+     "es": 17328
+    }
+   },
+   {
+    "id": "half",
+    "mode": "scene",
+    "scene": "half",
+    "tag": [
+     "WHAT THE RECORD SEES",
+     "LO QUE VE EL REGISTRO"
+    ],
+    "cap": [
+     "Here is why it was so hard to prove. The public record shows the first contract. Agency to university. The second half, university to shell company, is published nowhere.",
+     "Por eso fue tan difícil de probar. El registro público muestra el primer contrato. De la dependencia a la universidad. La segunda mitad, de la universidad a la empresa fachada, no se publica en ningún lado."
+    ],
+    "durationMs": 13900,
+    "cues": {
+     "en": [
+      0.004,
+      0.1858,
+      0.4467,
+      0.6137
+     ],
+     "es": [
+      0.0071,
+      0.1832,
+      0.4072,
+      0.5996
+     ]
+    },
+    "clip": {
+     "en": 12648,
+     "es": 14160
+    }
+   },
+   {
+    "id": "pattern",
+    "mode": "scene",
+    "scene": "pattern",
+    "tag": [
+     "THE SHAPE",
+     "LA FORMA"
+    ],
+    "cap": [
+     "So we taught a model the shape. Arrive. Win big. Disappear. Today it finds 2,975 vendors that fit. Together they hold 572 billion pesos.",
+     "Así que le enseñamos la forma a un modelo. Llegar. Ganar en grande. Desaparecer. Hoy encuentra 2,975 proveedores que encajan. Juntos acumulan 572 mil millones de pesos."
+    ],
+    "durationMs": 15300,
+    "cues": {
+     "en": [
+      0.0038,
+      0.1307,
+      0.1956,
+      0.2623,
+      0.3367,
+      0.6735
+     ],
+     "es": [
+      0.0061,
+      0.19,
+      0.2735,
+      0.3828,
+      0.4878,
+      0.7485
+     ]
+    },
+    "clip": {
+     "en": 13104,
+     "es": 16512
+    }
+   },
+   {
+    "id": "caveat",
+    "mode": "scene",
+    "scene": "caveat",
+    "tag": [
+     "NOT ALL OF THEM",
+     "NO TODOS"
+    ],
+    "cap": [
+     "Not all of them are scams. A builder who wins one megaproject leaves the same trace. Only a human reviewer can tell them apart. 2,678 have never been opened.",
+     "No todos son fraudes. Un constructor que gana un megaproyecto deja la misma huella. Solo un revisor humano puede distinguirlos. 2,678 nunca han sido abiertos."
+    ],
+    "durationMs": 13100,
+    "cues": {
+     "en": [
+      0.0042,
+      0.1421,
+      0.4816,
+      0.6937
+     ],
+     "es": [
+      0.0075,
+      0.1703,
+      0.4605,
+      0.7004
+     ]
+    },
+    "clip": {
+     "en": 11784,
+     "es": 13368
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The scam had a name. The pattern does not need one.",
+     "La estafa tenía nombre. El patrón no lo necesita."
+    ],
+    "durationMs": 4400,
+    "cues": {
+     "en": [
+      0.0157,
+      0.4229
+     ],
+     "es": [
+      0.0216,
+      0.4812
+     ]
+    },
+    "clip": {
+     "en": 3192,
+     "es": 4632
+    }
+   }
+  ]
+ },
+ "el-vacio": {
+  "title": [
+   "The Blurred Record",
+   "El registro borroso"
+  ],
+  "subtitle": [
+   "Mexico still lists what it buys. The answers moved into scanned letters.",
+   "México todavía publica lo que compra. Las respuestas se mudaron a actas escaneadas."
+  ],
+  "kicker": [
+   "Microcosm · the record",
+   "Microcosmos · el registro"
+  ],
+  "story": "el-vacio",
+  "beats": [
+   {
+    "id": "file",
+    "mode": "scene",
+    "scene": "file",
+    "tag": [
+     "THE FILE",
+     "EL ARCHIVO"
+    ],
+    "cap": [
+     "Since 2002, Mexico published what it bought as data. One file anyone could download, where every row said who won, and for how much.",
+     "Desde 2002, México publicó lo que compraba como datos. Un archivo que cualquiera podía descargar, donde cada fila decía quién ganó, y por cuánto."
+    ],
+    "durationMs": 10600,
+    "cues": {
+     "en": [
+      0.005,
+      0.4194
+     ],
+     "es": [
+      0.0098,
+      0.4324
+     ]
+    },
+    "clip": {
+     "en": 9984,
+     "es": 10200
+    }
+   },
+   {
+    "id": "eras",
+    "mode": "scene",
+    "scene": "eras",
+    "tag": [
+     "BETTER WITH TIME",
+     "MEJOR CON EL TIEMPO"
+    ],
+    "cap": [
+     "The file got better with time. At first, a supplier's tax ID appeared on one contract in a thousand. By 2023, on almost half.",
+     "El archivo mejoró con el tiempo. Al principio, el RFC del proveedor aparecía en uno de cada mil contratos. Para 2023, en casi la mitad."
+    ],
+    "durationMs": 11000,
+    "cues": {
+     "en": [
+      0.0052,
+      0.1818,
+      0.7065
+     ],
+     "es": [
+      0.0088,
+      0.2253,
+      0.7125
+     ]
+    },
+    "clip": {
+     "en": 9696,
+     "es": 11304
+    }
+   },
+   {
+    "id": "thin",
+    "mode": "scene",
+    "scene": "thin",
+    "tag": [
+     "THINNER",
+     "MÁS DELGADO"
+    ],
+    "cap": [
+     "It also got thinner before it stopped. In its last twelve months, the file held about 31% fewer contracts than in the twelve before.",
+     "También adelgazó antes de detenerse. En sus últimos doce meses, el archivo tuvo cerca de 31% menos contratos que en los doce anteriores."
+    ],
+    "durationMs": 9800,
+    "cues": {
+     "en": [
+      0.0057,
+      0.2597
+     ],
+     "es": [
+      0.0101,
+      0.2826
+     ]
+    },
+    "clip": {
+     "en": 8808,
+     "es": 9888
+    }
+   },
+   {
+    "id": "law",
+    "mode": "scene",
+    "scene": "law",
+    "tag": [
+     "THE LAST UPDATE",
+     "LA ÚLTIMA ACTUALIZACIÓN"
+    ],
+    "cap": [
+     "In April 2025, a new procurement law replaced CompraNet. On September 28, the old file updated for the last time.",
+     "En abril de 2025, una nueva ley de adquisiciones sustituyó a CompraNet. El 28 de septiembre, el archivo se actualizó por última vez."
+    ],
+    "hush": true,
+    "durationMs": 9800,
+    "cues": {
+     "en": [
+      0.0057,
+      0.5438
+     ],
+     "es": [
+      0.0102,
+      0.543
+     ]
+    },
+    "clip": {
+     "en": 8712,
+     "es": 9816
+    }
+   },
+   {
+    "id": "still",
+    "mode": "scene",
+    "scene": "still",
+    "tag": [
+     "STILL LISTED",
+     "TODAVÍA PUBLICADO"
+    ],
+    "cap": [
+     "The buying did not stop, and neither did the listings. The new portal still shows every procedure. 98,290 of them in its first year.",
+     "Las compras no se detuvieron, y tampoco los avisos. El nuevo portal todavía muestra cada procedimiento. 98,290 en su primer año."
+    ],
+    "durationMs": 11100,
+    "cues": {
+     "en": [
+      0.0049,
+      0.31,
+      0.625
+     ],
+     "es": [
+      0.009,
+      0.3485,
+      0.6736
+     ]
+    },
+    "clip": {
+     "en": 10200,
+     "es": 11064
+    }
+   },
+   {
+    "id": "fields",
+    "mode": "scene",
+    "scene": "fields",
+    "tag": [
+     "WHERE THE ANSWERS WENT",
+     "DÓNDE QUEDARON LAS RESPUESTAS"
+    ],
+    "cap": [
+     "What changed is where the answers live. The winner and the amount are no longer fields. They sit inside scanned award letters, as pictures of text.",
+     "Lo que cambió es dónde están las respuestas. El ganador y el monto ya no son campos. Están dentro de actas de fallo escaneadas, como imágenes de texto."
+    ],
+    "durationMs": 10400,
+    "cues": {
+     "en": [
+      0.0054,
+      0.2482,
+      0.5493
+     ],
+     "es": [
+      0.0094,
+      0.2851,
+      0.5668
+     ]
+    },
+    "clip": {
+     "en": 9216,
+     "es": 10632
+    }
+   },
+   {
+    "id": "read",
+    "mode": "scene",
+    "scene": "read",
+    "tag": [
+     "READ BACK",
+     "LEÍDAS DE VUELTA"
+    ],
+    "cap": [
+     "So we read them. 76,774 award letters, page by page, by machine.",
+     "Así que las leímos. 76,774 actas de fallo, página por página, por computadora."
+    ],
+    "durationMs": 8400,
+    "cues": {
+     "en": [
+      0.0066,
+      0.1559
+     ],
+     "es": [
+      0.012,
+      0.2513
+     ]
+    },
+    "clip": {
+     "en": 7536,
+     "es": 8352
+    }
+   },
+   {
+    "id": "found",
+    "mode": "scene",
+    "scene": "found",
+    "tag": [
+     "WHAT CAME BACK",
+     "LO QUE SALIÓ"
+    ],
+    "cap": [
+     "From them came a price for 52,537 procedures. 356 billion pesos. For 38,974 more, there was no amount anywhere.",
+     "De ellas salió un monto para 52,537 procedimientos. 356 mil millones de pesos. Para otros 38,974, no había monto en ningún lado."
+    ],
+    "durationMs": 14300,
+    "cues": {
+     "en": [
+      0.0036,
+      0.387,
+      0.6019
+     ],
+     "es": [
+      0.0072,
+      0.3677,
+      0.6125
+     ]
+    },
+    "clip": {
+     "en": 13728,
+     "es": 13824
+    }
+   },
+   {
+    "id": "blur",
+    "mode": "scene",
+    "scene": "blur",
+    "tag": [
+     "READ WITH CARE",
+     "LÉASE CON CUIDADO"
+    ],
+    "cap": [
+     "Read that total with care. It covers direct awards only. A machine reading scans makes mistakes, and four procedures alone account for 74 billion of it. Each needs checking against its letter.",
+     "Ese total debe leerse con cuidado. Solo cubre adjudicaciones directas. Una máquina que lee escaneos se equivoca, y cuatro procedimientos suman por sí solos 74 mil millones. Cada uno debe cotejarse con su acta."
+    ],
+    "durationMs": 14400,
+    "cues": {
+     "en": [
+      0.004,
+      0.1317,
+      0.302,
+      0.8317
+     ],
+     "es": [
+      0.0066,
+      0.1863,
+      0.371,
+      0.8057
+     ]
+    },
+    "clip": {
+     "en": 12624,
+     "es": 15192
+    }
+   },
+   {
+    "id": "direct",
+    "mode": "scene",
+    "scene": "direct",
+    "tag": [
+     "NOT YET COMPARABLE",
+     "AÚN NO COMPARABLE"
+    ],
+    "cap": [
+     "Of the procedures we could read, 78% were direct awards. Whether that is more or less than before, we cannot yet say. The old file counted contracts. The portal counts procedures.",
+     "De los procedimientos que pudimos leer, 78% fueron adjudicaciones directas. Si eso es más o menos que antes, aún no podemos decirlo. El archivo viejo contaba contratos. El portal cuenta procedimientos."
+    ],
+    "durationMs": 14500,
+    "cues": {
+     "en": [
+      0.004,
+      0.3568,
+      0.6631,
+      0.8391
+     ],
+     "es": [
+      0.0065,
+      0.3751,
+      0.6354,
+      0.8241
+     ]
+    },
+    "clip": {
+     "en": 12648,
+     "es": 15312
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The record did not go dark. It went blurry. Reading it back is slower, and less certain. But it can still be read.",
+     "El registro no se apagó. Se volvió borroso. Volver a leerlo es más lento, y menos seguro. Pero todavía se puede leer."
+    ],
+    "durationMs": 9400,
+    "cues": {
+     "en": [
+      0.0067,
+      0.2832,
+      0.4332,
+      0.8242
+     ],
+     "es": [
+      0.0097,
+      0.2256,
+      0.4135,
+      0.7617
+     ]
+    },
+    "clip": {
+     "en": 7416,
+     "es": 10296
+    }
+   }
+  ]
+ },
+ "el-ejercito-fantasma": {
+  "title": [
+   "370 Million and Gone",
+   "370 millones y desapareció"
+  ],
+  "subtitle": [
+   "One person won two federal contracts and vanished. The shape repeats 5,869 times.",
+   "Una persona ganó dos contratos federales y desapareció. La forma se repite 5,869 veces."
+  ],
+  "kicker": [
+   "Microcosm · the ghost",
+   "Microcosmos · el fantasma"
+  ],
+  "story": "el-ejercito-fantasma",
+  "beats": [
+   {
+    "id": "line",
+    "mode": "scene",
+    "scene": "line",
+    "tag": [
+     "ONE LINE",
+     "UNA LÍNEA"
+    ],
+    "cap": [
+     "Three million contracts. Scroll far enough, and you reach one line that does not look like the others.",
+     "Tres millones de contratos. Si bajas lo suficiente, llegas a una línea que no se parece a las demás."
+    ],
+    "durationMs": 7600,
+    "cues": {
+     "en": [
+      0.0072,
+      0.2703
+     ],
+     "es": [
+      0.0139,
+      0.3292
+     ]
+    },
+    "clip": {
+     "en": 6936,
+     "es": 7200
+    }
+   },
+   {
+    "id": "person",
+    "mode": "scene",
+    "scene": "person",
+    "tag": [
+     "NOT A COMPANY",
+     "NO UNA EMPRESA"
+    ],
+    "cap": [
+     "The vendor is not a company. It is a person. Two contracts. One institution. One year. 370 million pesos.",
+     "El proveedor no es una empresa. Es una persona. Dos contratos. Una institución. Un año. 370 millones de pesos."
+    ],
+    "durationMs": 11000,
+    "cues": {
+     "en": [
+      0.0057,
+      0.1846,
+      0.3062,
+      0.455,
+      0.6024,
+      0.6997
+     ],
+     "es": [
+      0.0082,
+      0.2008,
+      0.3417,
+      0.4953,
+      0.6439,
+      0.7587
+     ]
+    },
+    "clip": {
+     "en": 8736,
+     "es": 12216
+    }
+   },
+   {
+    "id": "gone",
+    "mode": "scene",
+    "scene": "gone",
+    "tag": [
+     "THEN NOTHING",
+     "DESPUÉS, NADA"
+    ],
+    "cap": [
+     "Nothing before. Nothing after. One person wins 370 million pesos from the federal government, and is never seen in the record again.",
+     "Nada antes. Nada después. Una persona gana 370 millones de pesos del gobierno federal, y no vuelve a aparecer en el registro."
+    ],
+    "durationMs": 10100,
+    "cues": {
+     "en": [
+      0.0056,
+      0.1267,
+      0.2535
+     ],
+     "es": [
+      0.0098,
+      0.1842,
+      0.366
+     ]
+    },
+    "clip": {
+     "en": 8976,
+     "es": 10248
+    }
+   },
+   {
+    "id": "name",
+    "mode": "scene",
+    "scene": "name",
+    "tag": [
+     "THE NAME",
+     "EL NOMBRE"
+    ],
+    "cap": [
+     "We are not going to tell you the name. This is a private individual. On no tax-authority list. No sanction. No charge. What we have is a shape.",
+     "No vamos a decir su nombre. Es un particular. No está en ninguna lista del SAT. Sin sanción. Sin acusación. Lo que tenemos es una forma."
+    ],
+    "durationMs": 11400,
+    "cues": {
+     "en": [
+      0.0053,
+      0.171,
+      0.3751,
+      0.5765,
+      0.7064,
+      0.8111
+     ],
+     "es": [
+      0.0081,
+      0.1891,
+      0.3298,
+      0.5408,
+      0.6748,
+      0.8145
+     ]
+    },
+    "clip": {
+     "en": 9432,
+     "es": 12408
+    }
+   },
+   {
+    "id": "three",
+    "mode": "scene",
+    "scene": "three",
+    "tag": [
+     "THREE IDENTICAL ROWS",
+     "TRES FILAS IDÉNTICAS"
+    ],
+    "cap": [
+     "Then the shape repeats. A second person. Two contracts. About 370 million pesos. Gone. And a third. Three identical rows.",
+     "Luego la forma se repite. Una segunda persona. Dos contratos. Unos 370 millones de pesos. Desaparece. Y una tercera. Tres filas idénticas."
+    ],
+    "durationMs": 13400,
+    "cues": {
+     "en": [
+      0.0047,
+      0.148,
+      0.2734,
+      0.4001,
+      0.6735,
+      0.7386,
+      0.8262
+     ],
+     "es": [
+      0.0066,
+      0.1557,
+      0.2912,
+      0.4151,
+      0.6198,
+      0.7312,
+      0.848
+     ]
+    },
+    "clip": {
+     "en": 10560,
+     "es": 15144
+    }
+   },
+   {
+    "id": "behavior",
+    "mode": "scene",
+    "scene": "behavior",
+    "tag": [
+     "READ THE BEHAVIOR",
+     "LEER LA CONDUCTA"
+    ],
+    "cap": [
+     "So we stopped reading names, and started reading behavior. A sudden appearance. Contracts ten to fifty times the norm for the sector. No past. No future.",
+     "Así que dejamos de leer nombres, y empezamos a leer conductas. Una aparición repentina. Contratos de diez a cincuenta veces lo normal en su sector. Sin pasado. Sin futuro."
+    ],
+    "durationMs": 13000,
+    "cues": {
+     "en": [
+      0.0044,
+      0.3502,
+      0.4757,
+      0.7906,
+      0.8897
+     ],
+     "es": [
+      0.0073,
+      0.3213,
+      0.4845,
+      0.7654,
+      0.8831
+     ]
+    },
+    "clip": {
+     "en": 11352,
+     "es": 13728
+    }
+   },
+   {
+    "id": "crowd",
+    "mode": "scene",
+    "scene": "crowd",
+    "tag": [
+     "5,869",
+     "5,869"
+    ],
+    "cap": [
+     "The pattern fits 5,869 vendors. Together they hold 33.7 billion pesos in contracts.",
+     "El patrón encaja con 5,869 proveedores. Juntos suman 33,700 millones de pesos en contratos."
+    ],
+    "durationMs": 10100,
+    "cues": {
+     "en": [
+      0.0049,
+      0.4305
+     ],
+     "es": [
+      0.0109,
+      0.4952
+     ]
+    },
+    "clip": {
+     "en": 10104,
+     "es": 9192
+    }
+   },
+   {
+    "id": "list",
+    "mode": "scene",
+    "scene": "list",
+    "tag": [
+     "THE OFFICIAL LIST",
+     "LA LISTA OFICIAL"
+    ],
+    "cap": [
+     "Mexico keeps an official list of ghost companies. It took the tax authority a decade to build. Checked against our 5,869, it confirms 169. One in 35.",
+     "México tiene una lista oficial de empresas fantasma. Al SAT le tomó una década construirla. Cruzada con nuestros 5,869, confirma a 169. Uno de cada 35."
+    ],
+    "durationMs": 14800,
+    "cues": {
+     "en": [
+      0.0035,
+      0.2342,
+      0.4534,
+      0.8899
+     ],
+     "es": [
+      0.0069,
+      0.2424,
+      0.4507,
+      0.8363
+     ]
+    },
+    "clip": {
+     "en": 14088,
+     "es": 14496
+    }
+   },
+   {
+    "id": "late",
+    "mode": "scene",
+    "scene": "late",
+    "tag": [
+     "ALWAYS LATE",
+     "SIEMPRE TARDE"
+    ],
+    "cap": [
+     "Why so few? Proving a ghost takes six months at best. Three years at worst. A ghost can collect its money and dissolve long before the list arrives.",
+     "¿Por qué tan pocos? Probar una empresa fantasma tarda seis meses en el mejor caso. Tres años en el peor. Un fantasma puede cobrar y disolverse mucho antes de que llegue la lista."
+    ],
+    "durationMs": 11600,
+    "cues": {
+     "en": [
+      0.0051,
+      0.1174,
+      0.397,
+      0.5642
+     ],
+     "es": [
+      0.008,
+      0.155,
+      0.481,
+      0.6454
+     ]
+    },
+    "clip": {
+     "en": 9792,
+     "es": 12480
+    }
+   },
+   {
+    "id": "rest",
+    "mode": "scene",
+    "scene": "rest",
+    "tag": [
+     "NOT ALL ARE GHOSTS",
+     "NO TODOS SON FANTASMAS"
+    ],
+    "cap": [
+     "The other 5,700 are still contracting. Not all of them are ghosts. Some will be real, specialized suppliers. The pattern describes conduct, not guilt.",
+     "Los otros 5,700 siguen contratando. No todos son fantasmas. Algunos serán proveedores reales, especializados. El patrón describe una conducta, no una culpa."
+    ],
+    "durationMs": 12500,
+    "cues": {
+     "en": [
+      0.0047,
+      0.3185,
+      0.4685,
+      0.7382
+     ],
+     "es": [
+      0.0076,
+      0.2604,
+      0.4359,
+      0.7267
+     ]
+    },
+    "clip": {
+     "en": 10752,
+     "es": 13176
+    }
+   },
+   {
+    "id": "two",
+    "mode": "scene",
+    "scene": "two",
+    "tag": [
+     "TWO SIGNATURES",
+     "DOS FIRMAS"
+    ],
+    "cap": [
+     "And every ghost needs two signatures. Someone creates the company. Someone inside the government approves the contract. The record names the first. It almost never names the second.",
+     "Y todo fantasma necesita dos firmas. Alguien crea la empresa. Alguien dentro del gobierno aprueba el contrato. El registro nombra al primero. Casi nunca nombra al segundo."
+    ],
+    "durationMs": 13400,
+    "cues": {
+     "en": [
+      0.0041,
+      0.2493,
+      0.3881,
+      0.6667,
+      0.8289
+     ],
+     "es": [
+      0.0074,
+      0.233,
+      0.3906,
+      0.6236,
+      0.8102
+     ]
+    },
+    "clip": {
+     "en": 12336,
+     "es": 13464
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "5,869 vendors. Who signed?",
+     "5,869 proveedores. ¿Quién firmó?"
+    ],
+    "durationMs": 5300,
+    "cues": {
+     "en": [
+      0.011,
+      0.7661
+     ],
+     "es": [
+      0.0194,
+      0.6523
+     ]
+    },
+    "clip": {
+     "en": 4536,
+     "es": 5160
+    }
+   }
+  ]
+ },
+ "el-monopolio-invisible": {
+  "title": [
+   "The Relay",
+   "El Relevo"
+  ],
+  "subtitle": [
+   "Four distributors, one buyer, and a seat that never stays empty.",
+   "Cuatro distribuidoras, un comprador, y un asiento que nunca queda vacío."
+  ],
+  "kicker": [
+   "Microcosm · the dynasty",
+   "Microcosmos · la dinastía"
+  ],
+  "story": "el-monopolio-invisible",
+  "hook": [
+   "Four companies. One left the record.",
+   "Cuatro empresas. Una salió del registro."
+  ],
+  "runtimeMs": 119300,
+  "beats": [
+   {
+    "id": "peak",
+    "mode": "scene",
+    "scene": "peak",
+    "tag": [
+     "2017",
+     "2017"
+    ],
+    "cap": [
+     "2017. One pharmaceutical distributor bills Mexico's federal government 19.9 billion pesos in a single year.",
+     "2017. Una distribuidora farmacéutica le factura al gobierno federal mexicano 19,900 millones de pesos en un solo año."
+    ],
+    "durationMs": 9400,
+    "cues": {
+     "en": [
+      0.0056,
+      0.0613
+     ],
+     "es": [
+      0.0114,
+      0.0621
+     ]
+    },
+    "clip": {
+     "en": 8976,
+     "es": 8784
+    }
+   },
+   {
+    "id": "four",
+    "mode": "scene",
+    "scene": "four",
+    "tag": [
+     "FOUR NAMES",
+     "CUATRO NOMBRES"
+    ],
+    "cap": [
+     "It is not alone. Four distributors. Grupo Fármacos Especializados, Maypo, and two more. Since 2003, 326 billion pesos.",
+     "No está sola. Cuatro distribuidoras. Grupo Fármacos Especializados, Maypo y otras dos. Desde 2003, 326 mil millones de pesos."
+    ],
+    "durationMs": 12700,
+    "cues": {
+     "en": [
+      0.0043,
+      0.0966,
+      0.2105,
+      0.6261
+     ],
+     "es": [
+      0.0078,
+      0.1407,
+      0.3146,
+      0.6376
+     ]
+    },
+    "clip": {
+     "en": 11640,
+     "es": 12744
+    }
+   },
+   {
+    "id": "customer",
+    "mode": "scene",
+    "scene": "customer",
+    "tag": [
+     "ONE CUSTOMER",
+     "UN CLIENTE"
+    ],
+    "cap": [
+     "And one customer. The social-security institute, IMSS. One peso in every ten it spent, on anything, in twenty-three years, went to these four.",
+     "Y un cliente. El Seguro Social, el IMSS. Uno de cada diez pesos que gastó, en lo que fuera, en veintitrés años, fue para estas cuatro."
+    ],
+    "durationMs": 11400,
+    "cues": {
+     "en": [
+      0.0044,
+      0.122,
+      0.411
+     ],
+     "es": [
+      0.0095,
+      0.166,
+      0.424
+     ]
+    },
+    "clip": {
+     "en": 11376,
+     "es": 10512
+    }
+   },
+   {
+    "id": "lattice",
+    "mode": "scene",
+    "scene": "lattice",
+    "tag": [
+     "THE SAME TABLES",
+     "LAS MISMAS MESAS"
+    ],
+    "cap": [
+     "In a market this small, the four keep meeting at the same tenders. 5,285 shared procedures.",
+     "En un mercado tan pequeño, las cuatro coinciden una y otra vez en las mismas licitaciones. 5,285 procedimientos compartidos."
+    ],
+    "durationMs": 9500,
+    "cues": {
+     "en": [
+      0.0061,
+      0.504
+     ],
+     "es": [
+      0.0101,
+      0.577
+     ]
+    },
+    "clip": {
+     "en": 8184,
+     "es": 9912
+    }
+   },
+   {
+    "id": "hedge",
+    "mode": "scene",
+    "scene": "hedge",
+    "tag": [
+     "AN INDICATOR, NOT A VERDICT",
+     "UN INDICADOR, NO UN VEREDICTO"
+    ],
+    "cap": [
+     "That alone proves nothing. When only a few firms can supply a product, they meet at the same tenders again and again.",
+     "Eso, por sí solo, no prueba nada. Cuando pocas empresas pueden surtir un producto, coinciden en las mismas licitaciones una y otra vez."
+    ],
+    "durationMs": 9100,
+    "cues": {
+     "en": [
+      0.0064,
+      0.2516
+     ],
+     "es": [
+      0.0107,
+      0.3419
+     ]
+    },
+    "clip": {
+     "en": 7800,
+     "es": 9312
+    }
+   },
+   {
+    "id": "race",
+    "mode": "scene",
+    "scene": "race",
+    "tag": [
+     "THE MONEY, OVER TIME",
+     "EL DINERO, EN EL TIEMPO"
+    ],
+    "cap": [
+     "Now watch the money over time. In the early years, the lead changes hands. Then Grupo Fármacos takes over, and climbs. And climbs.",
+     "Ahora miren el dinero en el tiempo. En los primeros años, el liderazgo cambia de manos. Luego Grupo Fármacos toma el relevo, y sube. Y sube."
+    ],
+    "durationMs": 11000,
+    "cues": {
+     "en": [
+      0.0053,
+      0.1837,
+      0.501,
+      0.8606
+     ],
+     "es": [
+      0.0086,
+      0.2299,
+      0.5544,
+      0.8667
+     ]
+    },
+    "clip": {
+     "en": 9456,
+     "es": 11592
+    }
+   },
+   {
+    "id": "cliff",
+    "mode": "scene",
+    "scene": "cliff",
+    "tag": [
+     "2020",
+     "2020"
+    ],
+    "cap": [
+     "Then a new government replaces the old buying system. In 2020, Grupo Fármacos goes from 17.6 billion pesos to zero.",
+     "Entonces un nuevo gobierno sustituye el viejo sistema de compras. En 2020, Grupo Fármacos pasa de 17,600 millones de pesos a cero."
+    ],
+    "durationMs": 10200,
+    "cues": {
+     "en": [
+      0.0055,
+      0.3313
+     ],
+     "es": [
+      0.0097,
+      0.4328
+     ]
+    },
+    "clip": {
+     "en": 9168,
+     "es": 10272
+    }
+   },
+   {
+    "id": "quiet",
+    "mode": "scene",
+    "scene": "quiet",
+    "tag": [
+     "ZERO",
+     "CERO"
+    ],
+    "cap": [
+     "Zero. Every year since. A second distributor falls 97%. Maypo is cut in half. For a moment, the market looks open.",
+     "Cero. Todos los años desde entonces. Otra distribuidora cae 97%. Maypo se reduce a la mitad. Por un momento, el mercado parece abierto."
+    ],
+    "durationMs": 12000,
+    "cues": {
+     "en": [
+      0.005,
+      0.0824,
+      0.2373,
+      0.5908,
+      0.7581
+     ],
+     "es": [
+      0.0076,
+      0.1082,
+      0.2966,
+      0.5608,
+      0.7492
+     ]
+    },
+    "clip": {
+     "en": 10008,
+     "es": 13080
+    }
+   },
+   {
+    "id": "return",
+    "mode": "scene",
+    "scene": "return",
+    "tag": [
+     "2025",
+     "2025"
+    ],
+    "cap": [
+     "It does not stay that way. In the first nine months of 2025, under yet another buying system, one of the four books 19.5 billion pesos. Almost exactly the old leader's peak.",
+     "No dura. En los primeros nueve meses de 2025, con otro sistema de compras más, una de las cuatro factura 19,500 millones de pesos. Casi exactamente el máximo del viejo líder."
+    ],
+    "durationMs": 13500,
+    "cues": {
+     "en": [
+      0.004,
+      0.1171,
+      0.7762
+     ],
+     "es": [
+      0.0073,
+      0.1107,
+      0.7535
+     ]
+    },
+    "clip": {
+     "en": 12384,
+     "es": 13632
+    }
+   },
+   {
+    "id": "three",
+    "mode": "scene",
+    "scene": "three",
+    "tag": [
+     "THREE SYSTEMS",
+     "TRES SISTEMAS"
+    ],
+    "cap": [
+     "Three purchasing systems. Six years. The name at the top changed. The seat was never empty for long.",
+     "Tres sistemas de compra. Seis años. El nombre de arriba cambió. El asiento nunca estuvo vacío por mucho tiempo."
+    ],
+    "durationMs": 9000,
+    "cues": {
+     "en": [
+      0.0067,
+      0.2663,
+      0.427,
+      0.69
+     ],
+     "es": [
+      0.0106,
+      0.2257,
+      0.4078,
+      0.641
+     ]
+    },
+    "clip": {
+     "en": 7464,
+     "es": 9456
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The rules changed three times. The dependence on a handful of distributors did not.",
+     "Las reglas cambiaron tres veces. La dependencia de un puñado de distribuidoras, no."
+    ],
+    "durationMs": 6500,
+    "cues": {
+     "en": [
+      0.0092,
+      0.4176
+     ],
+     "es": [
+      0.0154,
+      0.4167
+     ]
+    },
+    "clip": {
+     "en": 5448,
+     "es": 6480
+    }
+   }
+  ]
+ },
+ "dos-nombres": {
+  "title": [
+   "Two Names, One Supplier",
+   "Dos nombres, un proveedor"
+  ],
+  "subtitle": [
+   "Who sells Mexico the metal for its coins.",
+   "Quién le vende a México el metal de sus monedas."
+  ],
+  "kicker": [
+   "Our finding · 2019–2024",
+   "Hallazgo propio · 2019–2024"
+  ],
+  "section": "findings",
+  "beats": [
+   {
+    "id": "coin",
+    "mode": "scene",
+    "scene": "coin",
+    "tag": [
+     "THE MINT",
+     "LA CASA DE MONEDA"
+    ],
+    "cap": [
+     "Every peso coin in your pocket starts as a strip of metal. Mexico's mint, the Casa de Moneda, does not make that metal. It buys it.",
+     "Cada moneda de peso que traes en la bolsa empieza como una lámina de metal. La Casa de Moneda no fabrica ese metal. Lo compra."
+    ],
+    "durationMs": 9700,
+    "cues": {
+     "en": [
+      0.0054,
+      0.4202,
+      0.8839
+     ],
+     "es": [
+      0.0109,
+      0.5016,
+      0.8322
+     ]
+    },
+    "clip": {
+     "en": 9192,
+     "es": 9168
+    }
+   },
+   {
+    "id": "direct",
+    "mode": "scene",
+    "scene": "direct",
+    "tag": [
+     "NO TENDER",
+     "SIN LICITACIÓN"
+    ],
+    "cap": [
+     "And it buys it without a tender. A legal exception lets a state manufacturer buy its raw materials by direct award. Every one of these contracts was a direct award.",
+     "Y lo compra sin licitación. Una excepción legal permite a un fabricante del Estado comprar sus materias primas por adjudicación directa. Cada uno de estos contratos fue una adjudicación directa."
+    ],
+    "durationMs": 11400,
+    "cues": {
+     "en": [
+      0.0052,
+      0.2078,
+      0.726
+     ],
+     "es": [
+      0.0082,
+      0.188,
+      0.6823
+     ]
+    },
+    "clip": {
+     "en": 9624,
+     "es": 12168
+    }
+   },
+   {
+    "id": "two",
+    "mode": "scene",
+    "scene": "two",
+    "tag": [
+     "TWO SUPPLIERS",
+     "DOS PROVEEDORES"
+    ],
+    "cap": [
+     "In the public record, two of its suppliers look unrelated. PV Metals, of El Paso, Texas. And Omega Aleaciones, of San Luis Potosí.",
+     "En el registro público, dos de sus proveedores parecen no tener relación. PV Metals, de El Paso, Texas. Y Omega Aleaciones, de San Luis Potosí."
+    ],
+    "durationMs": 11700,
+    "cues": {
+     "en": [
+      0.0046,
+      0.351,
+      0.6424
+     ],
+     "es": [
+      0.0087,
+      0.4113,
+      0.7098
+     ]
+    },
+    "clip": {
+     "en": 10896,
+     "es": 11496
+    }
+   },
+   {
+    "id": "one",
+    "mode": "scene",
+    "scene": "one",
+    "tag": [
+     "ONE GROUP",
+     "UN SOLO GRUPO"
+    ],
+    "cap": [
+     "They are not. PV Metals describes itself, on its own website, as the US division of Omega Aleaciones. The mint's own contracts call it Omega's affiliate.",
+     "No es así. PV Metals se describe, en su propio sitio web, como la división estadounidense de Omega Aleaciones. Los contratos de la propia Casa de Moneda la llaman filial de Omega."
+    ],
+    "durationMs": 12300,
+    "cues": {
+     "en": [
+      0.0046,
+      0.0889,
+      0.7237
+     ],
+     "es": [
+      0.008,
+      0.135,
+      0.6686
+     ]
+    },
+    "clip": {
+     "en": 10968,
+     "es": 12576
+    }
+   },
+   {
+    "id": "share",
+    "mode": "scene",
+    "scene": "share",
+    "tag": [
+     "TWO THIRDS",
+     "DOS TERCIOS"
+    ],
+    "cap": [
+     "Together, during López Obrador's term, they received 5.48 billion pesos in direct awards. About two thirds of the mint's spending on bronze and alpaca coin sheet. The only other supplier received 2.96 billion.",
+     "Juntas, durante el sexenio de López Obrador, recibieron 5,480 millones de pesos en adjudicaciones directas. Cerca de dos tercios del gasto de la Casa de Moneda en lámina de bronce y alpaca. El único otro proveedor recibió 2,960 millones."
+    ],
+    "durationMs": 17100,
+    "cues": {
+     "en": [
+      0.0032,
+      0.4504,
+      0.7361
+     ],
+     "es": [
+      0.0058,
+      0.4581,
+      0.7425
+     ]
+    },
+    "clip": {
+     "en": 15792,
+     "es": 17376
+    }
+   },
+   {
+    "id": "fair",
+    "mode": "scene",
+    "scene": "fair",
+    "tag": [
+     "WHAT THE RECORD SUPPORTS",
+     "LO QUE EL REGISTRO RESPALDA"
+    ],
+    "cap": [
+     "Here is what the mint would say, and the record supports it. Very few companies can supply certified coin strip. And on the large orders, the group's prices matched its competitor's.",
+     "Esto es lo que diría la Casa de Moneda, y el registro lo respalda. Muy pocas empresas pueden surtir lámina certificada para moneda. Y en los pedidos grandes, los precios del grupo igualaron a los de su competidor."
+    ],
+    "durationMs": 13000,
+    "cues": {
+     "en": [
+      0.0043,
+      0.3108,
+      0.6409
+     ],
+     "es": [
+      0.0075,
+      0.3267,
+      0.6331
+     ]
+    },
+    "clip": {
+     "en": 11664,
+     "es": 13392
+    }
+   },
+   {
+    "id": "gap",
+    "mode": "scene",
+    "scene": "gap",
+    "tag": [
+     "ONE ORDER",
+     "UN PEDIDO"
+    ],
+    "cap": [
+     "But one order stands out. In August 2022, the Mexican company billed 30.7 dollars a kilogram for alpaca sheet. Three weeks later, its US affiliate billed 11.4 for the same alloy. The first order was much smaller. The record does not explain the rest.",
+     "Pero un pedido destaca. En agosto de 2022, la empresa mexicana facturó 30.7 dólares por kilo de lámina de alpaca. Tres semanas después, su filial estadounidense facturó 11.4 por la misma aleación. El primer pedido era mucho más pequeño. El registro no explica lo demás."
+    ],
+    "durationMs": 20300,
+    "cues": {
+     "en": [
+      0.0027,
+      0.0846,
+      0.4557,
+      0.7463,
+      0.8558
+     ],
+     "es": [
+      0.0048,
+      0.1034,
+      0.4503,
+      0.7286,
+      0.8663
+     ]
+    },
+    "clip": {
+     "en": 18624,
+     "es": 20976
+    }
+   },
+   {
+    "id": "missing",
+    "mode": "scene",
+    "scene": "missing",
+    "tag": [
+     "THE MISSING YEAR",
+     "EL AÑO QUE FALTA"
+    ],
+    "cap": [
+     "And one year is missing from the federal record altogether. For 2023, the mint's own ledger shows 4.6 billion pesos of coin-sheet orders. All direct awards. Omega won the largest share. 2.6 billion.",
+     "Y un año entero falta en el registro federal. Para 2023, el libro de pedidos de la propia Casa de Moneda muestra 4,600 millones de pesos en lámina para moneda. Todo por adjudicación directa. Omega se llevó la mayor parte. 2,600 millones."
+    ],
+    "durationMs": 17400,
+    "cues": {
+     "en": [
+      0.0033,
+      0.2282,
+      0.6473,
+      0.7391,
+      0.8978
+     ],
+     "es": [
+      0.0054,
+      0.1758,
+      0.5932,
+      0.7234,
+      0.8594
+     ]
+    },
+    "clip": {
+     "en": 15120,
+     "es": 18648
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "Nothing here says the mint was deceived. It knew. The public did not. In the record anyone can search, these are still two unrelated companies.",
+     "Nada de esto dice que la Casa de Moneda fue engañada. Lo sabía. El público, no. En el registro que cualquiera puede consultar, siguen siendo dos empresas sin relación."
+    ],
+    "durationMs": 11600,
+    "cues": {
+     "en": [
+      0.0051,
+      0.2953,
+      0.3802,
+      0.5132
+     ],
+     "es": [
+      0.0081,
+      0.2954,
+      0.4197,
+      0.5822
+     ]
+    },
+    "clip": {
+     "en": 9864,
+     "es": 12336
+    }
+   }
+  ]
+ },
+ "urgencia-permanente": {
+  "title": [
+   "The Permanent Emergency",
+   "La urgencia permanente"
+  ],
+  "subtitle": [
+   "Half of IMSS-Bienestar's contracts cite an unforeseeable event.",
+   "La mitad de los contratos del IMSS-Bienestar invocan un hecho imprevisible."
+  ],
+  "kicker": [
+   "Our finding · 2023–2025",
+   "Hallazgo propio · 2023–2025"
+  ],
+  "section": "findings",
+  "beats": [
+   {
+    "id": "clause",
+    "mode": "scene",
+    "scene": "clause",
+    "tag": [
+     "THE EMERGENCY EXIT",
+     "LA SALIDA DE EMERGENCIA"
+    ],
+    "cap": [
+     "Mexican procurement law has an emergency exit. When an unforeseeable event endangers public services or health, an agency may skip the tender. The law calls it caso fortuito o fuerza mayor.",
+     "La ley mexicana de adquisiciones tiene una salida de emergencia. Cuando un hecho imprevisible pone en riesgo los servicios públicos o la salud, una dependencia puede saltarse la licitación. La ley lo llama caso fortuito o fuerza mayor."
+    ],
+    "durationMs": 14700,
+    "cues": {
+     "en": [
+      0.0036,
+      0.2382,
+      0.7536
+     ],
+     "es": [
+      0.0069,
+      0.287,
+      0.7581
+     ]
+    },
+    "clip": {
+     "en": 13800,
+     "es": 14544
+    }
+   },
+   {
+    "id": "rare",
+    "mode": "scene",
+    "scene": "rare",
+    "tag": [
+     "RARELY USED",
+     "SE USA POCO"
+    ],
+    "cap": [
+     "Most health agencies rarely use it. At IMSS, about one contract in eighteen. At ISSSTE, about one in thirteen.",
+     "La mayoría de las instituciones de salud casi no la usan. En el IMSS, cerca de uno de cada dieciocho contratos. En el ISSSTE, cerca de uno de cada trece."
+    ],
+    "durationMs": 10900,
+    "cues": {
+     "en": [
+      0.0054,
+      0.243,
+      0.6457
+     ],
+     "es": [
+      0.0087,
+      0.346,
+      0.7032
+     ]
+    },
+    "clip": {
+     "en": 9312,
+     "es": 11520
+    }
+   },
+   {
+    "id": "half",
+    "mode": "scene",
+    "scene": "half",
+    "tag": [
+     "ONE IN TWO",
+     "UNO DE CADA DOS"
+    ],
+    "cap": [
+     "At IMSS-Bienestar, it is one in two. Since the federal procurement feed froze, 1,015 of its 2,056 awards cite the emergency clause.",
+     "En el IMSS-Bienestar, es uno de cada dos. Desde que se congeló el flujo federal de contrataciones, 1,015 de sus 2,056 adjudicaciones invocan la cláusula de emergencia."
+    ],
+    "durationMs": 12100,
+    "cues": {
+     "en": [
+      0.0043,
+      0.2799
+     ],
+     "es": [
+      0.0085,
+      0.287
+     ]
+    },
+    "clip": {
+     "en": 11520,
+     "es": 11712
+    }
+   },
+   {
+    "id": "climb",
+    "mode": "scene",
+    "scene": "climb",
+    "tag": [
+     "BEFORE THE FREEZE",
+     "ANTES DEL APAGÓN"
+    ],
+    "cap": [
+     "It did not start with the freeze. 5% in 2023. 35% in 2024. 55% in the first nine months of 2025.",
+     "No empezó con el apagón. 5% en 2023. 35% en 2024. 55% en los primeros nueve meses de 2025."
+    ],
+    "durationMs": 12600,
+    "cues": {
+     "en": [
+      0.0045,
+      0.1647,
+      0.3717,
+      0.621
+     ],
+     "es": [
+      0.0077,
+      0.1728,
+      0.3981,
+      0.6416
+     ]
+    },
+    "clip": {
+     "en": 11232,
+     "es": 13032
+    }
+   },
+   {
+    "id": "why",
+    "mode": "scene",
+    "scene": "why",
+    "tag": [
+     "THE REASON GIVEN",
+     "LA RAZÓN"
+    ],
+    "cap": [
+     "There is a reason, and the institute will give it. In those years it took over the health systems of 23 states. About 700 hospitals. 14,000 clinics.",
+     "Hay una razón, y el instituto la dará. En esos años absorbió los sistemas de salud de 23 estados. Cerca de 700 hospitales. 14,000 clínicas."
+    ],
+    "durationMs": 12600,
+    "cues": {
+     "en": [
+      0.0042,
+      0.2546,
+      0.655,
+      0.8209
+     ],
+     "es": [
+      0.008,
+      0.2504,
+      0.59,
+      0.812
+     ]
+    },
+    "clip": {
+     "en": 11832,
+     "es": 12432
+    }
+   },
+   {
+    "id": "routine",
+    "mode": "scene",
+    "scene": "routine",
+    "tag": [
+     "UNFORESEEABLE?",
+     "¿IMPREVISIBLE?"
+    ],
+    "cap": [
+     "But an emergency is supposed to be unforeseeable. In 2026, hospital security was bought this way. In slices of two months, and ten months. One slice was worth up to 2.9 billion pesos.",
+     "Pero una emergencia debe ser imprevisible. En 2026, la seguridad de los hospitales se compró así. En tramos de dos meses, y de diez meses. Un solo tramo valía hasta 2,900 millones de pesos."
+    ],
+    "durationMs": 15300,
+    "cues": {
+     "en": [
+      0.0034,
+      0.238,
+      0.5462,
+      0.7546
+     ],
+     "es": [
+      0.0067,
+      0.1988,
+      0.4929,
+      0.7116
+     ]
+    },
+    "clip": {
+     "en": 14760,
+     "es": 14832
+    }
+   },
+   {
+    "id": "money",
+    "mode": "scene",
+    "scene": "money",
+    "tag": [
+     "29 BILLION",
+     "29 MIL MILLONES"
+    ],
+    "cap": [
+     "The emergency awards add up to maximum values of about 29 billion pesos. The largest share goes to subcontracted medical services. Then security.",
+     "Las adjudicaciones de emergencia suman valores máximos de unos 29 mil millones de pesos. La mayor parte va a servicios médicos subrogados. Después, a seguridad."
+    ],
+    "durationMs": 12000,
+    "cues": {
+     "en": [
+      0.0046,
+      0.5425,
+      0.8806
+     ],
+     "es": [
+      0.0083,
+      0.4914,
+      0.7877
+     ]
+    },
+    "clip": {
+     "en": 10944,
+     "es": 12096
+    }
+   },
+   {
+    "id": "caveat",
+    "mode": "scene",
+    "scene": "caveat",
+    "tag": [
+     "TWO CAUTIONS",
+     "DOS PRECAUCIONES"
+    ],
+    "cap": [
+     "Two cautions. These are ceilings, not money spent. And by value the picture is less stark: about 37% of the institute's awarded pesos. We have not read the justification behind each award.",
+     "Dos precauciones. Son topes máximos, no dinero gastado. Y por monto el cuadro es menos marcado: cerca de 37% de los pesos adjudicados por el instituto. No hemos leído la justificación detrás de cada adjudicación."
+    ],
+    "durationMs": 15800,
+    "cues": {
+     "en": [
+      0.0035,
+      0.0884,
+      0.2724,
+      0.5061,
+      0.7631
+     ],
+     "es": [
+      0.0061,
+      0.1322,
+      0.3391,
+      0.5091,
+      0.7471
+     ]
+    },
+    "clip": {
+     "en": 14136,
+     "es": 16416
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "An exception used once is an emergency. Used half the time, it is the system.",
+     "Una excepción usada una vez es una emergencia. Usada la mitad de las veces, es el sistema."
+    ],
+    "durationMs": 6600,
+    "cues": {
+     "en": [
+      0.0093,
+      0.537
+     ],
+     "es": [
+      0.0148,
+      0.4966
+     ]
+    },
+    "clip": {
+     "en": 5400,
+     "es": 6768
+    }
+   }
+  ]
+ },
+ "dos-dias": {
+  "title": [
+   "Two Days",
+   "Dos días"
+  ],
+  "subtitle": [
+   "A four-year-old company, a 4.9-billion-peso contract, and no public tender.",
+   "Una empresa de cuatro años, un contrato de 4,900 millones de pesos, y ninguna licitación pública."
+  ],
+  "kicker": [
+   "Our finding · 2026",
+   "Hallazgo propio · 2026"
+  ],
+  "section": "findings",
+  "beats": [
+   {
+    "id": "award",
+    "mode": "scene",
+    "scene": "award",
+    "tag": [
+     "MAY 2026",
+     "MAYO DE 2026"
+    ],
+    "cap": [
+     "In May 2026, IMSS-Bienestar awarded a single contract to run its clinic laboratories. Up to 4,928 million pesos. Seven months. No public tender.",
+     "En mayo de 2026, el IMSS-Bienestar adjudicó un solo contrato para operar los laboratorios de sus clínicas. Hasta 4,928 millones de pesos. Siete meses. Sin licitación pública."
+    ],
+    "durationMs": 15000,
+    "cues": {
+     "en": [
+      0.0035,
+      0.5439,
+      0.8198,
+      0.9041
+     ],
+     "es": [
+      0.0067,
+      0.4717,
+      0.7284,
+      0.8505
+     ]
+    },
+    "clip": {
+     "en": 14088,
+     "es": 14976
+    }
+   },
+   {
+    "id": "company",
+    "mode": "scene",
+    "scene": "company",
+    "tag": [
+     "THE WINNER",
+     "LA GANADORA"
+    ],
+    "cap": [
+     "The winner, VAYAM Medical, was set up in May 2022. Before this award, its federal contracts in the public record added up to less than 9 million pesos.",
+     "La ganadora, VAYAM Medical, se constituyó en mayo de 2022. Antes de esta adjudicación, sus contratos federales en el registro público sumaban menos de 9 millones de pesos."
+    ],
+    "durationMs": 12000,
+    "cues": {
+     "en": [
+      0.0047,
+      0.4003
+     ],
+     "es": [
+      0.0081,
+      0.4381
+     ]
+    },
+    "clip": {
+     "en": 10680,
+     "es": 12408
+    }
+   },
+   {
+    "id": "scope",
+    "mode": "scene",
+    "scene": "scope",
+    "tag": [
+     "7,259 SITES",
+     "7,259 UNIDADES"
+    ],
+    "cap": [
+     "The contract covers 7,259 health units and laboratories in 21 states. Analysers. Computer systems. And the reagents to run them.",
+     "El contrato cubre 7,259 unidades de salud y laboratorios en 21 estados. Analizadores. Sistemas de cómputo. Y los reactivos para operarlos."
+    ],
+    "durationMs": 12700,
+    "cues": {
+     "en": [
+      0.0042,
+      0.614,
+      0.7188,
+      0.8405
+     ],
+     "es": [
+      0.0079,
+      0.4876,
+      0.6377,
+      0.799
+     ]
+    },
+    "clip": {
+     "en": 11808,
+     "es": 12648
+    }
+   },
+   {
+    "id": "exception",
+    "mode": "scene",
+    "scene": "exception",
+    "tag": [
+     "THE EXCEPTION",
+     "LA EXCEPCIÓN"
+    ],
+    "cap": [
+     "The institute used the legal exception for a single possible supplier. Its reasoning is set out in its own justification document.",
+     "El instituto usó la excepción legal para un solo proveedor posible. Su razonamiento está en su propio documento de justificación."
+    ],
+    "durationMs": 8900,
+    "cues": {
+     "en": [
+      0.0059,
+      0.5223
+     ],
+     "es": [
+      0.0121,
+      0.5257
+     ]
+    },
+    "clip": {
+     "en": 8544,
+     "es": 8232
+    }
+   },
+   {
+    "id": "survey",
+    "mode": "scene",
+    "scene": "survey",
+    "tag": [
+     "IN ITS FAVOUR",
+     "A SU FAVOR"
+    ],
+    "cap": [
+     "First, the part in its favour. Five companies quoted in a market survey. Of the three that named a price, VAYAM's was the lowest. The institute claims a saving of 53%.",
+     "Primero, lo que juega a su favor. Cinco empresas cotizaron en un estudio de mercado. De las tres que dieron precio, el de VAYAM fue el más bajo. El instituto afirma un ahorro de 53%."
+    ],
+    "durationMs": 14100,
+    "cues": {
+     "en": [
+      0.0038,
+      0.188,
+      0.3875,
+      0.6839
+     ],
+     "es": [
+      0.0071,
+      0.1975,
+      0.4361,
+      0.7224
+     ]
+    },
+    "clip": {
+     "en": 13032,
+     "es": 14088
+    }
+   },
+   {
+    "id": "window",
+    "mode": "scene",
+    "scene": "window",
+    "tag": [
+     "12 – 14 MAY",
+     "12 – 14 DE MAYO"
+    ],
+    "cap": [
+     "Then, the other four firms were given two days to send their technical papers. The twelfth of May to the fourteenth. They did not. The institute concluded it could not show their equipment was equivalent.",
+     "Después, a las otras cuatro empresas se les dieron dos días para enviar su documentación técnica. Del doce al catorce de mayo. No lo hicieron. El instituto concluyó que no podía acreditar que sus equipos fueran equivalentes."
+    ],
+    "durationMs": 14300,
+    "cues": {
+     "en": [
+      0.0039,
+      0.3762,
+      0.5488,
+      0.6202
+     ],
+     "es": [
+      0.0068,
+      0.3868,
+      0.5581,
+      0.6699
+     ]
+    },
+    "clip": {
+     "en": 12960,
+     "es": 14664
+    }
+   },
+   {
+    "id": "brand",
+    "mode": "scene",
+    "scene": "brand",
+    "tag": [
+     "THE EXCLUSIVITY",
+     "LA EXCLUSIVIDAD"
+    ],
+    "cap": [
+     "And the exclusivity it cites is this. VAYAM is the government-sector distributor for the analyser brands that VAYAM itself proposed.",
+     "Y la exclusividad que invoca es esta. VAYAM es la distribuidora para el sector gobierno de las marcas de analizadores que la propia VAYAM propuso."
+    ],
+    "durationMs": 10200,
+    "cues": {
+     "en": [
+      0.0048,
+      0.3309
+     ],
+     "es": [
+      0.0112,
+      0.3214
+     ]
+    },
+    "clip": {
+     "en": 10464,
+     "es": 8952
+    }
+   },
+   {
+    "id": "rivals",
+    "mode": "scene",
+    "scene": "rivals",
+    "tag": [
+     "WHO DID NOT QUALIFY",
+     "QUIÉNES NO CALIFICARON"
+    ],
+    "cap": [
+     "Two of the firms that did not qualify have held federal laboratory contracts for years. One of them holds more than a thousand, worth almost 8 billion pesos.",
+     "Dos de las empresas que no calificaron llevan años con contratos federales de laboratorio. Una de ellas tiene más de mil, por casi 8 mil millones de pesos."
+    ],
+    "durationMs": 10400,
+    "cues": {
+     "en": [
+      0.005,
+      0.5407
+     ],
+     "es": [
+      0.0102,
+      0.5238
+     ]
+    },
+    "clip": {
+     "en": 10056,
+     "es": 9816
+    }
+   },
+   {
+    "id": "end",
+    "mode": "scene",
+    "scene": "end",
+    "tag": [
+     "",
+     ""
+    ],
+    "cap": [
+     "The procedure is lawful on its face. The question is the order of things. The brand was chosen before the competition. And the competition lasted two days.",
+     "El procedimiento es legal en apariencia. La pregunta es el orden de las cosas. La marca se eligió antes de la competencia. Y la competencia duró dos días."
+    ],
+    "durationMs": 11400,
+    "cues": {
+     "en": [
+      0.0049,
+      0.2494,
+      0.478,
+      0.7433
+     ],
+     "es": [
+      0.0087,
+      0.2528,
+      0.4975,
+      0.7636
+     ]
+    },
+    "clip": {
+     "en": 10224,
+     "es": 11520
+    }
+   }
+  ]
+ }
+}

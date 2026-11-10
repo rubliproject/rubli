@@ -1,0 +1,27 @@
+/* /patterns/:code on «El Contrato» (frontend/DESIGN.md §2–§8). Page-local only. */
+
+.pd-facts { border-top: 1px solid var(--ct-ink); }
+.pd-facts > div { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+.pd-facts dt { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.pd-facts dd { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ct-ink); font-variant-numeric: tabular-nums; text-wrap: pretty; }
+.pd-facts dd.ct-mono { font-size: 13px; }
+
+
+.pd-step { display: inline-flex; align-items: center; gap: 12px; }
+.pd-step a { display: inline-flex; align-items: center; min-height: 40px; }
+
+
+.pd-coda { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px; padding: 12px 0; border-bottom: 1px solid var(--ct-rule); }
+.pd-coda:first-of-type { border-top: 1px solid var(--ct-ink); }
+.pd-coda dt { flex: 0 0 160px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.pd-coda dd { margin: 0; display: flex; flex-wrap: wrap; gap: 4px 24px; flex: 1; min-width: 0; font-size: 15px; }
+
+
+@media (max-width: 760px) {
+  .pd-facts > div { grid-template-columns: 128px minmax(0, 1fr); }
+  .pd-coda dt { flex-basis: 100%; }
+}
+.pattern-page [data-object] { margin-top: 24px; }
+.pattern-page .ct-annex-h .ct-link { font: 400 15px/1.4 var(--font-serif); letter-spacing: 0; }
+.pd-hold { min-height: 560px; }
+.ct-section-body > .ct-rb-compact + .pd-facts, .ct-section-body > .pd-facts + .ct-rb-compact { margin-top: 24px; }

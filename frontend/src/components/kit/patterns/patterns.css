@@ -1,0 +1,37 @@
+/* RUBLI kit · Patrones (DESIGN.md § Patrones). Six quiet textures, ONE meaning each.
+   Tokens only: every tone is a mix of --color-* roles, re-valued for night below.
+   Var gotcha: the HTML classes read --pat-* AT THE ELEMENT, so `style={{ '--pat-ink': hue }}`
+   re-tints one use without a new class. SVG <pattern> content inherits from where the
+   <pattern> is defined (the <svg>), not from the shape that references it. */
+:root {
+  --pat-ink: color-mix(in srgb, var(--color-text-muted) 62%, transparent);   /* sin dato · estimado · consolidada */
+  --pat-ground: transparent;                                                  /* tile ground under the ink */
+  --pat-field: color-mix(in srgb, var(--color-text-muted) 10%, transparent); /* campo: background only */
+  --pat-band: color-mix(in srgb, var(--color-text-primary) 4%, transparent); /* sexenio: every other term */
+  --pat-foco: var(--color-text-primary);                                     /* foco rings */
+  --pat-w: 1px;     /* hatch line width */
+  --pat-step: 4px;  /* hatch period (perpendicular) */
+}
+:root[data-theme='night'] {
+  --pat-ink: color-mix(in srgb, var(--color-text-muted) 58%, transparent);
+  --pat-field: color-mix(in srgb, var(--color-text-muted) 10%, transparent);
+  --pat-band: color-mix(in srgb, var(--color-text-primary) 7%, transparent);
+}
+
+/* SVG tile parts (Patterns.tsx) */
+.pat-g { fill: var(--pat-ground); }
+.pat-i { fill: var(--pat-ink); }
+.pat-l { fill: none; stroke: var(--pat-ink); stroke-width: var(--pat-w); }
+.pat-f { fill: none; stroke: var(--pat-field); stroke-width: 1; }
+.pat-ring { fill: none; stroke: var(--pat-foco); stroke-width: 1; }
+.pat-band { fill: var(--pat-band); }
+
+/* HTML twins: the area fills (sin dato, estimado, foco). Same look as the SVG tiles. */
+.pat-sin-dato { background-color: var(--pat-ground); background-image: repeating-linear-gradient(135deg, var(--pat-ink) 0 var(--pat-w), transparent var(--pat-w) var(--pat-step)); }
+.pat-estimado { background-color: var(--pat-ground); background-image: conic-gradient(at 1px 1px, transparent 75%, var(--pat-ink) 0); background-size: 4px 4px; }
+.pat-foco { background-image: repeating-radial-gradient(circle at var(--pat-x, 50%) var(--pat-y, 50%), color-mix(in srgb, var(--pat-foco) 40%, transparent) 0 1px, transparent 1px 7px);
+  -webkit-mask-image: radial-gradient(circle at var(--pat-x, 50%) var(--pat-y, 50%), black 0, transparent 70%); mask-image: radial-gradient(circle at var(--pat-x, 50%) var(--pat-y, 50%), black 0, transparent 70%); }
+
+/* legend swatch (PatternSwatch) */
+.pat-swatch { display: inline-block; width: 16px; height: 12px; vertical-align: -1px; box-shadow: inset 0 0 0 1px var(--color-border); }
+.pat-swatch svg { display: block; }

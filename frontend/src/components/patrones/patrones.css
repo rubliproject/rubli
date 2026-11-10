@@ -1,0 +1,119 @@
+/* Los patrones — the MAGENTA boards (El arranque, Gasto a ciegas). On El Archivo's register rows (.bd.rg, contracts.css +
+   kit.css); here only what differs: the first-level row's own columns, the bar, the opened record's crumbs, the steps.
+   Tokens only; 12 px floor; red only for crítico (the chips) and the pulled record's seal inset (.rg-open). */
+.pt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 16px; } /* minmax(0): a long <option> must not widen the whole page past the phone edge (AUDIT 11-07 #3) */
+.pt-k { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.pt-who { display: grid; gap: 6px; max-width: 76ch; }
+.pt-who p { font: 400 15px/1.5 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }
+.pt-who .pt-ex { color: var(--color-text-secondary); }
+.ph + .pt-who, .ct-wrap > .pt-who { margin-top: 24px; }
+
+/* the filter row (El arranque) */
+.pt-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.pt-filters label { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.pt-filters select { max-width: 260px; }
+.pt-count { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-secondary); }
+.pt-clear { min-height: 40px; font: 400 13px/1.4 var(--font-mono); color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 3px; }
+
+/* the row's door: the toggle's ::after spans the row (bd-go); the chevron turns */
+.pt-go { font: inherit; color: inherit; text-align: inherit; white-space: nowrap; }
+.pt-go:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.pt-chev { display: inline-flex; width: 16px; height: 16px; color: var(--color-text-muted); }
+.pt-chev svg { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: no-preference) { .pt-chev svg { transition: transform var(--dur-state) var(--ease-out); } }
+.pt-chev.is-open svg { transform: rotate(90deg); }
+.pt .bd-list .pt-sel { position: relative; display: flex; align-items: center; }
+.pt .bd-list .bd-row.is-open { background: var(--color-background-elevated); }
+
+/* El arranque — days old at the first contract, as a figure (owner 11-07: no bars) */
+.pt-find { margin: 0 0 10px; font: 400 15px/1.5 var(--font-serif); color: var(--color-text-primary); }
+.pt-days { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-secondary); white-space: nowrap; text-align: right; }
+.pt-share { color: var(--color-text-secondary); }
+
+/* Gasto a ciegas — the reading tag and the tenths */
+.pt-ten { font: 600 14px/1.4 var(--font-mono); white-space: nowrap; }
+.pt-ten small { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-secondary); }
+.pt-tag { display: inline-block; padding: 1px 6px; font: 600 12px/1.4 var(--font-mono); white-space: nowrap; color: var(--color-text-secondary); box-shadow: inset 0 0 0 1px var(--color-border); }
+.pt-tag.is-ciegas { color: var(--color-background); background: var(--color-text-primary); box-shadow: none; }
+.pt-tag.is-nocomp { color: var(--color-text-primary); box-shadow: inset 0 0 0 1px var(--color-text-primary); }
+.pt-num { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-secondary); white-space: nowrap; }
+
+/* desktop columns: lead · … · door. Both boards keep El Archivo's row height and type. */
+@media (min-width: 901px) {
+  .bd.rg.pt-arr .bd-row.pt-r { grid-template-columns: 24px 88px 120px minmax(88px, .7fr) minmax(0, 1.6fr) minmax(140px, .9fr) 104px 72px 120px 96px; gap: 0 14px; }
+  .bd.rg.pt-gas .bd-row.pt-r { grid-template-columns: 24px 72px minmax(120px, 1.2fr) 128px 128px 136px 80px 152px; gap: 0 14px; }
+  .pt .bd-row .bd-sec { display: none; }
+  .pt .bd-buyer .bd-dot { display: inline-block; }
+}
+@media (min-width: 901px) and (max-width: 1279px) {
+  .bd.rg.pt-arr .bd-row.pt-r { grid-template-columns: 24px 80px minmax(80px, .7fr) minmax(0, 1.4fr) 100px 64px 112px 96px; }
+  .bd.rg.pt-arr .pt-r > .bd-age, .bd.rg.pt-arr .pt-r > .bd-cat { display: none; }
+  .bd.rg.pt-gas .bd-row.pt-r { grid-template-columns: 24px 64px minmax(96px, 1fr) 112px 112px 128px 64px 120px; gap: 0 12px; }
+}
+/* phone: three lines, as the register — ● buyer … door / company … indicator / bar · procedure */
+@media (max-width: 900px) {
+  .pt .bd-cols { display: none; }
+  .bd.rg.pt-arr .bd-row.pt-r.pt-r { grid-template-columns: 20px minmax(0, 1fr) auto auto; grid-template-areas: 'sel buyer buyer amt' 'sel vendor vendor risk' 'sel bar pct proc'; }
+  .bd.rg.pt-arr .pt-r > .bd-age, .bd.rg.pt-arr .pt-r > .bd-cat { display: none; }
+  .bd.rg.pt-arr .pt-r > .pt-bar { grid-area: bar; text-align: left; }
+  .bd.rg.pt-arr .pt-r > .pt-pct { grid-area: pct; }
+  .bd.rg.pt-gas .bd-row.pt-r.pt-r { grid-template-columns: 20px minmax(0, 1fr) auto; grid-template-areas: 'sel buyer amt' 'sel vis ten' 'sel age tag'; }
+  .bd.rg.pt-gas .pt-r > .pt-vis { grid-area: vis; text-align: left; justify-items: start; }
+  .bd.rg.pt-gas .pt-r > .pt-tenc { grid-area: ten; text-align: right; }
+  .bd.rg.pt-gas .pt-r > .pt-tagc { grid-area: tag; text-align: right; }
+  .bd.rg.pt-gas .pt-r > .pt-n2 { display: none; }
+  .pt .bd-list .pt-sel { grid-area: sel; align-self: start; padding-top: 2px; }
+  .pt-filters label { display: grid; grid-template-columns: 7em minmax(0, 1fr); width: 100%; }
+  .pt-filters select { width: 100%; max-width: none; min-width: 0; }
+}
+
+/* the opened record: crumbs + back, then the register's own rows */
+.pt-open { display: grid; gap: 8px; padding: 8px 0 12px 12px; }
+@media (prefers-reduced-motion: no-preference) { .pt-open { animation: pt-in var(--dur-state) var(--ease-out) both; } }
+@keyframes pt-in { from { opacity: 0; transform: translateY(-4px); } }
+.pt-crumbs { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; font: 400 13px/1.4 var(--font-mono); color: var(--color-text-secondary); }
+.pt-crumbs b { font-weight: 600; color: var(--color-text-primary); }
+.pt-back { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font: 400 13px/1.4 var(--font-mono); color: var(--color-text-primary); }
+.pt-back:active { transform: scale(.97); }
+.pt-back kbd { padding: 0 4px; font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); box-shadow: inset 0 0 0 1px var(--color-border); }
+.pt-back:focus-visible, .pt-open-h:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.pt-open-h { font: 600 16px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.pt-open-h:focus { outline: none; }
+.pt-foot { max-width: 96ch; font: 400 14px/1.5 var(--font-serif); color: var(--color-text-secondary); text-wrap: pretty; }
+.pt-foot b { color: var(--color-text-primary); font-weight: 600; }
+.pt-msg { padding: 12px 0; font: 400 14px/1.5 var(--font-serif); color: var(--color-text-secondary); }
+.pt-years { display: grid; }
+.pt-years li { border-bottom: 1px solid var(--color-border); }
+.pt-years button { display: grid; grid-template-columns: 48px 64px minmax(0, 1fr); align-items: center; gap: 12px; width: 100%; min-height: 40px; font: 400 13px/1.4 var(--font-mono); text-align: left; color: var(--color-text-primary); }
+.pt-years button:disabled { color: var(--color-text-muted); cursor: default; }
+@media (hover: hover) and (pointer: fine) { .pt-years button:not(:disabled):hover { background: var(--color-background-elevated); } }
+.pt-years button:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; }
+.pt-years small { color: var(--color-text-secondary); font-size: 13px; }
+
+/* «Cómo leer esto»: three steps in a row (one column on a phone) */
+.pt-leer { display: grid; gap: 8px; padding-top: 16px; border-top: 1px solid var(--color-border); }
+.pt-leer ol { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 32px; }
+.pt-leer li { display: grid; align-content: start; gap: 4px; }
+.pt-leer p { font: 400 15px/1.5 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }
+.pt-n { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-muted); }
+@media (max-width: 760px) { .pt-leer ol { grid-template-columns: 1fr; } }
+/* «Lo que no dice»: two columns across the measure (no half-empty line) */
+.pt-note { columns: 2 320px; column-gap: 32px; font: 400 13px/1.5 var(--font-serif); color: var(--color-text-secondary); }
+.pt-note b { color: var(--color-text-primary); }
+/* kit.css makes every board cell a grid (the split-flap faces): chips keep their own width */
+.pt .bd-list .pt-tagc, .pt .bd-list .bd-risk { justify-items: start; }
+@media (max-width: 900px) { .pt .bd-list .pt-tagc, .pt .bd-list .pt-tenc, .pt .bd-list .bd-risk { justify-items: end; } }
+@media (max-width: 760px) {
+  .pt-years button { grid-template-columns: 44px minmax(0, 1fr); gap: 2px 8px; padding: 6px 0; }
+  .pt-years button small { grid-column: 2; }
+}
+.pt-roll { display: inline-flex; align-items: center; margin-left: auto; }
+.pt-views { margin-top: 16px; font: 400 14px/1.4 var(--font-serif); }
+/* the opened record's foot: the sentence + its door beside it */
+.pt-footrow { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; }
+.pt-footrow .pt-foot { flex: 1 1 480px; }
+/* the masthead's ear: «¿Quién es?» beside the h1 */
+.mh-ear .pt-who { max-width: 52ch; padding-top: 4px; }
+@media (min-width: 1024px) { .mh-ear .pt-who { padding-left: 24px; border-left: 1px solid var(--color-border); } }
+.mh-body--ear > .mh-ear:has(> .pt-who) { align-self: stretch; }
+.mh-ear .pt-who p { font-size: 17px; line-height: 1.5; }

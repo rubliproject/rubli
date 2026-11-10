@@ -1,0 +1,197 @@
+import { useTranslation } from 'react-i18next'
+import { ScrollReveal, AnimatedNumber, AnimatedFill } from '@/components/ui/Reveal'
+import { cn } from '@/lib/utils'
+
+interface AdminStats {
+  totalContracts: number
+  totalValueBn: number
+  daPct: number
+  avgRisk: number
+  peakYear?: number
+  peakDaPct?: number
+  notableCase?: string
+  notableCaseValue?: string
+}
+
+type EraKey = 'fox' | 'calderon' | 'pena' | 'amlo' | 'sheinbaum'
+type PartyKey = 'PAN' | 'PRI' | 'MORENA'
+
+interface AdministrationActProps {
+  era: EraKey
+  years: string
+  president: string
+  party: PartyKey
+  verdict: string
+  stats: AdminStats
+  isHighlight?: boolean
+  className?: string
+}
+
+const PARTY_COLORS: Record<PartyKey, { border: string; badge: string; badgeText: string; accent: string }> = {
+  PAN: {
+    border: 'var(--color-sector-educacion)',
+    badge: 'bg-sector-educacion',
+    badgeText: 'text-white',
+    accent: 'var(--color-sector-educacion)',
+  },
+  PRI: {
+    border: 'var(--color-sector-hacienda)',
+    badge: 'bg-sector-hacienda',
+    badgeText: 'text-white',
+    accent: 'var(--color-sector-hacienda)',
+  },
+  MORENA: {
+    border: 'var(--color-sector-salud)',
+    badge: 'bg-risk-critical',
+    badgeText: 'text-text-primary',
+    accent: 'var(--color-sector-salud)',
+  },
+}
+
+const ERA_LABELS: Record<EraKey, string> = {
+  fox: 'Vicente Fox',
+  calderon: 'Felipe Calderon',
+  pena: 'Enrique Pena Nieto',
+  amlo: 'Andres Manuel Lopez Obrador',
+  sheinbaum: 'Claudia Sheinbaum',
+}
+
+const EU_DA_LINE = 10 // EU Single Market Scoreboard direct-award line (%)
+
+export default function AdministrationAct({
+  era,
+  years,
+  president,
+  party,
+  verdict,
+  stats,
+  isHighlight = false,
+  className,
+}: AdministrationActProps) {
+  const { t } = useTranslation('administrations')
+  const partyStyle = PARTY_COLORS[party]
+  const presidentLabel = ERA_LABELS[era] || president
+
+  const statCards: { label: string; value: number; suffix: string; decimals: number }[] = [
+    { label: t('actCard.contracts'), value: stats.totalContracts, suffix: '', decimals: 0 },
+    { label: t('actCard.totalValue'), value: stats.totalValueBn, suffix: 'B', decimals: 1 },
+    { label: t('actCard.directAward'), value: stats.daPct, suffix: '%', decimals: 1 },
+    { label: t('actCard.avgRisk'), value: stats.avgRisk, suffix: '', decimals: 2 },
+  ]
+
+  return (
+    <ScrollReveal className={cn('my-8', className)}>
+      <article
+        className={cn(
+          'relative rounded-sm overflow-hidden transition-colors',
+          isHighlight ? 'bg-background-card' : 'bg-background-card'
+        )}
+        style={{
+          borderLeft: `4px solid ${partyStyle.border}`,
+          boxShadow: isHighlight ? `0 0 40px ${partyStyle.border}15` : undefined,
+        }}
+        aria-label={`Administración ${presidentLabel} (${years})`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex items-center gap-3">
+            <h3 className={cn(
+              'font-bold text-text-primary',
+              isHighlight ? 'text-xl md:text-2xl' : 'text-lg md:text-xl'
+            )}>
+              {presidentLabel}
+            </h3>
+            <span
+              className={cn(
+                'inline-flex items-center px-2 py-0.5 rounded text-[12px] font-bold ct-sc leading-none',
+                partyStyle.badge,
+                partyStyle.badgeText
+              )}
+            >
+              {party}
+            </span>
+          </div>
+          <span className="text-sm text-text-muted tabular-nums font-mono">{years}</span>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-5 pb-4">
+          {statCards.map((s) => (
+            <div
+              key={s.label}
+              className="rounded-sm bg-background-elevated px-3 py-2.5"
+            >
+              <p className="text-[12px] ct-sc text-text-muted mb-1">{s.label}</p>
+              <AnimatedNumber
+                value={s.value}
+                suffix={s.suffix}
+                decimals={s.decimals}
+                duration={1400}
+                className={cn(
+                  'text-lg font-bold tabular-nums',
+                  s.label === t('actCard.directAward') && s.value > EU_DA_LINE
+                    ? 'text-risk-critical'
+                    : 'text-text-primary'
+                )}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* DA% comparison bar */}
+        <div className="px-5 pb-4">
+          <div className="flex items-center gap-3 text-[12px] text-text-muted mb-1">
+            <span>{t('actCard.daVsOecd', { pct: EU_DA_LINE })}</span>
+          </div>
+          <div className="relative">
+            <AnimatedFill
+              pct={Math.min(stats.daPct, 100)}
+              color={stats.daPct > EU_DA_LINE ? partyStyle.accent : 'var(--color-text-muted)'}
+              height="h-2.5"
+              delay={300}
+            />
+            {/* EU scoreboard marker */}
+            <div
+              className="absolute top-0 h-2.5 border-r-2 border-dashed border-border"
+              style={{ left: `${EU_DA_LINE}%` }}
+              aria-hidden="true"
+            />
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[12px] text-text-muted">0%</span>
+            <span className="text-[12px] text-text-muted">{t('actCard.oecdBenchmark', { pct: EU_DA_LINE })}</span>
+            <span className="text-[12px] text-text-muted">100%</span>
+          </div>
+        </div>
+
+        {/* Notable case */}
+        {stats.notableCase && (
+          <div className="px-5 pb-3">
+            <div className="flex items-center gap-2 text-xs text-text-muted">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-risk-high" aria-hidden="true" />
+              <span>{t('actCard.notableCase')} <span className="text-text-secondary font-medium">{stats.notableCase}</span></span>
+              {stats.notableCaseValue && (
+                <span className="text-risk-critical font-bold">{stats.notableCaseValue}</span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Verdict */}
+        <div
+          className="px-5 py-4 border-t border-border"
+          style={{
+            backgroundColor: isHighlight ? `${partyStyle.border}08` : undefined,
+          }}
+        >
+          <p className={cn(
+            'text-text-secondary leading-relaxed',
+            isHighlight ? 'text-base md:text-lg' : 'text-sm md:text-base'
+          )}>
+            {verdict}
+          </p>
+        </div>
+      </article>
+    </ScrollReveal>
+  )
+}

@@ -1,0 +1,2594 @@
+import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { caseLibraryApi, ariaApi } from '@/api/client'
+import { AddToDossierButton } from '@/components/AddToDossierButton'
+import { InstitutionBadge } from '@/components/InstitutionBadge'
+import { ArrowLeft, ExternalLink, ArrowUpRight } from 'lucide-react'
+import { DATA_LAST_YEAR, RISK_COLORS, getRiskLevelFromScore, SECTORS } from '@/lib/constants'
+import { useGroundTruthCount } from '@/hooks/useGroundTruthCount'
+import { DotBar } from '@/components/ui/DotBar'
+import type { FraudType, LinkedVendor, ScandalDetail } from '@/api/types'
+import { fadeUp, DUR, css } from '@/lib/motion'
+import { EntityIdentityChip } from '@/components/ui/EntityIdentityChip'
+// EditorialTimeline import deferred to follow-up cases-P2 — Cases agent timed
+// out before wiring it. The current scandal_timeline JSX block stays.
+import { formatCompactMXN, formatDualCurrency, safeHttpUrl } from '@/lib/utils'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bible §2: cream page + white cards + warm border + dark ink.
+// Named palette tokens kept for minimal-diff refactor; mapped to CSS vars.
+// ─────────────────────────────────────────────────────────────────────────────
+const BG = 'var(--color-background)'
+const PANEL = 'var(--color-background-card)'
+const PANEL_2 = 'var(--color-background-elevated)'
+const BORDER = 'var(--color-border)'
+const BORDER_STRONG = 'var(--color-border-hover)'
+const TEXT_PRIMARY = 'var(--color-text-primary)'
+const TEXT_SECONDARY = 'var(--color-text-secondary)'
+const TEXT_MUTED = 'var(--color-text-muted)'
+const TEXT_FAINT = 'var(--color-text-muted)'
+const CRIMSON_HI = 'var(--color-risk-critical)'
+const AMBER = 'var(--color-risk-high)'
+const EMERALD = 'var(--color-accent)'  // bible: no green; use amber gold for positive signal
+const CYAN = 'var(--color-oecd)'
+
+// Local DotBar replaced by the canonical primitive from @/components/ui/DotBar.
+// See marathon Batch B critique — page-local empty-dot fill `#2d2926` was
+// dark-mode residue on the cream base. Cream-mode tokens for the empty-dot
+// states still used by the timeline + risk grid below:
+const DOT_EMPTY_FILL = 'var(--color-background-elevated)'
+const DOT_EMPTY_STROKE = 'var(--color-border-hover)'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Fraud-type accent colors
+// ─────────────────────────────────────────────────────────────────────────────
+const FRAUD_ACCENT: Record<string, string> = {
+  ghost_company: CRIMSON_HI,
+  bid_rigging: '#a78bfa',
+  overpricing: '#fb923c',
+  conflict_of_interest: '#c084fc',
+  embezzlement: AMBER,
+  bribery: '#fb7185',
+  procurement_fraud: '#facc15',
+  monopoly: '#60a5fa',
+  emergency_fraud: CYAN,
+  tender_rigging: '#818cf8',
+  other: '#94a3b8',
+}
+
+const FRAUD_LABEL_EN: Record<string, string> = {
+  ghost_company: 'Ghost Company',
+  bid_rigging: 'Bid Rigging',
+  overpricing: 'Overpricing',
+  conflict_of_interest: 'Conflict of Interest',
+  embezzlement: 'Embezzlement',
+  bribery: 'Bribery',
+  procurement_fraud: 'Procurement Fraud',
+  monopoly: 'Monopoly',
+  emergency_fraud: 'Emergency Fraud',
+  tender_rigging: 'Tender Rigging',
+  other: 'Other',
+}
+
+const ADMIN_LABEL_EN: Record<string, string> = {
+  fox: 'Fox (2000–2006)',
+  calderon: 'Calderón (2006–2012)',
+  epn: 'Peña Nieto (2012–2018)',
+  amlo: 'López Obrador (2018–2024)',
+  sheinbaum: 'Sheinbaum (2024–)',
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Legal status styling
+// ─────────────────────────────────────────────────────────────────────────────
+function legalStatusMeta(status: string, lang: string): {
+  accent: string
+  bg: string
+  border: string
+  headline: string
+  subline: string
+  label: string
+} {
+  const es = lang === 'es'
+  switch (status) {
+    case 'convicted':
+      return {
+        accent: EMERALD,
+        bg: 'rgba(16,185,129,0.08)',
+        border: 'rgba(16,185,129,0.25)',
+        headline: es ? 'Condena penal obtenida' : 'Criminal conviction obtained',
+        subline: es
+          ? 'Un tribunal emitió sentencia condenatoria contra al menos un actor vinculado a este caso.'
+          : 'A court of law returned a guilty verdict against at least one actor tied to this case.',
+        label: es ? 'Condenado' : 'Convicted',
+      }
+    case 'prosecuted':
+      return {
+        accent: '#fb923c',
+        bg: 'rgba(251,146,60,0.08)',
+        border: 'rgba(251,146,60,0.25)',
+        headline: es ? 'Proceso penal en curso' : 'Prosecution in progress',
+        subline: es
+          ? 'Se han presentado cargos formales; el proceso judicial está en marcha.'
+          : 'Formal charges have been filed; trial proceedings are under way.',
+        label: es ? 'Procesado' : 'Prosecuted',
+      }
+    case 'investigation':
+      return {
+        accent: AMBER,
+        bg: 'rgba(245,158,11,0.08)',
+        border: 'rgba(245,158,11,0.25)',
+        headline: es ? 'Bajo investigación activa' : 'Under active investigation',
+        subline: es
+          ? 'Hay una investigación administrativa o penal abierta; no se han presentado cargos.'
+          : 'An administrative or criminal inquiry is open; no charges have been filed.',
+        label: es ? 'Investigación' : 'Investigation',
+      }
+    case 'acquitted':
+      return {
+        accent: '#60a5fa',
+        bg: 'rgba(96,165,250,0.08)',
+        border: 'rgba(96,165,250,0.25)',
+        headline: es ? 'Imputados absueltos' : 'Defendants acquitted',
+        subline: es
+          ? 'El tribunal emitió veredicto de no culpabilidad. El expediente factual permanece en el dominio público.'
+          : 'The court returned a not-guilty verdict. The factual record remains in the public domain.',
+        label: es ? 'Absuelto' : 'Acquitted',
+      }
+    case 'dismissed':
+      return {
+        accent: TEXT_MUTED,
+        bg: 'rgba(120,113,108,0.08)',
+        border: 'rgba(120,113,108,0.25)',
+        headline: es ? 'Caso desestimado' : 'Case dismissed',
+        subline: es
+          ? 'El proceso fue sobreseído sin condena. Ver notas para contexto jurisdiccional.'
+          : 'Proceedings were dismissed without a conviction. See notes for jurisdictional context.',
+        label: es ? 'Desestimado' : 'Dismissed',
+      }
+    case 'impunity':
+      return {
+        accent: CRIMSON_HI,
+        bg: 'rgba(239,68,68,0.08)',
+        border: 'rgba(239,68,68,0.28)',
+        headline: es ? 'Sin condenas en registros judiciales públicos' : 'No convictions recorded in public court records',
+        subline: es
+          ? 'A pesar de la evidencia documentada, no se han obtenido sanciones penales — rasgo distintivo de los escándalos de contratación en México.'
+          : 'Despite documented evidence, no criminal sanctions have been obtained — a signature feature of Mexican procurement scandals.',
+        label: es ? 'Impunidad' : 'Impunity',
+      }
+    default:
+      return {
+        accent: TEXT_MUTED,
+        bg: 'rgba(120,113,108,0.06)',
+        border: 'rgba(120,113,108,0.25)',
+        headline: es ? 'Resultado judicial sin resolver' : 'Legal outcome unresolved',
+        subline: es
+          ? 'Los registros públicos aún no documentan una resolución judicial final.'
+          : 'Public records do not yet document a final judicial disposition.',
+        label: es ? 'Sin resolver' : 'Unresolved',
+      }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function formatMXN(n?: number | null): string {
+  if (!n) return '—'
+  return formatDualCurrency(n)
+}
+
+function formatCompact(n: number): string {
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`
+  if (n >= 1e3) return `${(n / 1e3).toFixed(0)}K`
+  return String(n)
+}
+
+function titleCase(s: string | null | undefined): string {
+  // 2026-05-09: harness-found bug — null was being passed in 11 separate
+  // production sessions (TypeError: Cannot read properties of null at M).
+  // Most likely culprits: data.administration, data.fraud_type, vendor.role,
+  // vendor.evidence_strength, sector — any backend nullable field reaching
+  // this function blows the page via ErrorBoundary. Now defaults to '—'.
+  if (s == null || s === '') return '—'
+  return s.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/**
+ * Humanize the GroundTruth match_method enum. Raw values like
+ * "orphaned_no_match" or "rfc_exact" read as database jargon. This
+ * maps to plain-language labels journalists understand.
+ */
+function humanizeMatchMethod(method: string, lang: string): string {
+  const isEs = lang === 'es'
+  const map: Record<string, { en: string; es: string }> = {
+    orphaned_no_match: { en: 'Not in COMPRANET', es: 'Sin coincidencia en COMPRANET' },
+    rfc_exact:         { en: 'RFC exact match',  es: 'Coincidencia exacta de RFC' },
+    rfc_fuzzy:         { en: 'RFC partial match', es: 'Coincidencia parcial de RFC' },
+    name_exact:        { en: 'Name exact match',  es: 'Coincidencia exacta de nombre' },
+    name_fuzzy:        { en: 'Name partial match', es: 'Coincidencia parcial de nombre' },
+    manual:            { en: 'Manually verified', es: 'Verificación manual' },
+  }
+  const entry = map[method]
+  if (!entry) return titleCase(method)
+  return isEs ? entry.es : entry.en
+}
+
+// Format a date string (ISO 'YYYY-MM-DD' or 'YYYY-MM') to 'Mon YYYY' in locale
+function formatDateShort(raw: string | null | undefined, lang: string): string {
+  if (!raw) return ''
+  // Accept '2024-03' or '2024-03-15T...' — take first 7 chars
+  const ym = raw.slice(0, 7)
+  const parts = ym.split('-')
+  if (parts.length < 2) return raw
+  const year = Number(parts[0])
+  const month = Number(parts[1])
+  if (!year || !month || month < 1 || month > 12) return raw
+  const locale = lang === 'es' ? 'es-MX' : 'en-US'
+  try {
+    return new Intl.DateTimeFormat(locale, { month: 'short', year: 'numeric' }).format(
+      new Date(year, month - 1, 1),
+    )
+  } catch {
+    return ym
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared typography
+// ─────────────────────────────────────────────────────────────────────────────
+const OVERLINE: React.CSSProperties = {
+  fontSize: 12,
+  fontFamily: 'ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace',
+  letterSpacing: '0.2em',
+  textTransform: 'uppercase',
+  color: TEXT_FAINT,
+  fontWeight: 700,
+}
+
+const SERIF_HEAD: React.CSSProperties = {
+  fontFamily: '"Playfair Display", var(--font-family-serif, Georgia, serif)',
+  fontWeight: 800,
+  letterSpacing: '-0.015em',
+  color: TEXT_PRIMARY,
+}
+
+const MONO: React.CSSProperties = {
+  fontFamily: 'ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace',
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Small pieces
+// ─────────────────────────────────────────────────────────────────────────────
+function Pill({
+  children,
+  color = TEXT_MUTED,
+  border,
+  bg,
+}: {
+  children: React.ReactNode
+  color?: string
+  border?: string
+  bg?: string
+}) {
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        fontSize: 12,
+        fontFamily: 'ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace',
+        fontWeight: 700,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        padding: '5px 10px',
+        borderRadius: 2,
+        color,
+        border: `1px solid ${border ?? 'rgba(255,255,255,0.1)'}`,
+        background: bg ?? 'transparent',
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Section wrapper — numbered acts, compact
+// ─────────────────────────────────────────────────────────────────────────────
+function Section({
+  index,
+  label,
+  title,
+  subtitle,
+  children,
+}: {
+  index: string
+  label: string
+  title: string
+  subtitle?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section style={{ borderTop: `1px solid ${BORDER}`, padding: '16px 0 6px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 6, flexWrap: 'wrap' }}>
+        <span style={{ ...OVERLINE, color: CRIMSON_HI }}>
+          {index} · {label}
+        </span>
+      </div>
+      <h2 style={{ ...SERIF_HEAD, fontSize: 'clamp(1.25rem, 2.2vw, 1.65rem)', margin: '0 0 6px', lineHeight: 1.15 }}>
+        {title}
+      </h2>
+      {subtitle && (
+        <p
+          style={{
+            color: TEXT_SECONDARY,
+            fontSize: 12,
+            maxWidth: 680,
+            marginBottom: 16,
+            lineHeight: 1.55,
+          }}
+        >
+          {subtitle}
+        </p>
+      )}
+      {children}
+    </section>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL 1 — Contract timeline bar: shows fraud period on a 2002–DATA_LAST_YEAR axis
+// ─────────────────────────────────────────────────────────────────────────────
+function YearRangeBar({
+  yearStart,
+  yearEnd,
+  discoveryYear,
+  axisStart = 2002,
+  axisEnd = DATA_LAST_YEAR,
+}: {
+  yearStart?: number
+  yearEnd?: number
+  discoveryYear?: number
+  axisStart?: number
+  axisEnd?: number
+}) {
+  const width = 980
+  const height = 120
+  const paddingX = 40
+  const innerW = width - paddingX * 2
+  const years = axisEnd - axisStart + 1
+  const yearWidth = innerW / years
+
+  const fraudStart = yearStart ?? axisStart
+  const fraudEnd = yearEnd ?? fraudStart
+  const clampStart = Math.max(axisStart, Math.min(axisEnd, fraudStart))
+  const clampEnd = Math.max(axisStart, Math.min(axisEnd, fraudEnd))
+
+  const bandX = paddingX + (clampStart - axisStart) * yearWidth
+  const bandW = Math.max(yearWidth, (clampEnd - clampStart + 1) * yearWidth)
+  const baselineY = 72
+  const tickH = 14
+
+  return (
+    <div
+      style={{
+        background: PANEL,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 2,
+        padding: '24px 20px 20px',
+        overflowX: 'auto',
+      }}
+    >
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        preserveAspectRatio="xMidYMid meet"
+        width="100%"
+        height={height}
+        style={{ display: 'block' }}
+        aria-hidden
+      >
+        {/* Axis grid — ticks every year */}
+        {Array.from({ length: years }, (_, i) => {
+          const year = axisStart + i
+          const x = paddingX + i * yearWidth
+          const isMajor = year % 5 === 0 || year === axisEnd
+          return (
+            <line
+              key={year}
+              x1={x}
+              x2={x}
+              y1={baselineY}
+              y2={baselineY + (isMajor ? tickH : tickH / 2)}
+              stroke={isMajor ? DOT_EMPTY_STROKE : 'var(--color-border)'}
+              strokeWidth={1}
+            />
+          )
+        })}
+
+        {/* Baseline */}
+        <line
+          x1={paddingX}
+          x2={paddingX + innerW}
+          y1={baselineY}
+          y2={baselineY}
+          stroke={DOT_EMPTY_STROKE}
+          strokeWidth={1}
+        />
+
+        {/* Fraud period amber band */}
+        <rect
+          x={bandX}
+          y={baselineY - 26}
+          width={bandW}
+          height={26}
+          fill={AMBER}
+          opacity={0.18}
+        />
+        <rect
+          x={bandX}
+          y={baselineY - 26}
+          width={bandW}
+          height={26}
+          fill="none"
+          stroke={AMBER}
+          strokeWidth={1}
+          opacity={0.6}
+        />
+        <line
+          x1={bandX}
+          x2={bandX}
+          y1={baselineY - 30}
+          y2={baselineY - 26}
+          stroke={AMBER}
+          strokeWidth={1.5}
+        />
+        <line
+          x1={bandX + bandW}
+          x2={bandX + bandW}
+          y1={baselineY - 30}
+          y2={baselineY - 26}
+          stroke={AMBER}
+          strokeWidth={1.5}
+        />
+        <text
+          x={bandX + bandW / 2}
+          y={baselineY - 34}
+          fill={AMBER}
+          fontSize={12}
+          fontFamily='ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace'
+          fontWeight={700}
+          letterSpacing="0.12em"
+          textAnchor="middle"
+        >
+          {clampStart === clampEnd
+            ? `FRAUD · ${clampStart}`
+            : `FRAUD PERIOD · ${clampStart}–${clampEnd}`}
+        </text>
+
+        {/* Discovery marker */}
+        {discoveryYear && discoveryYear >= axisStart && discoveryYear <= axisEnd && (
+          <g>
+            <line
+              x1={paddingX + (discoveryYear - axisStart) * yearWidth + yearWidth / 2}
+              x2={paddingX + (discoveryYear - axisStart) * yearWidth + yearWidth / 2}
+              y1={baselineY - 6}
+              y2={baselineY + tickH + 4}
+              stroke={CYAN}
+              strokeWidth={1.5}
+            />
+            <circle
+              cx={paddingX + (discoveryYear - axisStart) * yearWidth + yearWidth / 2}
+              cy={baselineY}
+              r={4}
+              fill={CYAN}
+            />
+          </g>
+        )}
+
+        {/* Year labels at majors */}
+        {Array.from({ length: years }, (_, i) => {
+          const year = axisStart + i
+          if (year % 5 !== 0 && year !== axisEnd && year !== axisStart) return null
+          const x = paddingX + i * yearWidth
+          return (
+            <text
+              key={`lbl-${year}`}
+              x={x}
+              y={baselineY + tickH + 14}
+              fill={TEXT_MUTED}
+              fontSize={12}
+              fontFamily='ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace'
+              textAnchor="middle"
+            >
+              {year}
+            </text>
+          )
+        })}
+
+        {/* Discovery label */}
+        {discoveryYear && (
+          <text
+            x={paddingX + (discoveryYear - axisStart) * yearWidth + yearWidth / 2}
+            y={baselineY + tickH + 26}
+            fill={CYAN}
+            fontSize={13}
+            fontFamily='ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, monospace'
+            fontWeight={700}
+            letterSpacing="0.12em"
+            textAnchor="middle"
+          >
+            DISCOVERED
+          </text>
+        )}
+      </svg>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginTop: 12,
+          fontSize: 12,
+          ...MONO,
+          color: TEXT_MUTED,
+          letterSpacing: '0.08em',
+        }}
+      >
+        <span>
+          <span style={{ color: TEXT_FAINT }}>AXIS · </span>
+          <span>{axisStart}–{axisEnd}</span>
+        </span>
+        <span>
+          <span style={{ color: TEXT_FAINT }}>FRAUD WINDOW · </span>
+          <span style={{ color: AMBER }}>
+            {clampStart === clampEnd ? `${clampStart}` : `${clampStart}–${clampEnd}`}
+          </span>
+          {discoveryYear && (
+            <>
+              <span style={{ color: TEXT_FAINT, marginLeft: 16 }}>DISCLOSED · </span>
+              <span style={{ color: CYAN }}>{discoveryYear}</span>
+            </>
+          )}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL 2 — Risk distribution dot-matrix (derived from linked vendor scores)
+// ─────────────────────────────────────────────────────────────────────────────
+interface RiskDist {
+  critical: number
+  high: number
+  medium: number
+  low: number
+  totalVendors: number
+  hasData: boolean
+}
+
+function computeRiskDistribution(vendors: LinkedVendor[]): RiskDist {
+  const scored = vendors.filter((v) => v.avg_risk_score != null)
+  if (scored.length === 0) {
+    return { critical: 0, high: 0, medium: 0, low: 0, totalVendors: 0, hasData: false }
+  }
+  let c = 0, h = 0, m = 0, l = 0
+  for (const v of scored) {
+    const lvl = getRiskLevelFromScore(v.avg_risk_score!)
+    if (lvl === 'critical') c++
+    else if (lvl === 'high') h++
+    else if (lvl === 'medium') m++
+    else l++
+  }
+  const t = scored.length
+  return {
+    critical: (c / t) * 100,
+    high: (h / t) * 100,
+    medium: (m / t) * 100,
+    low: (l / t) * 100,
+    totalVendors: t,
+    hasData: true,
+  }
+}
+
+function RiskDistribution({ dist }: { dist: RiskDist }) {
+  if (!dist.hasData) {
+    return (
+      <div
+        style={{
+          background: PANEL,
+          border: `1px dashed ${BORDER_STRONG}`,
+          borderRadius: 2,
+          padding: '28px 24px',
+          textAlign: 'center',
+          fontSize: 12,
+          color: TEXT_MUTED,
+          lineHeight: 1.6,
+        }}
+      >
+        <div style={{ ...OVERLINE, color: AMBER, marginBottom: 8 }}>Data unavailable</div>
+        Risk distribution requires matched vendors with model scores.
+        Vendor identification for this case is in progress.
+      </div>
+    )
+  }
+
+  const rows: Array<{ label: string; pct: number; color: string; sev: string }> = [
+    { label: 'Critical', pct: dist.critical, color: RISK_COLORS.critical, sev: '≥ 0.60' },
+    { label: 'High', pct: dist.high, color: RISK_COLORS.high, sev: '≥ 0.40' },
+    { label: 'Medium', pct: dist.medium, color: RISK_COLORS.medium, sev: '≥ 0.25' },
+    { label: 'Low', pct: dist.low, color: '#52525b', sev: '< 0.25' },
+  ]
+
+  const DOT = 8
+  const GAP = 4
+  const N = 20
+
+  return (
+    <div
+      style={{
+        background: PANEL,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 2,
+        padding: '22px 24px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'baseline',
+          marginBottom: 18,
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div style={{ ...OVERLINE, color: TEXT_MUTED }}>
+          Risk level · {dist.totalVendors} scored {dist.totalVendors === 1 ? 'vendor' : 'vendors'}
+        </div>
+        <div style={{ fontSize: 12, color: TEXT_FAINT, ...MONO, letterSpacing: '0.12em' }}>
+          EACH DOT = 5% OF MATCHED VENDORS
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gap: 10 }}>
+        {rows.map((r) => {
+          const filled = Math.max(0, Math.min(N, Math.round((r.pct / 100) * N)))
+          return (
+            <div
+              key={r.label}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '100px minmax(0, 1fr) 70px',
+                alignItems: 'center',
+                gap: 14,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600, letterSpacing: '0.02em' }}>
+                  {r.label}
+                </div>
+                <div style={{ fontSize: 13, ...MONO, color: TEXT_FAINT, letterSpacing: '0.1em' }}>
+                  {r.sev}
+                </div>
+              </div>
+              <svg
+                width={N * (DOT + GAP) - GAP}
+                height={DOT}
+                style={{ display: 'block' }}
+                aria-hidden
+              >
+                {Array.from({ length: N }, (_, i) => (
+                  <circle
+                    key={i}
+                    cx={i * (DOT + GAP) + DOT / 2}
+                    cy={DOT / 2}
+                    r={DOT / 2}
+                    fill={i < filled ? r.color : DOT_EMPTY_FILL}
+                    stroke={i < filled ? undefined : DOT_EMPTY_STROKE}
+                    strokeWidth={i < filled ? 0 : 0.5}
+                  />
+                ))}
+              </svg>
+              <div
+                style={{
+                  ...MONO,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: r.pct > 0 ? r.color : TEXT_FAINT,
+                  textAlign: 'right',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                {r.pct.toFixed(0)}%
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Fraud-type → ARIA pattern mapping. The case's fraud_type is the human
+// label from the documenting source; the ARIA pattern (P1-P7) is what the
+// model actually trains on. Showing the mapping makes the data flow
+// concrete: "this case taught the model to recognize the P5 pattern."
+// ─────────────────────────────────────────────────────────────────────────────
+// D16 judge 1: the pattern NAMES come from aria:patterns.* (= backend
+// public_labels.PATTERN_LABELS) — one name per code platform-wide; only the
+// fraud-type → code mapping lives here.
+const FRAUD_TO_PATTERN: Record<string, string> = {
+  monopoly: 'P1',
+  ghost_company: 'P2',
+  bid_rigging: 'P4',
+  overpricing: 'P5',
+  procurement_fraud: 'P5',
+  tender_rigging: 'P4',
+  infrastructure_overrun: 'P5',
+  conflict_of_interest: 'P6',
+  embezzlement: 'P7',
+  bribery: 'P6',
+  emergency_fraud: 'P5',
+}
+function fraudToAriaPattern(fraudType: string): { code: string; label: string; labelEs: string } {
+  const code = FRAUD_TO_PATTERN[fraudType] ?? 'P7'
+  return {
+    code,
+    label: i18n.t(`aria:patterns.${code}`, { lng: 'en' }),
+    labelEs: i18n.t(`aria:patterns.${code}`, { lng: 'es' }),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL — Model Provenance panel
+// Surfaces the data flow that backs every claim of "this case trained the
+// model." Three explicit stat tiles + a flow diagram showing
+// documented → matched → labeled.
+// ─────────────────────────────────────────────────────────────────────────────
+function ModelProvenancePanel({
+  data,
+  linkedVendors,
+  totalContracts,
+  lang,
+}: {
+  data: ScandalDetail
+  linkedVendors: LinkedVendor[]
+  totalContracts: number
+  lang: string
+}) {
+  const docCount = linkedVendors.length || (data.key_actors ?? []).filter((a) => a.role === 'vendor').length
+  const matchedCount = linkedVendors.filter((v) => v.contract_count > 0).length
+  const ariaPattern = fraudToAriaPattern(data.fraud_type)
+  const severity = data.severity ?? 0
+  const severityLabel = ['', 'Low', 'Medium', 'High', 'Confirmed'][severity] || '—'
+  const severityLabelEs = ['', 'Bajo', 'Medio', 'Alto', 'Confirmado'][severity] || '—'
+
+  // Match-rate phrasing — be honest about COMPRANET coverage gaps
+  const matchRate = docCount > 0 ? (matchedCount / docCount) * 100 : 0
+  const isHighCoverage = matchRate >= 50
+  const isPartialCoverage = matchRate > 0 && matchRate < 50
+  const isNoCoverage = matchRate === 0
+
+  return (
+    <div style={{ display: 'grid', gap: 18 }}>
+      {/* Three stat tiles — documented vendors / matched contracts / pattern label */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+          background: 'var(--color-background-card)',
+          border: `1px solid ${BORDER}`,
+          borderRadius: 2,
+        }}
+      >
+        <div style={{ padding: '16px 20px', borderLeft: `1px solid ${BORDER}`, minWidth: 0 }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Proveedores documentados' : 'Documented vendors'}
+          </div>
+          <div style={{ ...MONO, fontSize: 22, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: '-0.02em' }}>
+            {docCount}
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 5, ...MONO }}>
+            {lang === 'es' ? 'en fuentes públicas' : 'in source materials'}
+          </div>
+        </div>
+
+        <div style={{ padding: '16px 20px', borderLeft: `1px solid ${BORDER}`, minWidth: 0 }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Contratos vinculados' : 'Matched contracts'}
+          </div>
+          <div style={{ ...MONO, fontSize: 22, fontWeight: 700, color: matchedCount > 0 ? TEXT_PRIMARY : TEXT_MUTED, letterSpacing: '-0.02em' }}>
+            {totalContracts > 0 ? formatCompact(totalContracts) : '0'}
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 5, ...MONO }}>
+            {matchedCount > 0
+              ? `${matchedCount}/${docCount} ${lang === 'es' ? 'proveedores' : 'vendors'} · ${matchRate.toFixed(0)}%`
+              : (lang === 'es' ? 'pendiente vinculación' : 'pending match')}
+          </div>
+        </div>
+
+        <div style={{ padding: '16px 20px', borderLeft: `1px solid ${BORDER}`, minWidth: 0 }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Patrón ARIA' : 'ARIA pattern'}
+          </div>
+          <div style={{ ...MONO, fontSize: 22, fontWeight: 700, color: 'var(--color-risk-critical)', letterSpacing: '-0.02em' }}>
+            {ariaPattern.code}
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_SECONDARY, marginTop: 5, ...MONO, letterSpacing: '0.04em' }}>
+            {lang === 'es' ? ariaPattern.labelEs : ariaPattern.label}
+          </div>
+        </div>
+
+        <div style={{ padding: '16px 20px', borderLeft: `1px solid ${BORDER}`, minWidth: 0 }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Peso en entrenamiento' : 'Training weight'}
+          </div>
+          <div style={{ ...MONO, fontSize: 22, fontWeight: 700, color: severity >= 3 ? 'var(--color-risk-critical)' : TEXT_PRIMARY, letterSpacing: '-0.02em' }}>
+            {severity}/4
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 5, ...MONO, letterSpacing: '0.04em' }}>
+            {lang === 'es' ? severityLabelEs : severityLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* Flow narrative — explicit data chain with honest match-rate phrasing */}
+      <div
+        style={{
+          padding: '16px 20px',
+          background: 'rgba(160,104,32,0.04)',
+          border: `1px solid rgba(160,104,32,0.20)`,
+          borderLeft: '3px solid var(--color-accent)',
+          borderRadius: 2,
+        }}
+      >
+        <div style={{ ...OVERLINE, color: 'var(--color-accent)', marginBottom: 10 }}>
+          {lang === 'es' ? 'Cadena de datos' : 'Data chain'}
+        </div>
+        <p style={{ fontSize: 13, color: TEXT_SECONDARY, lineHeight: 1.65, margin: 0, maxWidth: 760 }}>
+          {lang === 'es' ? (
+            <>
+              Este caso aporta <strong style={{ color: TEXT_PRIMARY }}>{docCount} proveedores</strong> al corpus de entrenamiento como etiquetas positivas.
+              {isHighCoverage && (
+                <> De ellos, <strong style={{ color: 'var(--color-accent)' }}>{matchedCount} ({matchRate.toFixed(0)}%) están vinculados a {formatCompact(totalContracts)} contratos en COMPRANET</strong> — esos contratos entrenan al modelo a reconocer el patrón <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.labelEs}</strong>.</>
+              )}
+              {isPartialCoverage && (
+                <> De ellos, <strong>{matchedCount} ({matchRate.toFixed(0)}%) están vinculados a {formatCompact(totalContracts)} contratos en COMPRANET</strong>; el resto no fue posible vincular (vacíos de cobertura RFC). Los contratos vinculados entrenan al modelo a reconocer el patrón <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.labelEs}</strong>.</>
+              )}
+              {isNoCoverage && (
+                <> <strong style={{ color: 'var(--color-risk-high)' }}>Ninguno fue vinculado todavía a contratos específicos en COMPRANET</strong> — gap conocido de cobertura RFC en el periodo {data.contract_year_start}–{data.contract_year_end}. Este caso aporta etiquetas narrativas (patrón <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.labelEs}</strong>) pero no contratos identificables; futuras vinculaciones manuales lo harán parte completa del entrenamiento.</>
+              )}
+              {' '}Modelo activo: <Link to="/methodology" style={{ color: 'var(--color-accent)', textDecoration: 'underline', textDecorationColor: 'rgba(160,104,32,0.4)' }}>v0.9.2</Link>.
+            </>
+          ) : (
+            <>
+              This case contributes <strong style={{ color: TEXT_PRIMARY }}>{docCount} vendors</strong> to the training corpus as positive labels.
+              {isHighCoverage && (
+                <> Of those, <strong style={{ color: 'var(--color-accent)' }}>{matchedCount} ({matchRate.toFixed(0)}%) are matched to {formatCompact(totalContracts)} COMPRANET contracts</strong> — those contracts trained the model to recognize the <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.label}</strong> pattern.</>
+              )}
+              {isPartialCoverage && (
+                <> Of those, <strong>{matchedCount} ({matchRate.toFixed(0)}%) are matched to {formatCompact(totalContracts)} COMPRANET contracts</strong>; the rest weren't matchable (RFC-coverage gaps). The matched contracts trained the model on the <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.label}</strong> pattern.</>
+              )}
+              {isNoCoverage && (
+                <> <strong style={{ color: 'var(--color-risk-high)' }}>None have been matched to specific COMPRANET contracts yet</strong> — known RFC-coverage gap for the {data.contract_year_start}–{data.contract_year_end} window. This case contributes narrative labels (the <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPattern.code} {ariaPattern.label}</strong> pattern) but not identifiable contracts; future manual matches will make it a full training contributor.</>
+              )}
+              {' '}Active model: <Link to="/methodology" style={{ color: 'var(--color-accent)', textDecoration: 'underline', textDecorationColor: 'rgba(160,104,32,0.4)' }}>v0.9.2</Link>.
+            </>
+          )}
+        </p>
+      </div>
+
+      {/* What the model NOW flags because of this pattern — the platform's
+          actual value-add. Queries the live ARIA queue for vendors with
+          the same primary_pattern as this case's mapped Px code, and
+          surfaces the top 3 by IPS. Closes the loop: case → label →
+          model → live flagging on new vendors. */}
+      <SimilarPatternsTeaser ariaPatternCode={ariaPattern.code} lang={lang} />
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL — Similar patterns teaser
+// Queries /aria/queue for vendors with the same primary_pattern as this
+// case's mapped ARIA code. Closes the data-flow loop: documented case
+// → pattern label → model trained → vendors NOW flagged. Top 3 by IPS,
+// each linkable to /vendors.
+// ─────────────────────────────────────────────────────────────────────────────
+function SimilarPatternsTeaser({
+  ariaPatternCode,
+  lang,
+}: {
+  ariaPatternCode: string
+  lang: string
+}) {
+  const navigate = useNavigate()
+  const { data, isLoading } = useQuery({
+    queryKey: ['aria-similar', ariaPatternCode],
+    queryFn: () => ariaApi.getQueue({ pattern: ariaPatternCode, tier: 1, per_page: 3 }),
+    staleTime: 5 * 60_000,
+    retry: false,
+  })
+
+  const items = (data?.data ?? []).slice(0, 3)
+  const totalForPattern = data?.pagination?.total ?? 0
+
+  return (
+    <div style={{ paddingTop: 4 }}>
+      <div style={{ ...OVERLINE, color: TEXT_FAINT, letterSpacing: '0.18em', marginBottom: 10 }}>
+        {lang === 'es' ? 'Lo que el modelo ahora detecta' : 'What the model now flags'}
+      </div>
+      <p style={{ fontSize: 12, color: TEXT_MUTED, lineHeight: 1.6, marginBottom: 12, maxWidth: 720 }}>
+        {lang === 'es' ? (
+          <>Habiendo aprendido el patrón <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPatternCode}</strong> de este caso (y otros similares), ARIA marca actualmente <strong style={{ color: TEXT_PRIMARY }}>{totalForPattern.toLocaleString()}</strong> proveedores T1 con la misma firma de patrón. Tres ejemplos:</>
+        ) : (
+          <>Having learned the <strong style={{ color: 'var(--color-risk-critical)' }}>{ariaPatternCode}</strong> pattern from this and similar cases, ARIA currently flags <strong style={{ color: TEXT_PRIMARY }}>{totalForPattern.toLocaleString()}</strong> Tier-1 vendors with the same pattern signature. Three examples:</>
+        )}
+      </p>
+      {isLoading ? (
+        <div style={{ height: 60, background: 'var(--color-background-elevated)', borderRadius: 2, opacity: 0.4 }} />
+      ) : items.length === 0 ? (
+        <p style={{ fontSize: 12, color: TEXT_MUTED, fontStyle: 'normal', margin: 0 }}>
+          {lang === 'es' ? 'Por ahora no hay proveedores de Nivel 1 con este patrón.' : 'No Tier-1 vendors with this pattern currently.'}
+        </p>
+      ) : (
+        <div style={{ display: 'grid', gap: 6 }}>
+          {items.map((v) => {
+            const ips = Math.round((v.ips_final ?? 0) * 100)
+            const lastYear = (v as { last_contract_year?: number | null }).last_contract_year ?? null
+            const flags: ('gt' | 'efos' | 'sfp')[] = []
+            if (v.in_ground_truth) flags.push('gt')
+            if (v.is_efos_definitivo) flags.push('efos')
+            if (v.is_sfp_sanctioned) flags.push('sfp')
+            return (
+              <article
+                key={v.vendor_id}
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate(`/vendors/${v.vendor_id}`)}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(`/vendors/${v.vendor_id}`)}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto auto',
+                  gap: 12,
+                  alignItems: 'center',
+                  padding: '8px 14px',
+                  background: 'var(--color-background-card)',
+                  border: `1px solid ${BORDER}`,
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                  transition: css('border-color', DUR.instant),
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'var(--color-risk-critical)')}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.borderColor = BORDER)}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <EntityIdentityChip
+                    type="vendor"
+                    id={v.vendor_id}
+                    name={v.vendor_name}
+                    riskScore={v.avg_risk_score}
+                    ariaTier={v.ips_tier}
+                    flags={flags.length > 0 ? flags : undefined}
+                    size="sm"
+                  />
+                  <div style={{ fontSize: 12, ...MONO, color: TEXT_MUTED, marginTop: 2, letterSpacing: '0.04em' }}>
+                    {v.primary_sector_name ? titleCase(v.primary_sector_name) + ' · ' : ''}
+                    {v.total_contracts.toLocaleString()} {lang === 'es' ? 'contratos' : 'contracts'}
+                    {lastYear ? ` · ${lang === 'es' ? 'última' : 'last'} ${lastYear}` : ''}
+                  </div>
+                </div>
+                <div style={{ ...MONO, fontSize: 13, fontWeight: 700, color: 'var(--color-risk-critical)', fontVariantNumeric: 'tabular-nums' }}>
+                  {ips}
+                </div>
+                <span style={{ fontSize: 12, ...MONO, color: TEXT_FAINT, letterSpacing: '0.12em' }}>→</span>
+              </article>
+            )
+          })}
+          <Link
+            to={`/aria?pattern=${ariaPatternCode}&tier=1`}
+            style={{
+              fontSize: 12,
+              ...MONO,
+              color: TEXT_MUTED,
+              textDecoration: 'none',
+              letterSpacing: '0.15em',
+              textTransform: 'uppercase',
+              padding: '6px 0',
+              alignSelf: 'flex-start',
+            }}
+            onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = CRIMSON_HI)}
+            onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = TEXT_MUTED)}
+          >
+            {lang === 'es' ? `Ver los ${totalForPattern.toLocaleString()} proveedores →` : `See all ${totalForPattern.toLocaleString()} vendors →`}
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL — Pattern Fingerprint
+// Shown in Section 03 (Risk Signature) when this case has no matched
+// vendors with model scores. Instead of an empty "data unavailable"
+// card, this draws on the live ARIA queue to show how the v0.9.2
+// model actually characterizes the case's mapped pattern (P1-P7) at
+// the population level: vendor count, IPS distribution, sector spread.
+// ─────────────────────────────────────────────────────────────────────────────
+function PatternFingerprint({
+  ariaPatternCode,
+  ariaPatternLabel,
+  lang,
+}: {
+  ariaPatternCode: string
+  ariaPatternLabel: string
+  lang: string
+}) {
+  // Pull a generous sample of vendors with this pattern (any tier)
+  // so we can compute the model's pattern-wide fingerprint.
+  const { data, isLoading } = useQuery({
+    queryKey: ['aria-fingerprint', ariaPatternCode],
+    queryFn: () => ariaApi.getQueue({ pattern: ariaPatternCode, per_page: 100 }),
+    staleTime: 5 * 60_000,
+    retry: false,
+  })
+
+  const items = data?.data ?? []
+  const total = data?.pagination?.total ?? 0
+
+  // Compute the pattern's IPS distribution + sector mix client-side.
+  // Bucket scores into the 4 risk levels matching the v0.9.2 thresholds.
+  const ipsValues = items.map((i) => i.ips_final ?? 0)
+  const avgIps = ipsValues.length > 0 ? ipsValues.reduce((s, v) => s + v, 0) / ipsValues.length : 0
+  const tierCounts = { critical: 0, high: 0, medium: 0, low: 0 }
+  ipsValues.forEach((ips) => {
+    if (ips >= 0.60) tierCounts.critical += 1
+    else if (ips >= 0.40) tierCounts.high += 1
+    else if (ips >= 0.25) tierCounts.medium += 1
+    else tierCounts.low += 1
+  })
+  const sectorCounts: Record<string, number> = {}
+  items.forEach((i) => {
+    const s = i.primary_sector_name?.toLowerCase() ?? 'unknown'
+    sectorCounts[s] = (sectorCounts[s] ?? 0) + 1
+  })
+  const topSectors = Object.entries(sectorCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 4)
+
+  if (isLoading) {
+    return (
+      <div style={{ height: 240, background: 'var(--color-background-elevated)', borderRadius: 2, opacity: 0.4 }} />
+    )
+  }
+
+  if (items.length === 0) {
+    return (
+      <div
+        style={{
+          padding: '24px',
+          background: 'var(--color-background-card)',
+          border: `1px dashed ${BORDER_STRONG}`,
+          borderRadius: 2,
+          textAlign: 'center',
+          fontSize: 12,
+          color: TEXT_MUTED,
+        }}
+      >
+        {lang === 'es'
+          ? `Sin proveedores actualmente marcados con el patrón ${ariaPatternCode}.`
+          : `No vendors currently flagged with the ${ariaPatternCode} pattern.`}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'grid', gap: 18 }}>
+      {/* Headline number — total vendors with this pattern + average IPS */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          background: 'var(--color-background-card)',
+          border: `1px solid ${BORDER}`,
+          borderLeft: `3px solid var(--color-risk-critical)`,
+          borderRadius: 2,
+        }}
+      >
+        <div style={{ padding: '16px 20px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Proveedores con patrón' : 'Vendors with pattern'}
+          </div>
+          <div style={{ ...MONO, fontSize: 26, fontWeight: 700, color: TEXT_PRIMARY, letterSpacing: '-0.02em', lineHeight: 1 }}>
+            {total.toLocaleString()}
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6, ...MONO }}>
+            {ariaPatternCode} · {ariaPatternLabel}
+          </div>
+        </div>
+        <div style={{ padding: '16px 20px', borderRight: `1px solid ${BORDER}` }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'IPS promedio' : 'Average IPS'}
+          </div>
+          <div
+            style={{
+              ...MONO,
+              fontSize: 26,
+              fontWeight: 700,
+              color: avgIps >= 0.6 ? 'var(--color-risk-critical)' : avgIps >= 0.4 ? 'var(--color-risk-high)' : TEXT_PRIMARY,
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+            }}
+          >
+            {Math.round(avgIps * 100)}
+            <span style={{ fontSize: 14, color: TEXT_MUTED, fontWeight: 400 }}>/100</span>
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6, ...MONO }}>
+            {lang === 'es' ? `de ${items.length} muestreados` : `across ${items.length} sampled`}
+          </div>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'En T1 / T2' : 'In T1 / T2'}
+          </div>
+          <div style={{ ...MONO, fontSize: 26, fontWeight: 700, color: 'var(--color-risk-critical)', letterSpacing: '-0.02em', lineHeight: 1 }}>
+            {tierCounts.critical + tierCounts.high}
+          </div>
+          <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 6, ...MONO }}>
+            {lang === 'es' ? 'crítico + alto riesgo' : 'critical + high risk'}
+          </div>
+        </div>
+      </div>
+
+      {/* Tier-distribution stacked bar — what the model produces for this pattern */}
+      <div>
+        <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+          {lang === 'es' ? 'Distribución de riesgo' : 'Risk distribution'}
+        </div>
+        <div style={{ display: 'flex', height: 12, borderRadius: 1, overflow: 'hidden', background: 'var(--color-background-elevated)' }}>
+          {[
+            { key: 'critical', label: lang === 'es' ? 'Crítico' : 'Critical', count: tierCounts.critical, color: 'var(--color-risk-critical)' },
+            { key: 'high', label: lang === 'es' ? 'Alto' : 'High', count: tierCounts.high, color: 'var(--color-risk-high)' },
+            { key: 'medium', label: lang === 'es' ? 'Medio' : 'Medium', count: tierCounts.medium, color: 'var(--color-risk-medium)' },
+            { key: 'low', label: lang === 'es' ? 'Bajo' : 'Low', count: tierCounts.low, color: 'var(--color-text-muted)' },
+          ].map((seg) => {
+            const pct = items.length > 0 ? (seg.count / items.length) * 100 : 0
+            if (pct < 0.5) return null
+            return (
+              <div
+                key={seg.key}
+                title={`${seg.label}: ${seg.count} · ${pct.toFixed(0)}%`}
+                style={{
+                  width: `${pct}%`,
+                  background: seg.color,
+                  borderRight: '1px solid var(--color-background)',
+                  opacity: 0.92,
+                }}
+              />
+            )
+          })}
+        </div>
+        <div style={{ display: 'flex', gap: 14, marginTop: 8, flexWrap: 'wrap' }}>
+          {[
+            { key: 'critical', label: lang === 'es' ? 'Crítico' : 'Critical', count: tierCounts.critical, color: 'var(--color-risk-critical)' },
+            { key: 'high', label: lang === 'es' ? 'Alto' : 'High', count: tierCounts.high, color: 'var(--color-risk-high)' },
+            { key: 'medium', label: lang === 'es' ? 'Medio' : 'Medium', count: tierCounts.medium, color: 'var(--color-risk-medium)' },
+            { key: 'low', label: lang === 'es' ? 'Bajo' : 'Low', count: tierCounts.low, color: 'var(--color-text-muted)' },
+          ].filter((seg) => seg.count > 0).map((seg) => {
+            const pct = items.length > 0 ? (seg.count / items.length) * 100 : 0
+            return (
+              <span
+                key={seg.key}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'baseline',
+                  gap: 6,
+                  fontSize: 12,
+                  ...MONO,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: TEXT_SECONDARY,
+                }}
+              >
+                <span style={{ width: 8, height: 8, borderRadius: 1, background: seg.color, display: 'inline-block' }} />
+                <span style={{ color: TEXT_PRIMARY, fontWeight: 700 }}>{seg.label}</span>
+                <span style={{ color: TEXT_FAINT }}>{seg.count} · {pct.toFixed(0)}%</span>
+              </span>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Top sectors where this pattern surfaces */}
+      {topSectors.length > 0 && (
+        <div>
+          <div style={{ ...OVERLINE, color: TEXT_FAINT, marginBottom: 8 }}>
+            {lang === 'es' ? 'Sectores más afectados' : 'Top affected sectors'}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {topSectors.map(([sector, count]) => {
+              const pct = items.length > 0 ? (count / items.length) * 100 : 0
+              return (
+                <span
+                  key={sector}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'baseline',
+                    gap: 6,
+                    padding: '5px 10px',
+                    background: 'var(--color-background-card)',
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 2,
+                    fontSize: 13,
+                    ...MONO,
+                  }}
+                >
+                  <span style={{ color: TEXT_PRIMARY, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {titleCase(sector)}
+                  </span>
+                  <span style={{ color: TEXT_MUTED }}>
+                    {count} · {pct.toFixed(0)}%
+                  </span>
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VISUAL — Role-mix concentration strip
+// Horizontal stacked bar showing how documented vendors break down by role.
+// Adds a glance-level "what kind of network is this?" before the reader
+// scans the individual vendor cards. Each role gets a color + count chip.
+// ─────────────────────────────────────────────────────────────────────────────
+function RoleMixBar({ vendors, lang }: { vendors: Array<{ role: string }>; lang: string }) {
+  const total = vendors.length
+  if (total === 0) return null
+
+  // Role → role-color mapping. Mirrors the role accents used in vendor cards.
+  const ROLE_COLOR: Record<string, string> = {
+    shell_company:   'var(--color-risk-critical)',
+    ghost_company:   'var(--color-risk-critical)',
+    intermediary:    'var(--color-risk-high)',
+    beneficiary:     'var(--color-accent)',
+    front_company:   'var(--color-risk-critical)',
+    contractor:      'var(--color-text-secondary)',
+    subcontractor:   'var(--color-text-muted)',
+    primary:         'var(--color-text-primary)',
+  }
+
+  // Tally by role
+  const counts: Record<string, number> = {}
+  for (const v of vendors) {
+    const k = (v.role || 'other').toLowerCase()
+    counts[k] = (counts[k] ?? 0) + 1
+  }
+  const sorted = Object.entries(counts).sort(([, a], [, b]) => b - a)
+
+  return (
+    <div style={{ marginBottom: 6 }}>
+      <div
+        style={{
+          ...OVERLINE,
+          color: TEXT_FAINT,
+          letterSpacing: '0.18em',
+          marginBottom: 8,
+        }}
+      >
+        {lang === 'es' ? 'Composición por rol' : 'Role mix'}
+      </div>
+      {/* The bar itself */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: 6,
+          borderRadius: 1,
+          overflow: 'hidden',
+          background: 'var(--color-background-elevated)',
+          marginBottom: 8,
+        }}
+      >
+        {sorted.map(([role, count]) => {
+          const pct = (count / total) * 100
+          const color = ROLE_COLOR[role] ?? 'var(--color-text-muted)'
+          return (
+            <div
+              key={role}
+              title={`${titleCase(role)} · ${count}/${total} · ${pct.toFixed(0)}%`}
+              style={{
+                width: `${pct}%`,
+                background: color,
+                borderRight: '1px solid var(--color-background)',
+                opacity: 0.9,
+              }}
+            />
+          )
+        })}
+      </div>
+      {/* Legend */}
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        {sorted.map(([role, count]) => {
+          const color = ROLE_COLOR[role] ?? 'var(--color-text-muted)'
+          const pct = (count / total) * 100
+          return (
+            <span
+              key={role}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'baseline',
+                gap: 6,
+                fontSize: 12,
+                ...MONO,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: TEXT_SECONDARY,
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 1,
+                  background: color,
+                  display: 'inline-block',
+                }}
+              />
+              <span style={{ color: TEXT_PRIMARY, fontWeight: 700 }}>{titleCase(role)}</span>
+              <span style={{ color: TEXT_FAINT }}>
+                {count} · {pct.toFixed(0)}%
+              </span>
+            </span>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Evidence strength badge
+// ─────────────────────────────────────────────────────────────────────────────
+function evidenceBadgeColor(strength: string): { color: string; bg: string; border: string } {
+  switch (strength) {
+    case 'strong':
+      return { color: EMERALD, bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.28)' }
+    case 'medium':
+      return { color: AMBER, bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.28)' }
+    case 'weak':
+      return { color: TEXT_MUTED, bg: 'rgba(120,113,108,0.06)', border: 'rgba(120,113,108,0.25)' }
+    default:
+      return { color: TEXT_MUTED, bg: 'transparent', border: BORDER_STRONG }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stat cell in hero stats bar
+// ─────────────────────────────────────────────────────────────────────────────
+function HeroStat({
+  label,
+  value,
+  unit,
+  foot,
+}: {
+  label: string
+  value: React.ReactNode
+  unit?: string
+  foot?: React.ReactNode
+}) {
+  return (
+    <div
+      style={{
+        padding: '16px 20px',
+        borderLeft: `1px solid ${BORDER}`,
+        minWidth: 0,
+      }}
+    >
+      <div style={{ ...OVERLINE, marginBottom: 8 }}>{label}</div>
+      <div
+        style={{
+          ...MONO,
+          fontSize: 22,
+          fontWeight: 700,
+          color: TEXT_PRIMARY,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: 6,
+        }}
+      >
+        <span>{value}</span>
+        {unit && (
+          <span style={{ fontSize: 13, color: TEXT_MUTED, fontWeight: 400, letterSpacing: 0 }}>
+            {unit}
+          </span>
+        )}
+      </div>
+      {foot && (
+        <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 5, ...MONO, letterSpacing: '0.04em' }}>
+          {foot}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────────────────────────────────────
+export default function CaseDetail() {
+  const { slug } = useParams<{ slug: string }>()
+  const { i18n } = useTranslation(['cases', 'aria'])
+  const navigate = useNavigate()
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['cases', 'detail', slug],
+    queryFn: slug ? () => caseLibraryApi.getBySlug(slug) : () => Promise.reject(new Error('No slug')),
+    enabled: !!slug,
+    staleTime: 10 * 60 * 1000,
+    retry: (count, err) => {
+      const status = (err as { response?: { status?: number } })?.response?.status
+      return status !== 404 && count < 2
+    },
+  })
+
+  const { data: allCases } = useQuery({
+    queryKey: ['cases', 'list', {}],
+    queryFn: () => caseLibraryApi.getAll({}),
+    staleTime: 10 * 60 * 1000,
+    enabled: !!data,
+  })
+
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: 'calc(100vh - var(--nav-h))', background: BG, padding: '48px 32px' }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto' }}>
+          <div style={{ ...OVERLINE, marginBottom: 20 }}>Case file · Loading</div>
+          <div
+            style={{
+              height: 80,
+              background: PANEL,
+              borderRadius: 2,
+              marginBottom: 16,
+              border: `1px solid ${BORDER}`,
+            }}
+          />
+          <div
+            style={{
+              height: 240,
+              background: PANEL,
+              borderRadius: 2,
+              border: `1px solid ${BORDER}`,
+            }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div
+        style={{
+          minHeight: 'calc(100vh - var(--nav-h))',
+          background: BG,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 32,
+        }}
+      >
+        <div style={{ textAlign: 'center', maxWidth: 480 }}>
+          <p style={{ ...OVERLINE, marginBottom: 16 }}>Cases · Not Found</p>
+          <h1 style={{ ...SERIF_HEAD, fontSize: 32, marginBottom: 12 }}>Case not found</h1>
+          <p style={{ color: TEXT_MUTED, fontSize: 14, marginBottom: 32 }}>
+            "{slug}" does not exist in the case library, or could not be loaded.
+          </p>
+          <button
+            onClick={() => navigate('/cases')}
+            style={{
+              fontSize: 13,
+              ...MONO,
+              color: CRIMSON_HI,
+              border: `1px solid ${CRIMSON_HI}4d`,
+              padding: '8px 16px',
+              borderRadius: 2,
+              cursor: 'pointer',
+              background: 'transparent',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            ← Browse all cases
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  return <CaseBody data={data} allCases={allCases} lang={i18n.language} navigate={navigate} />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Body — split out to keep hooks ergonomics sane
+// ─────────────────────────────────────────────────────────────────────────────
+function CaseBody({
+  data,
+  allCases,
+  lang,
+  navigate,
+}: {
+  data: ScandalDetail
+  allCases: ScandalDetail[] | import('@/api/types').ScandalListItem[] | undefined
+  lang: string
+  navigate: ReturnType<typeof useNavigate>
+}) {
+  const gtCount = useGroundTruthCount()
+  const name = lang === 'es' && data.name_es ? data.name_es : data.name_en
+  const summary = lang === 'es' && data.summary_es ? data.summary_es : data.summary_en
+  const fraudLabel = FRAUD_LABEL_EN[data.fraud_type] ?? titleCase(data.fraud_type)
+  const adminLabel = ADMIN_LABEL_EN[data.administration] ?? titleCase(data.administration)
+  const accent = FRAUD_ACCENT[data.fraud_type] ?? FRAUD_ACCENT.other
+  const legal = legalStatusMeta(data.legal_status, lang)
+
+  const linkedVendors: LinkedVendor[] = data.linked_vendors ?? []
+  const totalContracts = linkedVendors.reduce((s, v) => s + (v.contract_count ?? 0), 0)
+  const institutions = (data.key_actors ?? []).filter((a) => a.role === 'institution')
+  const officials = (data.key_actors ?? []).filter(
+    (a) => a.role !== 'vendor' && a.role !== 'institution',
+  )
+  const fallbackVendorActors = (data.key_actors ?? []).filter((a) => a.role === 'vendor')
+
+  const sectorLabels = (data.sector_ids ?? [])
+    .map((sid) => SECTORS.find((s) => s.id === sid))
+    .filter(Boolean)
+    .map((s) => s!.nameEN)
+
+  const riskDist = computeRiskDistribution(linkedVendors)
+  const avgRiskScore =
+    linkedVendors
+      .filter((v) => v.avg_risk_score != null)
+      .reduce((s, v) => s + (v.avg_risk_score ?? 0), 0) /
+    Math.max(1, linkedVendors.filter((v) => v.avg_risk_score != null).length)
+
+  const yearStart = data.contract_year_start ?? undefined
+  const yearEnd = data.contract_year_end ?? data.contract_year_start ?? undefined
+  const yearSpan =
+    yearStart && yearEnd
+      ? yearEnd === yearStart
+        ? String(yearStart)
+        : `${yearStart}–${yearEnd}`
+      : '—'
+  const yearsActive = yearStart && yearEnd ? yearEnd - yearStart + 1 : null
+
+  const similarCases = allCases
+    ? (allCases as import('@/api/types').ScandalListItem[])
+        .filter((c) => c.fraud_type === data.fraud_type && c.slug !== data.slug)
+        .sort((a, b) => b.severity - a.severity)
+        .slice(0, 3)
+    : []
+
+  // Confidence level — derived from severity (1..4)
+  const confidenceLabel =
+    data.severity >= 4 ? 'Confirmed' : data.severity >= 3 ? 'High confidence' : 'Medium confidence'
+  const confidenceColor =
+    data.severity >= 4 ? EMERALD : data.severity >= 3 ? AMBER : TEXT_MUTED
+
+  const sourceCount = (data.sources ?? []).length
+
+  return (
+    <div style={{ background: BG, minHeight: 'calc(100vh - var(--nav-h))', color: TEXT_PRIMARY }}>
+      {/* BACK NAV */}
+      <div style={{ maxWidth: 1140, margin: '0 auto', padding: '12px 24px 0' }}>
+        <button
+          onClick={() => navigate('/cases')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontSize: 12,
+            ...MONO,
+            letterSpacing: '0.15em',
+            textTransform: 'uppercase',
+            color: TEXT_MUTED,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = CRIMSON_HI)}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = TEXT_MUTED)}
+        >
+          <ArrowLeft size={12} /> {lang === 'es' ? 'Volver al archivo' : 'Back to case library'}
+        </button>
+      </div>
+
+      {/* HERO: fraud type pill + headline + meta + stats bar + lede */}
+      <motion.header
+        variants={fadeUp}
+        initial="initial"
+        animate="animate"
+        style={{
+          borderTop: `1px solid ${BORDER}`,
+          borderBottom: `1px solid ${BORDER}`,
+          background: PANEL,
+          padding: '20px 24px 0',
+          marginTop: 12,
+        }}
+      >
+        <div style={{ maxWidth: 1140, margin: '0 auto' }}>
+          {/* DOCUMENTED-BY byline — promoted to the top per the user's
+              "these aren't our cases, they're our training data" framing.
+              The authority of every claim on this page comes from the
+              cited sources. They should appear above the headline like
+              a byline, not buried at section 04. */}
+          {(data.sources ?? []).length > 0 && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', marginBottom: 14, flexWrap: 'wrap' }}>
+              <span style={{ ...OVERLINE, color: TEXT_FAINT, letterSpacing: '0.18em' }}>
+                {lang === 'es' ? 'Documentado por' : 'Documented by'}
+              </span>
+              {(data.sources ?? []).slice(0, 4).map((src, i, arr) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'baseline', gap: 8 }}>
+                  {src.url ? (
+                    <a
+                      href={safeHttpUrl(src.url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        fontSize: 13,
+                        ...MONO,
+                        color: TEXT_PRIMARY,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        textDecoration: 'none',
+                      }}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = CRIMSON_HI)}
+                      onMouseLeave={(e) => ((e.currentTarget as HTMLAnchorElement).style.color = TEXT_PRIMARY)}
+                    >
+                      {src.outlet}
+                    <span className="sr-only"> (opens in new tab)</span></a>
+                  ) : (
+                    <span style={{ fontSize: 13, ...MONO, color: TEXT_PRIMARY, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      {src.outlet}
+                    </span>
+                  )}
+                  {i < arr.length - 1 && <span style={{ color: TEXT_FAINT }}>·</span>}
+                </span>
+              ))}
+              {(data.sources ?? []).length > 4 && (
+                <span style={{ fontSize: 12, ...MONO, color: TEXT_MUTED }}>
+                  + {(data.sources ?? []).length - 4} {lang === 'es' ? 'más' : 'more'}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Meta row */}
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 20, flexWrap: 'wrap' }}>
+            <Pill color={accent} border={`${accent}55`} bg={`${accent}12`}>
+              {fraudLabel}
+            </Pill>
+            <span style={{ color: TEXT_FAINT }}>·</span>
+            <span style={{ ...OVERLINE, color: TEXT_MUTED }}>
+              {adminLabel}
+            </span>
+            <span style={{ color: TEXT_FAINT }}>·</span>
+            <span style={{ ...OVERLINE, color: TEXT_MUTED }}>{yearSpan}</span>
+            {data.ground_truth_case_id != null && (
+              <>
+                <span style={{ color: TEXT_FAINT }}>·</span>
+                <Link to="/methodology" style={{ ...OVERLINE, color: CYAN, textDecoration: 'none' }}>
+                  {lang === 'es' ? 'Caso de entrenamiento del modelo' : 'ML training case'}
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Headline */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: 24,
+              marginBottom: 22,
+            }}
+          >
+            <h1
+              style={{
+                ...SERIF_HEAD,
+                fontSize: 'clamp(2rem, 4.2vw, 2.75rem)',
+                lineHeight: 1.06,
+                margin: 0,
+                maxWidth: 860,
+              }}
+            >
+              {name}
+            </h1>
+            <div style={{ flexShrink: 0 }}>
+              <AddToDossierButton entityType="note" entityId={data.id} entityName={data.name_en} />
+            </div>
+          </div>
+
+          {/* STATS BAR — 5 numbers, all mono */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+              borderTop: `1px solid ${BORDER}`,
+              borderBottom: `1px solid ${BORDER}`,
+              marginBottom: 14,
+            }}
+          >
+            {/* Contracts cell — hidden when 0 to avoid an empty "—"
+                placeholder. The "vendors matched / institutions affected"
+                cells already convey scope; an empty Contracts cell was
+                a recurring source of "looks empty" complaints. */}
+            {totalContracts > 0 && (
+              <HeroStat
+                label={lang === 'es' ? 'Contratos' : 'Contracts'}
+                value={formatCompact(totalContracts)}
+                foot={lang === 'es' ? 'vinculados en COMPRANET' : 'linked in COMPRANET'}
+              />
+            )}
+            <HeroStat
+              label={lang === 'es' ? 'Valor total' : 'Total value'}
+              value={data.amount_mxn_low ? formatMXN(data.amount_mxn_low) : '—'}
+              unit="MXN"
+              foot={
+                data.amount_mxn_high && data.amount_mxn_high !== data.amount_mxn_low
+                  ? `${lang === 'es' ? 'hasta' : 'up to'} ${formatMXN(data.amount_mxn_high)}`
+                  : undefined
+              }
+            />
+            <HeroStat
+              label={lang === 'es' ? 'Proveedores' : 'Vendors'}
+              value={linkedVendors.length > 0 ? linkedVendors.length : '—'}
+              foot={linkedVendors.length > 0 ? (lang === 'es' ? 'vinculados' : 'matched') : (lang === 'es' ? 'identificación pendiente' : 'identification pending')}
+            />
+            <HeroStat
+              label={lang === 'es' ? 'Instituciones' : 'Institutions'}
+              value={institutions.length > 0 ? institutions.length : '—'}
+              foot={institutions.length > 0 ? (lang === 'es' ? 'afectadas' : 'affected') : undefined}
+            />
+            <HeroStat
+              label={lang === 'es' ? 'Años activos' : 'Years active'}
+              value={yearsActive ?? '—'}
+              foot={yearSpan !== '—' ? yearSpan : undefined}
+            />
+          </div>
+
+          {/* LEDE — editorial opening paragraph */}
+          <p
+            style={{
+              fontSize: 15,
+              lineHeight: 1.6,
+              color: TEXT_SECONDARY,
+              maxWidth: 780,
+              marginBottom: 18,
+              fontFamily: 'var(--font-family-serif)',
+            }}
+          >
+            {summary}
+          </p>
+        </div>
+      </motion.header>
+
+      {/* BODY */}
+      <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 16px 24px' }}>
+        {/* SECTION 01 — Model Provenance: how this case trained the risk model.
+            First section so readers immediately understand the analytical
+            grounding before diving into historical narrative. */}
+        <Section
+          index="01"
+          label={lang === 'es' ? 'Procedencia del modelo' : 'Model Provenance'}
+          title={lang === 'es' ? 'Cómo este caso entrenó al modelo' : 'How this case trained the model'}
+          subtitle={
+            lang === 'es'
+              ? 'La cadena explícita de datos: proveedores documentados → contratos en COMPRANET → etiquetas positivas en el entrenamiento del modelo de riesgo v0.9.2.'
+              : 'The explicit data chain: documented vendors → matched COMPRANET contracts → positive labels in v0.9.2 risk-model training.'
+          }
+        >
+          <ModelProvenancePanel
+            data={data}
+            linkedVendors={linkedVendors}
+            totalContracts={totalContracts}
+            lang={lang}
+          />
+        </Section>
+
+        {/* SECTION 02 — Contract timeline */}
+        <Section
+          index="02"
+          label={lang === 'es' ? 'Cronología' : 'Timeline'}
+          title={lang === 'es' ? 'Cuándo operó el esquema' : 'When the scheme operated'}
+          subtitle={
+            yearStart && data.discovery_year
+              ? lang === 'es'
+                ? `Contratos del ${yearStart}${yearEnd && yearEnd !== yearStart ? `–${yearEnd}` : ''}. El caso fue divulgado públicamente en ${data.discovery_year}${yearStart ? ` — ${data.discovery_year - yearStart} año${data.discovery_year - yearStart === 1 ? '' : 's'} después del inicio` : ''}.`
+                : `Contracts ran from ${yearStart}${yearEnd && yearEnd !== yearStart ? `–${yearEnd}` : ''}. The case was publicly disclosed in ${data.discovery_year}${yearStart ? ` — ${data.discovery_year - yearStart} year${data.discovery_year - yearStart === 1 ? '' : 's'} after contracts began` : ''}.`
+              : lang === 'es'
+                ? 'Cronología de contratos vs. el registro COMPRANET completo de México (2002–2025).'
+                : 'Procurement timing against Mexico\'s full COMPRANET record (2002–2025).'
+          }
+        >
+          <YearRangeBar
+            yearStart={yearStart}
+            yearEnd={yearEnd}
+            discoveryYear={data.discovery_year}
+            axisStart={Math.max(2002, Math.min(yearStart ?? 2002, data.discovery_year ?? 2025) - 4)}
+            axisEnd={Math.min(DATA_LAST_YEAR, Math.max(yearEnd ?? DATA_LAST_YEAR, data.discovery_year ?? 2002) + 4)}
+          />
+        </Section>
+
+        {/* VISUAL 2 — Risk distribution. Two modes:
+            - HAS DATA: this case has matched vendors with model scores —
+              show the distribution of those scores (original behavior).
+            - NO DATA: case has no matched vendors yet (RFC-coverage gaps,
+              pre-2010 era, etc.). Instead of an empty "data unavailable"
+              card, show how the model characterizes the PATTERN — pulling
+              aggregate stats from all ARIA-flagged vendors with the same
+              primary_pattern. Honest about what we know vs. don't.
+        */}
+        <Section
+          index="03"
+          label={lang === 'es' ? 'Firma de riesgo' : 'Risk Signature'}
+          title={
+            riskDist.hasData
+              ? (lang === 'es' ? 'Cómo el modelo ve este caso' : 'How the model sees this case')
+              : (lang === 'es' ? 'Cómo el modelo caracteriza este patrón' : 'How the model characterizes this pattern')
+          }
+          subtitle={
+            riskDist.hasData
+              ? `Average RUBLI score across matched vendors: ${(avgRiskScore * 100).toFixed(0)}%. The distribution below shows where those vendors fall on the v0.9.2 risk scale.`
+              : (lang === 'es'
+                  ? `Sin contratos vinculados específicos de este caso, mostramos cómo el modelo v0.9.2 caracteriza el patrón ${fraudToAriaPattern(data.fraud_type).code} a través de todos los proveedores marcados.`
+                  : `Without case-specific matched contracts, here's how the v0.9.2 model characterizes the ${fraudToAriaPattern(data.fraud_type).code} pattern across all flagged vendors.`)
+          }
+        >
+          {riskDist.hasData ? (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 18,
+                  padding: '18px 22px',
+                  background: PANEL,
+                  border: `1px solid ${BORDER}`,
+                  borderLeft: `3px solid ${RISK_COLORS[getRiskLevelFromScore(avgRiskScore)] ?? CRIMSON_HI}`,
+                  borderRadius: 2,
+                  marginBottom: 16,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div>
+                  <div style={{ ...OVERLINE, color: TEXT_MUTED, marginBottom: 4 }}>Avg RUBLI score</div>
+                  <div
+                    style={{
+                      ...MONO,
+                      fontSize: 44,
+                      fontWeight: 700,
+                      color: RISK_COLORS[getRiskLevelFromScore(avgRiskScore)] ?? CRIMSON_HI,
+                      lineHeight: 1,
+                      letterSpacing: '-0.02em',
+                    }}
+                  >
+                    {Math.round(avgRiskScore * 100)}
+                    <span style={{ fontSize: 18, color: TEXT_MUTED, fontWeight: 400 }}>%</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: 220, fontSize: 12, color: TEXT_SECONDARY, lineHeight: 1.55 }}>
+                  Across {riskDist.totalVendors} {riskDist.totalVendors === 1 ? 'vendor' : 'vendors'}{' '}
+                  with COMPRANET contracts. The v0.9.2 model uses 17 features computed from earlier years — uneven contract sizes,
+                  amount vs similar contracts, institutions served before the contract year — labelled with the vendors of{' '}
+                  {gtCount.cases.toLocaleString()} documented cases (most are analyst write-ups, not rulings).
+                  {avgRiskScore < 0.3 && (
+                    <span style={{ color: AMBER, display: 'block', marginTop: 6, fontSize: 13 }}>
+                      Low score flag: this pattern is structurally different from the training set.
+                      See methodology.
+                    </span>
+                  )}
+                </div>
+              </div>
+              <RiskDistribution dist={riskDist} />
+            </>
+          ) : (
+            <PatternFingerprint
+              ariaPatternCode={fraudToAriaPattern(data.fraud_type).code}
+              ariaPatternLabel={lang === 'es' ? fraudToAriaPattern(data.fraud_type).labelEs : fraudToAriaPattern(data.fraud_type).label}
+              lang={lang}
+            />
+          )}
+        </Section>
+
+        {/* VISUAL 3 — Vendor evidence cards */}
+        <Section
+          index="04"
+          label={lang === 'es' ? 'Evidencia' : 'Evidence'}
+          title={
+            linkedVendors.length > 0
+              ? (lang === 'es' ? 'Proveedores en el expediente' : 'Vendors on the record')
+              : fallbackVendorActors.length > 0
+              ? (lang === 'es' ? 'Proveedores nombrados en reportes públicos' : 'Vendors named in public reporting')
+              : (lang === 'es' ? 'Identificación de proveedores en proceso' : 'Vendor identification in progress')
+          }
+          subtitle={
+            linkedVendors.length > 0
+              ? `${linkedVendors.length} ${
+                  linkedVendors.length === 1 ? 'vendor' : 'vendors'
+                } matched from ground-truth evidence — ${formatCompact(totalContracts)} contracts on record.`
+              : fallbackVendorActors.length > 0
+              ? 'These vendors have been named in press or audit reports but have not yet been matched to specific COMPRANET procurement records.'
+              : 'This case exists in the narrative record but has not yet been matched to specific procurement vendors via ARIA.'
+          }
+        >
+          {linkedVendors.length > 0 ? (
+            <div style={{ display: 'grid', gap: 10 }}>
+              {/* Role-mix concentration strip — horizontal stacked bar
+                  showing how the documented vendors break down by role
+                  (shell_company, beneficiary, intermediary, etc.). Adds
+                  a glance-level "what kind of network is this?" before
+                  the reader scans the individual vendor cards. */}
+              <RoleMixBar vendors={linkedVendors} lang={lang} />
+
+              {linkedVendors.map((vendor, i) => {
+                const score = vendor.avg_risk_score
+                const scoreLevel = score != null ? getRiskLevelFromScore(score) : null
+                const scoreColor = scoreLevel ? RISK_COLORS[scoreLevel] : TEXT_MUTED
+                const evBadge = evidenceBadgeColor(vendor.evidence_strength)
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      background: PANEL,
+                      border: `1px solid ${BORDER}`,
+                      borderLeft: `3px solid ${scoreColor}`,
+                      borderRadius: 2,
+                      padding: '18px 22px',
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr) auto',
+                      gap: 20,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      {/* Name + role + evidence */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          flexWrap: 'wrap',
+                          marginBottom: 10,
+                        }}
+                      >
+                        {vendor.vendor_id ? (
+                          <EntityIdentityChip type="vendor" id={vendor.vendor_id} name={vendor.vendor_name} size="sm" />
+                        ) : (
+                          <span
+                            style={{
+                              fontFamily: 'var(--font-family-serif)',
+                              fontSize: 17,
+                              fontWeight: 700,
+                              color: TEXT_PRIMARY,
+                            }}
+                          >
+                            {vendor.vendor_name}
+                          </span>
+                        )}
+                        <Pill color={accent} border={`${accent}44`} bg={`${accent}0e`}>
+                          {titleCase(vendor.role)}
+                        </Pill>
+                        {vendor.evidence_strength && (
+                          <Pill color={evBadge.color} border={evBadge.border} bg={evBadge.bg}>
+                            {titleCase(vendor.evidence_strength)} evidence
+                          </Pill>
+                        )}
+                      </div>
+
+                      {/* Stats row */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: 20,
+                          flexWrap: 'wrap',
+                          fontSize: 13,
+                          ...MONO,
+                          color: TEXT_MUTED,
+                          marginBottom: 10,
+                          letterSpacing: '0.03em',
+                        }}
+                      >
+                        <span>
+                          <span style={{ color: TEXT_FAINT }}>{lang === 'es' ? 'CONTRATOS · ' : 'CONTRACTS · '}</span>
+                          <span style={{ color: TEXT_PRIMARY, fontWeight: 600 }}>
+                            {vendor.contract_count.toLocaleString()}
+                          </span>
+                          {vendor.contract_count === 0 && (
+                            <span style={{ color: TEXT_FAINT, marginLeft: 6, textTransform: 'none', letterSpacing: '0.01em', fontStyle: 'normal' }}>
+                              {lang === 'es' ? '(no hay registros en COMPRANET)' : '(none in COMPRANET)'}
+                            </span>
+                          )}
+                        </span>
+                        {vendor.match_method && (
+                          <span>
+                            <span style={{ color: TEXT_FAINT }}>{lang === 'es' ? 'COINCIDENCIA · ' : 'MATCH · '}</span>
+                            <span style={{ color: TEXT_SECONDARY }}>
+                              {/* Humanize the raw match_method enum. The
+                                  original string ("orphaned_no_match",
+                                  "rfc_exact", "name_fuzzy", etc.) reads
+                                  as database jargon to journalists. */}
+                              {humanizeMatchMethod(vendor.match_method, lang)}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* DotBar risk viz */}
+                      {score != null && (
+                        <div style={{ maxWidth: 340 }}>
+                          <DotBar
+                            value={score}
+                            max={1}
+                            color={scoreColor}
+                            thresholds={[0.25, 0.40, 0.60]}
+                          />
+                        </div>
+                      )}
+
+                      {/* Action links */}
+                      <div style={{ display: 'flex', gap: 18, marginTop: 12, flexWrap: 'wrap' }}>
+                        {vendor.vendor_id && (
+                          <Link
+                            to={`/contracts?vendor_id=${vendor.vendor_id}&sort_by=risk_score&sort_order=desc`}
+                            style={{
+                              fontSize: 12,
+                              ...MONO,
+                              letterSpacing: '0.15em',
+                              textTransform: 'uppercase',
+                              color: TEXT_MUTED,
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            <ExternalLink size={10} /> View contracts
+                          </Link>
+                        )}
+                        {vendor.vendor_id && (
+                          <Link
+                            to={`/vendors/${vendor.vendor_id}`}
+                            style={{
+                              fontSize: 12,
+                              ...MONO,
+                              letterSpacing: '0.15em',
+                              textTransform: 'uppercase',
+                              color: CRIMSON_HI,
+                              textDecoration: 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 4,
+                            }}
+                          >
+                            Investigation thread <ArrowUpRight size={10} />
+                          </Link>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Score on the right */}
+                    {score != null && (
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{ ...OVERLINE, fontSize: 13, marginBottom: 4 }}>RUBLI</div>
+                        <div
+                          style={{
+                            ...MONO,
+                            fontSize: 32,
+                            fontWeight: 700,
+                            color: scoreColor,
+                            lineHeight: 1,
+                            letterSpacing: '-0.02em',
+                          }}
+                        >
+                          {Math.round(score * 100)}
+                          <span style={{ fontSize: 13, color: TEXT_MUTED, fontWeight: 400 }}>%</span>
+                        </div>
+                        <div style={{ fontSize: 13, ...MONO, color: TEXT_FAINT, marginTop: 4, letterSpacing: '0.1em' }}>
+                          {scoreLevel?.toUpperCase()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : fallbackVendorActors.length > 0 ? (
+            <div style={{ display: 'grid', gap: 10 }}>
+              {fallbackVendorActors.map((actor, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: PANEL,
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 2,
+                    padding: '16px 20px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
+                    <span
+                      style={{
+                        fontFamily: 'var(--font-family-serif)',
+                        fontSize: 16,
+                        fontWeight: 700,
+                        color: TEXT_PRIMARY,
+                      }}
+                    >
+                      {actor.name}
+                    </span>
+                    <Pill color={accent} border={`${accent}44`} bg={`${accent}0e`}>
+                      Vendor
+                    </Pill>
+                  </div>
+                  {actor.title && (
+                    <div style={{ fontSize: 12, color: TEXT_MUTED, marginTop: 4 }}>{actor.title}</div>
+                  )}
+                  {actor.note && (
+                    <div style={{ fontSize: 12, color: TEXT_SECONDARY, marginTop: 6, lineHeight: 1.55 }}>
+                      {actor.note}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div
+              style={{
+                background: PANEL,
+                border: `1px dashed ${BORDER_STRONG}`,
+                borderRadius: 2,
+                padding: '28px 24px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ ...OVERLINE, color: AMBER, marginBottom: 8 }}>In progress</div>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: TEXT_SECONDARY,
+                  lineHeight: 1.6,
+                  maxWidth: 480,
+                  margin: '0 auto',
+                }}
+              >
+                Vendor identification in progress via ARIA. This case exists in the narrative record but has
+                not yet been matched to specific procurement vendors.
+              </div>
+            </div>
+          )}
+
+          {/* Institutions affected */}
+          {institutions.length > 0 && (
+            <div style={{ marginTop: 28 }}>
+              <div style={{ ...OVERLINE, marginBottom: 12 }}>Institutions affected</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {institutions.map((actor, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      background: PANEL,
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: 2,
+                      padding: '10px 14px',
+                    }}
+                  >
+                    <InstitutionBadge name={actor.name} size={24} showTooltip={false} />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, color: TEXT_PRIMARY, fontWeight: 600 }}>
+                        {actor.name}
+                      </div>
+                      {actor.title && <div style={{ fontSize: 12, color: TEXT_MUTED }}>{actor.title}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Key figures */}
+          {officials.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <div style={{ ...OVERLINE, marginBottom: 12 }}>Key figures</div>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {officials.map((actor, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      gap: 14,
+                      background: PANEL,
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: 2,
+                      padding: '14px 18px',
+                    }}
+                  >
+                    <Pill color={TEXT_SECONDARY} border={BORDER_STRONG}>
+                      {titleCase(actor.role)}
+                    </Pill>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, color: TEXT_PRIMARY, fontWeight: 600 }}>{actor.name}</div>
+                      {actor.title && (
+                        <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 2 }}>{actor.title}</div>
+                      )}
+                      {actor.note && (
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: TEXT_SECONDARY,
+                            marginTop: 4,
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          {actor.note}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Section>
+
+        {/* VISUAL 4 — Methodology & sources */}
+        <Section
+          index="05"
+          label="Methodology"
+          title="Sources and confidence"
+          subtitle="Every claim in this file is traceable to a named public source — journalism, audit, or legal record."
+        >
+          {/* Source + confidence summary bar */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              background: PANEL,
+              border: `1px solid ${BORDER}`,
+              borderRadius: 2,
+              marginBottom: 18,
+            }}
+          >
+            <HeroStat
+              label="Sources"
+              value={sourceCount}
+              foot={sourceCount === 1 ? 'record' : 'records'}
+            />
+            <HeroStat
+              label="Confidence"
+              value={
+                <span style={{ color: confidenceColor, fontSize: 15 }}>{confidenceLabel}</span>
+              }
+              foot={`severity ${data.severity}/4`}
+            />
+            <HeroStat
+              label="Sector"
+              value={
+                <span style={{ fontSize: 14 }}>
+                  {sectorLabels.length > 0 ? sectorLabels.join(' · ') : '—'}
+                </span>
+              }
+            />
+            <HeroStat
+              label="COMPRANET"
+              value={
+                <span style={{ fontSize: 14 }}>
+                  {data.compranet_visibility && data.compranet_visibility !== 'none'
+                    ? titleCase(data.compranet_visibility)
+                    : 'Not visible'}
+                </span>
+              }
+            />
+          </div>
+
+          {/* Source pills grid */}
+          {sourceCount === 0 ? (
+            <div
+              style={{
+                padding: '24px',
+                border: `1px dashed ${BORDER_STRONG}`,
+                borderRadius: 2,
+                fontSize: 12,
+                color: TEXT_MUTED,
+                textAlign: 'center',
+              }}
+            >
+              No sources recorded for this case yet.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: 8 }}>
+              {(data.sources ?? []).map((src, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto minmax(0,1fr)',
+                    gap: 14,
+                    background: PANEL,
+                    border: `1px solid ${BORDER}`,
+                    borderRadius: 2,
+                    padding: '12px 16px',
+                    alignItems: 'start',
+                  }}
+                >
+                  <Pill color={TEXT_SECONDARY} border={BORDER_STRONG}>
+                    {titleCase(src.type)}
+                  </Pill>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY }}>
+                      {src.url ? (
+                        <a
+                          href={safeHttpUrl(src.url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: TEXT_PRIMARY,
+                            textDecoration: 'none',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          {src.title}
+                          <ExternalLink size={11} style={{ color: TEXT_MUTED }} />
+                        <span className="sr-only"> (opens in new tab)</span></a>
+                      ) : (
+                        src.title
+                      )}
+                    </div>
+                    <div style={{ fontSize: 13, color: TEXT_MUTED, marginTop: 3, ...MONO, letterSpacing: '0.03em' }}>
+                      {src.outlet}
+                      {src.date ? ` · ${formatDateShort(src.date, lang)}` : ''}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Notes grid */}
+          {(data.amount_note || data.compranet_note) && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 0,
+                marginTop: 16,
+                border: `1px solid ${BORDER}`,
+                borderRadius: 2,
+                background: PANEL,
+              }}
+            >
+              {data.amount_note && (
+                <div
+                  style={{
+                    padding: '14px 18px',
+                    borderRight: data.compranet_note ? `1px solid ${BORDER}` : undefined,
+                  }}
+                >
+                  <div style={{ ...OVERLINE, marginBottom: 6 }}>Amount notes</div>
+                  <div style={{ fontSize: 12, color: TEXT_SECONDARY, lineHeight: 1.55 }}>
+                    {data.amount_note}
+                  </div>
+                </div>
+              )}
+              {data.compranet_note && (
+                <div style={{ padding: '14px 18px' }}>
+                  <div style={{ ...OVERLINE, marginBottom: 6 }}>COMPRANET visibility</div>
+                  <div style={{ fontSize: 12, color: TEXT_SECONDARY, lineHeight: 1.55 }}>
+                    {data.compranet_note}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Disclaimer */}
+          <div
+            style={{
+              marginTop: 18,
+              padding: '14px 18px',
+              border: `1px solid ${BORDER}`,
+              borderLeft: `2px solid ${TEXT_FAINT}`,
+              borderRadius: 2,
+              background: PANEL_2,
+              fontSize: 13,
+              color: TEXT_MUTED,
+              lineHeight: 1.6,
+              ...MONO,
+              letterSpacing: '0.01em',
+            }}
+          >
+            <span style={{ color: TEXT_FAINT, fontWeight: 700, letterSpacing: '0.15em' }}>NOTE · </span>
+            RUBLI risk scores are statistical indicators of resemblance to vendors later linked to documented cases —
+            not probabilities of guilt. A high score means a contract's procurement characteristics
+            resemble those vendors' contracts. Use for investigation triage only.
+          </div>
+        </Section>
+
+        {/* VISUAL 5 — Legal status */}
+        <Section
+          index="06"
+          label={lang === 'es' ? 'Estatus legal' : 'Legal status'}
+          title={lang === 'es' ? 'Resolución judicial' : 'Judicial disposition'}
+          subtitle={lang === 'es' ? 'El resultado — o su ausencia — basado en registros judiciales públicos.' : 'The outcome — or absence of one — based on public court records.'}
+        >
+          <div
+            style={{
+              background: legal.bg,
+              border: `1px solid ${legal.border}`,
+              borderLeft: `3px solid ${legal.accent}`,
+              borderRadius: 2,
+              padding: '22px 26px',
+            }}
+          >
+            <div style={{ ...OVERLINE, color: legal.accent, marginBottom: 10 }}>
+              Status · {legal.label}
+            </div>
+            <h3
+              style={{
+                ...SERIF_HEAD,
+                fontSize: 'clamp(1.125rem, 1.8vw, 1.375rem)',
+                marginBottom: 10,
+                lineHeight: 1.25,
+              }}
+            >
+              {legal.headline}
+            </h3>
+            <p
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                lineHeight: 1.65,
+                maxWidth: 720,
+                margin: 0,
+              }}
+            >
+              {legal.subline}
+            </p>
+            {data.legal_status_note && (
+              <p
+                style={{
+                  fontSize: 12,
+                  color: TEXT_MUTED,
+                  lineHeight: 1.6,
+                  marginTop: 16,
+                  paddingTop: 16,
+                  borderTop: `1px solid ${BORDER}`,
+                  maxWidth: 720,
+                }}
+              >
+                <span style={{ ...OVERLINE, fontSize: 13, marginRight: 6 }}>Note</span>
+                {data.legal_status_note}
+              </p>
+            )}
+          </div>
+        </Section>
+
+        {/* Similar cases */}
+        {similarCases.length > 0 && (
+          <Section
+            index="06"
+            label="See also"
+            title={`Similar ${fraudLabel.toLowerCase()} cases`}
+            subtitle="Other documented cases of the same fraud pattern."
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: 10,
+              }}
+            >
+              {similarCases.map((cas) => {
+                const sAccent = FRAUD_ACCENT[cas.fraud_type as FraudType] ?? FRAUD_ACCENT.other
+                const sName =
+                  lang === 'es' && (cas as unknown as { name_es?: string }).name_es
+                    ? (cas as unknown as { name_es: string }).name_es
+                    : cas.name_en
+                return (
+                  <button
+                    key={cas.slug}
+                    onClick={() => navigate(`/cases/${cas.slug}`)}
+                    style={{
+                      textAlign: 'left',
+                      background: PANEL,
+                      border: `1px solid ${BORDER}`,
+                      borderLeft: `2px solid ${sAccent}`,
+                      borderRadius: 2,
+                      padding: '16px 18px',
+                      cursor: 'pointer',
+                      color: 'inherit',
+                      transition: css('background', DUR.instant),
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = PANEL_2
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.background = PANEL
+                    }}
+                  >
+                    <div style={{ ...OVERLINE, fontSize: 13, color: sAccent, marginBottom: 8 }}>
+                      Severity {cas.severity}/4
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: 'var(--font-family-serif)',
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: TEXT_PRIMARY,
+                        lineHeight: 1.3,
+                        marginBottom: 8,
+                      }}
+                    >
+                      {sName}
+                    </div>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        fontSize: 12,
+                        ...MONO,
+                        color: TEXT_MUTED,
+                      }}
+                    >
+                      <span>{FRAUD_LABEL_EN[cas.fraud_type] ?? titleCase(cas.fraud_type)}</span>
+                      {cas.amount_mxn_low && <span>{formatCompactMXN(cas.amount_mxn_low)} MXN</span>}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ marginTop: 18, textAlign: 'center' }}>
+              <button
+                onClick={() => navigate(`/cases?fraud_type=${data.fraud_type}`)}
+                style={{
+                  fontSize: 12,
+                  ...MONO,
+                  letterSpacing: '0.2em',
+                  textTransform: 'uppercase',
+                  color: TEXT_MUTED,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.color = CRIMSON_HI)}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.color = TEXT_MUTED)}
+              >
+                View all {fraudLabel} cases →
+              </button>
+            </div>
+          </Section>
+        )}
+      </div>
+    </div>
+  )
+}

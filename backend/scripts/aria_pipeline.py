@@ -1,0 +1,1458 @@
+"""
+ARIA Phase 1 Pipeline — Investigation Priority Score + Pattern Classifier
++ Intermediary Detection + External Cross-Reference + False Positive Screening.
+
+Run from backend/ directory:
+    python -m scripts.aria_pipeline [--dry-run] [--limit 1000]
+"""
+
+import argparse
+import json
+import logging
+import math
+import sqlite3
+import statistics
+import uuid
+from collections import Counter, defaultdict
+from datetime import datetime
+from pathlib import Path
+
+import os
+DB_PATH = Path(os.environ.get("DATABASE_PATH", str(Path(__file__).parent.parent / "RUBLI_NORMALIZED.db")))
+ARIA_VERSION = "1.0"
+
+# 12-Sector taxonomy mapping
+SECTOR_MAP = {
+    1: "salud",
+    2: "educacion",
+    3: "infraestructura",
+    4: "energia",
+    5: "defensa",
+    6: "tecnologia",
+    7: "hacienda",
+    8: "gobernacion",
+    9: "agricultura",
+    10: "ambiente",
+    11: "trabajo",
+    12: "otros"
+}
+
+
+# ---------------------------------------------------------------------------
+# IPS weights (configurable via environment variables)
+# ---------------------------------------------------------------------------
+W_RISK = float(os.environ.get("ARIA_W_RISK", "0.40"))
+W_ENSEMBLE = float(os.environ.get("ARIA_W_ENSEMBLE", "0.20"))
+W_FINANCIAL = float(os.environ.get("ARIA_W_FINANCIAL", "0.20"))
+W_EXTERNAL = float(os.environ.get("ARIA_W_EXTERNAL", "0.20"))
+
+# Tier thresholds (configurable via environment variables)
+TIER1_THRESHOLD = float(os.environ.get("ARIA_TIER1_THRESHOLD", "0.80"))
+TIER2_THRESHOLD = float(os.environ.get("ARIA_TIER2_THRESHOLD", "0.60"))
+TIER3_THRESHOLD = float(os.environ.get("ARIA_TIER3_THRESHOLD", "0.40"))
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Module 1: IPS Computation
+# ---------------------------------------------------------------------------
+
+# Name-only EFOS homonyms the owner excluded (mirror of refresh_sat_efos
+# --exclude-vendor-ids, weekend #9): SERVINCO, SOFTTEK.
+EFOS_NAME_MATCH_EXCLUDED = frozenset({17565, 27433})
+
+
+def normalize_risk_score(risk_score: float) -> float:
+    """risk_score is already 0-1; apply mild contrast stretch."""
+    if risk_score is None:
+        return 0.0
+    return min(1.0, risk_score * 1.2)
+
+
+def normalize_mahalanobis(d2: float) -> float:
+    """Logistic transform centred at D2=80, steepness=0.02.
+    D2=80 -> 0.50, D2=200 -> 0.93, D2=500 -> 0.9998."""
+    if d2 is None or d2 <= 0:
+        return 0.0
+    return 1.0 / (1.0 + math.exp(-0.02 * (d2 - 80)))
+
+
+def normalize_financial(total_value_mxn: float) -> float:
+    """log10 scale: 1M->0.20, 100M->0.27, 1B->0.30, 10B->0.33, 100B->0.37.
+    Ceiling denominator = 30 so that log10(1M)=6 -> 6/30=0.20."""
+    if total_value_mxn is None or total_value_mxn <= 0:
+        return 0.0
+    log_val = math.log10(max(total_value_mxn, 1))
+    return min(1.0, log_val / 30.0)
+
+
+def compute_external_flags_score(
+    is_efos: int, is_sfp: int, in_gt: int, shell_score: int = 0
+) -> float:
+    if in_gt:
+        return 1.0
+    score = 0.0
+    if is_efos:
+        score += 0.70
+    if is_sfp:
+        score += 0.40
+    # CENTINELA shell_score boost: high shell indicators from company_registry
+    # Note: score of 4 is baseline (85% of vendors score exactly 4).
+    # Only boost for clearly above-baseline scores.
+    if shell_score >= 7:
+        score += 0.25  # very strong shell indicators
+    elif shell_score >= 5:
+        score += 0.10  # above-baseline shell indicators
+    return min(1.0, score)
+
+
+def compute_ips(
+    risk_norm: float,
+    maha_norm: float,
+    ensemble_norm: float,
+    financial_norm: float,
+    ext_flags_score: float,
+) -> float:
+    """Blind-spot fix: use MAX of risk and mahalanobis, not average."""
+    risk_maha = max(risk_norm, maha_norm)
+    ips = (
+        risk_maha * W_RISK
+        + (ensemble_norm or 0.0) * W_ENSEMBLE
+        + financial_norm * W_FINANCIAL
+        + ext_flags_score * W_EXTERNAL
+    )
+    return round(min(1.0, ips), 6)
+
+
+def assign_tier(ips: float) -> int:
+    if ips >= TIER1_THRESHOLD:
+        return 1
+    if ips >= TIER2_THRESHOLD:
+        return 2
+    if ips >= TIER3_THRESHOLD:
+        return 3
+    return 4
+
+
+# ---------------------------------------------------------------------------
+# Module 2: Pattern Classifier
+# ---------------------------------------------------------------------------
+
+def classify_patterns(vendor_data: dict) -> dict:
+    """Return confidence scores for all 7 patterns (P1-P7).
+
+    vendor_data keys used:
+        vendor_concentration, total_contracts, direct_award_rate, single_bid_rate,
+        years_active, rfc, burst_score, is_efos_definitivo,
+        avg_z_price_ratio, industry_mismatch_rate, top_institution_ratio,
+        sector_vendor_count, co_bid_rate (optional)
+    """
+    patterns = {"P1": 0.0, "P2": 0.0, "P3": 0.0, "P4": 0.0,
+                "P5": 0.0, "P6": 0.0, "P7": 0.0}
+
+    vc = vendor_data.get("vendor_concentration", 0) or 0
+    tc = vendor_data.get("total_contracts", 0) or 0
+    da_rate = vendor_data.get("direct_award_rate", 0) or 0
+    sb_rate = vendor_data.get("single_bid_rate", 0) or 0
+    years = vendor_data.get("years_active", 1) or 1
+    rfc = vendor_data.get("rfc")
+    burst = vendor_data.get("burst_score", 0) or 0
+    is_efos = vendor_data.get("is_efos_definitivo", 0) or 0
+    avg_z_price = vendor_data.get("avg_z_price_ratio", 0) or 0
+    mismatch = vendor_data.get("industry_mismatch_rate", 0) or 0
+    top_inst_ratio = vendor_data.get("top_institution_ratio", 0) or 0
+    price_hyp_count = vendor_data.get("price_hypothesis_count", 0) or 0
+    co_bid = vendor_data.get("co_bid_rate", 0) or 0
+
+    # ------------------------------------------------------------------
+    # P1: Concentrated Monopoly
+    # Thresholds calibrated for Mexican procurement: top vendor ~5% sector share.
+    # vc = vendor's share of total sector value (all-time).
+    # ------------------------------------------------------------------
+    if vc > 0.03:
+        p1 = 0.80
+    elif vc > 0.01:
+        p1 = 0.50
+    elif vc > 0.005:
+        p1 = 0.20
+    else:
+        p1 = 0.0
+
+    if p1 > 0:
+        if top_inst_ratio > 0.70:
+            p1 = min(1.0, p1 + 0.15)
+        if sb_rate > 0.80:
+            p1 = min(1.0, p1 + 0.10)
+
+    patterns["P1"] = round(p1, 4)
+
+    # ------------------------------------------------------------------
+    # P2: Ghost Company
+    # Previous: tc<=20 AND da>80% matched 194K vendors (false positive flood).
+    # New: require strong evidence. EFOS match = 0.90. Non-EFOS requires:
+    #   no RFC + short-lived + few contracts + mostly DA + significant value (>=1M).
+    # Brings P2 from ~242K to ~3K+38 = ~3K actionable vendors.
+    # ------------------------------------------------------------------
+    total_value = vendor_data.get("total_value_mxn", 0) or 0
+    if is_efos:
+        p2 = 0.90
+    else:
+        p2 = 0.0
+        # Ghost company heuristic: no RFC + short-lived + few contracts + DA + real money
+        if (rfc is None and years <= 2 and tc <= 10
+                and da_rate > 0.80 and total_value >= 1_000_000):
+            p2 = 0.50
+        elif (rfc is None and years <= 3 and tc <= 5
+                and da_rate > 0.90 and total_value >= 5_000_000):
+            p2 = 0.40
+        # Disappeared bursty vendor bonus
+        if p2 > 0 and burst > 0.5:
+            p2 = min(1.0, p2 + 0.15)
+
+    patterns["P2"] = round(p2, 4)
+
+    # ------------------------------------------------------------------
+    # P3: Single-Use Intermediary (driven by burst_score)
+    # ------------------------------------------------------------------
+    patterns["P3"] = round(min(1.0, burst), 4)
+
+    # ------------------------------------------------------------------
+    # P4: Bid Rigging
+    # co_bid_rate is now sourced from co_bidding_stats (0-1 normalised).
+    # Values represent the max pairwise co-bid rate for this vendor.
+    # co_bidding_stats stores percentage 0-100; load_vendor_co_bid_rates
+    # normalises to 0-1.  Thresholds: >=80% strong, >=50% moderate,
+    # >=30% weak signal.  Single-bid rate boosts the signal.
+    # ------------------------------------------------------------------
+    p4 = 0.0
+    if co_bid >= 0.80:
+        p4 = 0.70
+    elif co_bid >= 0.50:
+        p4 = 0.40
+    elif co_bid >= 0.30:
+        p4 = 0.20
+
+    if p4 > 0 and sb_rate > 0.50:
+        p4 = min(1.0, p4 + 0.15)
+
+    patterns["P4"] = round(p4, 4)
+
+    # ------------------------------------------------------------------
+    # P5: Overpricing
+    # Uses both avg and max z_price_ratio.  avg_z_price catches vendors
+    # that are *consistently* overpriced; max_z_price catches vendors
+    # with at least one extreme outlier contract.  price_hyp_count
+    # (contracts with z_price_ratio > 2.0) adds further signal.
+    # ------------------------------------------------------------------
+    max_z_price = vendor_data.get("max_z_price_ratio", 0) or 0
+
+    if avg_z_price > 2.0:
+        p5 = 0.50
+    elif avg_z_price > 1.0:
+        p5 = 0.30
+    elif max_z_price > 3.0:
+        p5 = 0.35
+    elif max_z_price > 2.0:
+        p5 = 0.20
+    else:
+        p5 = 0.0
+
+    if mismatch > 0.30:
+        p5 = min(1.0, p5 + 0.20)
+    if price_hyp_count > 3:
+        p5 = min(1.0, p5 + 0.15)
+    elif price_hyp_count > 0:
+        p5 = min(1.0, p5 + 0.05)
+
+    patterns["P5"] = round(p5, 4)
+
+    # ------------------------------------------------------------------
+    # P6: Institution Capture
+    # ------------------------------------------------------------------
+    if top_inst_ratio == 1.0 and tc > 10:
+        p6 = 0.80
+    elif top_inst_ratio > 0.80 and tc > 10:
+        p6 = 0.60
+    else:
+        p6 = 0.0
+
+    if p6 > 0 and sb_rate > 0.50:
+        p6 = min(1.0, p6 + 0.15)
+
+    patterns["P6"] = round(p6, 4)
+
+    # ------------------------------------------------------------------
+    # P7: Conflict of Interest (placeholder — Phase 3 media evidence)
+    # ------------------------------------------------------------------
+    external_flag = vendor_data.get("in_ground_truth", 0) or is_efos
+    if external_flag:
+        patterns["P7"] = 0.50
+    else:
+        patterns["P7"] = 0.0
+
+    return patterns
+
+
+# ---------------------------------------------------------------------------
+# Module 3: Intermediary Detection (burst score)
+# ---------------------------------------------------------------------------
+
+def compute_burst_score(vendor_id: int, conn: sqlite3.Connection) -> tuple:
+    """Goh-Barabasi burstiness B = (sigma - mu) / (sigma + mu) on inter-contract intervals.
+    B=1 maximally bursty, B=0 Poisson, B=-1 perfectly periodic.
+
+    Only flags as intermediary if value_per_contract >= 10M MXN
+    and activity_span <= 5 years and n_contracts <= 100.
+    """
+    rows = conn.execute(
+        """
+        SELECT contract_year, amount_mxn
+        FROM contracts
+        WHERE vendor_id = ? AND amount_mxn > 0 AND amount_mxn < 100000000000
+        ORDER BY contract_year
+        """,
+        (vendor_id,),
+    ).fetchall()
+
+    if len(rows) < 2:
+        return 0.0, {}
+
+    years = [r[0] for r in rows if r[0] is not None]
+    amounts = [r[1] for r in rows if r[1] is not None and r[1] > 0]
+
+    if not years or not amounts:
+        return 0.0, {}
+
+    total_value = sum(amounts)
+    n_contracts = len(rows)
+    activity_span = max(years) - min(years) + 1
+
+    # Skip if not an intermediary profile: too many contracts or too long active
+    if activity_span > 5 or n_contracts > 100:
+        return 0.0, {}
+
+    # Minimum value threshold: only flag significant intermediaries
+    value_per_contract = total_value / n_contracts
+    if value_per_contract < 10_000_000:
+        return 0.0, {}
+
+    # Inter-arrival times (years between consecutive contracts)
+    inter_arrivals = [years[i + 1] - years[i] for i in range(len(years) - 1)]
+    # Floor at 0.01 to avoid zero intervals
+    adjusted = [max(0.01, ia) for ia in inter_arrivals]
+
+    if len(adjusted) < 2:
+        burstiness = 0.5 if activity_span <= 1 else 0.0
+    else:
+        mu = statistics.mean(adjusted)
+        sigma = statistics.stdev(adjusted)
+        if mu + sigma < 0.001:
+            burstiness = 0.0
+        else:
+            b = (sigma - mu) / (sigma + mu)
+            # Normalize from [-1, 1] to [0, 1]
+            burstiness = (b + 1) / 2
+
+    # Value concentration: fraction of total value in peak year
+    year_values: dict = defaultdict(float)
+    for r in rows:
+        if r[0] is not None and r[1] is not None:
+            year_values[r[0]] += r[1]
+    peak_share = max(year_values.values()) / total_value if total_value > 0 else 0
+
+    # Disappearance: last contract >= 2 years ago
+    current_year = 2025
+    is_disappeared = 1 if max(years) <= current_year - 2 else 0
+
+    # Short window score
+    short_window = 1.0 if activity_span <= 1 else (0.5 if activity_span <= 2 else 0.1)
+
+    # Contracts per year intensity
+    intensity = min(1.0, n_contracts / (activity_span * 5))
+
+    burst_score = (
+        0.25 * burstiness
+        + 0.25 * peak_share
+        + 0.20 * is_disappeared
+        + 0.15 * intensity
+        + 0.15 * short_window
+    )
+
+    detail = {
+        "activity_span_years": activity_span,
+        "n_contracts": n_contracts,
+        "value_per_contract": round(value_per_contract, 0),
+        "total_value": round(total_value, 0),
+        "peak_share": round(peak_share, 3),
+        "burstiness": round(burstiness, 3),
+        "is_disappeared": is_disappeared,
+        "intensity": round(intensity, 3),
+    }
+
+    return round(min(1.0, burst_score), 4), detail
+
+
+# ---------------------------------------------------------------------------
+# Module 5: External Cross-Reference Engine
+# ---------------------------------------------------------------------------
+
+def load_external_crossref(conn: sqlite3.Connection) -> dict:
+    """Batch load external flags for all vendors.
+
+    Returns {vendor_id: {is_efos, efos_rfc, is_sfp, sfp_type, in_gt,
+                         shell_score, rfc_age_years}}.
+
+    Uses sat_efos_vendors (stage='definitivo'), sfp_sanctions,
+    and company_registry (CENTINELA enrichment).
+    """
+    # Verify column names via PRAGMA
+    efos_cols = [r[1] for r in conn.execute("PRAGMA table_info(sat_efos_vendors)").fetchall()]
+    sfp_cols  = [r[1] for r in conn.execute("PRAGMA table_info(sfp_sanctions)").fetchall()]
+
+    # Determine correct column names
+    efos_rfc_col  = "rfc" if "rfc" in efos_cols else efos_cols[1]
+    sfp_rfc_col   = "rfc" if "rfc" in sfp_cols else sfp_cols[1]
+    sfp_type_col  = "sanction_type" if "sanction_type" in sfp_cols else sfp_cols[3]
+
+    rows = conn.execute(
+        f"""
+        SELECT
+            v.id            AS vendor_id,
+            v.rfc           AS vendor_rfc,
+            CASE WHEN e.{efos_rfc_col} IS NOT NULL THEN 1 ELSE 0 END AS is_efos,
+            e.{efos_rfc_col} AS efos_rfc,
+            CASE WHEN s.{sfp_rfc_col} IS NOT NULL THEN 1 ELSE 0 END AS is_sfp,
+            s.{sfp_type_col} AS sfp_type,
+            CASE WHEN g.vendor_id IS NOT NULL THEN 1 ELSE 0 END AS in_gt,
+            COALESCE(g.gt_evidenced, 0) AS gt_evidenced
+        FROM vendors v
+        LEFT JOIN sat_efos_vendors e
+               ON v.rfc = e.{efos_rfc_col}
+              AND v.rfc IS NOT NULL
+              AND e.stage = 'definitivo'
+        LEFT JOIN sfp_sanctions s
+               ON v.rfc = s.{sfp_rfc_col}
+              AND v.rfc IS NOT NULL
+        LEFT JOIN (
+            -- FP / junk fuzzy links must not boost IPS or set P7
+            -- (docs/PREPUB_AUDIT_2026-09-24.md § B4, 05 report F2).
+            -- gt_evidenced: linked to a provenance tier A/B case (official
+            -- record or dated press). Tier C (model_discovery / ARIA
+            -- self-citation) stays in_gt but gets no IPS boost — it would
+            -- feed ARIA's own output back into ARIA (_weekend/gt FINDINGS §1).
+            -- A case whose scandal rows are ALL unpublished (is_verified = 0)
+            -- documents no one (api/public_labels.DOCUMENTED_LINK_SQL).
+            SELECT g.vendor_id,
+                   MAX(CASE WHEN gc.provenance_tier IN ('A', 'B')
+                             AND gc.id NOT IN (SELECT ground_truth_case_id FROM procurement_scandals
+                                               WHERE ground_truth_case_id IS NOT NULL
+                                               GROUP BY ground_truth_case_id HAVING MAX(is_verified) = 0)
+                            THEN 1 ELSE 0 END) AS gt_evidenced
+            FROM ground_truth_vendors g
+            LEFT JOIN ground_truth_cases gc ON gc.id = g.case_id
+            WHERE COALESCE(g.is_false_positive, 0) = 0
+              AND COALESCE(g.match_method, '') <> 'scandal_actor'
+              AND g.vendor_id IS NOT NULL
+            GROUP BY g.vendor_id
+        ) g ON v.id = g.vendor_id
+        """
+    ).fetchall()
+
+    result: dict = {}
+    for r in rows:
+        vid = r[0]
+        result[vid] = {
+            "is_efos":   int(r[2]),
+            "efos_rfc":  r[3],
+            "is_sfp":    int(r[4]),
+            "sfp_type":  r[5],
+            "in_gt":     int(r[6]),
+            "gt_evidenced": int(r[7]),
+            "shell_score": 0,
+            "rfc_age_years": None,
+        }
+
+    # Name-based fallback: match vendors without RFC using UPPER(name) against registries.
+    # ~85% of vendors have no RFC (only 45,996 / 320K have one), so RFC-only join misses
+    # the majority of potential EFOS/SFP matches.
+    efos_name_rows = conn.execute(
+        f"SELECT UPPER(TRIM(company_name)), {efos_rfc_col} FROM sat_efos_vendors WHERE stage='definitivo' AND company_name IS NOT NULL"
+    ).fetchall()
+    efos_name_map: dict = {r[0]: r[1] for r in efos_name_rows if r[0]}
+
+    # SFP names: the dossier's strict matcher (api/sanctions.normalize_name — accents, punctuation
+    # and legal suffix folded, whole name equal). DOF circulars print «Gen Industrial, S.A. de C.V.»
+    # where CompraNet has «GEN INDUSTRIAL SA DE CV»; UPPER(TRIM) never matched those.
+    from api.sanctions import normalize_name
+    sfp_name_rows = conn.execute(
+        f"SELECT company_name, {sfp_type_col} FROM sfp_sanctions WHERE company_name IS NOT NULL"
+    ).fetchall()
+    sfp_name_map: dict = {}
+    for nm, stype in sfp_name_rows:
+        k = normalize_name(nm)
+        if k and k not in sfp_name_map:
+            sfp_name_map[k] = stype
+
+    vendor_names = conn.execute("SELECT id, UPPER(TRIM(name)), name FROM vendors WHERE name IS NOT NULL").fetchall()
+    name_efos_added = name_sfp_added = 0
+    for vid, uname, raw_name in vendor_names:
+        if vid not in result:
+            result[vid] = {"is_efos": 0, "efos_rfc": None, "is_sfp": 0, "sfp_type": None,
+                           "in_gt": 0, "gt_evidenced": 0, "shell_score": 0, "rfc_age_years": None}
+        entry = result[vid]
+        # EFOS name match (only if not already matched by RFC)
+        if not entry["is_efos"] and uname in efos_name_map and vid not in EFOS_NAME_MATCH_EXCLUDED:
+            entry["is_efos"] = 1
+            entry["efos_rfc"] = efos_name_map[uname]
+            name_efos_added += 1
+        # SFP name match (only if not already matched by RFC)
+        sfp_key = normalize_name(raw_name)
+        if not entry["is_sfp"] and sfp_key in sfp_name_map:
+            entry["is_sfp"] = 1
+            entry["sfp_type"] = sfp_name_map[sfp_key]
+            name_sfp_added += 1
+    logger.info(
+        "  External cross-ref name fallback: +%d EFOS, +%d SFP (beyond RFC matches)",
+        name_efos_added, name_sfp_added,
+    )
+
+    # Enrich with CENTINELA company_registry data (shell_score, RFC age)
+    tables = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "company_registry" in tables:
+        cr_rows = conn.execute(
+            "SELECT vendor_id, shell_score, rfc_age_years FROM company_registry"
+        ).fetchall()
+        for cr in cr_rows:
+            vid = cr[0]
+            if vid in result:
+                result[vid]["shell_score"] = cr[1] or 0
+                result[vid]["rfc_age_years"] = cr[2]
+        logger.info("  CENTINELA company_registry: enriched %d vendors with shell_score/RFC age", len(cr_rows))
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Helper loaders
+# ---------------------------------------------------------------------------
+
+def load_vendor_mahalanobis(conn: sqlite3.Connection) -> dict:
+    """Returns {vendor_id: max_mahalanobis_distance}."""
+    rows = conn.execute(
+        """
+        SELECT vendor_id, MAX(mahalanobis_distance) AS max_d2
+        FROM contracts
+        WHERE mahalanobis_distance IS NOT NULL AND mahalanobis_distance > 0
+        GROUP BY vendor_id
+        """
+    ).fetchall()
+    return {r[0]: r[1] for r in rows}
+
+
+def load_vendor_contract_maxima(conn: sqlite3.Connection) -> tuple[dict, dict]:
+    """One scan → ({vid: MAX(risk_score)} active model, {vid: MAX(amount_mxn)}).
+    Amounts > 100B MXN are data-error rejects and never count as the max."""
+    rows = conn.execute(
+        "SELECT vendor_id, MAX(risk_score), "
+        "MAX(CASE WHEN amount_mxn <= 100000000000 THEN amount_mxn END) "
+        "FROM contracts GROUP BY vendor_id"
+    ).fetchall()
+    return ({r[0]: r[1] for r in rows if r[1] is not None},
+            {r[0]: r[2] for r in rows if r[2] is not None})
+
+
+def load_vendor_ensemble(conn: sqlite3.Connection) -> dict:
+    """Returns {vendor_id: ensemble risk score (0-1)}.
+
+    Prefers vendor_shap_v52.risk_score (per-vendor aggregate, fast).
+    Falls back to contract_anomaly_scores ensemble_v52 if shap table absent.
+    """
+    tables = {r[0] for r in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+
+    # Fast path: vendor_shap_v52 stores per-vendor risk scores already
+    if "vendor_shap_v52" in tables:
+        rows = conn.execute(
+            """
+            SELECT vendor_id, MAX(risk_score) AS max_risk
+            FROM vendor_shap_v52
+            WHERE risk_score IS NOT NULL
+            GROUP BY vendor_id
+            """
+        ).fetchall()
+        if rows:
+            return {r[0]: r[1] for r in rows}
+
+    # Slow fallback: aggregate contract_anomaly_scores (only if shap table empty)
+    if "contract_anomaly_scores" not in tables:
+        return {}
+
+    rows = conn.execute(
+        """
+        SELECT c.vendor_id, MAX(cas.anomaly_score) AS max_ensemble
+        FROM contract_anomaly_scores cas
+        JOIN contracts c ON cas.contract_id = c.id
+        WHERE cas.model_name = 'ensemble_v52'
+          AND cas.anomaly_score IS NOT NULL
+        GROUP BY c.vendor_id
+        """
+    ).fetchall()
+    return {r[0]: r[1] for r in rows}
+
+
+def load_sector_vendor_counts(conn: sqlite3.Connection) -> dict:
+    """Returns {sector_id: distinct_vendor_count}."""
+    rows = conn.execute(
+        "SELECT sector_id, COUNT(DISTINCT vendor_id) AS cnt FROM contracts GROUP BY sector_id"
+    ).fetchall()
+    return {r[0]: r[1] for r in rows}
+
+
+def load_vendor_sector_concentration(conn: sqlite3.Connection) -> dict:
+    """Returns {vendor_id: max_sector_share} — vendor's share of their largest sector.
+
+    Computes vendor_value_in_sector / sector_total_value for each vendor's
+    primary sector. Used for P1 Concentrated Monopoly classification.
+    """
+    # Step 1: sector totals (all-time, excluding outliers)
+    sector_totals = {}
+    for r in conn.execute(
+        "SELECT sector_id, SUM(amount_mxn) FROM contracts "
+        "WHERE amount_mxn > 0 AND amount_mxn < 100000000000 AND sector_id IS NOT NULL "
+        "GROUP BY sector_id"
+    ).fetchall():
+        sector_totals[r[0]] = r[1]
+
+    # Step 2: per-vendor-per-sector value (only vendors with significant value)
+    rows = conn.execute(
+        """
+        SELECT c.vendor_id, c.sector_id, SUM(c.amount_mxn) AS vendor_sector_val
+        FROM contracts c
+        WHERE c.amount_mxn > 0 AND c.amount_mxn < 100000000000 AND c.sector_id IS NOT NULL
+        GROUP BY c.vendor_id, c.sector_id
+        """
+    ).fetchall()
+
+    # Step 3: compute max share across sectors for each vendor
+    vendor_max_share: dict = {}
+    for r in rows:
+        vid, sid, val = r[0], r[1], r[2]
+        st = sector_totals.get(sid, 1)
+        share = val / st if st > 0 else 0
+        if vid not in vendor_max_share or share > vendor_max_share[vid]:
+            vendor_max_share[vid] = share
+
+    logger.info("  Vendor concentration: %d vendors computed, max=%.4f",
+                len(vendor_max_share),
+                max(vendor_max_share.values()) if vendor_max_share else 0)
+    return vendor_max_share
+
+
+# ---------------------------------------------------------------------------
+# Module 6: False Positive Screening
+# ---------------------------------------------------------------------------
+
+PATENT_EXCEPTION_KEYWORDS = [
+    "gilead", "pfizer", "microsoft", "oracle", "sap", "cisco", "adobe",
+    "autodesk", "symantec", "vmware", "ibm", "hewlett", "motorola",
+]
+
+
+def screen_false_positives(
+    vendor_name: str,
+    vendor_data: dict,
+    conn,  # may be None in tests
+) -> dict:
+    fp_patent = fp_data_error = fp_structural = False
+    penalty = 0.0
+
+    # FP1: Patent / regulated monopoly exception
+    name_lower = (vendor_name or "").lower()
+    if any(kw in name_lower for kw in PATENT_EXCEPTION_KEYWORDS):
+        fp_patent = True
+        penalty += 0.20
+
+    # FP2: Data error — single giant outlier contract
+    max_amt = vendor_data.get("max_contract_amount", 0) or 0
+    avg_amt = vendor_data.get("avg_contract_amount", 0) or 0
+    if avg_amt > 0 and max_amt > avg_amt * 100 and max_amt > 1_000_000_000:
+        fp_data_error = True
+        penalty += 0.25
+
+    # FP3: Structural monopoly (sector has very few vendors, or known large SOE)
+    sector_vendor_count = vendor_data.get("sector_vendor_count", 999) or 999
+    SOE_KEYWORDS = [
+        "pemex", "cfe ", "comision federal", "imss", "issste",
+        "banco de mexico", "banxico", "fonatur", "infonavit",
+        "diconsa", "liconsa", "conasupo",
+    ]
+    if sector_vendor_count <= 10 or any(kw in name_lower for kw in SOE_KEYWORDS):
+        fp_structural = True
+        penalty += 0.15
+
+    return {
+        "fp_patent":      fp_patent,
+        "fp_data_error":  fp_data_error,
+        "fp_structural":  fp_structural,
+        "penalty":        min(0.40, penalty),
+    }
+
+
+
+# ---------------------------------------------------------------------------
+# Module 4 support: Institution capture features
+# ---------------------------------------------------------------------------
+
+def load_vendor_institution_features(conn: sqlite3.Connection, vendor_ids: list) -> dict:
+    """Returns {vendor_id: {top_institution_ratio, institution_count}}."""
+    if not vendor_ids:
+        return {}
+
+    # Use a temp table to avoid SQLite's SQL variable limit (~32766)
+    conn.execute("CREATE TEMP TABLE IF NOT EXISTS _aria_vids (vendor_id INTEGER PRIMARY KEY)")
+    conn.execute("DELETE FROM _aria_vids")
+    conn.executemany("INSERT OR IGNORE INTO _aria_vids VALUES (?)", [(v,) for v in vendor_ids])
+
+    # Count capture on canonical institutions (Sep 30 entity resolution):
+    # a buyer split across raw ids must not dilute top_institution_ratio (P6).
+    has_canon = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='institution_canonical'"
+    ).fetchone()
+    inst_expr = "COALESCE(ic.canonical_id, c.institution_id)" if has_canon else "c.institution_id"
+    canon_join = (
+        "LEFT JOIN institution_canonical ic ON ic.institution_id = c.institution_id"
+        if has_canon else ""
+    )
+    rows = conn.execute(f"""
+        SELECT
+            c.vendor_id,
+            {inst_expr} AS inst,
+            COUNT(*) as cnt,
+            SUM(c.amount_mxn) as val
+        FROM contracts c
+        INNER JOIN _aria_vids t ON c.vendor_id = t.vendor_id
+        {canon_join}
+        WHERE c.amount_mxn > 0
+        GROUP BY c.vendor_id, inst
+    """).fetchall()
+
+    vendor_institutions: dict = defaultdict(list)
+    for r in rows:
+        vendor_institutions[r[0]].append((r[1], r[2], r[3]))
+
+    result = {}
+    for vid, inst_list in vendor_institutions.items():
+        total_cnt = sum(x[1] for x in inst_list)
+        if total_cnt == 0:
+            continue
+        top = max(inst_list, key=lambda x: x[1])
+        top_ratio = top[1] / total_cnt
+        result[vid] = {
+            "top_institution_ratio": round(top_ratio, 4),
+            "institution_count": len(inst_list),
+        }
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Module 4 support: Z-score feature loading
+# ---------------------------------------------------------------------------
+
+def load_vendor_z_features(conn: sqlite3.Connection, vendor_ids: list) -> dict:
+    """Returns {vendor_id: {avg_z_price_ratio, max_z_price_ratio, avg_z_industry_mismatch,
+    price_hypothesis_count}}."""
+    if not vendor_ids:
+        return {}
+    # Use temp table (already created by load_vendor_institution_features, or create here)
+    conn.execute("CREATE TEMP TABLE IF NOT EXISTS _aria_vids (vendor_id INTEGER PRIMARY KEY)")
+    # Table already populated by load_vendor_institution_features; reuse it
+    rows = conn.execute("""
+        SELECT c.vendor_id,
+               AVG(czf.z_price_ratio) as avg_z_price_ratio,
+               AVG(czf.z_industry_mismatch) as avg_z_industry_mismatch,
+               MAX(czf.z_price_ratio) as max_z_price_ratio,
+               SUM(CASE WHEN czf.z_price_ratio > 2.0 THEN 1 ELSE 0 END) as price_outlier_count
+        FROM contracts c
+        JOIN contract_z_features czf ON c.id = czf.contract_id
+        INNER JOIN _aria_vids t ON c.vendor_id = t.vendor_id
+        GROUP BY c.vendor_id
+    """).fetchall()
+    return {
+        r[0]: {
+            "avg_z_price_ratio": r[1] or 0,
+            "avg_z_industry_mismatch": r[2] or 0,
+            "max_z_price_ratio": r[3] or 0,
+            "price_outlier_count": r[4] or 0,
+        }
+        for r in rows
+    }
+
+
+def compute_vendor_price_z(conn: sqlite3.Connection, vendor_ids: list) -> dict:
+    """P5 inputs when contract_z_features is absent (the deploy DB: create_deploy_db.py drops it).
+
+    Recomputes z_price_ratio exactly as compute_z_features.py does — price_ratio = amount / sector
+    P50 (sector_price_baselines, else sector mean), z against factor_baselines 'price_ratio' with the
+    sector_year (count >= 10) → sector → global fallback, stddev floor 0.1, cap ±5 — and returns the
+    load_vendor_z_features shape. avg_z_industry_mismatch stays 0 (needs vendor_classifications).
+    """
+    if not vendor_ids:
+        return {}
+    eps, cap = 0.1, 5.0
+    sy, s, g = {}, {}, (0.0, eps)
+    for sid, yr, scope, mean, sd, cnt in conn.execute(
+        "SELECT sector_id, year, scope, mean, stddev, count FROM factor_baselines WHERE factor_name = 'price_ratio'"
+    ):
+        sd = max(sd or 0, eps)
+        if scope == "sector_year" and sid and yr and (cnt is None or cnt >= 10):
+            sy[(sid, yr)] = (mean, sd)
+        elif scope == "sector" and sid:
+            s[sid] = (mean, sd)
+        elif scope == "global":
+            g = (mean, sd)
+    if not (sy or s):
+        logger.warning("  factor_baselines has no price_ratio rows — P5 cannot be computed")
+        return {}
+    medians = dict(conn.execute(
+        "SELECT sector_id, AVG(amount_mxn) FROM contracts WHERE amount_mxn > 0 AND amount_mxn < 100000000000 "
+        "AND sector_id IS NOT NULL GROUP BY sector_id").fetchall())
+    if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sector_price_baselines'").fetchone():
+        medians.update(conn.execute(
+            "SELECT sector_id, percentile_50 FROM sector_price_baselines "
+            "WHERE contract_type = 'all' AND year IS NULL AND percentile_50 > 0").fetchall())
+
+    wanted = set(vendor_ids)
+    acc = {}  # vid -> [sum_z, n, max_z, outliers]
+    for vid, sid, yr, amount in conn.execute(
+        "SELECT vendor_id, sector_id, contract_year, amount_mxn FROM contracts WHERE vendor_id IS NOT NULL"
+    ):
+        if vid not in wanted:
+            continue
+        amount = amount or 0
+        median = medians.get(sid, 0)
+        ratio = amount / median if 0 < amount < 100_000_000_000 and median > 0 else 0.0
+        mean, sd = sy.get((sid, yr)) or s.get(sid) or g
+        z = max(-cap, min(cap, (ratio - mean) / sd))
+        a = acc.setdefault(vid, [0.0, 0, -cap, 0])
+        a[0] += z
+        a[1] += 1
+        a[2] = max(a[2], z)
+        a[3] += z > 2.0
+    return {
+        vid: {"avg_z_price_ratio": a[0] / a[1], "avg_z_industry_mismatch": 0,
+              "max_z_price_ratio": a[2], "price_outlier_count": a[3]}
+        for vid, a in acc.items()
+    }
+
+
+def load_vendor_co_bid_rates(conn: sqlite3.Connection, vendor_ids: list) -> dict:
+    """Returns {vendor_id: max_co_bid_rate} from co_bidding_stats table.
+
+    co_bidding_stats.co_bid_rate is stored as percentage (0-100).
+    We return it normalised to 0-1 range for the classifier.
+    """
+    if not vendor_ids:
+        return {}
+    # Check if the table exists
+    tbl = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='co_bidding_stats'"
+    ).fetchone()
+    if not tbl:
+        return {}
+    conn.execute("CREATE TEMP TABLE IF NOT EXISTS _aria_vids (vendor_id INTEGER PRIMARY KEY)")
+    rows = conn.execute("""
+        SELECT vendor_id, MAX(co_bid_rate) as max_rate
+        FROM (
+            SELECT cbs.vendor_id_a AS vendor_id, cbs.co_bid_rate
+            FROM co_bidding_stats cbs
+            INNER JOIN _aria_vids t ON cbs.vendor_id_a = t.vendor_id
+            UNION ALL
+            SELECT cbs.vendor_id_b AS vendor_id, cbs.co_bid_rate
+            FROM co_bidding_stats cbs
+            INNER JOIN _aria_vids t ON cbs.vendor_id_b = t.vendor_id
+        )
+        GROUP BY vendor_id
+    """).fetchall()
+    return {r[0]: (r[1] or 0) / 100.0 for r in rows}
+
+
+
+# ---------------------------------------------------------------------------
+# Helper: Get primary sector for vendor
+# ---------------------------------------------------------------------------
+
+def get_primary_sector(vendor_id: int, conn: sqlite3.Connection) -> tuple:
+    """
+    Returns (primary_sector_id, primary_sector_name).
+    Finds the sector with the most contracts for this vendor.
+    If no contracts found, returns (None, None).
+    """
+    row = conn.execute("""
+        SELECT sector_id, COUNT(*) as cnt
+        FROM contracts
+        WHERE vendor_id = ?
+        GROUP BY sector_id
+        ORDER BY cnt DESC
+        LIMIT 1
+    """, (vendor_id,)).fetchone()
+    
+    if row:
+        sector_id = row[0]
+        sector_name = SECTOR_MAP.get(sector_id, "otros")
+        return sector_id, sector_name
+    
+    return None, None
+
+
+# ---------------------------------------------------------------------------
+# Module 8: Ground Truth Auto-Update
+# ---------------------------------------------------------------------------
+
+def run_gt_auto_update(
+    results: list,
+    conn,
+    run_id: str,
+    dry_run: bool = False,
+) -> tuple:
+    """Module 8: Automatically insert high-confidence GT matches.
+    Returns (auto_inserts, flags).
+
+    Rules:
+    1. RFC in EFOS AND >= 5 contracts AND not already in GT -> AUTO-INSERT (direct, 1.0)
+    2. RFC in EFOS AND < 5 contracts -> FLAG for review
+    3. RFC in SFP AND risk_score >= 0.30 AND >= 3 contracts -> AUTO-INSERT (circumstantial, 0.85)
+    4. RFC in SFP AND risk_score < 0.30 -> FLAG for review
+    5. mahalanobis_norm >= 0.99 AND total_value >= 1B MXN AND NOT in GT -> FLAG
+    6. IPS >= 0.80 AND pattern_confidence >= 0.70 AND NOT in GT AND NOT FP -> FLAG
+    """
+    auto_inserts = 0
+    flags = 0
+    MAX_AUTO_INSERTS = 100  # safety limit per run
+
+    # End the read snapshot that the temp-table DML (_aria_vids) opened: a stale snapshot cannot take the
+    # write lock once another connection has committed (SQLITE_BUSY_SNAPSHOT skips busy_timeout) —
+    # weekly run 2026-11-01 died here with «database is locked» 0.3 s after the tiers.
+    if not dry_run and conn is not None:
+        conn.commit()
+
+    for r in results:
+        if r["in_ground_truth"]:
+            continue  # already known
+
+        action = None
+        confidence_level = None
+        match_confidence = 0.0
+        source = None
+        evidence = {}
+
+        # Rule 1 & 2: EFOS
+        if r["is_efos_definitivo"]:
+            if r["total_contracts"] >= 5:
+                action = "auto_insert"
+                confidence_level = "direct"
+                match_confidence = 1.0
+                source = "efos_rfc"
+                evidence = {"efos_rfc": r.get("efos_rfc"), "total_contracts": r["total_contracts"]}
+            else:
+                action = "flag_review"
+                confidence_level = "direct"
+                match_confidence = 0.90
+                source = "efos_rfc"
+                evidence = {"efos_rfc": r.get("efos_rfc"), "total_contracts": r["total_contracts"]}
+
+        # Rule 3 & 4: SFP sanctions
+        elif r["is_sfp_sanctioned"]:
+            if (r["avg_risk_score"] or 0) >= 0.30 and r["total_contracts"] >= 3:  # NULL = unscored (ComprasMX)
+                action = "auto_insert"
+                confidence_level = "circumstantial"
+                match_confidence = 0.85
+                source = "sfp_rfc"
+                evidence = {"sfp_type": r.get("sfp_sanction_type"), "risk_score": r["avg_risk_score"]}
+            else:
+                action = "flag_review"
+                confidence_level = "circumstantial"
+                match_confidence = 0.60
+                source = "sfp_rfc"
+                evidence = {"sfp_type": r.get("sfp_sanction_type")}
+
+        # Rule 5: extreme Mahalanobis + scale
+        elif r["mahalanobis_norm"] >= 0.99 and r["total_value_mxn"] >= 1_000_000_000:
+            action = "flag_review"
+            confidence_level = "circumstantial"
+            match_confidence = 0.50
+            source = "mahalanobis_scale"
+            evidence = {"mahalanobis_norm": r["mahalanobis_norm"], "total_value_mxn": r["total_value_mxn"]}
+
+        # Rule 6: high IPS + pattern confidence
+        elif (r["ips_final"] >= 0.80 and r["pattern_confidence"] >= 0.70
+              and not r["fp_patent_exception"] and not r["fp_data_error"]):
+            action = "flag_review"
+            confidence_level = "circumstantial"
+            match_confidence = 0.40
+            source = "ips_pattern"
+            evidence = {
+                "ips_final": r["ips_final"],
+                "pattern": r["primary_pattern"],
+                "pattern_confidence": r["pattern_confidence"],
+            }
+
+        if action is None:
+            continue
+
+        if action == "auto_insert" and auto_inserts >= MAX_AUTO_INSERTS:
+            action = "flag_review"  # demote to flag if limit hit
+
+        if not dry_run and conn is not None:
+            conn.execute("""
+                INSERT OR IGNORE INTO aria_gt_updates
+                (vendor_id, vendor_name, action, confidence_level, match_confidence,
+                 source, evidence_detail, aria_run_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (r["vendor_id"], r["vendor_name"], action, confidence_level,
+                  match_confidence, source, json.dumps(evidence), run_id))
+
+        if action == "auto_insert":
+            auto_inserts += 1
+        else:
+            flags += 1
+
+    if not dry_run and conn is not None:
+        conn.commit()
+
+    return auto_inserts, flags
+
+
+def carry_absorbed_memos(conn) -> int:
+    """Copy memo + memo_status from absorbed vendor ids onto their canonical id.
+
+    Entity resolution (vendor_canonical) folds absorbed ids into a canonical
+    vendor, so absorbed ids leave the run and save_queue deletes their rows,
+    memos and HOLDs included. A canonical row that already has a memo keeps it;
+    if several absorbed ids feed one canonical, a HOLD memo wins. Idempotent.
+    """
+    if not conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name='vendor_canonical'"
+    ).fetchone():
+        return 0
+    rows = conn.execute("""
+        SELECT vc.canonical_id, q.memo_text, q.memo_generated_at, q.memo_provenance, q.memo_status
+        FROM aria_queue q
+        JOIN vendor_canonical vc ON vc.vendor_id = q.vendor_id AND vc.canonical_id <> vc.vendor_id
+        WHERE COALESCE(q.memo_text, '') <> ''
+        ORDER BY (q.memo_status = 'hold') DESC, q.vendor_id
+    """).fetchall()
+    carried = 0
+    for canon_id, *memo in rows:
+        carried += conn.execute("""
+            UPDATE aria_queue SET memo_text = ?, memo_generated_at = ?,
+                   memo_provenance = ?, memo_status = ?
+            WHERE vendor_id = ? AND COALESCE(memo_text, '') = ''
+        """, (*memo, canon_id)).rowcount
+    if carried:
+        logger.info("Carried %d memos from absorbed vendor ids to canonical ids.", carried)
+    return carried
+
+
+def save_queue(conn, results: list) -> None:
+    """Write a run's rows to aria_queue as an upsert on vendor_id.
+
+    Only the columns the pipeline computes are overwritten; every other column
+    (memo_text, review_status, reviewer_*, memo_status, memo_provenance,
+    web_evidence_*, gt_overlay, new_vendor_risk, top_institution, ...) survives.
+    The old DELETE + re-insert restored only memo_text/review_status/reviewer_*,
+    so each run reset the memo_status HOLD flags. Vendors that drop out of the
+    run are deleted (as before). Caller commits.
+    """
+    carry_absorbed_memos(conn)
+    current_count = conn.execute("SELECT COUNT(*) FROM aria_queue").fetchone()[0]
+    conn.execute("CREATE TEMP TABLE IF NOT EXISTS _aria_keep (vendor_id INTEGER PRIMARY KEY)")
+    conn.execute("DELETE FROM _aria_keep")
+    conn.executemany("INSERT OR IGNORE INTO _aria_keep VALUES (?)",
+                     [(r["vendor_id"],) for r in results])
+    dropped = conn.execute(
+        "DELETE FROM aria_queue WHERE vendor_id NOT IN (SELECT vendor_id FROM _aria_keep)"
+    ).rowcount
+    logger.warning(
+        "Upserting %d aria_queue rows (was %d; %d vendors left the queue).",
+        len(results), current_count, dropped,
+    )
+    if not results:
+        return
+    keys = list(results[0].keys())
+    cols = ", ".join(keys)
+    placeholders = ", ".join("?" * len(keys))
+    updates = ", ".join(f"{k}=excluded.{k}" for k in keys if k != "vendor_id")
+    conn.executemany(
+        f"INSERT INTO aria_queue ({cols}) VALUES ({placeholders}) "
+        f"ON CONFLICT(vendor_id) DO UPDATE SET {updates}",
+        [[r[k] for k in keys] for r in results],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Main pipeline
+# ---------------------------------------------------------------------------
+
+def check_centinela_freshness(conn: sqlite3.Connection) -> None:
+    """Warn if external registries are stale (CENTINELA integration)."""
+    try:
+        from scripts.centinela import get_registry_status
+        statuses = get_registry_status(conn)
+        stale = [s for s in statuses if s["is_stale"] and s["records"] > 0]
+        if stale:
+            names = ", ".join(s["name"] for s in stale)
+            logger.warning(
+                "CENTINELA: %d stale registries (%s). "
+                "Run `python -m scripts.centinela --stale-only` to refresh.",
+                len(stale), names,
+            )
+        never_loaded = [s for s in statuses if s["records"] == 0]
+        if never_loaded:
+            names = ", ".join(s["name"] for s in never_loaded)
+            logger.info("CENTINELA: %d registries never loaded (%s).", len(never_loaded), names)
+    except Exception as e:
+        logger.debug("CENTINELA freshness check skipped: %s", e)
+
+
+def run_pipeline(dry_run: bool = False, limit: int = None) -> tuple:
+    run_id = str(uuid.uuid4())[:8]
+    logger.info("ARIA run %s starting (dry_run=%s, limit=%s)...", run_id, dry_run, limit)
+
+    conn = sqlite3.connect(str(DB_PATH), timeout=300)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=300000")  # 5 min — MCP servers hold read locks
+
+    try:
+        # -- CENTINELA freshness check ---------------------------------------
+        check_centinela_freshness(conn)
+
+        # -- Record run start ------------------------------------------------
+        if not dry_run:
+            conn.execute(
+                "INSERT OR REPLACE INTO aria_runs (id, started_at, aria_version) VALUES (?, ?, ?)",
+                (run_id, datetime.now().isoformat(), ARIA_VERSION),
+            )
+            conn.commit()
+
+        # -- Load batch data -------------------------------------------------
+        logger.info("  Loading external cross-reference data...")
+        ext_data = load_external_crossref(conn)
+        logger.info("  External cross-ref: %d vendor matches loaded", len(ext_data))
+
+        logger.info("  Loading Mahalanobis distances...")
+        maha_map = load_vendor_mahalanobis(conn)
+        logger.info("  Mahalanobis map: %d vendors", len(maha_map))
+
+        logger.info("  Loading max contract risk scores + amounts...")
+        # Amount map unused until the FP2 follow-up (_weekend/ghost/fp2_followup.md).
+        max_risk_map, _max_amt_map = load_vendor_contract_maxima(conn)
+
+        logger.info("  Loading ensemble anomaly scores...")
+        ensemble_map = load_vendor_ensemble(conn)
+        logger.info("  Ensemble map: %d vendors", len(ensemble_map))
+
+        logger.info("  Loading sector vendor counts...")
+        sector_counts = load_sector_vendor_counts(conn)
+
+        logger.info("  Loading vendor sector concentration...")
+        concentration_map = load_vendor_sector_concentration(conn)
+
+        # -- Load vendors from vendor_stats ----------------------------------
+        # Minimum filter: skip single-contract zero-risk vendors to prune queue
+        # from 320K to ~100K actionable vendors.  Vendors with EFOS/SFP/GT flags
+        # are always included regardless of contract count.
+        query = """
+            SELECT
+                v.id,
+                v.name,
+                v.rfc,
+                vs.total_contracts,
+                vs.total_value_mxn    AS total_value,
+                vs.avg_risk_score,
+                vs.direct_award_pct   AS direct_award_rate,
+                vs.single_bid_pct     AS single_bid_rate,
+                vs.primary_sector_id  AS sector_id,
+                vs.first_contract_year,
+                vs.last_contract_year
+            FROM vendors v
+            JOIN vendor_stats vs ON v.id = vs.vendor_id
+            WHERE (
+                vs.total_contracts >= 2
+                OR vs.avg_risk_score >= 0.10
+                OR v.id IN (SELECT vendor_id FROM ground_truth_vendors WHERE vendor_id IS NOT NULL)
+                OR v.rfc IN (SELECT rfc FROM sat_efos_vendors WHERE stage = 'definitivo' AND rfc IS NOT NULL)
+                OR v.rfc IN (SELECT rfc FROM sfp_sanctions WHERE rfc IS NOT NULL)
+                -- a reviewer's memo (hold / reviewed / auto) never drops out of the queue with a rescore
+                OR v.id IN (SELECT vendor_id FROM aria_queue WHERE memo_status IS NOT NULL)
+            )
+        """
+        if limit:
+            query += f" ORDER BY vs.total_value_mxn DESC LIMIT {limit}"
+
+        vendors = conn.execute(query).fetchall()
+        logger.info("  Processing %d vendors...", len(vendors))
+
+        # -- Load institution features per vendor ----------------------------
+        vendor_ids = [v["id"] for v in vendors]
+        logger.info("  Loading institution features...")
+        institution_features = load_vendor_institution_features(conn, vendor_ids)
+        logger.info("  Institution features: %d vendors", len(institution_features))
+
+        # -- Load z-score features per vendor (if available) -----------------
+        # the deploy DB ships without contract_z_features (create_deploy_db.py strips it): absent == empty
+        has_z = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='contract_z_features'").fetchone()
+        z_count = conn.execute("SELECT COUNT(*) FROM contract_z_features").fetchone()[0] if has_z else 0
+        if z_count > 0:
+            logger.info("  Loading z-score features...")
+            z_features = load_vendor_z_features(conn, vendor_ids)
+            logger.info("  Z-features loaded for %d vendors", len(z_features))
+        else:
+            # Without this fallback every vendor got P5 = 0 on prod (ARIA run 2026-10-22 onward).
+            logger.warning("  contract_z_features is empty — recomputing z_price_ratio for P5")
+            z_features = compute_vendor_price_z(conn, vendor_ids)
+            logger.info("  Price z recomputed for %d vendors", len(z_features))
+
+        # -- Load co-bidding rates from co_bidding_stats table -----------------
+        logger.info("  Loading co-bidding rates...")
+        co_bid_rates = load_vendor_co_bid_rates(conn, vendor_ids)
+        logger.info("  Co-bid rates loaded for %d vendors", len(co_bid_rates))
+
+        results = []
+        tier_counts = [0, 0, 0, 0]
+
+        for v in vendors:
+            vid = v["id"]
+            vname = v["name"]
+
+            # Burst / intermediary score
+            burst_score, burst_detail = compute_burst_score(vid, conn)
+
+            # External flags
+            ext = ext_data.get(vid, {})
+            is_efos = ext.get("is_efos", 0)
+            is_sfp  = ext.get("is_sfp", 0)
+            in_gt   = ext.get("in_gt", 0)
+            # Only A/B-evidenced GT links boost IPS and set P7; in_gt (any
+            # non-FP link) is still stored and still skips Module 8.
+            gt_evidenced = ext.get("gt_evidenced", 0)
+
+            # Normalise signals
+            avg_risk   = v["avg_risk_score"] or 0.0
+            max_maha   = maha_map.get(vid, 0) or 0.0
+            ensemble   = ensemble_map.get(vid, 0) or 0.0
+            total_val  = v["total_value"] or 0.0
+            total_contracts = v["total_contracts"] or 0
+
+            risk_norm     = normalize_risk_score(avg_risk)
+            maha_norm     = normalize_mahalanobis(max_maha)
+            ensemble_norm = min(1.0, ensemble)
+            financial_norm = normalize_financial(total_val)
+            shell_score   = ext.get("shell_score", 0)
+            ext_score     = compute_external_flags_score(is_efos, is_sfp, gt_evidenced, shell_score)
+
+            ips_raw = compute_ips(risk_norm, maha_norm, ensemble_norm, financial_norm, ext_score)
+
+            # Years active
+            first_yr = v["first_contract_year"] or 2025
+            last_yr  = v["last_contract_year"] or 2025
+            years_active = max(1, (last_yr - first_yr) + 1)
+
+            # Average contract value for FP screening
+            avg_contract_amt = total_val / max(total_contracts, 1)
+
+            # Pattern classification
+            # Institution and z-score features for this vendor
+            inst_feat = institution_features.get(vid, {})
+            zf = z_features.get(vid, {})
+
+            vendor_data_dict = {
+                "vendor_concentration": concentration_map.get(vid, 0.0),
+                "total_contracts":      total_contracts,
+                "direct_award_rate":    (v["direct_award_rate"] or 0) / 100.0,
+                "single_bid_rate":      (v["single_bid_rate"] or 0) / 100.0,
+                "years_active":         years_active,
+                "rfc":                  v["rfc"],
+                "burst_score":          burst_score,
+                "is_efos_definitivo":   is_efos,
+                "in_ground_truth":      gt_evidenced,  # drives P7 only
+                "avg_z_price_ratio":    zf.get("avg_z_price_ratio", 0),
+                "max_z_price_ratio":    zf.get("max_z_price_ratio", 0),
+                "industry_mismatch_rate": max(0, zf.get("avg_z_industry_mismatch", 0)),
+                "price_hypothesis_count": zf.get("price_outlier_count", 0),
+                "top_institution_ratio":  inst_feat.get("top_institution_ratio", 0),
+                "sector_vendor_count":  sector_counts.get(v["sector_id"], 999),
+                # FP2 stays dead (fed 0, as before): real amounts demote GT pharma.
+                "max_contract_amount":  0.0,
+                "avg_contract_amount":  avg_contract_amt,
+                "total_value_mxn":      total_val,
+                "co_bid_rate":          co_bid_rates.get(vid, 0.0),
+            }
+
+            patterns = classify_patterns(vendor_data_dict)
+            # Primary = highest-confidence pattern >= 0.30
+            qualifying = {p: s for p, s in patterns.items() if s >= 0.30}
+            primary = max(qualifying, key=qualifying.get) if qualifying else None
+            primary_conf = patterns.get(primary, 0.0) if primary else 0.0
+
+            # False positive screening
+            fp = screen_false_positives(vname, vendor_data_dict, conn)
+            primary_sector_id, primary_sector_name = get_primary_sector(vid, conn)
+            ips_final = round(max(0.0, ips_raw - fp["penalty"]), 6)
+            tier = assign_tier(ips_final)
+            # EFOS definitivo vendors are SAT-confirmed ghost companies — guarantee T2 minimum
+            if is_efos and tier > 2:
+                tier = 2
+            tier_counts[tier - 1] += 1
+
+            results.append({
+                "vendor_id":              vid,
+                "vendor_name":            vname,
+                "aria_run_id":            run_id,
+                "risk_score_norm":        risk_norm,
+                "mahalanobis_norm":       maha_norm,
+                "ensemble_norm":          ensemble_norm,
+                "financial_scale_norm":   financial_norm,
+                "external_flags_score":   ext_score,
+                "ips_raw":                ips_raw,
+                "ips_final":              ips_final,
+                "ips_tier":               tier,
+                "primary_pattern":        primary,
+                "pattern_confidence":     primary_conf,
+                "pattern_confidences":    json.dumps(patterns),
+                "burst_score":            burst_score,
+                "activity_span_days":     burst_detail.get("activity_span_years", 0) * 365,
+                "value_per_contract":     burst_detail.get("value_per_contract", 0),
+                "is_disappeared":         burst_detail.get("is_disappeared", 0),
+                "is_efos_definitivo":     is_efos,
+                "is_sfp_sanctioned":      is_sfp,
+                "in_ground_truth":        in_gt,
+                "efos_rfc":               ext.get("efos_rfc"),
+                "sfp_sanction_type":      ext.get("sfp_type"),
+                "fp_patent_exception":    int(fp["fp_patent"]),
+                "fp_data_error":          int(fp["fp_data_error"]),
+                "fp_structural_monopoly": int(fp["fp_structural"]),
+                "fp_penalty":             fp["penalty"],
+                "total_contracts":        total_contracts,
+                "total_value_mxn":        total_val,
+                "avg_risk_score":         v["avg_risk_score"],  # NULL stays NULL (unscored); IPS uses avg_risk = 0
+                "max_risk_score":         max_risk_map.get(vid) or 0.0,
+                "primary_sector_id":      primary_sector_id,
+                "primary_sector_name":    primary_sector_name,
+                "years_active":           years_active,
+                "direct_award_rate":      (v["direct_award_rate"] or 0) / 100.0,
+                "single_bid_rate":        (v["single_bid_rate"] or 0) / 100.0,
+                "top_institution_ratio":  inst_feat.get("top_institution_ratio", 0),
+            })
+
+        logger.info(
+            "  Tiers: T1=%d, T2=%d, T3=%d, T4=%d",
+            tier_counts[0], tier_counts[1], tier_counts[2], tier_counts[3],
+        )
+
+        # -- Module 8: GT auto-update ----------------------------------------
+        auto_inserts, gt_flags = run_gt_auto_update(results, conn, run_id, dry_run)
+        logger.info("  GT auto-update: %d auto-inserts, %d flagged", auto_inserts, gt_flags)
+
+        # -- Persist results -------------------------------------------------
+        if not dry_run:
+            save_queue(conn, results)
+
+            conn.execute(
+                """
+                UPDATE aria_runs SET
+                    completed_at = ?,
+                    status = 'completed',
+                    vendors_processed = ?,
+                    tier1_count = ?,
+                    tier2_count = ?,
+                    tier3_count = ?,
+                    tier4_count = ?,
+                    gt_auto_inserts = ?,
+                    gt_flags = ?
+                WHERE id = ?
+                """,
+                (
+                    datetime.now().isoformat(),
+                    len(results),
+                    tier_counts[0],
+                    tier_counts[1],
+                    tier_counts[2],
+                    tier_counts[3],
+                    auto_inserts,
+                    gt_flags,
+                    run_id,
+                ),
+            )
+            conn.commit()
+            logger.info("  Saved %d rows to aria_queue.", len(results))
+        else:
+            logger.info("  DRY RUN — %d rows computed, not saved.", len(results))
+
+        # -- Print top 10 Tier 1 --------------------------------------------
+        tier1 = sorted(
+            [r for r in results if r["ips_tier"] == 1],
+            key=lambda x: -x["ips_final"],
+        )[:10]
+
+        print("\n=== TOP 10 TIER 1 VENDORS ===")
+        for r in tier1:
+            efos_flag = " [EFOS]" if r["is_efos_definitivo"] else ""
+            sfp_flag  = " [SFP]"  if r["is_sfp_sanctioned"] else ""
+            gt_flag   = " [GT]"   if r["in_ground_truth"] else ""
+            pat       = r["primary_pattern"] or "---"
+            print(
+                f"  {r['vendor_name'][:40]:<40}  "
+                f"IPS={r['ips_final']:.3f}  {pat}{efos_flag}{sfp_flag}{gt_flag}"
+            )
+
+        return run_id, tier_counts
+
+    except Exception:
+        if not dry_run:
+            try:
+                conn.execute(
+                    "UPDATE aria_runs SET status='failed', error_message=? WHERE id=?",
+                    ("See logs", run_id),
+                )
+                conn.commit()
+            except Exception:
+                pass
+        raise
+    finally:
+        conn.close()
+
+
+# ---------------------------------------------------------------------------
+# CLI entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="ARIA Phase 1 Pipeline")
+    parser.add_argument("--dry-run", action="store_true", help="Compute but do not save")
+    parser.add_argument(
+        "--limit", type=int, default=None,
+        help="Process only top N vendors by total value"
+    )
+    parser.add_argument(
+        "--db", type=str, default=None,
+        help="Path to SQLite database (overrides DATABASE_PATH env var)"
+    )
+    args = parser.parse_args()
+
+    if args.db:
+        DB_PATH = Path(args.db)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+
+    run_id, tiers = run_pipeline(dry_run=args.dry_run, limit=args.limit)
+    print(
+        f"\nRun {run_id} complete. "
+        f"Tier distribution: T1={tiers[0]}, T2={tiers[1]}, T3={tiers[2]}, T4={tiers[3]}"
+    )

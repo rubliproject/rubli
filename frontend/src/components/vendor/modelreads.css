@@ -1,0 +1,78 @@
+/* «Lo que lee el modelo» (ModelReads.tsx): the signal diagram, the specialists' fold, the comparison scales.
+   Tokens only; the level colour appears only on the indicator's needle and word (DESIGN.md §6, §7.p). */
+.mr-key { margin: 0 0 8px; font: 400 13px/1.45 var(--font-serif); color: var(--ct-gray); text-wrap: pretty; }
+.mr-key b { font-weight: 600; color: var(--ct-ink); }
+.mr-key > span { display: inline-block; margin-right: 16px; }
+.mr-fig { margin: 0; max-width: 100%; }
+.mr-fig svg { display: block; overflow: visible; }
+.mr-col { font: 600 12px var(--font-sc); fill: var(--ct-gray); }
+.mr-node { fill: var(--color-background); stroke: var(--color-border); stroke-width: 1; }
+.mr-node.is-focal { stroke: var(--ct-ink); }
+.mr-node.is-down { stroke-dasharray: 3 3; }
+.mr-why { font: 400 13px var(--font-serif); fill: var(--ct-ink); }
+.mr-body { font: 400 12px var(--font-serif); fill: var(--ct-gray); }
+.mr-lab { font: 600 12px var(--font-sc); fill: var(--ct-ink); }
+.mr-score { font: 600 17px var(--font-serif); font-variant-numeric: tabular-nums; fill: var(--ct-ink); }
+.mr-lv { font: 600 13px var(--font-sc); fill: var(--ct-gray); }
+.mr-lv.is-critical { fill: var(--color-risk-critical-text); }
+.mr-lv.is-high { fill: var(--color-risk-high-text); }
+.mr-lv.is-medium { fill: var(--color-risk-medium-text); }
+.mr-meta { font: 400 12px var(--font-mono); font-variant-numeric: tabular-nums; fill: var(--ct-gray); }
+.mr-cn { stroke: var(--ct-ink); fill: none; }
+.mr-cn.is-down { stroke: var(--ct-gray); stroke-dasharray: 4 3; }
+.mr-ah { fill: var(--ct-gray); }
+.mr-mask { fill: var(--color-background); }
+.mr-cl { font: 600 12px var(--font-sc); fill: var(--ct-ink); paint-order: stroke; stroke: var(--color-background); stroke-width: 3px; }
+.mr-cl.is-down { fill: var(--ct-gray); }
+.mr-zone { stroke: var(--color-background); stroke-width: 1; }
+.mr-zone.is-low { fill: color-mix(in srgb, var(--ct-gray) 14%, transparent); }
+.mr-zone.is-medium { fill: color-mix(in srgb, var(--color-risk-medium) 18%, transparent); }
+.mr-zone.is-high { fill: color-mix(in srgb, var(--color-risk-high) 18%, transparent); }
+.mr-zone.is-critical { fill: color-mix(in srgb, var(--color-risk-critical) 18%, transparent); }
+.mr-ndl { stroke-width: 3; stroke: var(--ct-gray); }
+.mr-ndl.is-critical { stroke: var(--color-risk-critical); }
+.mr-ndl.is-high { stroke: var(--color-risk-high); }
+.mr-ndl.is-medium { stroke: var(--color-risk-medium); }
+
+/* «Para especialistas» */
+.mr-spec { margin-top: 8px; }
+.mr-spec > summary { cursor: pointer; font: 400 13px/1.45 var(--font-serif); color: var(--ct-gray); min-height: 24px; }
+.mr-spec > summary:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .mr-spec > summary:hover { color: var(--ct-ink); } }
+.mr-spec-t { width: 100%; max-width: 640px; margin-top: 4px; border-collapse: collapse; font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.mr-spec-t th, .mr-spec-t td { padding: 2px 8px 2px 0; border-bottom: 1px solid var(--ct-rule, var(--color-border)); text-align: right; }
+.mr-spec-t th:first-child { text-align: left; font: 400 13px/1.45 var(--font-serif); color: var(--ct-ink); }
+.mr-spec-t thead th { font: 600 12px var(--font-sc); color: var(--ct-gray); }
+
+/* comparison scales: name · track · words */
+.mr-sc-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--ct-ink); }
+.mr-sc-row { display: grid; grid-template-columns: minmax(140px, 1.1fr) minmax(120px, 1.2fr) minmax(150px, 1.1fr); align-items: center; gap: 4px 16px; padding: 6px 0; border-bottom: 1px solid var(--ct-rule, var(--color-border)); }
+.mr-sc-nm { font: 400 14px/1.35 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }
+.mr-sc-trk { position: relative; height: 20px; box-shadow: inset 0 -1px 0 var(--color-border); }
+.mr-sc-trk.pat-sin-dato { box-shadow: inset 0 0 0 1px var(--color-border); }
+.mr-sc-trk > i { position: absolute; display: block; }
+.mr-sc-gap { top: 8px; height: 4px; background: color-mix(in srgb, var(--ct-gray) 30%, transparent); }
+.mr-sc-gap.is-over { background: color-mix(in srgb, var(--ct-ink) 45%, transparent); }
+.mr-sc-typ { top: 3px; bottom: 3px; width: 0; border-left: 2px solid var(--ct-gray); margin-left: -1px; }
+.mr-sc-this { top: 0; bottom: 0; width: 0; border-left: 2px solid var(--ct-ink); margin-left: -1px; }
+.mr-sc-ref { top: 6px; bottom: 6px; width: 0; border-left: 1px dashed var(--color-accent-data); }
+.mr-sc-foco { top: -14px; width: 48px; height: 48px; margin-left: -24px; --pat-x: 50%; --pat-y: 50%; pointer-events: none; }
+.mr-sc-v { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; font: 400 13px/1.4 var(--font-serif); color: var(--ct-gray); }
+.mr-sc-v b { font: 700 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ct-ink); }
+.mr-sc-v .is-ink { color: var(--ct-ink); }
+.mr-sc-v small { flex-basis: 100%; font: 400 12px/1.4 var(--font-mono); color: var(--ct-gray); }
+.mr-k { display: inline-block; width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px; }
+.mr-k.is-typ { width: 0; border-left: 2px solid var(--ct-gray); margin-right: 6px; }
+.mr-k.is-this { width: 0; border-left: 2px solid var(--ct-ink); margin-right: 6px; }
+.mr-k.is-ref { width: 0; border-left: 1px dashed var(--color-accent-data); margin-right: 6px; }
+.mr-k.is-foco { border: 1px solid var(--ct-ink); border-radius: 50%; box-shadow: inset 0 0 0 3px var(--color-background), inset 0 0 0 4px color-mix(in srgb, var(--ct-ink) 50%, transparent); }
+@media (max-width: 760px) {
+  .mr-sc-row { grid-template-columns: minmax(0, 1fr); gap: 4px 0; }
+}
+
+/* risk by year additions (VendorCommandPanel RiskTrend) */
+.vd-trend .pt.is-weak { fill: var(--color-background); stroke: var(--ct-ink); stroke-width: 1.5; }
+.vd-trend .pt.crit.is-weak { stroke: var(--color-risk-critical); }
+.vd-trend .adm { font: 600 12px var(--font-sc); fill: var(--ct-gray); }
+.vd-trend .strip { stroke: var(--color-border); stroke-width: 1; }
+.vd-trend-read { margin: 4px 0 2px; font: 400 14px/1.45 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }

@@ -1,0 +1,162 @@
+/* /atlas on «El Contrato» (DESIGN.md §2–§8): local chrome for the sky's controls.
+   Tokens only; the shell primitives live in components/contrato/contrato.css. */
+
+/* control buttons + chips: SC 14 · 40px · 1px rule border (§8 Chip / Button) */
+.at-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 12px;
+  font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-secondary); white-space: nowrap;
+  background: var(--color-background); border: 1px solid var(--color-border); cursor: pointer;
+  transition: color var(--dur-press) ease-out, border-color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.at-btn:hover { color: var(--color-text-primary); border-color: var(--color-text-primary); }
+.at-btn:active { transform: scale(.97); }
+.at-btn[aria-pressed='true'], .at-btn[aria-expanded='true'] { color: var(--color-text-primary); border-color: var(--color-text-primary); }
+.at-btn:disabled { color: var(--color-text-muted); border-color: var(--color-border); cursor: default; transform: none; }
+.at-btn.is-mono { font: 400 13px/1 var(--font-mono); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.at-btn:focus-visible, .at-link:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+
+/* the cover is ONE row: h1 · search · tools (owner 2026-10-27: the sky must start high on the first screen) */
+.ct-cover.at-cover > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
+.at-head { position: relative; z-index: 7; min-height: 30px; /* one chip row reserved before the manifest arrives (launch audit CLS) */ display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.at-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.at-period { font: 400 13px/1.45 var(--font-mono); color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.at-period:empty { display: none; }
+.at-pop { position: absolute; right: 0; top: calc(100% + 4px); z-index: 9; padding: 8px; background: var(--color-background); border: 1px solid var(--color-text-primary); }
+.at-pop button.at-item { display: block; width: 100%; text-align: left; padding: 8px; min-height: 40px; font: 400 14px/1.4 var(--font-serif); color: var(--color-text-primary); background: transparent; border: 0; cursor: pointer; }
+.at-pop button.at-item:hover { background: var(--color-background-elevated); }
+.at-pop button.at-item:disabled { color: var(--color-text-muted); cursor: default; background: transparent; }
+.at-pop .at-foot { padding: 8px 8px 0; margin-top: 4px; border-top: 1px solid var(--color-border); font: 400 12px/1.45 var(--font-serif); color: var(--color-text-muted); }
+
+/* the location row under the cover: where you are · the trail · instruments */
+.at-locrow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-top: 12px; padding: 4px 0; border-top: 1px solid var(--color-text-primary); }
+.at-trail { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; min-width: 0; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.at-trail .ct-sc { font-size: 13px; color: var(--color-text-primary); }
+.at-trail button.at-crumb { font: 400 15px/1.4 var(--font-serif); color: var(--color-text-secondary); background: transparent; border: 0; padding: 0; min-height: 32px; cursor: pointer; text-align: left;
+  text-decoration: underline transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; transition: text-decoration-color var(--dur-press) ease-out; }
+@media (hover: hover) and (pointer: fine) { .at-trail button.at-crumb:hover { text-decoration-color: currentColor; } }
+.at-trail .at-here { font: 600 15px/1.4 var(--font-serif); color: var(--color-text-primary); }
+.at-trail button.at-chip { font: 400 14px/1.4 var(--font-serif); color: var(--color-text-secondary); background: var(--color-background); border: 1px solid var(--color-border); padding: 4px 8px; min-height: 32px; cursor: pointer; }
+.at-inst { display: flex; align-items: center; gap: 8px; flex: none; margin-left: auto; }
+/* one line at desktop: trail · instruments · the period count last, right-aligned */
+.at-locrow .at-period { order: 3; flex: 1 1 180px; min-width: 0; text-align: right; text-wrap: balance; }
+.at-step { display: inline-flex; align-items: center; gap: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-secondary); }
+
+/* the plate: the sky at full measure, a rule above and below, no frame */
+.at-plate { margin-top: 0; border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border); }
+.at-plate figcaption { margin-top: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+/* overlays inside the sky: one panel grammar */
+.at-panel { pointer-events: auto; background: var(--color-background); border: 1px solid var(--color-text-primary); }
+.at-panel, .at-panel button { font: 400 13px/1.45 var(--font-mono); }
+.at-panel .at-serif { font: 400 15px/1.5 var(--font-serif); color: var(--color-text-primary); }
+.at-panel .at-h { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.at-panel .at-a { color: var(--ct-ink, var(--color-text-primary)); background: transparent; border: 0; padding: 0; min-height: 32px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.at-panel .at-x { min-width: 32px; min-height: 32px; color: var(--color-text-muted); background: transparent; border: 0; cursor: pointer; font-size: 15px; }
+.at-dock-tabs { display: flex; height: 40px; flex: 0 0 40px; border-bottom: 1px solid var(--color-text-primary); }
+.at-dock-tabs button { flex: 1; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); background: var(--color-background); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; transition: color var(--dur-press) ease-out; }
+.at-dock-tabs button[aria-selected='true'] { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.at-dock-tabs button:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; }
+
+/* Anexos */
+.at-flights { border-top: 1px solid var(--color-text-primary); }
+.at-flight { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0 12px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--color-border); }
+.at-flight h3 { font: 600 15px/1.35 var(--font-serif); color: var(--color-text-primary); white-space: nowrap; }
+.at-flight p { margin: 0; min-width: 0; font: 400 var(--text-meta)/1.45 var(--font-mono); color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-flight .at-btn { min-height: 30px; padding: 0 8px; font-size: var(--text-label); gap: 4px; }
+/* Teclas: one «+ Teclas · ?» line (kit .ct-notes); open = a dense key list, 3 columns at desktop */
+.at-keys-d .ct-annex-lede { margin: 0 0 4px; font: 400 var(--text-meta)/1.45 var(--font-serif); color: var(--color-text-muted); }
+.at-keys { columns: 3; column-gap: 24px; border-top: 1px solid var(--color-text-primary); }
+.at-keys > div { break-inside: avoid; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; padding: 2px 0; border-bottom: 1px solid var(--color-border); }
+.at-keys dt { font: 400 var(--text-data)/1.45 var(--font-mono); color: var(--color-text-primary); }
+.at-keys dd { margin: 0; font: 400 var(--text-data)/1.45 var(--font-serif); color: var(--color-text-secondary); }
+.at-colofon { border-top: 1px solid var(--color-text-primary); counter-reset: at-c; }
+.at-colofon li { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 8px; padding: 2px 0; border-bottom: 1px solid var(--color-border); font: 400 var(--text-meta)/1.45 var(--font-mono); color: var(--color-text-secondary); }
+.at-colofon li::before { counter-increment: at-c; content: counter(at-c, upper-roman) '.'; font: 600 var(--text-meta)/1.45 var(--font-sc); color: var(--color-text-muted); }
+
+/* the clause strip: the same four figures, tighter */
+.at-clauses { margin-top: 16px; }
+.at-clauses > h2 { padding-bottom: 4px; }
+.at-clauses .ct-clause { padding: 4px 0; }
+.at-clauses .ct-dim { margin-top: 4px; }
+
+@media (max-width: 1100px) { .at-keys { columns: 2; } }
+@media (max-width: 900px) {
+  .at-keys { columns: 1; }
+  .at-flight { grid-template-columns: minmax(0, 1fr) auto; }
+  .at-flight h3 { white-space: normal; }
+  .at-flight p { grid-column: 1; grid-row: 2; }
+  .at-flight .at-btn { grid-column: 2; grid-row: 1 / 3; }
+}
+
+/* owner 2026-10-27 («take out or move down some buttons»): above the sky only the search + tools row and the
+   location row. The h1 repeats the Vínculos switch, so it stays for readers of the outline only; Corte · Riesgo
+   ride the caption under the plate. */
+.ct-cover.at-cover { padding-top: 12px; }
+.ct-cover.at-cover h1 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* owner 2026-10-27: «make the buttons way smaller» — the two rows above the sky use compact controls (desktop only;
+   the phone atlas is its own component with 44px targets) */
+.at-cover .at-btn, .at-locrow .at-btn { min-height: 30px; padding: 0 8px; font-size: 12px; gap: 4px; }
+.at-cover .at-head input { height: 30px; }
+.at-locrow .at-btn.is-mono[style*='width: 40'] { width: 30px !important; }
+.at-locrow { gap: 4px 16px; }
+.at-inst, .at-tools { gap: 4px; }
+
+/* ── Vínculos navigation v2 (owner 2026-10-27, «sector bar + ladder»):
+   one row above the sky = the twelve sectors + search; the left rail = where you are (a ladder of
+   rungs, the stepper on the last one) · the tools · the instruments · the period line. */
+.at-head { flex-wrap: nowrap; width: 100%; }
+.ct-cover.at-cover > div { display: block; }
+.at-secbar { display: flex; flex: 1; min-width: 0; flex-wrap: wrap; gap: 4px; }
+.at-sec { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 8px; cursor: pointer;
+  font: 400 13px/1 var(--font-serif); color: var(--color-text-secondary); white-space: nowrap;
+  background: var(--color-background); border: 1px solid var(--color-border); transition: color 80ms ease-out, border-color 80ms ease-out; }
+.at-sec i { width: 8px; height: 8px; background: var(--sc); }
+.at-sec:hover { color: var(--color-text-primary); border-color: var(--color-text-primary); }
+.at-sec[aria-pressed='true'] { color: var(--color-text-primary); border-color: var(--sc); box-shadow: inset 0 -2px 0 var(--sc); font-weight: 600; }
+.at-sec:active { scale: .97; }
+.at-sec:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.at-head > div:not(.at-secbar):not(.at-vista) { flex: none; width: 200px !important; }
+/* owner 2026-10-29: the twelve chips · search · «Vínculos | Cifras» on ONE row (the switch left the shell band);
+   chips never wrap — past the measure they scroll sideways */
+.at-secbar { flex-wrap: nowrap; gap: 0; overflow-x: auto; scrollbar-width: none; }
+.at-secbar::-webkit-scrollbar { display: none; }
+.at-sec { flex: none; gap: 4px; padding: 0 5px; font-size: var(--text-label); }
+.at-sec + .at-sec { margin-left: -1px; }
+.at-sec:hover, .at-sec[aria-pressed='true'] { position: relative; z-index: 1; }
+.at-vista { flex: none; }
+.ct-cover.at-cover { padding-top: 8px; }
+
+.at-stage { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 0 16px; margin-top: 8px; border-top: 1px solid var(--color-text-primary); }
+.at-rail { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; min-width: 0; position: relative; z-index: 8; }
+.at-ladder { list-style: none; margin: 0 0 4px; padding: 0; }
+.at-ladder li { position: relative; padding: 4px 0 6px 12px; border-left: 1px solid var(--color-border); max-width: none; }
+.at-ladder li .ct-sc { display: block; font-size: 12px; color: var(--color-text-muted); }
+.at-ladder li[aria-current='location'] { border-left: 2px solid var(--color-text-primary); padding-left: 11px; }
+.at-rung { display: block; padding: 0; text-align: left; background: none; border: 0; cursor: pointer;
+  font: 400 15px/1.35 var(--font-serif); color: var(--color-text-secondary); text-decoration: underline transparent; text-underline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { button.at-rung:hover { text-decoration-color: currentColor; color: var(--color-text-primary); } }
+li[aria-current='location'] .at-rung { font-weight: 600; color: var(--color-text-primary); cursor: default; }
+.at-steprow { display: flex; margin-top: 4px; }
+.at-rail .at-btn { min-height: 30px; padding: 0 8px; font-size: 12px; gap: 4px; justify-content: flex-start; }
+.at-rail .at-step .at-btn { width: 30px !important; justify-content: center; }
+.at-rail .at-step { font-size: 12px; gap: 4px; }
+.at-rail .at-tools { display: flex; flex-direction: column; gap: 4px; }
+.at-rail .at-tools > div, .at-rail .at-tools > button, .at-rail .at-tools .at-btn { width: 100%; }
+.at-rail .at-inst { display: flex; flex-wrap: wrap; gap: 4px; margin-left: 0; }
+.at-rail .at-period { margin-top: auto; padding-bottom: 8px; font-size: 12px; color: var(--color-text-secondary); }
+.at-rail .at-key { margin: auto 0 0; padding-bottom: 8px; display: flex; flex-direction: column; gap: 2px; font-family: var(--font-family-editorial); font-size: 13px; line-height: 1.35; }
+.at-rail .at-key i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.at-rail .at-pop, .at-rail [role='region'] { left: 0 !important; right: auto !important; }
+.at-stage .at-plate { border-top: 0; min-width: 0; }
+
+/* 2026-11-04 the arrangement row («Ordenar por: Sectores · Riesgo · más vistas»), beside the page question —
+   DESIGN §8: a choice group in the quiet form (no frame, pressed = ink + 2 px rule under), unlike «Vínculos | Cifras» */
+.sk-arr { display: flex; align-items: center; gap: 16px; flex: none; }
+.sk-arr-k { font: 600 12px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.sk-arr .ct-subtab { min-height: 32px; padding: 0; background: transparent; border: 0; cursor: pointer; }
+.sk-arr-more { position: relative; display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted); }
+.sk-arr-more > span { pointer-events: none; font-size: 12px; }
+.sk-arr select.ct-subtab { appearance: none; }
+.sk-arr select.ct-subtab[data-on] { color: var(--color-text-primary); box-shadow: inset 0 -2px 0 var(--color-text-primary); }
+.sk-arr select.ct-subtab option { color: var(--color-text-primary); background: var(--color-background); }
+/* CYAN-2 11-05 (owner «too many colours»): the sector bar is quiet ink; red on El Mapa means risk alone.
+   Owner 11-06 «both lenses»: under «Sectores» (data-hues) the swatches and the hued rule come back. */
+.at-secbar:not([data-hues]) .at-sec i { display: none; }
+.at-secbar:not([data-hues]) .at-sec[aria-pressed='true'] { border-color: var(--color-text-primary); box-shadow: inset 0 -2px 0 var(--color-text-primary); }

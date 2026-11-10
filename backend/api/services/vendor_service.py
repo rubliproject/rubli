@@ -1,0 +1,235 @@
+"""
+Vendor domain service — extracted from vendors.py router.
+
+Handles vendor listing, detail, risk profiles, and related queries.
+Router becomes thin: parse request → call service → return response.
+"""
+from __future__ import annotations
+
+import math
+import sqlite3
+from typing import Any
+
+import structlog
+
+from .base_service import BaseService
+from .query_builder import QueryBuilder
+from .pagination import paginate_query, PaginatedResult
+from .vendor_canonical import not_absorbed
+from ..config.constants import RISK_THRESHOLDS_V4 as THRESHOLDS
+from ..helpers.analysis_helpers import single_award_of_competitive
+from ..helpers.analysis_helpers import rnd  # DQ1: unknown stays None
+
+logger = structlog.get_logger("rubli.services.vendor")
+
+# Sort field whitelist for vendor listing
+VENDOR_SORT_WHITELIST = {
+    "total_contracts": "s.total_contracts",
+    "total_value": "s.total_value_mxn",
+    "total_value_mxn": "s.total_value_mxn",
+    "avg_risk": "s.avg_risk_score",
+    "avg_risk_score": "s.avg_risk_score",
+    "direct_award_pct": "s.direct_award_pct",
+    "high_risk_pct": "s.high_risk_pct",
+    "single_bid_pct": "s.single_bid_pct",
+    "single_award_pct": "MIN(100.0, s.single_bid_pct * 100.0 / NULLIF(100.0 - s.direct_award_pct, 0))",
+    "pct_anomalous": "s.anomalous_pct",
+    "name": "v.name",
+}
+
+
+class VendorService(BaseService):
+    """Business logic for vendor queries."""
+
+    def list_vendors(
+        self,
+        conn: sqlite3.Connection,
+        *,
+        page: int = 1,
+        per_page: int = 50,
+        search: str | None = None,
+        sector_id: int | None = None,
+        risk_level: str | None = None,
+        min_contracts: int | None = None,
+        min_value: float | None = None,
+        has_rfc: bool | None = None,
+        sort_by: str = "total_contracts",
+        sort_order: str = "desc",
+    ) -> PaginatedResult:
+        """
+        List vendors with pagination and filters.
+
+        Uses pre-computed vendor_stats table for fast aggregate queries.
+        """
+        qb = QueryBuilder("vendors v")
+        qb.join("vendor_stats s", "v.id = s.vendor_id")
+        qb.where(not_absorbed(conn, "v.id"))  # absorbed ids live on their canonical row
+
+        # Vendor-table filters
+        if search:
+            # Also match known name variants from QQW/manual enrichment
+            qb.filter_search(
+                search,
+                # company RFCs only (12 chars) — persona-física RFCs embed a birth date
+                ["v.name", "v.name_normalized", "CASE WHEN LENGTH(v.rfc) = 12 THEN v.rfc END"],
+                extra_subquery=(
+                    "v.id IN (SELECT vendor_id FROM vendor_name_variants "
+                    "WHERE variant_name LIKE ? AND source NOT IN ('qqw_miss', 'qqw_empty'))"
+                ),
+            )
+        if has_rfc is True:
+            qb.where("v.rfc IS NOT NULL AND v.rfc != ''")
+        elif has_rfc is False:
+            qb.where("(v.rfc IS NULL OR v.rfc = '')")
+
+        # Stats-table filters
+        if sector_id is not None:
+            # primary_sector_id in vendor_stats is unpopulated (NULL for all rows).
+            # Fall back to a contracts-based subquery: include vendors that have
+            # at least one contract in the requested sector.
+            qb.where(
+                "v.id IN (SELECT DISTINCT c2.vendor_id FROM contracts c2"
+                " WHERE c2.sector_id = ? AND c2.vendor_id IS NOT NULL)",
+                sector_id,
+            )
+        if risk_level is not None:
+            # Use high_risk_pct (% of high+critical contracts) for vendor-level filtering.
+            # avg_risk_score is too strict at vendor level since many low-risk contracts
+            # dilute the average — using high_risk_pct gives more meaningful results.
+            risk_ranges = {
+                "critical": ("COALESCE(s.high_risk_pct, 0) >= ?", [25.0]),
+                "high": ("COALESCE(s.high_risk_pct, 0) >= ? AND COALESCE(s.high_risk_pct, 0) < ?", [10.0, 25.0]),
+                "medium": ("COALESCE(s.high_risk_pct, 0) >= ? AND COALESCE(s.high_risk_pct, 0) < ?", [2.0, 10.0]),
+                "low": ("COALESCE(s.high_risk_pct, 0) < ?", [2.0]),
+            }
+            # Support comma-separated levels: "critical,high" selects both ranges
+            levels = [l.strip() for l in risk_level.split(",") if l.strip() in risk_ranges]
+            if len(levels) == 1:
+                cond, vals = risk_ranges[levels[0]]
+                qb.where(cond, *vals)
+            elif len(levels) > 1:
+                parts, params_flat = [], []
+                for lvl in levels:
+                    cond, vals = risk_ranges[lvl]
+                    parts.append(f"({cond})")
+                    params_flat.extend(vals)
+                qb.where(f"({' OR '.join(parts)})", *params_flat)
+        if min_contracts is not None:
+            qb.where("s.total_contracts >= ?", min_contracts)
+        if min_value is not None:
+            qb.where("s.total_value_mxn >= ?", min_value)
+
+        # Sorting
+        qb.sort(
+            sort_by,
+            sort_order,
+            whitelist=VENDOR_SORT_WHITELIST,
+            default="s.total_contracts DESC",
+        )
+
+        # LEFT JOIN EFOS — one row per RFC so no duplicates
+        qb.left_join(
+            "(SELECT rfc, MIN(stage) AS stage FROM sat_efos_vendors WHERE stage IN ('definitivo','presunto') GROUP BY rfc) efos",
+            "v.rfc IS NOT NULL AND v.rfc != '' AND v.rfc = efos.rfc",
+        )
+        # Scalar EXISTS for SFP — avoids fan-out when vendor has multiple sanctions
+        columns = """
+            v.id, v.name, v.rfc, v.name_normalized,
+            s.total_contracts, s.total_value_mxn, s.avg_risk_score,
+            s.high_risk_pct, s.direct_award_pct, s.single_bid_pct,
+            s.first_contract_year, s.last_contract_year,
+            s.primary_sector_id, s.anomalous_pct,
+            CASE WHEN efos.rfc IS NOT NULL THEN 1 ELSE 0 END AS is_efos,
+            efos.stage AS efos_stage,
+            CASE WHEN v.rfc IS NOT NULL AND v.rfc != ''
+                      AND EXISTS (SELECT 1 FROM sfp_sanctions ss WHERE ss.rfc = v.rfc)
+                 THEN 1 ELSE 0 END AS is_sfp_sanctioned
+        """
+
+        return self._paginated_list(
+            conn, qb, columns, page, per_page,
+            row_mapper=self._map_vendor_row,
+        )
+
+    @staticmethod
+    def _map_vendor_row(row: sqlite3.Row) -> dict:
+        """Map a vendor database row to API response dict."""
+        return {
+            "id": row["id"],
+            "name": row["name"],
+            "name_normalized": row["name_normalized"],
+            "total_contracts": row["total_contracts"],
+            "total_value_mxn": row["total_value_mxn"],
+            "avg_risk_score": round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+            "high_risk_pct": round(row["high_risk_pct"], 2) if row["high_risk_pct"] is not None else None,
+            "direct_award_pct": rnd(row["direct_award_pct"], 2),
+            "single_bid_pct": rnd(row["single_bid_pct"], 2),
+            "single_award_pct": single_award_of_competitive(row["single_bid_pct"], row["direct_award_pct"]),
+            "first_contract_year": row["first_contract_year"],
+            "last_contract_year": row["last_contract_year"],
+            "primary_sector_id": row["primary_sector_id"],
+            "pct_anomalous": round(row["anomalous_pct"], 2) if row["anomalous_pct"] else None,
+            "is_efos": bool(row["is_efos"]),
+            "efos_stage": row["efos_stage"],
+            "is_sfp_sanctioned": bool(row["is_sfp_sanctioned"]),
+        }
+
+    def get_vendor_detail(
+        self,
+        conn: sqlite3.Connection,
+        vendor_id: int,
+    ) -> dict | None:
+        """Get detailed vendor information including stats."""
+        row = self._execute_one(
+            conn,
+            """
+            SELECT v.id, v.name, v.rfc, v.name_normalized, v.is_individual,
+                   s.total_contracts, s.total_value_mxn, s.avg_risk_score,
+                   s.high_risk_pct, s.direct_award_pct, s.single_bid_pct,
+                   s.first_contract_year, s.last_contract_year,
+                   s.primary_sector_id, s.anomalous_pct,
+                   s.sector_count
+            FROM vendors v
+            LEFT JOIN vendor_stats s ON v.id = s.vendor_id
+            WHERE v.id = ?
+            """,
+            (vendor_id,),
+        )
+        if row is None:
+            return None
+        return dict(row)
+
+    def get_vendor_contracts(
+        self,
+        conn: sqlite3.Connection,
+        vendor_id: int,
+        *,
+        page: int = 1,
+        per_page: int = 50,
+        sort_by: str = "contract_year",
+        sort_order: str = "desc",
+    ) -> PaginatedResult:
+        """Get contracts for a specific vendor."""
+        qb = QueryBuilder("contracts c")
+        qb.where("c.vendor_id = ?", vendor_id)
+        qb.sort(
+            sort_by,
+            sort_order,
+            whitelist={
+                "contract_year": "c.contract_year",
+                "amount_mxn": "c.amount_mxn",
+                "risk_score": "c.risk_score",
+            },
+            default="c.contract_year DESC",
+        )
+
+        columns = """
+            c.id, c.title, c.contract_year, c.amount_mxn,
+            c.risk_score, c.risk_level, c.is_direct_award, c.is_single_bid,
+            c.institution_id, c.sector_id
+        """
+        return self._paginated_list(conn, qb, columns, page, per_page)
+
+
+# Singleton instance for router use
+vendor_service = VendorService()

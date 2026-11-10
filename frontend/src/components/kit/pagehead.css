@@ -1,0 +1,29 @@
+/* PageHead (kit/PageHead.tsx): one left edge, one spacing scale — 8 / 16 / 24 / 40 px, nothing else. */
+.ph, .ph-read { --ph-1: 8px; --ph-2: 16px; --ph-3: 24px; --ph-4: 40px; }
+.ph-body { display: flex; flex-direction: column; align-items: stretch; gap: var(--ph-2); padding-top: var(--ph-3); }
+.ph-body > * { margin: 0; }
+.ph-body > .ph-kicker { margin-bottom: calc(var(--ph-1) - var(--ph-2)); } /* kicker → finding: 8 */
+.ph-prelude { margin: 0 0 8px; font: 400 15px/1.45 var(--font-serif); color: var(--color-text-secondary, var(--color-text-muted)); } /* what it is · what you get · one action (lib/nav/prelude.ts) */
+.ph-prelude b { font-weight: 600; color: var(--color-text-primary); }
+.ph-prelude span { font-family: var(--font-mono); font-size: 13px; color: var(--color-text-primary); }
+.ph-kicker { font: 600 var(--text-label, 12px)/16px var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.ph-finding { font: 600 24px/32px var(--font-serif); letter-spacing: -.01em; color: var(--color-text-primary); text-wrap: balance; }
+.ph-question { font: 400 17px/24px var(--font-serif); color: var(--color-text-secondary); text-wrap: pretty; }
+.ph-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ph-1) var(--ph-2); }
+
+/* Mariana's three lines: dt above dd; ≥ 901 px three equal columns whose bodies share one baseline (subgrid rows) */
+.ph-read { display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--ph-2); margin: 0; }
+.ph-read > div { display: grid; row-gap: 0; min-width: 0; }
+.ph-read dt { font: 600 var(--text-label, 12px)/16px var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.ph-read dt.is-means { color: var(--color-text-primary); } /* red is crítico only */
+.ph-read dd { margin: 0; font: 400 15px/24px var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }
+.ph-read dd b { font-weight: 600; }
+@media (min-width: 901px) {
+  .ph-read { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto; column-gap: var(--ph-3); row-gap: 0; }
+  .ph-read > div { grid-row: span 2; grid-template-rows: subgrid; }
+}
+@media (max-width: 760px) {
+  .ph-body { padding-top: var(--ph-2); }
+  .ph-finding { font-size: 20px; line-height: 24px; }
+  .ph-question { font-size: 15px; line-height: 24px; }
+}

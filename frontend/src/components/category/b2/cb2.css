@@ -1,0 +1,21 @@
+/* /categories/:id (+ /sub/:code) — the category profile on the institution B2 sheet (b2.css). Only what is new here. */
+.cb2 [role='tabpanel'].is-stale { opacity: .55; transition: opacity var(--dur-state) var(--ease-out); }
+.cb2-piso { max-width: 1100px; }
+.cb2-box { cursor: pointer; outline: none; }
+.cb2-box rect { stroke: var(--color-background); stroke-width: 1; transition: opacity var(--dur-press, 120ms) ease-out; }
+.cb2-box:focus-visible rect { stroke: var(--color-text-primary); stroke-width: 2.5; }
+@media (hover: hover) and (pointer: fine) { .cb2-box:hover rect { opacity: .85; } }
+.cb2-hbg { fill: var(--color-background-elevated); }
+.cb2-hln { stroke: var(--color-border); stroke-width: 2; }
+.cb2-ex { margin: var(--ib2-2) 0 0; padding: 0; list-style: none; }
+.cb2-ex li { padding: 6px 0; border-bottom: 1px solid var(--color-border); font: 400 15px/1.45 var(--font-serif); color: var(--color-text-secondary); }
+.ib2 .cb2-box.is-dark text, .ib2 .cb2-box.is-dark text.nm { fill: var(--color-background); }
+.cb2-all { margin-top: var(--ib2-1); text-align: center; font: 400 14px/1.4 var(--font-serif); }
+.cb2-all summary { display: inline-flex; align-items: center; min-height: 44px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.cb2-all ol { max-width: 760px; margin: 0 auto; padding: 0; list-style: none; text-align: left; }
+.cb2-all li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px var(--ib2-2); padding: 6px 0; border-bottom: 1px solid var(--color-border); }
+.cb2-all li span { font: 400 13px/1.5 var(--font-mono); color: var(--color-text-muted); }
+/* the /categories filter carried in (AUDIT_JOURNALIST 11-07 P0): named, with a way out */
+.cb2-filter { white-space: normal; gap: 8px; border-color: var(--color-text-primary); }
+.cb2-filter b { font-weight: 700; }
+.cb2-filter button { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; }

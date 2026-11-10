@@ -1,0 +1,432 @@
+"""Pydantic models for vendor classification endpoints."""
+from pydantic import BaseModel, ConfigDict, Field
+from typing import List, Optional, Dict, Any
+from datetime import datetime
+from .common import PaginationMeta
+
+
+class VendorClassificationResponse(BaseModel):
+    """Classification details for a single vendor."""
+
+    vendor_id: int = Field(..., description="Vendor ID")
+    vendor_name: str = Field(..., description="Vendor name")
+    industry_id: Optional[int] = Field(None, description="Industry ID (1001-1035)")
+    industry_code: Optional[str] = Field(None, description="Industry code")
+    industry_name: Optional[str] = Field(None, description="Industry name (Spanish)")
+    industry_confidence: Optional[float] = Field(
+        None, description="Classification confidence (0.0-1.0)"
+    )
+    industry_source: Optional[str] = Field(
+        None, description="Classification source (verified_online)"
+    )
+    sector_affinity: Optional[int] = Field(
+        None, description="Expected sector based on industry"
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class YearAmount(BaseModel):
+    year: int
+    amount_mxn: float
+
+
+class VendorListItem(BaseModel):
+    """Vendor item for list responses.
+
+    Note: RFC (tax ID) is intentionally excluded from list responses for privacy.
+    RFC is only available in VendorDetailResponse when viewing a specific vendor.
+    """
+
+    id: int = Field(..., description="Vendor ID")
+    name: str = Field(..., description="Vendor name")
+    # RFC intentionally excluded from list for privacy - available in detail view
+    name_normalized: Optional[str] = Field(None, description="Normalized name")
+    total_contracts: int = Field(0, description="Total contract count")
+    total_value_mxn: float = Field(0, description="Total contract value (MXN)")
+    avg_risk_score: Optional[float] = Field(None, description="Average risk score")
+    high_risk_pct: Optional[float] = Field(0, description="Percentage of high/critical risk contracts, over scored ones (None = no scored contract yet)")
+    direct_award_pct: Optional[float] = Field(None, description="Percentage of direct awards (None: no procedure type, pre-2011)")
+    single_bid_pct: Optional[float] = Field(None, description="Percentage of single-bid contracts (None: pre-2011 only)")
+    single_award_pct: Optional[float] = Field(None, description="Single-award procedures as a percentage of COMPETITIVE procedures (0-100); the user-facing rate (D20)")
+    first_contract_year: Optional[int] = Field(None, description="Year of first contract")
+    last_contract_year: Optional[int] = Field(None, description="Year of most recent contract")
+    primary_sector_id: Optional[int] = Field(None, description="Primary sector ID (1-12)")
+    pct_anomalous: Optional[float] = Field(None, description="Percentage of anomalous contracts")
+    is_efos: bool = Field(False, description="Vendor RFC is on SAT EFOS ghost company list")
+    yearly_amounts: List[YearAmount] = Field(default_factory=list, description="Contracted MXN by contract_year (merged ids folded in, > 100B rejected); years with no contract omitted")
+    efos_stage: Optional[str] = Field(None, description="EFOS stage: definitivo or desvirtuado")
+    is_sfp_sanctioned: bool = Field(False, description="Vendor RFC is on SFP sanctions list")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VendorDetailResponse(BaseModel):
+    """Full vendor detail response."""
+
+    id: int = Field(..., description="Vendor ID")
+    name: str = Field(..., description="Vendor name")
+    rfc: Optional[str] = Field(None, description="RFC (Mexican tax ID)")
+    rfc_recovered_source: Optional[str] = Field(
+        None, description="'raw_rows' | 'rupc' when the company RFC was recovered (not in the CompraNet vendor row)"
+    )
+    canonical_id: Optional[int] = Field(
+        None, description="Canonical vendor id; differs from the requested id when that id was folded into it"
+    )
+    merged_record_count: int = Field(
+        1, description="CompraNet vendor records unified into this dossier (identical tax ID or registered name)"
+    )
+    name_normalized: Optional[str] = Field(None, description="Normalized name")
+    phonetic_code: Optional[str] = Field(None, description="Phonetic encoding")
+
+    # Classification
+    industry_id: Optional[int] = Field(None, description="Industry ID")
+    industry_code: Optional[str] = Field(None, description="Industry code")
+    industry_name: Optional[str] = Field(None, description="Industry name")
+    industry_confidence: Optional[float] = Field(None, description="Classification confidence")
+    sector_affinity: Optional[int] = Field(None, description="Expected sector")
+
+    # Group membership
+    vendor_group_id: Optional[int] = Field(None, description="Vendor group ID (if grouped)")
+    group_name: Optional[str] = Field(None, description="Group name")
+
+    # Contract statistics
+    total_contracts: int = Field(0, description="Total contract count")
+    total_value_mxn: float = Field(0, description="Total contract value (MXN)")
+    avg_contract_value: Optional[float] = Field(None, description="Average contract value")
+
+    # Risk metrics
+    avg_risk_score: Optional[float] = Field(None, description="Average risk score")
+    high_risk_count: int = Field(0, description="High/critical risk contract count")
+    high_risk_pct: Optional[float] = Field(0, description="Percentage of high/critical risk contracts, over scored ones (None = no scored contract yet)")
+
+    # Procedure metrics
+    direct_award_count: Optional[int] = Field(None, description="Direct award count (None: pre-2011 only)")
+    direct_award_pct: Optional[float] = Field(None, description="Direct award percentage")
+    single_bid_count: Optional[int] = Field(None, description="Single bid count (None: pre-2011 only)")
+    single_bid_pct: Optional[float] = Field(None, description="Single bid percentage")
+    single_award_pct: Optional[float] = Field(None, description="Single-award procedures as a percentage of COMPETITIVE procedures (0-100); the user-facing rate (D20)")
+
+    # Timeline
+    first_contract_year: Optional[int] = Field(None, description="Year of first contract")
+    last_contract_year: Optional[int] = Field(None, description="Year of most recent contract")
+    years_active: int = Field(0, description="Years with contracts")
+
+    # Sector distribution
+    primary_sector_id: Optional[int] = Field(None, description="Primary sector ID")
+    primary_sector_name: Optional[str] = Field(None, description="Primary sector name")
+    sectors_count: int = Field(0, description="Number of sectors served")
+
+    # Institution metrics
+    total_institutions: int = Field(0, description="Number of institutions contracted")
+
+    # Mahalanobis anomaly metrics
+    avg_mahalanobis: Optional[float] = Field(None, description="Average Mahalanobis distance across contracts")
+    max_mahalanobis: Optional[float] = Field(None, description="Maximum Mahalanobis distance across contracts")
+    pct_anomalous: Optional[float] = Field(None, description="Percentage of contracts with Mahalanobis p-value < 0.05 (D² > 21.026 for k=12)")
+
+    # Name variants (from QuiénEsQuién.Wiki and other sources)
+    name_variants: List["NameVariant"] = Field(default_factory=list, description="Known name aliases")
+
+    # Institutional tenure (Coviello & Gagliarducci 2017)
+    top_institutions: List["VendorTenureInstitution"] = Field(
+        default_factory=list,
+        description="Longest-tenured institution relationships"
+    )
+
+    # Co-bidding triangle clustering (Wachs, Fazekas & Kertész 2021)
+    cobid_clustering_coeff: Optional[float] = Field(None, description="Co-bidding clustering coefficient")
+    cobid_triangle_count: Optional[int] = Field(None, description="Number of co-bidding triangles")
+
+    # External watchlist flags
+    is_efos_ghost: Optional[bool] = Field(False, description="True if vendor RFC matches SAT EFOS ghost company list (Case 22)")
+    is_sfp_sanctioned: Optional[bool] = Field(False, description="True if vendor RFC matches SFP sanctions registry")
+
+    # v5.2 SHAP top risk factors (optional — populated when vendor_shap_v52 row exists)
+    shap_top_risk_factors: Optional[List[Dict[str, Any]]] = Field(
+        None,
+        description="Top 3 risk-driving SHAP factors from v5.2 analytical engine",
+    )
+
+    # P1 enrichment fields (computed from aria_queue, contract_z_features, factor_baselines)
+    direct_award_rate_corrected: Optional[float] = Field(
+        None,
+        description="Corrected direct award rate from aria_queue (0-100%), avoids corrupted vendor_stats.direct_award_pct",
+    )
+    avg_z_price_volatility: Optional[float] = Field(
+        None,
+        description="Average z-score for price_volatility across contracts (from contract_z_features)",
+    )
+    new_vendor_risk_score: Optional[float] = Field(
+        None,
+        description="Ghost company risk score (0-1) from vendor_stats.new_vendor_risk_score",
+    )
+    new_vendor_risk_triggers: Optional[str] = Field(
+        None,
+        description="Comma-separated list of ghost company risk triggers",
+    )
+    year_end_pct: Optional[float] = Field(
+        None,
+        description="Percentage of this vendor's contracts signed in December",
+    )
+    year_end_sector_avg: Optional[float] = Field(
+        None,
+        description="Sector baseline for year-end contract percentage (from factor_baselines)",
+    )
+    avg_confidence_lower: Optional[float] = Field(
+        None,
+        description="Average lower bound of 95% risk score CI across contracts",
+    )
+    avg_confidence_upper: Optional[float] = Field(
+        None,
+        description="Average upper bound of 95% risk score CI across contracts",
+    )
+    sector_risk_percentile: Optional[int] = Field(
+        None,
+        description="Vendor's risk score percentile rank within its primary sector (1-99)",
+    )
+    sector_pct: Optional[float] = Field(
+        None,
+        description="PERCENT_RANK (0-1) of avg_risk_score among vendors of its primary sector (api/sector_pct.py)",
+    )
+    thin_history: Optional[bool] = Field(
+        None,
+        description="Most of its contracts were scored with < 3 prior contracts: a low average means «no data»",
+    )
+    persona_fisica: bool = Field(
+        False,
+        description="An individual supplier (public_labels.is_named_persona): the UI labels it and adds the correction/opposition note",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class NameVariant(BaseModel):
+    """A known name alias for a vendor."""
+    variant_name: str
+    source: str  # 'qqw', 'manual', 'etl'
+
+
+class VendorTenureInstitution(BaseModel):
+    """Tenure relationship between vendor and institution (Coviello & Gagliarducci 2017)."""
+    institution_id: int
+    institution_name: str
+    first_contract_year: int
+    last_contract_year: int
+    tenure_years: int
+    total_contracts: int
+    total_amount_mxn: float
+
+
+class LongestTenuredVendor(BaseModel):
+    """Longest-tenured vendor at an institution."""
+    vendor_id: int
+    vendor_name: str
+    first_contract_year: int
+    last_contract_year: int
+    tenure_years: int
+    total_contracts: int
+    avg_risk_score: Optional[float] = None
+
+
+class VendorRiskProfile(BaseModel):
+    """Risk profile breakdown for a vendor."""
+
+    vendor_id: int
+    vendor_name: str
+
+    # Overall risk
+    avg_risk_score: Optional[float] = Field(None, description="Average risk score across contracts")
+    risk_trend: Optional[str] = Field(None, description="Risk trend: improving, stable, worsening")
+
+    # Risk distribution
+    contracts_by_risk_level: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Contract counts by risk level"
+    )
+    value_by_risk_level: Dict[str, float] = Field(
+        default_factory=dict,
+        description="Contract value by risk level"
+    )
+
+    # Risk factors
+    top_risk_factors: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Most common risk factors for this vendor"
+    )
+
+    # Comparison
+    risk_vs_sector_avg: Optional[float] = Field(
+        None,
+        description="Risk score compared to sector average (positive = higher risk)"
+    )
+    risk_percentile: Optional[float] = Field(
+        None,
+        description="Vendor's risk percentile among all vendors"
+    )
+
+
+class VendorInstitutionItem(BaseModel):
+    """Institution that a vendor has contracted with."""
+
+    institution_id: int
+    institution_name: str
+    institution_type: Optional[str] = None
+    contract_count: int = 0
+    total_value_mxn: float = 0
+    avg_risk_score: Optional[float] = None
+    first_year: Optional[int] = None
+    last_year: Optional[int] = None
+
+
+class VendorRelatedItem(BaseModel):
+    """Related vendor (same group)."""
+
+    vendor_id: int
+    vendor_name: str
+    rfc: Optional[str] = None
+    relationship_type: str = Field(
+        ..., description="Relationship: shared_rfc_root, possible_same_entity (link only, never merged)"
+    )
+    match_tier: Optional[str] = Field(None, description="possible_same_entity: matcher tier (PROBABLE_typo, ...)")
+    note_en: Optional[str] = Field(None, description="possible_same_entity: display copy (EN)")
+    note_es: Optional[str] = Field(None, description="possible_same_entity: display copy (ES)")
+    similarity_score: Optional[float] = None
+    total_contracts: int = 0
+    total_value_mxn: float = 0
+
+
+class VendorTopItem(BaseModel):
+    """Vendor in top list."""
+
+    rank: int
+    vendor_id: int
+    vendor_name: str
+    rfc: Optional[str] = None
+    metric_value: float = Field(..., description="The metric value used for ranking")
+    total_contracts: int = 0
+    total_value_mxn: float = 0
+    avg_risk_score: Optional[float] = None
+    yearly_amounts: List[YearAmount] = Field(default_factory=list, description="Contracted MXN by contract_year (merged ids folded in, > 100B rejected), scoped to sector_id when the request filters by sector")
+
+
+class VendorListResponse(BaseModel):
+    """Paginated list of vendors."""
+
+    data: List[VendorListItem]
+    pagination: PaginationMeta
+    filters_applied: dict = Field(default_factory=dict, description="Filters that were applied")
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VendorInstitutionListResponse(BaseModel):
+    """List of institutions for a vendor."""
+
+    vendor_id: int
+    vendor_name: str
+    data: List[VendorInstitutionItem]
+    total: int
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VendorCategoryItem(BaseModel):
+    """Procurement category a vendor sells into."""
+
+    category_id: int
+    code: str
+    name_es: str
+    name_en: str
+    contracts: int
+    total_amount_mxn: float
+    share_of_vendor_value: float = Field(..., description="This category's share of the vendor's total contract value (0-1)")
+
+
+class VendorCategoriesResponse(BaseModel):
+    """Categories a vendor sells into — GET /vendors/{id}/categories."""
+
+    vendor_id: int
+    total_contracts: int
+    categories: List[VendorCategoryItem]
+
+
+class VendorRelatedListResponse(BaseModel):
+    """List of related vendors."""
+
+    vendor_id: int
+    vendor_name: str
+    data: List[VendorRelatedItem]
+    total: int
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VendorTopListResponse(BaseModel):
+    """List of top vendors."""
+
+    data: List[VendorTopItem]
+    metric: str = Field(..., description="Metric used for ranking: value, count, risk")
+    total: int
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VendorTopAllResponse(BaseModel):
+    """All top-vendor categories in a single response."""
+
+    value: List[VendorTopItem] = Field(default_factory=list, description="Top vendors by contract value")
+    count: List[VendorTopItem] = Field(default_factory=list, description="Top vendors by contract count")
+    risk: List[VendorTopItem] = Field(default_factory=list, description="Top vendors by risk score")
+
+
+class VerifiedVendorResponse(BaseModel):
+    """Verified vendor with classification details."""
+
+    vendor_id: int = Field(..., description="Vendor ID")
+    vendor_name: str = Field(..., description="Vendor name")
+    rfc: Optional[str] = Field(None, description="RFC (Mexican tax ID)")
+    industry_id: int = Field(..., description="Industry ID")
+    industry_code: str = Field(..., description="Industry code")
+    industry_name: str = Field(..., description="Industry name (Spanish)")
+    industry_confidence: float = Field(..., description="Confidence score")
+    sector_affinity: Optional[int] = Field(None, description="Expected sector")
+    total_contracts: Optional[int] = Field(None, description="Total contracts")
+    total_value: Optional[float] = Field(None, description="Total contract value")
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VerifiedVendorListResponse(BaseModel):
+    """Paginated list of verified vendors."""
+
+    data: List[VerifiedVendorResponse]
+    pagination: PaginationMeta
+    filters_applied: dict = Field(
+        default_factory=dict, description="Filters that were applied"
+    )
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class VendorComparisonItem(BaseModel):
+    """Vendor data optimized for comparison view."""
+
+    id: int
+    name: str
+    rfc: Optional[str] = Field(None, description="RFC (tax ID)")
+    total_contracts: int = 0
+    total_value_mxn: float = 0
+    avg_risk_score: Optional[float] = Field(None, description="Average risk score of contracts")
+    direct_award_rate: Optional[float] = Field(None, description="Percentage of direct award contracts")
+    direct_award_count: int = 0
+    high_risk_count: int = Field(0, description="Count of high/critical risk contracts")
+    high_risk_percentage: Optional[float] = Field(None, description="Percentage of high risk contracts")
+    single_bid_rate: Optional[float] = Field(None, description="Percentage of competitive contracts whose procedure has one recorded winner (winners, not bidders)")
+    avg_contract_value: Optional[float] = Field(None, description="Average contract value")
+    first_year: Optional[int] = Field(None, description="Year of first contract")
+    last_year: Optional[int] = Field(None, description="Year of last contract")
+    institution_count: int = Field(0, description="Number of unique institutions")
+
+
+class VendorComparisonResponse(BaseModel):
+    """Response for vendor comparison."""
+
+    data: List[VendorComparisonItem]
+    total: int
+    generated_at: datetime = Field(default_factory=datetime.utcnow)

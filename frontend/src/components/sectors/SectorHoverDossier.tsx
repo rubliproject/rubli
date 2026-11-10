@@ -1,0 +1,254 @@
+/**
+ * SectorDossierCard — the §D hover dossier of /sectors WHO (Confounded
+ * Ledger redesign). The /categories ConcentrationExhibit pattern, applied to
+ * the audited register: own-spend sledgehammer, running-total bar (carrying
+ * the crit/high split removed from §B's dot), the old line-2 atoms as
+ * separated mono, and a LAZY footer — top contract + GT linkage fetched only
+ * when the card is active (react-query `enabled` gate; nothing eager).
+ *
+ * Rendered two ways by ConfoundPlate (the single merged registry view, since
+ * 2026-06-23):
+ *   - desktop: inside a floating, edge-flipping, pointer-events-none panel
+ *   - mobile:  inline, inside the row's tap-to-expand block
+ *
+ * The dossier now also carries the two cells the retired Audited Register
+ * showed inline — the DA-vs-OECD process bullet and the per-row risk
+ * trajectory sparkline — so nothing was lost when the table folded in.
+ */
+import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { sectorApi } from '@/api/client'
+import { EntityIdentityChip } from '@/components/ui/EntityIdentityChip'
+import { EditorialSparkline, DABullet } from '@/components/charts/editorial'
+import { RISK_COLORS, RISK_TEXT_COLORS, PARTIAL_YEAR_NOTE } from '@/lib/constants'
+import { formatCompactMXN, pctOrDash } from '@/lib/utils'
+import type { LedgerRow } from './ExposureLedger'
+import { intensityTextColor, ownSpendShare, compactCount, trajectoryDirection, EU_DA_LINE } from './confoundScales'
+
+export function SectorDossierCard({
+  row,
+  rankVar,
+  totalRows,
+  lang,
+  active,
+}: {
+  row: LedgerRow
+  rankVar: number
+  totalRows: number
+  lang: 'en' | 'es'
+  active: boolean
+}) {
+  const isEs = lang === 'es'
+  const share = ownSpendShare(row)
+  const sledgeColor = intensityTextColor(row.avgRiskScore)
+  const critFrac = row.varMxn > 0 ? Math.max(0, Math.min(1, row.criticalMxn / row.varMxn)) : 0
+  const critDenom = row.scoredContracts || row.contracts
+  const critPct = critDenom > 0 ? (row.criticalCount / critDenom) * 100 : 0
+  const hasTraj = Boolean(row.trajectory && row.trajectory.length > 1)
+  const dir = trajectoryDirection(row.trajectory)
+
+  // Arm the lazy fetches only after the card has rested on one row for 300ms,
+  // so a pointer sweeping the 12 rows does not fire 24 requests (D7b § Change 8).
+  const [armedId, setArmedId] = useState<number | null>(null)
+  useEffect(() => {
+    if (!active) return
+    const t = window.setTimeout(() => setArmedId(row.sectorId), 300)
+    return () => window.clearTimeout(t)
+  }, [active, row.sectorId])
+  const fetchOn = active && armedId === row.sectorId
+
+  const { data: topContracts, isLoading: tcLoading } = useQuery({
+    queryKey: ['sectors', 'top-contracts', row.sectorId],
+    queryFn: () => sectorApi.getTopContracts(row.sectorId, 5),
+    staleTime: 10 * 60 * 1000,
+    enabled: fetchOn,
+  })
+  const { data: gt, isLoading: gtLoading } = useQuery({
+    queryKey: ['sectors', 'gt-linkage', row.sectorId],
+    queryFn: () => sectorApi.getGtLinkage(row.sectorId),
+    staleTime: 10 * 60 * 1000,
+    enabled: fetchOn,
+  })
+
+  const top = topContracts?.contracts?.[0]
+  // Cached rows render at once; an unarmed, uncached row shows the placeholder.
+  const lazyPending = (!topContracts || !gt) && (!fetchOn || tcLoading || gtLoading)
+
+  return (
+    <div>
+      {/* header: rank · name · var-rank */}
+      <div className="flex items-baseline justify-between gap-3 mb-2">
+        <span
+          className="font-mono truncate"
+          style={{ fontSize: 12, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text-primary)' }}
+        >
+          {String(rankVar).padStart(2, '0')} · {row.name}
+        </span>
+        <span
+          className="font-mono whitespace-nowrap"
+          style={{ fontSize: 12, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}
+        >
+          VaR {rankVar} / {totalRows}
+        </span>
+      </div>
+
+      {/* sledgehammer: own-spend share */}
+      <div className="flex items-baseline gap-2">
+        <span
+          className="tabular-nums"
+          style={{
+            fontFamily: 'var(--font-family-editorial)',
+            fontStyle: 'normal',
+            fontWeight: 600,
+            fontSize: 24,
+            lineHeight: 1,
+            color: sledgeColor,
+          }}
+        >
+          {(share * 100).toFixed(0)}%
+        </span>
+        <span className="font-mono" style={{ fontSize: 13, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}>
+          {isEs ? 'del gasto propio señalado' : 'of own spend model-flagged'}
+        </span>
+      </div>
+
+      {/* running-total bar: VaR (crit + high tones) within total spend */}
+      <div className="mt-2">
+        <div className="relative h-[10px] rounded-[1px] overflow-hidden" style={{ background: 'var(--color-background-elevated)' }}>
+          <div className="absolute inset-y-0 left-0 flex overflow-hidden" style={{ width: `${Math.min(100, share * 100)}%` }}>
+            <span style={{ width: `${critFrac * 100}%`, background: RISK_COLORS.critical }} />
+            <span className="flex-1" style={{ background: RISK_COLORS.high, opacity: 0.65 }} />
+          </div>
+        </div>
+        <div className="mt-1 font-mono tabular-nums flex items-center justify-between" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+          <span style={{ color: 'var(--color-text-secondary)' }}>{formatCompactMXN(row.varMxn)}</span>
+          <span>{isEs ? 'de' : 'of'} {formatCompactMXN(row.totalMxn)}</span>
+        </div>
+      </div>
+
+      {/* process integrity — DA% vs the OECD ceiling (the register's signature
+          FT-bullet; overshoot silhouette in amber) */}
+      <div className="mt-2.5 flex items-center gap-2">
+        <span
+          className="font-mono shrink-0"
+          style={{ fontSize: 12, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}
+        >
+          {isEs ? 'AD · UE' : 'DA · EU'} ≤{EU_DA_LINE.toFixed(0)}%
+        </span>
+        {row.daPct != null && <DABullet daPct={row.daPct} />}
+        <span className="font-mono tabular-nums shrink-0" style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+          {pctOrDash(row.daPct, 0)}
+        </span>
+      </div>
+
+      {/* risk trajectory — the register's per-row sparkline + direction glyph */}
+      {hasTraj && (
+        <div className="mt-1.5 flex items-center gap-2">
+          <span
+            className="font-mono shrink-0"
+            style={{ fontSize: 12, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}
+          >
+            {isEs ? 'Trayectoria' : 'Trajectory'}
+          </span>
+          <span className="flex-1 min-w-0">
+            <EditorialSparkline data={row.trajectory} yKey="avg_risk" colorToken="text-muted" height={24} kind="line" decorative />
+          </span>
+          <span
+            className="font-mono shrink-0"
+            style={{ fontSize: 13, color: dir.rising ? RISK_TEXT_COLORS.high : 'var(--color-text-muted)' }}
+            aria-hidden="true"
+          >
+            {dir.glyph}
+          </span>
+        </div>
+      )}
+      {hasTraj && (
+        <p className="mt-0.5 tabular-nums" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+          {row.trajectory[0].year}–{row.trajectory[row.trajectory.length - 1].year} · {isEs ? PARTIAL_YEAR_NOTE.es : PARTIAL_YEAR_NOTE.en}
+        </p>
+      )}
+
+      {/* top institution */}
+      {row.topInstitution && (
+        <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+          <EntityIdentityChip
+            type="institution"
+            id={row.topInstitution.id}
+            name={row.topInstitution.siglas || row.topInstitution.name}
+            size="sm"
+            hideIcon
+            fullName
+            className="inline-flex w-auto"
+          />
+          <span className="font-mono tabular-nums" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+            · {row.topInstitution.sharePct.toFixed(0)}% {isEs ? 'del sector' : 'of sector'}
+          </span>
+        </div>
+      )}
+
+      {/* the old line-2 atoms, separated */}
+      <div className="mt-2 font-mono tabular-nums flex items-center gap-x-2.5 gap-y-1 flex-wrap" style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
+        <span className="inline-flex items-center gap-1 whitespace-nowrap">
+          <span aria-hidden="true" style={{ width: 6, height: 6, borderRadius: 1, background: RISK_COLORS.critical, flexShrink: 0 }} />
+          {isEs ? 'crítico · por contratos' : 'critical · by contracts'} {critPct.toFixed(1)}%
+        </span>
+        <span className="whitespace-nowrap">
+          {isEs ? 'un solo adjudicado' : 'single award'} {pctOrDash(row.sbPct, 1)} {isEs ? 'de competitivos' : 'of competitive'}
+        </span>
+        <span className="whitespace-nowrap">
+          {compactCount(row.contracts)} {isEs ? 'cont.' : 'contracts'} · {compactCount(row.vendors)} {isEs ? 'prov.' : 'vendors'}
+        </span>
+      </div>
+
+      {/* lazy footer: largest contract + GT seal */}
+      <div className="mt-2.5 pt-2.5" style={{ borderTop: '1px solid var(--color-border)' }}>
+        {!active || lazyPending ? (
+          <div className="space-y-1.5" aria-hidden="true">
+            <div className="h-2.5 w-3/4 rounded-sm" style={{ background: 'var(--color-background-elevated)' }} />
+            <div className="h-2.5 w-1/2 rounded-sm" style={{ background: 'var(--color-background-elevated)' }} />
+          </div>
+        ) : (
+          <>
+            {top && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-mono whitespace-nowrap" style={{ fontSize: 13, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}>
+                  {isEs ? 'Mayor contrato' : 'Largest contract'}
+                </span>
+                <span className="font-mono tabular-nums whitespace-nowrap" style={{ fontSize: 12, color: 'var(--color-text-primary)' }}>
+                  {formatCompactMXN(top.amount_mxn)}
+                </span>
+                {top.vendor_id != null && top.vendor_name && (
+                  <EntityIdentityChip type="vendor" id={top.vendor_id} name={top.vendor_name} personaFisica={top.persona_fisica} size="sm" hideIcon fullName inline />
+                )}
+              </div>
+            )}
+            <div className="mt-1.5">
+              {gt && gt.cases > 0 ? (
+                <span
+                  className="inline-block font-mono px-1.5 py-0.5 rounded-[1px]"
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: '0.04em',
+                   
+                    color: RISK_TEXT_COLORS.high,
+                    border: `1px solid ${RISK_COLORS.high}`,
+                  }}
+                >
+                  ▣ {gt.cases} {isEs ? 'casos documentados' : 'documented cases'} · {gt.vendors} {isEs ? 'proveedores con caso' : 'GT vendors'}
+                </span>
+              ) : (
+                <span
+                  className="font-mono"
+                  style={{ fontSize: 12, letterSpacing: '0.04em', color: 'var(--color-text-muted)' }}
+                >
+                  {isEs ? 'Sin casos documentados en este sector' : 'No documented cases in this sector'}
+                </span>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}

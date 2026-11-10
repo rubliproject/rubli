@@ -1,0 +1,443 @@
+institution_id,canonical_key,canonical_name,acronym,ramo_id,successor_of,effective_date,source_url,relation,continuity_key,note
+3773,CONTAINER:R:007,DEFENSA NACIONAL,SEDENA,7,,,,container,CONTAINER:R:007,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3763,CONTAINER:R:009,COMUNICACIONES Y TRANSPORTES,SCT,9,,,,container,CONTAINER:R:009,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3761,CONTAINER:R:011,EDUCACIÓN PÚBLICA,SEP,11,,,,container,CONTAINER:R:011,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3777,CONTAINER:R:013,MARINA,SEMAR,13,,,,container,CONTAINER:R:013,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3769,CONTAINER:R:014,TRABAJO Y PREVISIÓN SOCIAL,STPS,14,,,,container,CONTAINER:R:014,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3764,CONTAINER:R:015,"DESARROLLO AGRARIO, TERRITORIAL Y URBANO",SEDATU,15,,,,container,CONTAINER:R:015,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3770,CONTAINER:R:016,MEDIO AMBIENTE Y RECURSOS NATURALES,SEMARNAT,16,,,,container,CONTAINER:R:016,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3768,CONTAINER:R:021,TURISMO,SECTUR,21,,,,container,CONTAINER:R:021,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3778,CONTAINER:R:025,"PREVISIONES Y APORTACIONES PARA LOS SISTEMAS DE EDUCACIÓN BÁSICA, NORMAL, TECNOLÓGICA Y DE ADULTOS",RAMO 25,25,,,,container,CONTAINER:R:025,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3767,CONTAINER:R:036,SEGURIDAD Y PROTECCIÓN CIUDADANA,SPC,36,,,,container,CONTAINER:R:036,2019-22 ramo-level feed: holds purchases of the ramo's entities
+3765,CONTAINER:R:047,ENTIDADES NO SECTORIZADAS,ENTNOSEC,47,,,,container,CONTAINER:R:047,2019-22 ramo-level feed: holds purchases of the ramo's entities
+57,D:004I00,CENTRO DE INVESTIGACIÓN Y SEGURIDAD NACIONAL,CISEN,4,,,,member,D:004I00,
+269,D:004K00,INSTITUTO NACIONAL DE MIGRACIÓN,INM,4,,,,member,D:004K00,
+324,D:004L00@pre2009-06-02,POLICIA FEDERAL PREVENTIVA,,4,,2009-06-02,https://www.dof.gob.mx/avisos/1888/SSP_010609/SSP_010609.htm,predecessor,D:004L00,Policía Federal Preventiva -> Policía Federal (Ley de la Policía Federal DOF 01-06-2009); A-era id
+1170,D:004L00,POLICIA FEDERAL,PF,4,D:004L00@pre2009-06-02,2009-06-02,https://www.dof.gob.mx/avisos/1888/SSP_010609/SSP_010609.htm,successor,D:004L00,
+1340,D:004O00,Servicio de Protección Federal,SPF,4,,,,member,D:004O00,
+408,D:004W00,SECRETARIADO EJECUTIVO DEL SISTEMA NACIONAL DE SEGURIDAD PÚBLICA,SESNSP,4,,,,member,D:004W00,
+681,D:006A00,INSTITUTO DE ADMINISTRACIÓN Y AVALÚOS DE BIENES NACIONALES,INDAABIN,6,,,,member,D:006A00,
+108,D:006B00,COMISIÓN NACIONAL BANCARIA Y DE VALORES,CNBV,6,,,,member,D:006B00,
+115,D:006C00,COMISIÓN NACIONAL DE SEGUROS Y FIANZAS,CNSF,6,,,,member,D:006C00,
+119,D:006D00,COMISIÓN NACIONAL DEL SISTEMA DE AHORRO PARA EL RETIRO,CONSAR,6,,,,member,D:006D00,
+410,D:006E00,SERVICIO DE ADMINISTRACIÓN TRIBUTARIA,SAT,6,,,,member,D:006E00,
+3310,D:006G00,Autoridad Federal para el Desarrollo de las Zonas Económicas Especiales,ZEE,6,,,,member,D:006G00,
+3772,D:006H00,Agencia Nacional de Aduanas de México,ANAM,6,,,,member,D:006H00,
+411,D:008B00,"SERVICIO NACIONAL DE SANIDAD, INOCUIDAD Y CALIDAD AGROALIMENTARIA",SENASICA,8,,,,member,D:008B00,
+3012,D:008C00,Servicio Nacional de Inspección y Certificación de Semillas,SNICS,8,,,,member,D:008C00,
+72,D:008D00,COLEGIO SUPERIOR AGROPECUARIO DEL ESTADO DE GUERRERO,CSAEGRO,8,,,,member,D:008D00,
+20,D:008F00@preid20,APOYOS Y SERVICIOS A LA COMERCIALIZACIÓN AGROPECUARIA,,8,,,,predecessor,D:008F00,Apoyos y Servicios a la Comercialización Agropecuaria -> Agencia de Servicios a la Comercialización y Desarrollo de Mercados Agropecuarios (same acronym ASERCA); no decree located
+1309,D:008F00,Agencia de Servicios a la Comercialización y Desarrollo de Mercados Agropecuarios,ASERCA,8,D:008F00@preid20,,,successor,D:008F00,
+1697,D:008G00,Servicio de Información Agroalimentaria y Pesquera,SIAP,8,,,,member,D:008G00,
+109,D:008I00,COMISIÓN NACIONAL DE ACUACULTURA Y PESCA,CONAPESCA,8,,,,member,D:008I00,
+252,D:009A00,INSTITUTO MEXICANO DEL TRANSPORTE,IMT,9,,,,member,D:009A00,
+413,D:009C00,SERVICIOS A LA NAVEGACIÓN EN EL ESPACIO AÉREO MEXICANO,SENEAM,9,,,,member,D:009C00,
+3343,D:009D00,Agencia Reguladora del Transporte Ferroviario,ARTF,9,,,,member,D:009D00,
+3740,D:009E00,Agencia Federal de Aviación Civil,AFAC,9,,,,member,D:009E00,
+1677,D:010B00,Comisión Nacional de Mejora Regulatoria,CONAMER,10,,,,member,D:010B00,
+2689,D:010E00,Instituto Nacional del Emprendedor,INADEM,10,,,,member,D:010E00,
+458,D:011A00,UNIVERSIDAD PEDAGÓGICA NACIONAL,UPN,11,,,,member,D:011A00,
+279,D:011B00,INSTITUTO POLITÉCNICO NACIONAL,IPN,11,,,,member,D:011B00,
+481,D:011B01,XE-IPN Canal 11,OnceTV,11,,,,name_variant,D:011B01,XEIPN Canal 11
+1919,D:011B01,XE-IPN Canal 11,OnceTV,11,,,,member,D:011B01,
+1574,D:011C00,Autoridad Educativa Federal en la Ciudad de México,AEFCM,11,,,,member,D:011C00,
+3748,D:011G00,Comisión de Apelación y Arbitraje del Deporte,CAAD,11,,,,member,D:011G00,
+3753,D:011K00,Universidad Abierta y a Distancia de México,UNADM,11,,,,member,D:011K00,
+3751,D:011L00,UNIDAD DEL SISTEMA PARA LA CARRERA DE LAS MAESTRAS Y MAESTROS,USICAMM,11,,,,member,D:011L00,
+4038,D:011L00,UNIDAD DEL SISTEMA PARA LA CARRERA DE LAS MAESTRAS Y MAESTROS,USICAMM,11,,,,member,D:011L00,
+2331,D:011M00,Tecnológico Nacional de México,TECNM,11,,,,member,D:011M00,
+2937,D:011N00,Coordinación General @prende.mx,APRENDEMX,11,,,,member,D:011N00,
+2425,D:012E00,Administración del Patrimonio de la Beneficencia Pública,APBP,12,,,,member,D:012E00,
+2513,D:012I00,Centro Nacional de la Transfusión Sanguínea,CNTS,12,,,,member,D:012I00,
+1425,D:012K00,CENTRO NACIONAL PARA LA PREVENCIÓN Y CONTROL DEL VIH/SIDA Y HEPATITIS,CENSIDA,12,,,,member,D:012K00,
+4389,D:012K00,CENTRO NACIONAL PARA LA PREVENCIÓN Y CONTROL DEL VIH/SIDA Y HEPATITIS,CENSIDA,12,,,,member,D:012K00,
+924,D:012L00,"CENTRO NACIONAL DE EQUIDAD DE GÉNERO, SALUD SEXUAL Y REPRODUCTIVA",CNEGSR,12,,,,member,D:012L00,
+4390,D:012L00,"CENTRO NACIONAL DE EQUIDAD DE GÉNERO, SALUD SEXUAL Y REPRODUCTIVA",CNEGSR,12,,,,member,D:012L00,
+500,D:012M00,COMISIÓN NACIONAL DE ARBITRAJE MÉDICO,CONAMED,12,,,,member,D:012M00,
+771,D:012N00,SERVICIOS DE ATENCIÓN PSIQUIÁTRICA,SAP,12,,,,member,D:012N00,
+62,D:012O00@preid62,CENTRO NACIONAL DE VIGILANCIA EPIDEMIOLÓGICA,,12,,,,predecessor,D:012O00,Centro Nacional de Vigilancia Epidemiológica -> CENAPRECE; date/source not verified
+1261,D:012O00,CENTRO NACIONAL DE PREVENCIÓN Y CONTROL DE ENFERMEDADES,CENAPRECE,12,D:012O00@preid62,,,successor,D:012O00,
+4394,D:012O00,CENTRO NACIONAL DE PREVENCIÓN Y CONTROL DE ENFERMEDADES,CENAPRECE,12,,,,member,D:012O00,
+3749,D:012R00,Centro Nacional para la Salud de la Infancia y la Adolescencia,CENSIA,12,,,,member,D:012R00,
+106,D:012S00,COMISIÓN FEDERAL PARA LA PROTECCIÓN CONTRA RIESGOS SANITARIOS,COFEPRIS,12,,,,member,D:012S00,
+2351,D:012T00,Centro Nacional de Excelencia Tecnológica en Salud,CENETEC,12,,,,member,D:012T00,
+634,D:012U00,COMISIÓN NACIONAL DE PROTECCIÓN SOCIAL EN SALUD,CNPSS,12,,,,member,D:012U00,
+3308,D:012V00,Comisión Nacional de Bioética,CNB,12,,,,member,D:012V00,
+1544,D:012X00,Comisión Nacional contra las Adicciones,CONADIC,12,,,,member,D:012X00,
+4272,D:012Y00,COMISIÓN NACIONAL DE SALUD MENTAL Y ADICCIONES,CONASAMA,12,,,,member,D:012Y00,
+326,D:014A00,PROCURADURÍA FEDERAL DE LA DEFENSA DEL TRABAJO,PROFEDET,14,,,,member,D:014A00,
+142,D:014B00,COMITÉ NACIONAL MIXTO DE PROTECCIÓN AL SALARIO,CONAMPROS,14,,,,member,D:014B00,
+336,D:015B00,REGISTRO AGRARIO NACIONAL,RAN,15,,,,member,D:015B00,
+117,D:016B00,COMISIÓN NACIONAL DEL AGUA,CONAGUA,16,,,,member,D:016B00,
+327,D:016E00,PROCURADURÍA FEDERAL DE PROTECCIÓN AL AMBIENTE,PROFEPA,16,,,,member,D:016E00,
+110,D:016F00,COMISIÓN NACIONAL DE ÁREAS NATURALES PROTEGIDAS,CONANP,16,,,,member,D:016F00,
+2954,D:016G00,Agencia Nacional de Seguridad Industrial y de Protección al Medio Ambiente del Sector Hidrocarburos,ASEA,16,,,,member,D:016G00,
+114,D:018A00,COMISIÓN NACIONAL DE SEGURIDAD NUCLEAR Y SALVAGUARDIAS,CNSNS,18,,,,member,D:018A00,
+1941,D:018E00,Comisión Nacional para el Uso Eficiente de la Energía,CONUEE,18,,,,member,D:018E00,
+3878,D:018F00,COMISIÓN NACIONAL DE ENERGÍA,CNE,18,,,,member,D:018F00,
+1054,D:020D00,INSTITUTO NACIONAL DE DESARROLLO SOCIAL,INDESOL,20,,,,member,D:020D00,
+159,D:020G00@pre2014-09-06,COORDINACIÓN NACIONAL DEL PROGRAMA DE DESARROLLO HUMANO OPORTUNIDADES,,20,,2014-09-06,https://dof.gob.mx/nota_detalle.php?codigo=5359088&fecha=05/09/2014,predecessor,D:020G00,Oportunidades coordination -> PROSPERA coordination (DOF 05-09-2014); A-era id
+1274,D:020G00@pre2019-05-31,Coordinación Nacional de PROSPERA Programa de Inclusión Social,PROSPERA,20,D:020G00@pre2014-09-06,2019-05-31;2014-09-06,https://www.dof.gob.mx/nota_detalle.php?codigo=5561693&fecha=31/05/2019;https://dof.gob.mx/nota_detalle.php?codigo=5359088&fecha=05/09/2014,predecessor,D:020G00,PROSPERA coordination -> Coordinación Nacional de Becas para el Bienestar Benito Juárez
+3503,D:020G00,Coordinacion Nacional de Becas para el Bienestar Benito Juarez,CNBBBJ,20,D:020G00@pre2019-05-31,2019-05-31,https://www.dof.gob.mx/nota_detalle.php?codigo=5561693&fecha=31/05/2019,successor,D:020G00,
+1239,D:020L00,Instituto Nacional de la Economía Social,INAES,20,,,,member,D:020L00,
+309,D:036D00,SECRETARIA DE SEGURIDAD Y PROTECCION CIUDADANA ORGANO ADMINISTRATIVO DESCONCENTRADO PREVENCION Y REINSERCION SOCIAL,PRS,36,,,,name_variant,D:036D00,OADPRS (re-sectorised SSP -> SEGOB -> SSPC; UR D00 kept)
+1491,D:036D00,SECRETARIA DE SEGURIDAD Y PROTECCION CIUDADANA ORGANO ADMINISTRATIVO DESCONCENTRADO PREVENCION Y REINSERCION SOCIAL,PRS,36,,,,member,D:036D00,
+3835,D:036D00,SECRETARIA DE SEGURIDAD Y PROTECCION CIUDADANA ORGANO ADMINISTRATIVO DESCONCENTRADO PREVENCION Y REINSERCION SOCIAL,PRS,36,,,,member,D:036D00,
+3725,D:036F00,Centro Nacional de Inteligencia,CNI,36,,,,member,D:036F00,
+3721,D:036H00,Guardia Nacional,GN,36,,,,member,D:036H00,
+103,D:041A00@pre2013-09-10,COMISIÓN FEDERAL DE COMPETENCIA,,41,,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,predecessor,D:041A00,Comisión Federal de Competencia -> COFECE (constitutional reform DOF 11-06-2013; COFECE integrated 10-09-2013); A-era id
+1238,D:041A00,Comisión Federal de Competencia Económica,COFECE,41,D:041A00@pre2013-09-10,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,successor,D:041A00,
+105,D:043D00@pre2013-09-10,COMISIÓN FEDERAL DE TELECOMUNICACIONES,,43,,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,predecessor,D:043D00,COFETEL -> IFT (constitutional reform DOF 11-06-2013); A-era id
+1314,D:043D00,Instituto Federal de Telecomunicaciones,IFT,43,D:043D00@pre2013-09-10,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,successor,D:043D00,
+1880,D:046D00,Comisión Nacional de Hidrocarburos,CNH,46,,,,member,D:046D00,
+254,D:048D00,INSTITUTO NACIONAL DE ANTROPOLOGÍA E HISTORIA,INAH,48,,,,member,D:048D00,
+256,D:048E00,Instituto Nacional de Bellas Artes y Literatura,INBAL,48,,,,name_variant,D:048E00,"name matcher, reviewed"
+1281,D:048E00,Instituto Nacional de Bellas Artes y Literatura,INBAL,48,,,,member,D:048E00,
+4136,D:048F00,RADIO EDUCACION,E-Radio,48,,,,member,D:048F00,
+299,DISSOLVED:299,LUZ Y FUERZA DEL CENTRO,,,,2009-10-11,https://dof.gob.mx/nota_detalle.php?codigo=5114011&fecha=11/10/2009,dissolved,DISSOLVED:299,Luz y Fuerza del Centro extinguished (decree DOF 11-10-2009); no successor buyer
+1306,E:90A,"Centro de Investigación en Ciencias de Información Geoespacial, A.C.",CENTROGEO,38,,,,member,E:90A,
+50,E:90C,"CENTRO DE INVESTIGACIÓN EN MATEMÁTICAS, A.C.",CIMAT,38,,,,member,E:90C,
+51,E:90E,"CENTRO DE INVESTIGACIÓN EN MATERIALES AVANZADOS, S.C.",CIMAV,38,,,,member,E:90E,
+618,E:90G,"CIATEC, A.C. ""Centro de Innovación Aplicada en Tecnologías Competitivas""",CIATEC,38,,,,name_variant,E:90G,CIATEC
+1191,E:90G,"CIATEC, A.C. ""Centro de Innovación Aplicada en Tecnologías Competitivas""",CIATEC,38,,,,member,E:90G,
+53,E:90I,"Centro de Investigación y Asistencia en Tecnología y Diseño del Estado de Jalisco, A.C.",CIATEJ,38,,,,name_variant,E:90I,"name matcher, reviewed"
+1509,E:90I,"Centro de Investigación y Asistencia en Tecnología y Diseño del Estado de Jalisco, A.C.",CIATEJ,38,,,,member,E:90I,
+55,E:90K,"CENTRO DE INVESTIGACIÓN Y DESARROLLO TECNOLÓGICO EN ELECTROQUÍMICA, S.C.",CIDETEQ,38,,,,member,E:90K,
+56,E:90M,"CENTRO DE INVESTIGACIÓN Y DOCENCIA ECONÓMICAS, A.C.",CIDE,38,,,,member,E:90M,
+58,E:90O,"Centro de Investigaciones Biológicas del Noroeste, S.C.",CIBNOR,38,,,,name_variant,E:90O,"name matcher, reviewed"
+1199,E:90O,"Centro de Investigaciones Biológicas del Noroeste, S.C.",CIBNOR,38,,,,member,E:90O,
+46,E:90Q,"Centro de Investigación Científica de Yucatán, A.C.",CICY,38,,,,name_variant,E:90Q,"name matcher, reviewed"
+1735,E:90Q,"Centro de Investigación Científica de Yucatán, A.C.",CICY,38,,,,member,E:90Q,
+59,E:90S,"Centro de Investigaciones en Óptica, A.C.",CIO,38,,,,name_variant,E:90S,"name matcher, reviewed"
+1503,E:90S,"Centro de Investigaciones en Óptica, A.C.",CIO,38,,,,member,E:90S,
+486,E:90U,CENTRO DE INVESTIGACIÓN EN QUÍMICA APLICADA,CIQA,38,,,,member,E:90U,
+60,E:90W,CENTRO DE INVESTIGACIONES Y ESTUDIOS SUPERIORES EN ANTROPOLOGÍA SOCIAL,CIESAS,38,,,,member,E:90W,
+155,E:90X@pre2023-05-09,CONSEJO NACIONAL DE CIENCIA Y TECNOLOGÍA,CONACYT,38,,2023-05-09,https://dof.gob.mx/nota_detalle.php?codigo=5688048&fecha=08/05/2023,predecessor,E:90X,CONACYT -> CONAHCYT (Ley General HCTI DOF 08-05-2023); later SECIHTI via LOAPF DOF 28-11-2024
+3723,E:90X,"Consejo Nacional de Humanidades, Ciencias y Tecnologías",CONAHCYT,38,E:90X@pre2023-05-09,2023-05-09,https://dof.gob.mx/nota_detalle.php?codigo=5688048&fecha=08/05/2023,successor,E:90X,
+64,E:90Y,"CIATEQ, A.C. Centro de Tecnología Avanzada",CIATEQ,38,,,,name_variant,E:90Y,CIATEQ
+1577,E:90Y,"CIATEQ, A.C. Centro de Tecnología Avanzada",CIATEQ,38,,,,member,E:90Y,
+508,E:91A@pre2023-11-14,"Corporación Mexicana de Investigación en Materiales, S.A. de C.V.",COMIMSA,38,,,,name_variant,E:91A,"name matcher, reviewed"
+1200,E:91A@pre2023-11-14,"Corporación Mexicana de Investigación en Materiales, S.A. de C.V.",COMIMSA,38,,2023-11-14,https://www.innovabienestar.mx/transformacion-de-comimsa/,predecessor,E:91A,COMIMSA -> InnovaBienestar de México S.A.P.I. (shareholder assembly 13-11-2023; company source not DOF)
+3794,E:91A,"INNOVABIENESTAR DE MÉXICO, S.A.P.I. DE C.V.",IBDEMEX,38,E:91A@pre2023-11-14,2023-11-14,https://www.innovabienestar.mx/transformacion-de-comimsa/,successor,E:91A,
+173,E:91C,"El Colegio de la Frontera Norte, A.C.",COLEF,38,,,,name_variant,E:91C,"name matcher, reviewed"
+1310,E:91C,"El Colegio de la Frontera Norte, A.C.",COLEF,38,,,,member,E:91C,
+174,E:91E,EL COLEGIO DE LA FRONTERA SUR,ECOSUR,38,,,,member,E:91E,
+826,E:91I,"El Colegio de Michoacán, A.C.",COLMICH,38,,,,name_variant,E:91I,"name matcher, reviewed"
+2367,E:91I,"El Colegio de Michoacán, A.C.",COLMICH,38,,,,member,E:91I,
+510,E:91K,"EL COLEGIO DE SAN LUIS, A.C.",COLSAN,38,,,,member,E:91K,
+191,E:91M@preid191,FONDO DE INFORMACIÓN Y DOCUMENTACIÓN PARA LA INDUSTRIA,,,,,,predecessor,E:91M,Fondo de Información y Documentación para la Industria -> INFOTEC (same acronym); no decree located
+1287,E:91M,INFOTEC Centro de Investigación e Innovación en Tecnologías de la Información y Comunicación,INFOTEC,38,E:91M@preid191,,,successor,E:91M,
+216,E:91Q,"Instituto de Ecología, A.C.",INECOL,38,,,,name_variant,E:91Q,"name matcher, reviewed"
+685,E:91Q,"Instituto de Ecología, A.C.",INECOL,38,,,,name_variant,E:91Q,"name matcher, reviewed"
+1231,E:91Q,"Instituto de Ecología, A.C.",INECOL,38,,,,member,E:91Q,
+218,E:91S,"Instituto de Investigaciones ""Dr. José María Luis Mora""",MORA,38,,,,name_variant,E:91S,"name matcher, reviewed"
+1462,E:91S,"Instituto de Investigaciones ""Dr. José María Luis Mora""",MORA,38,,,,member,E:91S,
+255,E:91U,"INSTITUTO NACIONAL DE ASTROFÍSICA, ÓPTICA Y ELECTRÓNICA",INAOE,38,,,,member,E:91U,
+280,E:91W,"INSTITUTO POTOSINO DE INVESTIGACIÓN CIENTÍFICA Y TECNOLÓGICA, A.C.",IPICYT,38,,,,member,E:91W,
+4398,E:92M,UNIVERSIDAD NACIONAL ROSARIO CASTELLANOS,UNRC,38,,,,member,E:92M,
+45,E:9ZU,CENTRO DE INGENIERÍA Y DESARROLLO INDUSTRIAL,CIDESI,38,,,,member,E:9ZU,
+47,E:9ZW,"Centro de Investigación Científica y de Educación Superior de Ensenada, Baja California",CICESE,38,,,,name_variant,E:9ZW,CICESE 'B.C.' abbreviation
+1307,E:9ZW,"Centro de Investigación Científica y de Educación Superior de Ensenada, Baja California",CICESE,38,,,,member,E:9ZW,
+48,E:9ZY,"CENTRO DE INVESTIGACIÓN EN ALIMENTACIÓN Y DESARROLLO, A.C.",CIAD,38,,,,member,E:9ZY,
+448,E:A1I,UNIVERSIDAD AUTÓNOMA CHAPINGO,CHAPINGO,8,,,,member,E:A1I,
+543,E:A2O,INSTITUTO NACIONAL PARA LA EVALUACIÓN DE LA EDUCACIÓN,INEE,6,,,,member,E:A2O,
+1656,E:AFU,Comité Nacional para el Desarrollo Sustentable de la Caña de Azúcar,CONADESUCA,8,,,,member,E:AFU,
+275,E:AYB@pre2003-05-22,INSTITUTO NACIONAL INDIGENISTA,,,,2003-05-22,https://www.diputados.gob.mx/LeyesBiblio/abro/lcndpi.htm,predecessor,E:AYB,Instituto Nacional Indigenista -> CDI (Ley de la CDI DOF 21-05-2003); A-era ids
+503,E:AYB@pre2018-12-05,COMISIÓN NACIONAL PARA EL DESARROLLO DE LOS PUEBLOS INDÍGENAS,,,E:AYB@pre2003-05-22,2018-12-05;2003-05-22,https://www.dof.gob.mx/nota_detalle.php?codigo=5545778&fecha=04/12/2018;https://www.diputados.gob.mx/LeyesBiblio/abro/lcndpi.htm,predecessor,E:AYB,CDI -> INPI (Ley del INPI DOF 04-12-2018 keeps CDI legal personality); A-era id
+1255,E:AYB,Instituto Nacional de los Pueblos Indígenas,INPI,47,E:AYB@pre2018-12-05,2018-12-05,https://www.dof.gob.mx/nota_detalle.php?codigo=5545778&fecha=04/12/2018,successor,E:AYB,
+1168,E:AYG,"NOTIMEX, AGENCIA DE NOTICIAS DEL ESTADO MEXICANO",NOTIMEX,6,,,,member,E:AYG,
+3771,E:AYH,Corredor Interoceánico del Istmo de Tehuantepec,CIIT,13,,,,member,E:AYH,
+1404,E:AYI,Procuraduría de la Defensa del Contribuyente,PRODECON,6,,,,member,E:AYI,
+1535,E:AYJ,Comisión Ejecutiva de Atención a Víctimas,CEAV,6,,,,member,E:AYJ,
+1208,E:AYL,Sistema Público de Radiodifusión del Estado Mexicano,SPR,6,,,,member,E:AYL,
+3411,E:AYM,Secretaría Ejecutiva del Sistema Nacional Anticorrupción,SESNA,47,,,,member,E:AYM,
+3741,E:AYN,Comisión Nacional para la Mejora Continua de la Educación,MEJOREDU,47,,,,member,E:AYN,
+3780,E:AYO,SERVICIOS DE SALUD DEL INSTITUTO MEXICANO DEL SEGURO SOCIAL PARA EL BIENESTAR,IMSSBIENESTAR,47,,,,member,E:AYO,
+438,E:E2D,TALLERES GRÁFICOS DE MÉXICO,TGM,4,,,,member,E:E2D,
+2171,E:EZN,Archivo General de la Nación,AGN,4,,,,member,E:EZN,
+638,E:EZQ,CONSEJO NACIONAL PARA PREVENIR LA DISCRIMINACIÓN,CONAPRED,4,,,,member,E:EZQ,
+36,E:G0N,"BANCO NACIONAL DE COMERCIO EXTERIOR, S.N.C.",BANCOMEXT,6,,,,member,E:G0N,
+38,E:G1C,"BANCO NACIONAL DE OBRAS Y SERVICIOS PÚBLICOS, S.N.C.",BANOBRAS,6,,,,member,E:G1C,
+39,E:G1H,"BANCO NACIONAL DEL EJÉRCITO, FUERZA AÉREA Y ARMADA, S.N.C.",BANJERCITO,6,,,,member,E:G1H,
+485,E:G2T,CASA DE MONEDA DE MÉXICO,CMM,6,,,,member,E:G2T,
+121,E:G3A,COMISIÓN NACIONAL PARA LA PROTECCIÓN Y DEFENSA DE LOS USUARIOS DE SERVICIOS FINANCIEROS,CONDUSEF,6,,,,member,E:G3A,
+18,E:GSA,"AGROASEMEX, S.A.",AGROASEMEX,6,,,,member,E:GSA,
+2372,E:GSC,"Seguros de Crédito a la Vivienda SHF, S.A. de C.V.",SCVSHF,6,,,,member,E:GSC,
+228,E:GYN,INSTITUTO DE SEGURIDAD Y SERVICIOS SOCIALES DE LOS TRABAJADORES DEL ESTADO,ISSSTE,51,,,,member,E:GYN,
+251,E:GYR,INSTITUTO MEXICANO DEL SEGURO SOCIAL,IMSS,50,,,,member,E:GYR,
+3807,E:H0C,"GRUPO AEROPORTUARIO, FERROVIARIO, DE SERVICIOS AUXILIARES Y CONEXOS, OLMECA-MAYA-MEXICA, S.A. DE C.V.",GAFSACOMM,7,,,,member,E:H0C,
+4260,E:H0M,"TREN MAYA, S.A. DE C.V.",TRENMAYA,7,,,,member,E:H0M,
+518,E:HAN@pre2014-01-11,FINANCIERA RURAL,,,,2014-01-11,https://www.diputados.gob.mx/LeyesBiblio/ref/lofnd.htm,predecessor,E:HAN,Financiera Rural -> Financiera Nacional de Desarrollo (reforma financiera DOF 10-01-2014); A-era id
+1332,E:HAN,"Financiera Nacional de Desarrollo Agropecuario, Rural, Forestal y Pesquero",FND,6,E:HAN@pre2014-01-11,2014-01-11,https://www.diputados.gob.mx/LeyesBiblio/ref/lofnd.htm,successor,E:HAN,
+187,E:HAT,FONDO DE CAPITALIZACIÓN E INVERSIÓN DEL SECTOR RURAL,FOCIR,6,,,,member,E:HAT,
+190,E:HBW,"FONDO DE GARANTÍA Y FOMENTO PARA LA AGRICULTURA, GANADERÍA Y AVICULTURA",FIRA,6,,,,member,E:HBW,
+4271,E:HDA,FONDO ESPECIAL PARA FINANCIAMIENTOS AGROPECUARIOS,FEFA,6,,,,member,E:HDA,
+1233,E:HHE@pre2015-05-05,Instituto Federal de Acceso a la Información y Protección de Datos,IFAI,6,,2015-05-05,https://www.diputados.gob.mx/LeyesBiblio/ref/lgtaip.htm,predecessor,E:HHE,IFAI -> INAI (Ley General de Transparencia DOF 04-05-2015); re-coded ramo 06 HHE -> ramo 44
+3506,E:HHE,"Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales",INAI,44,E:HHE@pre2015-05-05,2015-05-05,https://www.diputados.gob.mx/LeyesBiblio/ref/lgtaip.htm,successor,E:HHE,
+268,E:HHG,INSTITUTO NACIONAL DE LAS MUJERES,INMUJERES,6,,,,member,E:HHG,
+278,E:HHN,INSTITUTO PARA LA PROTECCIÓN AL AHORRO BANCARIO,IPAB,6,,,,member,E:HHN,
+298,E:HHQ@pre2020-01-15,LOTERIA NACIONAL PARA LA ASISTENCIA PÚBLICA,LOTENAL,6,,2020-01-15,https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf,merged_into,E:HHQ,Lotería Nacional para la Asistencia Pública (old UR) merged into Pronósticos (UR HJY) which took the Lotería Nacional name
+302,E:HIU,"NACIONAL FINANCIERA, S.N.C.",NAFIN,6,,,,member,E:HIU,
+35,E:HJO@pre2019-07-19,"Banco del Ahorro Nacional y Servicios Financieros, S.N.C.",BANSEFI,6,,,,name_variant,E:HJO,"name matcher, reviewed"
+1205,E:HJO@pre2019-07-19,"Banco del Ahorro Nacional y Servicios Financieros, S.N.C.",BANSEFI,6,,2019-07-19,https://dof.gob.mx/nota_detalle.php?codigo=5566165&fecha=19/07/2019,predecessor,E:HJO,BANSEFI -> Banco del Bienestar (2023+ spelling)
+3714,E:HJO,"BANCO DEL BIENESTAR S.N.C., I.B.D.",BANCODELBIENESTAR,6,E:HJO@pre2019-07-19,2019-07-19,https://dof.gob.mx/nota_detalle.php?codigo=5566165&fecha=19/07/2019,successor,E:HJO,
+3802,E:HJO,"BANCO DEL BIENESTAR S.N.C., I.B.D.",BANCODELBIENESTAR,6,E:HJO@pre2019-07-19,2019-07-19,https://dof.gob.mx/nota_detalle.php?codigo=5566165&fecha=19/07/2019,successor,E:HJO,
+334,E:HJY@pre2020-01-15,PRONÓSTICOS PARA LA ASISTENCIA PÚBLICA,PRONOSTICOS,6,,2020-01-15,https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf,predecessor,E:HJY,Pronósticos para la Asistencia Pública absorbs Lotería Nacional and takes its name (merger decree DOF 14-01-2020); UR HJY is Pronósticos' code
+3692,E:HJY,Lotería Nacional,LOTERIA,6,E:HJY@pre2020-01-15;E:HHQ@pre2020-01-15,2020-01-15;2020-01-15,https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf;https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf,successor,E:HJY,
+587,E:HKA@pre2020-01-23,SERVICIO DE ADMINISTRACIÓN Y ENAJENACIÓN DE BIENES,SAE,6,,2020-01-23,https://www.diputados.gob.mx/LeyesBiblio/pdf/LFAEBSP.pdf,predecessor,E:HKA,SAE -> Instituto para Devolver al Pueblo lo Robado (LFAEBSP reform DOF 22-01-2020)
+3679,E:HKA,Instituto para Devolver al Pueblo lo Robado,INDEP,6,E:HKA@pre2020-01-23,2020-01-23,https://www.diputados.gob.mx/LeyesBiblio/pdf/LFAEBSP.pdf,successor,E:HKA,
+437,E:HKI,"Sociedad Hipotecaria Federal, S.N.C.",SHF,6,,,,name_variant,E:HKI,"name matcher, reviewed"
+1192,E:HKI,"Sociedad Hipotecaria Federal, S.N.C.",SHF,6,,,,member,E:HKI,
+227,E:HXA,INSTITUTO DE SEGURIDAD SOCIAL PARA LAS FUERZAS ARMADAS MEXICANAS,ISSFAM,7,,,,member,E:HXA,
+3776,E:HZI,"AEROPUERTO INTERNACIONAL FELIPE ÁNGELES, S.A DE C.V.",AIFA,7,,,,member,E:HZI,
+3806,E:HZI,"AEROPUERTO INTERNACIONAL FELIPE ÁNGELES, S.A DE C.V.",AIFA,7,,,,member,E:HZI,
+4258,E:HZK,"AEROLÍNEA DEL ESTADO MEXICANO, S.A. DE C.V.",AEM,7,,,,member,E:HZK,
+181,E:I6L,FIDEICOMISO DE RIESGO COMPARTIDO,FIRCO,8,,,,member,E:I6L,
+3446,E:I6U,Fondo de Empresas Expropiadas del Sector Azucarero,FEESA,8,,,,member,E:I6U,
+542,E:I9H,"Instituto Nacional para el Desarrollo de Capacidades del Sector Rural, A.C.",INCARURAL,8,,,,name_variant,E:I9H,"name matcher, reviewed"
+2615,E:I9H,"Instituto Nacional para el Desarrollo de Capacidades del Sector Rural, A.C.",INCARURAL,8,,,,member,E:I9H,
+70,E:IZC,Colegio de Postgraduados,COLPOS,8,,,,name_variant,E:IZC,Colegio de Posgraduados spelling
+1383,E:IZC,Colegio de Postgraduados,COLPOS,8,,,,member,E:IZC,
+116,E:IZI,Comisión Nacional de las Zonas Áridas,CONAZA,8,,,,name_variant,E:IZI,"name matcher, reviewed"
+1905,E:IZI,Comisión Nacional de las Zonas Áridas,CONAZA,8,,,,member,E:IZI,
+41,E:J0U,CAMINOS Y PUENTES FEDERALES DE INGRESOS Y SERVICIOS CONEXOS,CAPUFE,9,,,,member,E:J0U,
+4384,E:J2I,"ADMINISTRACIÓN DEL SISTEMA PORTUARIO NACIONAL ACAPULCO, S.A. DE C.V.",ASIPONAACAPULCO,13,,,,member,E:J2I,
+4,E:J2P@preid4,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE DOS BOCAS, S.A. DE C.V.",API-Dos Bocas,9,,,,predecessor,E:J2P,API Dos Bocas -> ASIPONA Dos Bocas; shared UR
+3722,E:J2P,"Administración del Sistema Portuario Nacional Dos Bocas, S.A. de C.V.",ASIPONA-Dos Bocas,13,E:J2P@preid4,,,successor,E:J2P,
+5,E:J2R@preid5,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE ENSENADA, S.A. DE C.V.",API-Ensenada,9,,,,predecessor,E:J2R,API Ensenada -> ASIPONA Ensenada; shared UR
+3734,E:J2R,"Administración del Sistema Portuario Nacional Ensenada, S.A. de C.V.",ASIPONA-Ensenada,13,E:J2R@preid5,,,successor,E:J2R,
+9,E:J2T@preid9,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE MAZATLÁN, S.A. DE C.V.",API-Mazatlán,9,,,,predecessor,E:J2T,API Mazatlán -> ASIPONA Mazatlán; shared UR
+3688,E:J2T,"Administración del Sistema Portuario Nacional Mazatlán, S.A. de C.V.",ASIPONA-Mazatlán,13,E:J2T@preid9,,,successor,E:J2T,
+10,E:J2U@preid10,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE PROGRESO, S.A. DE C.V.",API-Progreso,9,,,,predecessor,E:J2U,API Progreso -> ASIPONA Progreso; shared UR
+3724,E:J2U,"Administración del Sistema Portuario Nacional Progreso, S.A. de C.V.",ASIPONA-Progreso,13,E:J2U@preid10,,,successor,E:J2U,
+11,E:J2V@preid11,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE PUERTO VALLARTA, S.A. DE C.V.",API-Puerto Vallarta,9,,,,predecessor,E:J2V,API Puerto Vallarta -> ASIPONA Puerto Vallarta; shared UR
+3691,E:J2V,"Administración del Sistema Portuario Nacional Puerto Vallarta, S.A. de C.V.",ASIPONA-Puerto Vallarta,13,E:J2V@preid11,,,successor,E:J2V,
+482,E:J2W@preid482,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE TOPOLOBAMPO, S.A. DE C.V.",API-Topolobampo,9,,,,predecessor,E:J2W,API Topolobampo -> ASIPONA Topolobampo; shared UR
+3700,E:J2W,"Administración del Sistema Portuario Nacional Topolobampo, S.A. de C.V.",ASIPONA-Topolobampo,13,E:J2W@preid482,,,successor,E:J2W,
+14,E:J2X@preid14,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE TUXPAN, S.A. DE C.V.",API-Tuxpan,9,,,,predecessor,E:J2X,API Tuxpan -> ASIPONA Tuxpan; shared UR
+3699,E:J2X,"Administración del Sistema Portuario Nacional Tuxpan, S.A. de C.V.",ASIPONA-Tuxpan,13,E:J2X@preid14,,,successor,E:J2X,
+1,E:J2Y@preid1,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE ALTAMIRA, S.A. DE C.V.",API-Altamira,9,,,,predecessor,E:J2Y,API Altamira -> ASIPONA Altamira; shared UR
+3731,E:J2Y,"Administración del Sistema Portuario Nacional Altamira, S.A. de C.V.",ASIPONA-Altamira,13,E:J2Y@preid1,,,successor,E:J2Y,
+6,E:J2Z@preid6,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE GUAYMAS, S.A. DE C.V.",API-Guaymas,9,,,,predecessor,E:J2Z,API Guaymas -> ASIPONA Guaymas; shared UR
+3689,E:J2Z,"Administración del Sistema Portuario Nacional Guaymas, S.A. de C.V.",ASIPONA-Guaymas,13,E:J2Z@preid6,,,successor,E:J2Z,
+7,E:J3A@preid7,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE LÁZARO CÁRDENAS, S.A. DE C.V.",API-Lázaro Cárdenas,9,,,,predecessor,E:J3A,API Lázaro Cárdenas -> ASIPONA Lázaro Cárdenas; shared UR
+3729,E:J3A,"Administración del Sistema Portuario Nacional Lázaro Cárdenas, S.A. de C.V.",ASIPONA-Lázaro Cárdenas,13,E:J3A@preid7,,,successor,E:J3A,
+8,E:J3B@preid8,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE MANZANILLO, S.A. DE C.V.",API-Manzanillo,9,,,,predecessor,E:J3B,API Manzanillo -> ASIPONA Manzanillo; shared UR
+3712,E:J3B,"Administración del Sistema Portuario Nacional Manzanillo, S.A. de C.V.",ASIPONA-Manzanillo,13,E:J3B@preid8,,,successor,E:J3B,
+617,E:J3C@preid1738,"Administración Portuaria Integral de Puerto Madero, S.A. de C.V.",API-Puerto Madero,9,,,,name_variant,E:J3C,"name matcher, reviewed"
+1738,E:J3C@preid1738,"Administración Portuaria Integral de Puerto Madero, S.A. de C.V.",API-Puerto Madero,9,,,,predecessor,E:J3C,API Puerto Madero -> ASIPONA Puerto Chiapas; shared UR
+3705,E:J3C,"Administración del Sistema Portuario Nacional Puerto Chiapas, S.A. de C.V.",ASIPONA-Puerto Chiapas,13,E:J3C@preid1738,,,successor,E:J3C,
+13,E:J3D@preid1538,"Administración Portuaria Integral de Tampico, S.A. de C.V.",API-Tampico,9,,,,name_variant,E:J3D,"name matcher, reviewed"
+1538,E:J3D@preid1538,"Administración Portuaria Integral de Tampico, S.A. de C.V.",API-Tampico,9,,,,predecessor,E:J3D,API Tampico -> ASIPONA Tampico; shared UR
+3742,E:J3D,"Administración del Sistema Portuario Nacional Tampico, S.A. de C.V.",ASIPONA-TAMPICO,13,E:J3D@preid1538,,,successor,E:J3D,
+15,E:J3E@preid15,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE VERACRUZ, S.A. DE C.V.",API-Veracruz,9,,,,predecessor,E:J3E,API Veracruz -> ASIPONA Veracruz (APIs renamed Administración del Sistema Portuario Nacional on transfer to SEMAR c.2021); shared UR; no decree located
+3668,E:J3E,"Administración del Sistema Portuario Nacional Veracruz, S.A. de C.V.",ASIPONA-Veracruz,13,E:J3E@preid15,,,successor,E:J3E,
+3,E:J3F@preid3,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE COATZACOALCOS, S.A. DE C.V.",API-Coatzacoalcos,9,,,,predecessor,E:J3F,API Coatzacoalcos -> ASIPONA Coatzacoalcos; shared UR
+3728,E:J3F,"Administración del Sistema Portuario Nacional Coatzacoalcos, S.A. de C.V.",ASIPONA-Coatzacoalcos,13,E:J3F@preid3,,,successor,E:J3F,
+12,E:J3G@preid12,"ADMINISTRACIÓN PORTUARIA INTEGRAL DE SALINA CRUZ, S.A. DE C.V.",API-Salina Cruz,9,,,,predecessor,E:J3G,API Salina Cruz -> ASIPONA Salina Cruz; shared UR
+3709,E:J3G,"Administración del Sistema Portuario Nacional Salina Cruz, S.A. de C.V.",ASIPONA-SALINA CRUZ,13,E:J3G@preid12,,,successor,E:J3G,
+177,E:J3L,"Ferrocarril del Istmo de Tehuantepec, S.A. de C.V.",FIT,9,,,,name_variant,E:J3L,"name matcher, reviewed"
+1440,E:J3L,"Ferrocarril del Istmo de Tehuantepec, S.A. de C.V.",FIT,9,,,,member,E:J3L,
+3309,E:J4Q,Organismo Promotor de Inversiones en Telecomunicaciones,PROMTEL,9,,,,member,E:J4Q,
+180,E:J4V@preid180,FIDEICOMISO DE FORMACIÓN Y CAPACITACIÓN PARA EL PERSONAL DE LA MARINA MERCANTE NACIONAL,FIDENA,9,,,,predecessor,E:J4V,Fideicomiso de Formación y Capacitación para el Personal de la Marina Mercante -> Fideicomiso Universidad Marítima y Portuaria; shared UR J4V; no decree located
+3716,E:J4V,Fideicomiso Universidad Marítima y Portuaria de México,FIDENA,13,E:J4V@preid180,,,successor,E:J4V,
+412,E:J9E,SERVICIO POSTAL MEXICANO,SEPOMEX,9,,,,member,E:J9E,
+265,E:JAG,"INSTITUTO NACIONAL DE INVESTIGACIONES FORESTALES, AGRÍCOLAS Y PECUARIAS",INIFAP,8,,,,member,E:JAG,
+331,E:JBK,PRODUCTORA NACIONAL DE BIOLÓGICOS VETERINARIOS,PRONABIVE,8,,,,member,E:JBK,
+3667,E:JBP,Seguridad Alimentaria Mexicana,SEGALMEX,8,,,,member,E:JBP,
+17,E:JZL,AEROPUERTOS Y SERVICIOS AUXILIARES,ASA,9,,,,member,E:JZL,
+2342,E:JZN,Agencia Espacial Mexicana,AEM,9,,,,member,E:JZN,
+61,E:K2H,CENTRO NACIONAL DE METROLOGÍA,CENAM,10,,,,member,E:K2H,
+176,E:K2N,"EXPORTADORA DE SAL, S.A. DE C.V.",ESSA,10,,,,member,E:K2N,
+179,E:K2O,FIDEICOMISO DE FOMENTO MINERO,FIFOMI,10,,,,member,E:K2O,
+1398,E:K2W,ProMéxico,PROMEXICO,10,,,,member,E:K2W,
+247,E:K8V,INSTITUTO MEXICANO DE LA PROPIEDAD INDUSTRIAL,IMPI,10,,,,member,E:K8V,
+443,E:KCZ@pre2022-10-22,TELECOMUNICACIONES DE MÉXICO,TELECOMM,9,,2022-10-22,https://sidof.segob.gob.mx/notas/docFuente/5669253,predecessor,E:KCZ,Telecomm -> Financiera para el Bienestar (decree DOF 21-10-2022); re-sectorised ramo 09 -> 06 (UR KCZ kept)
+3678,E:KCZ,Financiera para el Bienestar,FINABIEN,9,E:KCZ@pre2022-10-22,2022-10-22,https://sidof.segob.gob.mx/notas/docFuente/5669253,successor,E:KCZ,
+2682,E:KDH,"Grupo Aeroportuario de la Ciudad de México, S.A. de C.V.",GACM,9,,,,member,E:KDH,
+414,E:KDK,"Servicios Aeroportuarios de la Ciudad de México, S.A. de C.V.",SACM,9,,,,name_variant,E:KDK,"name matcher, reviewed"
+1618,E:KDK,"Servicios Aeroportuarios de la Ciudad de México, S.A. de C.V.",SACM,9,,,,member,E:KDK,
+16,E:KDN,"Aeropuerto Internacional de la Ciudad de México, S.A. de C.V.",AICM,9,,,,name_variant,E:KDN,"name matcher, reviewed"
+1413,E:KDN,"Aeropuerto Internacional de la Ciudad de México, S.A. de C.V.",AICM,9,,,,member,E:KDN,
+42,E:L3N,"CENTRO DE CAPACITACIÓN CINEMATOGRÁFICA, A.C.",CCC,48,,,,member,E:L3N,
+43,E:L3P,CENTRO DE ENSEÑANZA TÉCNICA INDUSTRIAL,CETI,11,,,,member,E:L3P,
+54,E:L4J,Centro de Investigación y de Estudios Avanzados del Instituto Politécnico Nacional,CINVESTAV,11,,,,name_variant,E:L4J,CINVESTAV 'DEL IPN' abbreviation
+1202,E:L4J,Centro de Investigación y de Estudios Avanzados del Instituto Politécnico Nacional,CINVESTAV,11,,,,member,E:L4J,
+65,E:L5N,COLEGIO DE BACHILLERES,COLBACH,11,,,,member,E:L5N,
+71,E:L5X,COLEGIO NACIONAL DE EDUCACIÓN PROFESIONAL TÉCNICA,CONALEP,11,,,,member,E:L5X,
+84,E:L6H,Comisión de Operación y Fomento de Actividades Académicas del Instituto Politécnico Nacional,COFAA,11,,,,name_variant,E:L6H,COFAA 'DEL IPN' abbreviation
+1237,E:L6H,Comisión de Operación y Fomento de Actividades Académicas del Instituto Politécnico Nacional,COFAA,11,,,,member,E:L6H,
+501,E:L6I,COMISIÓN NACIONAL DE CULTURA FÍSICA Y DEPORTE,CONADE,11,,,,member,E:L6I,
+112,E:L6J,Comisión Nacional de Libros de Texto Gratuitos,CONALITEG,11,,,,name_variant,E:L6J,CONALITEG singular/plural
+1665,E:L6J,Comisión Nacional de Libros de Texto Gratuitos,CONALITEG,11,,,,member,E:L6J,
+147,E:L6U,"Compañía Operadora del Centro Cultural y Turístico de Tijuana, S.A. de C.V.",CECUTT,48,,,,name_variant,E:L6U,"name matcher, reviewed"
+1746,E:L6U,"Compañía Operadora del Centro Cultural y Turístico de Tijuana, S.A. de C.V.",CECUTT,48,,,,member,E:L6U,
+156,E:L6W,CONSEJO NACIONAL DE FOMENTO EDUCATIVO,CONAFE,11,,,,member,E:L6W,
+172,E:L8G,"EDUCAL, S.A. DE C.V.",EDUCAL,48,,,,member,E:L8G,
+175,E:L8P,"ESTUDIOS CHURUBUSCO AZTECA, S.A.",ECHASA,48,,,,member,E:L8P,
+1726,E:L9T,Fideicomiso de los Sistemas Normalizado de Competencia Laboral y de Certificación de Competencia Laboral,CONOCER,11,,,,member,E:L9T,
+513,E:L9Y,FIDEICOMISO PARA LA CINETECA NACIONAL,FICINE,48,,,,member,E:L9Y,
+328,E:LAT,PROCURADURÍA FEDERAL DEL CONSUMIDOR,PROFECO,10,,,,member,E:LAT,
+151,E:LAU@pre2005-04-29,CONSEJO DE RECURSOS MINERALES,,,,2005-04-29,https://www.diputados.gob.mx/LeyesBiblio/ref/lmin.htm,predecessor,E:LAU,Consejo de Recursos Minerales -> Servicio Geológico Mexicano (Ley Minera reform DOF 28-04-2005); A-era id
+769,E:LAU,SERVICIO GEOLÓGICO MEXICANO,SGM,10,E:LAU@pre2005-04-29,2005-04-29,https://www.diputados.gob.mx/LeyesBiblio/ref/lmin.htm,successor,E:LAU,
+925,E:M7A,CENTRO REGIONAL DE ALTA ESPECIALIDAD DE CHIAPAS,CRAE,12,,,,member,E:M7A,
+3744,E:M7B,Instituto de Salud para el Bienestar,INSABI,12,,,,member,E:M7B,
+273,E:M7F,Instituto Nacional de Psiquiatría Ramón de la Fuente Muñiz,INPSIQ,12,,,,name_variant,E:M7F,"name matcher, reviewed"
+1217,E:M7F,Instituto Nacional de Psiquiatría Ramón de la Fuente Muñiz,INPSIQ,12,,,,member,E:M7F,
+63,E:M7K,"Centros de Integración Juvenil, A.C.",CIJ,12,,,,name_variant,E:M7K,"name matcher, reviewed"
+1220,E:M7K,"Centros de Integración Juvenil, A.C.",CIJ,12,,,,member,E:M7K,
+520,E:MAR,FONDO DE CULTURA ECONÓMICA,FCE,11,,,,member,E:MAR,
+1137,E:MAX,"Impresora y Encuadernadora Progreso, S.A. de C.V.",IEPSA,11,,,,name_variant,E:MAX,"name matcher, reviewed"
+1358,E:MAX,"Impresora y Encuadernadora Progreso, S.A. de C.V.",IEPSA,11,,,,member,E:MAX,
+276,E:MDA,INSTITUTO NACIONAL PARA LA EDUCACIÓN DE LOS ADULTOS,INEA,11,,,,member,E:MDA,
+695,E:MDB,INSTITUTO NACIONAL DE LENGUAS INDÍGENAS,INALI,48,,,,member,E:MDB,
+245,E:MDC,INSTITUTO MEXICANO DE CINEMATOGRAFÍA,IMCINE,48,,,,member,E:MDC,
+1385,E:MDE,Instituto Nacional de la Infraestructura Física Educativa,INIFED,11,,,,member,E:MDE,
+248,E:MDL,INSTITUTO MEXICANO DE LA RADIO,IMER,11,,,,member,E:MDL,
+310,E:MGC,PATRONATO DE OBRAS E INSTALACIONES DEL INSTITUTO POLITÉCNICO NACIONAL,POI,11,,,,member,E:MGC,
+444,E:MHL,"TELEVISIÓN METROPOLITANA, S.A. DE C.V.",TVMETRO,48,,,,member,E:MHL,
+1228,E:MHL,"TELEVISIÓN METROPOLITANA, S.A. DE C.V.",TVMETRO,48,,,,member,E:MHL,
+208,E:NAW,HOSPITAL JUÁREZ DE MÉXICO,HJM,12,,,,member,E:NAW,
+206,E:NBB,"Hospital General ""Dr. Manuel Gea González""",HG,12,,,,name_variant,E:NBB,"name matcher, reviewed"
+1204,E:NBB,"Hospital General ""Dr. Manuel Gea González""",HG,12,,,,member,E:NBB,
+205,E:NBD,"Hospital General de México ""Dr. Eduardo Liceaga""",HGM,12,,,,name_variant,E:NBD,Hospital General de México + honorific
+1273,E:NBD,"Hospital General de México ""Dr. Eduardo Liceaga""",HGM,12,,,,member,E:NBD,
+207,E:NBG,HOSPITAL INFANTIL DE MÉXICO FEDERICO GÓMEZ,HIM,12,,,,member,E:NBG,
+960,E:NBQ,HOSPITAL REGIONAL DE ALTA ESPECIALIDAD DEL BAJÍO,HRAEB,12,,,,member,E:NBQ,
+959,E:NBR,HOSPITAL REGIONAL DE ALTA ESPECIALIDAD DE OAXACA,HRAEO,12,,,,member,E:NBR,
+1050,E:NBS,HOSPITAL REGIONAL DE ALTA ESPECIALIDAD DE LA PENÍNSULA DE YUCATÁN,HRAEPY,12,,,,member,E:NBS,
+2095,E:NBT,"Hospital Regional de Alta Especialidad de Ciudad Victoria ""Bicentenario 2010""",HRAEV,12,,,,member,E:NBT,
+2329,E:NBU,Hospital Regional de Alta Especialidad de Ixtapaluca,HRAEI,12,,,,member,E:NBU,
+257,E:NBV,INSTITUTO NACIONAL DE CANCEROLOGÍA,INCAN,12,,,,member,E:NBV,
+259,E:NCA,INSTITUTO NACIONAL DE CARDIOLOGÍA IGNACIO CHÁVEZ,INCARD,12,,,,member,E:NCA,
+263,E:NCD,Instituto Nacional de Enfermedades Respiratorias Ismael Cosío Villegas,INER,12,,,,name_variant,E:NCD,"name matcher, reviewed"
+1221,E:NCD,Instituto Nacional de Enfermedades Respiratorias Ismael Cosío Villegas,INER,12,,,,member,E:NCD,
+1667,E:NCE,Instituto Nacional de Geriatría,INGER,12,,,,member,E:NCE,
+260,E:NCG,INSTITUTO NACIONAL DE CIENCIAS MÉDICAS Y NUTRICIÓN SALVADOR ZUBIRÁN,INCMNSZ,12,,,,member,E:NCG,
+696,E:NCH,INSTITUTO NACIONAL DE MEDICINA GENÓMICA,INMEGEN,12,,,,member,E:NCH,
+270,E:NCK,Instituto Nacional de Neurología y Neurocirugía Manuel Velasco Suárez,INNN,12,,,,name_variant,E:NCK,INNN + 'DR.'
+1198,E:NCK,Instituto Nacional de Neurología y Neurocirugía Manuel Velasco Suárez,INNN,12,,,,member,E:NCK,
+271,E:NCZ,INSTITUTO NACIONAL DE PEDIATRÍA,INP,12,,,,member,E:NCZ,
+272,E:NDE,Instituto Nacional de Perinatología Isidro Espinosa de los Reyes,INPER,12,,,,name_variant,E:NDE,INPer short name
+697,E:NDE,Instituto Nacional de Perinatología Isidro Espinosa de los Reyes,INPER,12,,,,name_variant,E:NDE,"name matcher, reviewed"
+1226,E:NDE,Instituto Nacional de Perinatología Isidro Espinosa de los Reyes,INPER,12,,,,member,E:NDE,
+487,E:NDF@preid487,CENTRO NACIONAL DE REHABILITACIÓN,,,,,,predecessor,E:NDF,Centro Nacional de Rehabilitación -> Instituto Nacional de Rehabilitación (2005); date/source not verified
+1378,E:NDF,Instituto Nacional de Rehabilitación Luis Guillermo Ibarra Ibarra,INR,12,E:NDF@preid487,,,successor,E:NDF,
+274,E:NDY,INSTITUTO NACIONAL DE SALUD PÚBLICA,INSP,12,,,,member,E:NDY,
+296,E:NEF,"Laboratorios de Biológicos y Reactivos de México, S.A. de C.V.",BIRMEX,12,,,,name_variant,E:NEF,"name matcher, reviewed"
+2066,E:NEF,"Laboratorios de Biológicos y Reactivos de México, S.A. de C.V.",BIRMEX,12,,,,member,E:NEF,
+434,E:NHK,SISTEMA NACIONAL PARA EL DESARROLLO INTEGRAL DE LA FAMILIA,DIF,12,,,,member,E:NHK,
+189,E:P7R@pre2006-04-25,FONDO DE FOMENTO Y GARANTÍA PARA EL CONSUMO DE LOS TRABAJADORES,,,,2006-04-25,https://www.diputados.gob.mx/LeyesBiblio/ref/lifnct.htm,predecessor,E:P7R,FONACOT -> INFONACOT (Ley del INFONACOT DOF 24-04-2006); A-era id
+866,E:P7R,INSTITUTO DEL FONDO NACIONAL PARA EL CONSUMO DE LOS TRABAJADORES,INFONACOT,14,E:P7R@pre2006-04-25,2006-04-25,https://www.diputados.gob.mx/LeyesBiblio/ref/lifnct.htm,successor,E:P7R,
+3775,E:PBE,Centro Federal de Conciliación y Registro Laboral,CFCRL,14,,,,member,E:PBE,
+113,E:PBJ,COMISIÓN NACIONAL DE LOS SALARIOS MINIMOS,CONASAMI,14,,,,member,E:PBJ,
+816,E:QCW,COMISIÓN NACIONAL DE VIVIENDA,CONAVI,15,,,,member,E:QCW,
+124,E:QDV@pre2016-12-17,COMISIÓN PARA LA REGULARIZACIÓN DE LA TENENCIA DE LA TIERRA,,,,2016-12-17,https://dof.gob.mx/nota_detalle.php?codigo=5465842&fecha=16/12/2016,predecessor,E:QDV,CORETT -> INSUS (decree DOF 16-12-2016); A-era id
+2714,E:QDV,Instituto Nacional del Suelo Sustentable,INSUS,15,E:QDV@pre2016-12-17,2016-12-17,https://dof.gob.mx/nota_detalle.php?codigo=5465842&fecha=16/12/2016,successor,E:QDV,
+182,E:QEU,FIDEICOMISO FONDO NACIONAL DE FOMENTO EJIDAL,FIFONAFE,15,,,,member,E:QEU,
+562,E:QEZ,PROCURADURÍA AGRARIA,PA,15,,,,member,E:QEZ,
+183,E:QIQ,FIDEICOMISO FONDO NACIONAL DE HABITACIONES POPULARES,FONHAPO,15,,,,member,E:QIQ,
+120,E:RHQ,COMISIÓN NACIONAL FORESTAL,CONAFOR,16,,,,member,E:RHQ,
+249,E:RJE,INSTITUTO MEXICANO DE TECNOLOGÍA DEL AGUA,IMTA,16,,,,member,E:RJE,
+262,E:RJJ@pre2012-06-07,INSTITUTO NACIONAL DE ECOLOGÍA,,,,2012-06-07,https://www.diputados.gob.mx/LeyesBiblio/ref/lgcc.htm,predecessor,E:RJJ,Instituto Nacional de Ecología -> INECC (Ley General de Cambio Climático DOF 06-06-2012); A-era id
+1422,E:RJJ,Instituto Nacional de Ecología y Cambio Climático,INECC,16,E:RJJ@pre2012-06-07,2012-06-07,https://www.diputados.gob.mx/LeyesBiblio/ref/lgcc.htm,successor,E:RJJ,
+1827,E:RJL@pre2023-12-05,Instituto Nacional de Pesca y Acuacultura,INAPESCA,8,,2023-12-05,https://www.dof.gob.mx/nota_detalle.php?codigo=5710272&fecha=04/12/2023,predecessor,E:RJL,INAPESCA -> IMIPAS (LGPAS reform DOF 04-12-2023)
+3788,E:RJL,INSTITUTO MEXICANO DE INVESTIGACIÓN EN PESCA Y ACUACULTURA SUSTENTABLES,IMIPAS,8,E:RJL@pre2023-12-05,2023-12-05,https://www.dof.gob.mx/nota_detalle.php?codigo=5710272&fecha=04/12/2023,successor,E:RJL,
+261,E:SKC,INSTITUTO NACIONAL DE CIENCIAS PENALES,INACIPE,17,,,,member,E:SKC,
+219,E:T0K@pre2016-06-24,INSTITUTO DE INVESTIGACIONES ELÉCTRICAS,,,,2016-06-24,https://dof.gob.mx/nota_detalle.php?codigo=5442434&fecha=24/06/2016,predecessor,E:T0K,Instituto de Investigaciones Eléctricas -> INEEL (decree DOF 24-06-2016); A-era id
+1196,E:T0K,Instituto Nacional de Electricidad y Energías Limpias,INEEL,18,E:T0K@pre2016-06-24,2016-06-24,https://dof.gob.mx/nota_detalle.php?codigo=5442434&fecha=24/06/2016,successor,E:T0K,
+250,E:T0O,INSTITUTO MEXICANO DEL PETRÓLEO,IMP,18,,,,member,E:T0O,
+266,E:T0Q,INSTITUTO NACIONAL DE INVESTIGACIONES NUCLEARES,ININ,18,,,,member,E:T0Q,
+315,E:T4I,Petróleos Mexicanos (Corporativo),PEMEX,18,,,,name_variant,E:T4I,"name matcher, reviewed"
+1201,E:T4I,Petróleos Mexicanos (Corporativo),PEMEX,18,,,,member,E:T4I,
+311,E:T4L,PEMEX EXPLORACIÓN Y PRODUCCIÓN,PEP,,,,,name_variant,E:T4L,"name matcher, reviewed"
+1232,E:T4L,PEMEX EXPLORACIÓN Y PRODUCCIÓN,PEP,,,,,member,E:T4L,
+314,E:T4M,PEMEX REFINACIÓN,PREF,,,,,name_variant,E:T4M,"name matcher, reviewed"
+1203,E:T4M,PEMEX REFINACIÓN,PREF,,,,,member,E:T4M,
+312,E:T4N,PEMEX GAS Y PETROQUÍMICA BÁSICA,PGPB,,,,,name_variant,E:T4N,"name matcher, reviewed"
+1222,E:T4N,PEMEX GAS Y PETROQUÍMICA BÁSICA,PGPB,,,,,member,E:T4N,
+313,E:T4O,Pemex-Petroquímica,PPQ,18,,,,name_variant,E:T4O,"name matcher, reviewed"
+317,E:T4O@preid317,"PETROQUÍMICA CANGREJERA, S. A. DE C. V.",,,,,,merged_into,E:T4O,Petroquímica Cangrejera S.A. de C.V. (PPQ filial) -> Pemex-Petroquímica; date/source not verified
+318,E:T4O@preid318,"PETROQUÍMICA COSOLEACAQUE, S. A. DE C. V.",,,,,,merged_into,E:T4O,Petroquímica Cosoleacaque (PPQ filial); date/source not verified
+319,E:T4O@preid319,"PETROQUÍMICA ESCOLÍN, S. A. DE C. V.",,,,,,merged_into,E:T4O,Petroquímica Escolín (PPQ filial); date/source not verified
+320,E:T4O@preid320,PETROQUÍMICA MORELOS. S. A. DE C. V.,,,,,,merged_into,E:T4O,Petroquímica Morelos (PPQ filial); date/source not verified
+321,E:T4O@preid321,"PETROQUÍMICA PAJARITOS, S. A. DE C. V.",,,,,,merged_into,E:T4O,Petroquímica Pajaritos (PPQ filial); date/source not verified
+322,E:T4O@preid322,"PETROQUÍMICA TULA, S. A DE C. V.",,,,,,merged_into,E:T4O,Petroquímica Tula (PPQ filial); date/source not verified
+1211,E:T4O,Pemex-Petroquímica,PPQ,18,E:T4O@preid317;E:T4O@preid318;E:T4O@preid319;E:T4O@preid320;E:T4O@preid321;E:T4O@preid322,,,successor,E:T4O,
+323,E:T5K,"P.M.I. Comercio Internacional, S.A. de C.V.",PMI,18,,,,name_variant,E:T5K,"name matcher, reviewed"
+1250,E:T5K,"P.M.I. Comercio Internacional, S.A. de C.V.",PMI,18,,,,member,E:T5K,
+1197,E:TOM,Centro Nacional de Control de Energía,CENACE,18,,,,member,E:TOM,
+2957,E:TON,Centro Nacional de Control del Gas Natural,CENAGAS,18,,,,member,E:TON,
+104,E:TOQ,COMISIÓN FEDERAL DE ELECTRICIDAD,CFE,18,,,,member,E:TOQ,
+146,E:TQA,"COMPAÑÍA MEXICANA DE EXPLORACIONES, S.A. DE C.V.",COMESA,18,,,,member,E:TQA,
+209,E:TXS,"I.I.I. Servicios, S.A. de C.V.",III SERVICIOS,18,,,,name_variant,E:TXS,"name matcher, reviewed"
+1247,E:TXS,"I.I.I. Servicios, S.A. de C.V.",III SERVICIOS,18,,,,member,E:TXS,
+541,E:V3A,INSTITUTO NACIONAL DE LAS PERSONAS ADULTAS MAYORES,INAPAM,20,,,,member,E:V3A,
+824,E:VQZ,CONSEJO NACIONAL DE EVALUACIÓN DE LA POLÍTICA DE DESARROLLO SOCIAL,CONEVAL,20,,,,member,E:VQZ,
+2596,E:VRW,Consejo Nacional para el Desarrollo y la Inclusión de las Personas con Discapacidad,CONADIS,20,,,,member,E:VRW,
+160,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,name_variant,E:VSS,"name matcher, reviewed"
+164,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch (UC-level unit booked as its own dependency in 2002-10)
+166,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+167,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+168,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+169,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+170,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+509,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,,,branch,E:VSS,Diconsa regional branch
+1327,E:VSS@pre2025-02-12,"Diconsa, S.A. de C.V.",DICONSA,20,,2025-02-12,https://sidof.segob.gob.mx/notas/docFuente/5766909,predecessor,E:VSS,Diconsa -> Alimentación para el Bienestar; shareholder rename 29-01-2025 protocolised 12-02-2025; CompraNet 2023-25 files already carry the new name retroactively
+3785,E:VSS,"ALIMENTACIÓN PARA EL BIENESTAR, S.A. DE C.V.",DICONSA,8,E:VSS@pre2025-02-12,2025-02-12,https://sidof.segob.gob.mx/notas/docFuente/5766909,successor,E:VSS,
+297,E:VST,"LICONSA, S.A. DE C.V.",LICONSA,20,,,,member,E:VST,
+246,E:VUY,INSTITUTO MEXICANO DE LA JUVENTUD,IMJ,20,,,,member,E:VUY,
+1562,E:VZG,Fondo Nacional para el Fomento de las Artesanías,FONART,48,,,,member,E:VZG,
+1019,E:W3H,"FONATUR Constructora, S.A. de C.V.",FONATUR Constructora,21,,,,name_variant,E:W3H,"name matcher, reviewed"
+1903,E:W3H,"FONATUR Constructora, S.A. de C.V.",FONATUR Constructora,21,,,,member,E:W3H,
+150,E:W3J,"Consejo de Promoción Turística de México, S.A. de C.V.",CPTM,21,,,,name_variant,E:W3J,"name matcher, reviewed"
+1219,E:W3J,"Consejo de Promoción Turística de México, S.A. de C.V.",CPTM,21,,,,member,E:W3J,
+194,E:W3N,FONDO NACIONAL DE FOMENTO AL TURISMO,FONATUR,21,,,,member,E:W3N,
+1631,E:W3S@preid1631,"FONATUR Mantenimiento Turístico, S.A. de C.V.",FONATUR Mantenimiento,21,,,,predecessor,E:W3S,FONATUR Mantenimiento Turístico -> FONATUR Infraestructura; shared UR W3S; no decree located
+3693,E:W3S,"FONATUR Infraestructura, S.A. de C.V.",FONATUR Infraestructura,21,E:W3S@preid1631,,,successor,E:W3S,
+2604,E:W3X,"FONATUR Tren Maya, S.A. de C.V.",FONATUR TREN MAYA,21,,,,member,E:W3X,
+325,R:002,OFICINA DE LA PRESIDENCIA DE LA REPÚBLICA,PR,2,,,,member,R:002,
+3774,R:002,OFICINA DE LA PRESIDENCIA DE LA REPÚBLICA,PR,2,,,,member,R:002,
+379,R:004,SECRETARÍA DE GOBERNACIÓN,SEGOB,4,,,,member,R:004,
+3759,R:004,SECRETARÍA DE GOBERNACIÓN,SEGOB,4,,,,member,R:004,
+398,R:005,SECRETARÍA DE RELACIONES EXTERIORES,SRE,5,,,,member,R:005,
+382,R:006,SECRETARÍA DE HACIENDA Y CRÉDITO PÚBLICO,SHCP,6,,,,member,R:006,
+384,R:007,SECRETARÍA DE LA DEFENSA NACIONAL,SEDENA,7,,,,member,R:007,
+340,R:008@pre2018-12-01,"SECRETARÍA DE AGRICULTURA, GANADERÍA, DESARROLLO RURAL, PESCA Y ALIMENTACIÓN",,8,,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,predecessor,R:008,SAGARPA -> SADER (LOAPF reform DOF 30-11-2018); A-era id
+1288,R:008,Secretaría de Agricultura y Desarrollo Rural,SADER,8,R:008@pre2018-12-01,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,successor,R:008,
+345,R:009@pre2021-10-21,SECRETARÍA DE COMUNICACIONES Y TRANSPORTES,SCT,9,,2021-10-21,https://www.dof.gob.mx/nota_detalle.php?codigo=5633365&fecha=20/10/2021,predecessor,R:009,SCT -> SICT (2023+ file spelling 'INFRAESTRUCTURA COMUNICACIONES Y TRANSPORTES')
+3671,R:009,"INFRAESTRUCTURA, COMUNICACIONES Y TRANSPORTES",SICT,9,R:009@pre2021-10-21,2021-10-21,https://www.dof.gob.mx/nota_detalle.php?codigo=5633365&fecha=20/10/2021,successor,R:009,
+3766,R:009,"INFRAESTRUCTURA, COMUNICACIONES Y TRANSPORTES",SICT,9,R:009@pre2021-10-21,2021-10-21,https://www.dof.gob.mx/nota_detalle.php?codigo=5633365&fecha=20/10/2021,successor,R:009,
+368,R:010,SECRETARÍA DE ECONOMÍA,SE,10,,,,member,R:010,
+370,R:011,SECRETARÍA DE EDUCACIÓN PÚBLICA,SEP,11,,,,member,R:011,
+399,R:012,SECRETARÍA DE SALUD,SSA,12,,,,member,R:012,
+3758,R:012,SECRETARÍA DE SALUD,SSA,12,,,,member,R:012,
+1212,R:013,Secretaría de Marina,SEMAR,13,,,,member,R:013,
+406,R:014,SECRETARÍA DEL TRABAJO Y PREVISIÓN SOCIAL,STPS,14,,,,member,R:014,
+386,R:015@pre2013-01-03,SECRETARÍA DE LA REFORMA AGRARIA,,15,,2013-01-03,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf.htm,predecessor,R:015,Secretaría de la Reforma Agraria -> SEDATU (LOAPF reform DOF 02-01-2013); A-era id
+1759,R:015,"Secretaría de Desarrollo Agrario, Territorial y Urbano",SEDATU,15,R:015@pre2013-01-03,2013-01-03,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf.htm,successor,R:015,
+387,R:016,SECRETARÍA DE MEDIO AMBIENTE Y RECURSOS NATURALES,SEMARNAT,16,,,,member,R:016,
+330,R:017,PROCURADURÍA GENERAL DE LA REPÚBLICA,PGR,17,,,,member,R:017,
+373,R:018,SECRETARÍA DE ENERGÍA,SENER,18,,,,member,R:018,
+356,R:020@pre2018-12-01,SECRETARÍA DE DESARROLLO SOCIAL,,20,,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,predecessor,R:020,SEDESOL -> Secretaría de Bienestar (LOAPF reform DOF 30-11-2018); A-era id
+1324,R:020,Secretaria de Bienestar,BIENESTAR,20,R:020@pre2018-12-01,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,successor,R:020,
+3757,R:020,Secretaria de Bienestar,BIENESTAR,20,,,,member,R:020,
+404,R:021,SECRETARÍA DE TURISMO,SECTUR,21,,,,member,R:021,
+385,R:027@pre2024-11-29,SECRETARÍA DE LA FUNCIÓN PÚBLICA,SFP,27,,2024-11-29,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref75_28nov24.pdf,predecessor,R:027,SFP -> Secretaría Anticorrupción y Buen Gobierno (LOAPF reform DOF 28-11-2024 vespertina)
+3762,R:027@pre2024-11-29,SECRETARÍA DE LA FUNCIÓN PÚBLICA,SFP,27,,,,name_variant,R:027,
+3779,R:027,SECRETARÍA ANTICORRUPCIÓN Y BUEN GOBIERNO,SABG,27,R:027@pre2024-11-29,2024-11-29,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref75_28nov24.pdf,successor,R:027,
+446,R:031,Tribunales Agrarios,Tribunales Agrarios,31,,,,name_variant,R:031,Tribunal Superior Agrario is the head of ramo 31 Tribunales Agrarios
+1235,R:031,Tribunales Agrarios,Tribunales Agrarios,31,,,,member,R:031,
+1242,R:032,Tribunal Federal de Justicia Administrativa,TFJA,32,,,,member,R:032,
+3754,R:036,Secretaría de Seguridad y Protección Ciudadana,SSPC,36,,,,member,R:036,
+148,R:037,CONSEJERÍA JURÍDICA DEL EJECUTIVO FEDERAL,CJEF,37,,,,member,R:037,
+3827,R:038,"SECRETARÍA DE CIENCIA, HUMANIDADES, TECNOLOGÍA E INNOVACIÓN",SECIHTI,38,,,,member,R:038,
+264,R:040@pre2008-04-17,"INSTITUTO NACIONAL DE ESTADÍSTICA, GEOGRAFÍA E INFORMÁTICA",,40,,2008-04-17,https://www.diputados.gob.mx/LeyesBiblio/ref/lsnieg.htm,predecessor,R:040,INEGI 'Estadística Geografía e Informática' -> 'Estadística y Geografía' (LSNIEG DOF 16-04-2008); A-era id
+1286,R:040,Instituto Nacional de Estadística Y Geografía,INEGI,40,R:040@pre2008-04-17,2008-04-17,https://www.diputados.gob.mx/LeyesBiblio/ref/lsnieg.htm,successor,R:040,
+126,R:045,COMISIÓN REGULADORA DE ENERGÍA,CRE,45,,,,member,R:045,
+157,R:048@pre2015-12-18,CONSEJO NACIONAL PARA LA CULTURA Y LAS ARTES,,48,,2015-12-18,https://dof.gob.mx/nota_detalle.php?codigo=5420363&fecha=17/12/2015,predecessor,R:048,CONACULTA -> Secretaría de Cultura (DOF 17-12-2015); A-era id
+1259,R:048,Secretaría de Cultura,CULTURA,48,R:048@pre2015-12-18,2015-12-18,https://dof.gob.mx/nota_detalle.php?codigo=5420363&fecha=17/12/2015,successor,R:048,
+3760,R:048,Secretaría de Cultura,CULTURA,48,,,,member,R:048,
+3677,R:049,Fiscalía General de la República,FGR,49,,,,member,R:049,
+3787,R:054,SECRETARÍA DE LAS MUJERES,SEMUJERES,54,,,,member,R:054,
+4391,R:055,AGENCIA DE TRANSFORMACIÓN DIGITAL Y TELECOMUNICACIONES,ATDT,55,,,,member,R:055,

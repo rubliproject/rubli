@@ -1,0 +1,196 @@
+/* /contracts «El Archivo» on «El Contrato» (DESIGN.md §2–§8). Page-local; tokens only. Unlayered on purpose: it must beat the
+   Tailwind utilities on SortHeaderTh and sit level with contrato.css.
+   Ledger = Operate mode: outlined chips, mono numerals right, row hover 80ms,
+   no reveals in the table, skeleton rows the height of real ones. */
+/* ── the filter rail: the cover's lead element ── */
+.cx-rail { display: grid; gap: 8px; }
+.cx-ledger { margin-top: 8px; }
+.cx-ledger-body { margin-top: 8px; }
+.ph-toolbar > .cx-rail { flex: 1 1 100%; min-width: 0; } /* the register's toolbar rides the kit PageHead */
+@media (max-width: 760px) { .cx-search input { height: 44px; } .cx-search button { top: 6px; } }
+.cx-count { margin-left: auto; }
+.cx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cx-label { flex: none; min-width: 96px; margin-right: 4px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.cx-search { position: relative; flex: 1; min-width: 0; }
+.cx-search > svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--color-text-muted); pointer-events: none; }
+.cx-search input { width: 100%; height: 40px; padding: 0 48px; border: 1px solid var(--color-text-primary); border-radius: var(--radius); background: var(--color-background); font: 400 15px/1 var(--font-serif); color: var(--color-text-primary); }
+.cx-search input:focus { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.cx-search input::placeholder { color: var(--color-text-muted); }
+.cx-search button { position: absolute; right: 4px; top: 4px; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; color: var(--color-text-muted); }
+.cx-search button:hover { color: var(--color-text-primary); }
+
+.cx-label-2 { min-width: 0; margin-left: 16px; }
+/* chips / buttons / pager are the shared .ct-chip / .ct-btn / .ct-pager (contrato.css); the rail's deltas: */
+.cx-rail .ct-chip { white-space: nowrap; }
+.cx-rail .ct-chip.is-x { padding-right: 0; border-color: var(--color-text-primary); color: var(--color-text-primary); }
+.cx-select, .cx-amount { height: 40px; padding: 0 8px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-background); font: 400 14px/1 var(--font-serif); color: var(--color-text-primary); transition: border-color var(--dur-press) ease-out; }
+.cx-select:hover, .cx-amount:hover, .cx-select:focus, .cx-amount:focus { border-color: var(--color-text-primary); outline: none; }
+.cx-amount { width: 120px; font-family: var(--font-mono); font-size: 13px; appearance: textfield; }
+.cx-amount::-webkit-outer-spin-button, .cx-amount::-webkit-inner-spin-button { appearance: none; margin: 0; }
+.cx-amount::placeholder { color: var(--color-text-muted); }
+.cx-select:focus-visible, .cx-amount:focus-visible, .rg button:focus-visible, .rg input:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.cx-menu { position: absolute; left: 0; top: 44px; z-index: 50; min-width: 240px; border: 1px solid var(--color-text-primary); background: var(--color-background); }
+.cx-menu > div { display: flex; align-items: center; gap: 4px; padding: 0 4px 0 12px; border-bottom: 1px solid var(--color-border); }
+.cx-menu > div:last-child { border-bottom: 0; }
+.cx-menu button { min-height: 40px; font: 400 14px/1.4 var(--font-serif); text-align: left; color: var(--color-text-primary); }
+.cx-menu button:first-child { flex: 1; }
+.cx-menu button:last-child { width: 32px; color: var(--color-text-muted); }
+.cx-note { font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+
+
+.cx-check { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 40px; min-height: 24px; cursor: pointer; }
+.cx-check input { width: 16px; height: 16px; accent-color: var(--color-text-primary); cursor: pointer; }
+.cx-peek { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 24px; color: var(--color-text-muted); transition: color var(--dur-press) ease-out; }
+.cx-peek:hover { color: var(--color-text-primary); }
+.cx-peek svg { width: 16px; height: 16px; transition: transform var(--dur-state) var(--ease-out); }
+.cx-peek[aria-expanded='true'] svg { transform: rotate(90deg); }
+
+
+/* compare bar: an ink-ruled strip, no shadow */
+.cx-compare { position: fixed; left: 50%; bottom: 24px; z-index: 60; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 4px 4px 4px 16px; border: 1px solid var(--color-text-primary); background: var(--color-background); font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+
+
+
+@media (max-width: 760px) {
+  .cx-label, .cx-label-2 { min-width: 0; margin-left: 0; flex-basis: 100%; }
+}
+
+/* ── «La ficha» — the contract card (archive README 2026-10-28, direction A). Docks out of the
+   ladder's dot (.cf-dock) or opens under a list row; 12 px floor, 20 px figure, no hero numerals. ── */
+.cf { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--color-text-primary); background: var(--color-background); color: var(--color-text-primary); font: 400 14px/1.45 var(--font-serif); text-align: left; }
+.cf:focus { outline: none; }
+.cf:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.cf-h { display: flex; align-items: flex-start; gap: 12px; }
+.cf-t { flex: 1; min-width: 0; font: 600 16px/1.3 var(--font-serif); text-wrap: pretty; overflow-wrap: anywhere; }
+.cf-x, .cf-walk button { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--color-border); color: var(--color-text-primary); transition: border-color var(--dur-press) var(--ease-out), transform var(--dur-press) var(--ease-out); }
+.cf-x:hover, .cf-walk button:hover:not(:disabled) { border-color: var(--color-text-primary); }
+.cf-x:active, .cf-walk button:active:not(:disabled), .cf-nb:active { transform: scale(.97); }
+.cf-x svg, .cf-walk svg { width: 18px; height: 18px; }
+.cf-walk button:disabled { color: var(--color-border); cursor: default; }
+.cf button:focus-visible, .cf summary:focus-visible, .cf a:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.cf-skel { height: 160px; background: var(--color-background-elevated); }
+.cf-note { font-size: 13px; }
+.cf-chain { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px 12px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border); }
+.cf-who { display: grid; gap: 2px; min-width: 0; }
+.cf-who small, .cf-k, .cf-ledger dt { font: 600 12px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.cf-arrow { padding-bottom: 4px; font: 600 14px/1 var(--font-mono); color: var(--color-text-muted); }
+/* ledger + «La lectura» flow through two balanced columns: the browser evens the ink, whatever the claim count */
+.cf-body { columns: 2 240px; column-gap: 24px; }
+.cf-ledger { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.cf-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding-bottom: 6px; break-inside: avoid; }
+.cf-ledger dt { padding-top: 1px; }
+.cf-ledger dd { min-width: 0; overflow-wrap: anywhere; }
+.cf-ln { display: block; }
+.cf-fig { font: 600 20px/1.15 var(--font-serif); font-variant-numeric: tabular-nums; }
+.cf-dim { color: var(--color-text-muted); }
+.cf-crit { color: var(--color-risk-critical-text); }
+.cf-ind { font-weight: 600; }
+.cf-why { display: grid; gap: 2px; margin-top: 4px; }
+.cf-why li { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 8px; color: var(--color-text-muted); }
+.cf-why b { text-align: right; color: var(--color-text-primary); font-weight: 600; }
+.cf-lectura ul { display: grid; gap: 4px; margin-top: 4px; }
+.cf-lectura { padding-top: 4px; }
+.cf-lectura .cf-k { break-after: avoid; }
+.cf-lectura li { break-inside: avoid; padding-left: 12px; text-indent: -12px; text-wrap: pretty; }
+.cf-lectura li::before { content: '— '; color: var(--color-text-muted); }
+.cf-layers { min-width: 0; }
+.cf-lay { border-top: 1px solid var(--color-border); }
+.cf-lay summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 4px; min-height: 40px; padding: 10px 0 6px; cursor: pointer; font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); }
+.cf-lay summary small { font: 400 12px/1.3 var(--font-mono); letter-spacing: 0; color: var(--color-text-muted); }
+.cf-lay > ul, .cf-lay > p { display: grid; gap: 4px; padding-bottom: 8px; font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.cf-near li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; padding: 4px 0; border-bottom: 1px solid var(--color-border); }
+.cf-near li:last-child { border-bottom: 0; }
+.cf-nb { justify-self: start; min-height: 24px; color: var(--color-text-primary); text-decoration: underline; text-decoration-color: var(--color-border); text-underline-offset: 3px; transition: transform var(--dur-press) var(--ease-out); }
+.cf-nb:hover { text-decoration-color: var(--color-text-primary); }
+.cf-nw { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; min-width: 0; color: var(--color-text-muted); }
+.cf-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding-top: 12px; border-top: 1px solid var(--color-text-primary); }
+.cf-walk { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font: 400 12px/1.3 var(--font-mono); color: var(--color-text-muted); }
+/* the ladder's dock: absolute in the field; the leader is an SVG under it */
+.cf-dock { position: absolute; z-index: 6; box-shadow: 0 0 0 4px var(--color-background); }
+.cf-leader { position: absolute; inset: 0; z-index: 5; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.cf-flow { margin-top: 12px; }
+.cx-open .cf { margin: 4px 0 8px; }
+@media (max-width: 760px) {
+  .cf { padding: 12px; }
+  .cf-body { columns: 1; }
+  .cf-walk { margin-left: 0; }
+  .cf-arrow { display: none; }
+}
+
+/* ── El registro + Los señalados: the board's ROW standard, static, on paper (DESIGN.md §7; RegisterBoard.tsx).
+   Reuses kit.css .bd-* (columns, glyphs, chips, legend, the phone's three lines); here: page tokens, normal type, no caps. ── */
+.bd.rg { --board-bg: var(--color-background); --board-row: var(--color-background-elevated); --board-rule: var(--color-border); --board-ink: var(--color-text-primary); --board-dim: var(--color-text-secondary); --board-amber: var(--color-text-primary); margin: 0; padding: 0; background: none; box-shadow: none; }
+.rg :focus-visible { outline-color: var(--color-text-primary); }
+.rg .bd-grid { perspective: none; }
+.rg .bd-row { gap: 0 14px; padding: 8px 0; font: 400 13px/1.4 var(--font-mono); text-transform: none; }
+.rg .bd-row.bd-cols { padding: 6px 0; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); border-bottom: 1px solid var(--color-text-primary); }
+.rg .bd-age { font: 400 13px/1.4 var(--font-mono); white-space: nowrap; }
+.rg .bd-amt { font: 600 14px/1.4 var(--font-mono); color: var(--color-text-primary); }
+.rg .bd-st { font: 600 12px/1.4 var(--font-mono); letter-spacing: 0; text-transform: none; padding: 1px 6px; }
+.rg .bd-tag { font: 600 12px/1.4 var(--font-mono); letter-spacing: 0; text-transform: none; }
+.bd-tag.is-case { color: var(--color-risk-critical-text); box-shadow: inset 0 0 0 1px var(--color-risk-critical-text); }
+.bd-tag.is-src { color: var(--board-dim); box-shadow: inset 0 0 0 1px var(--board-rule); }
+.rg .bd-legend { font: 400 12px/1.4 var(--font-mono); }
+.rg-tip { position: relative; z-index: 1; }
+/* the amount is the row's door: its ::after spans the whole row (the cell is static); controls and chips sit above it */
+.rg .bd-list .bd-amt { position: static; }
+.rg .bd-list .rg-sel { position: relative; z-index: 1; }
+.rg-k { margin-right: 6px; }
+.rg .bd-list .rg-sel { display: flex; align-items: center; }
+.rg .bd-list .bd-risk { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; }
+.rg .bd-list .bd-risk > * { margin: 0; }
+.rg .bd-sec, .rg .bd-proc { font: 400 14px/1.4 var(--font-serif); white-space: normal; overflow-wrap: anywhere; }
+/* the vendor stays one line: its name gives way with «…», the «persona física» label is never cut */
+.rg .bd-list .bd-vendor > .rg-v { display: flex; min-width: 0; overflow: visible; }
+.rg-v > :first-child { min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.rg-v > .rg-pf { flex: none; white-space: pre; }
+.cx-foot-lede { margin-top: var(--space-section, 48px); }
+.rg .bd-row.is-picked { background: var(--color-background-elevated); }
+.rg-sort { min-height: 32px; margin: -8px 0; font: inherit; letter-spacing: inherit; color: inherit; text-align: inherit; }
+.rg-sort[aria-pressed='true'] { color: var(--color-text-primary); }
+@media (hover: hover) and (pointer: fine) { .rg-sort:hover { color: var(--color-text-primary); } .rg .bd-row:hover .bd-go { text-decoration: underline; text-underline-offset: 3px; } }
+.rg-msg { padding: 24px 0; font: 400 15px/1.45 var(--font-serif); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border); }
+.rg-msg .cx-hold { display: block; min-height: 480px; }
+.rg-msg .cx-hold-flag { display: block; min-height: 120px; }
+.rg-open { padding: 4px 0 8px 12px; border-bottom: 1px solid var(--color-text-primary); box-shadow: inset 3px 0 0 var(--color-accent); }
+/* desktop too: the sector folds into the buyer's dot (as below 1280, DESIGN.md §7), so the vendor gets the column's
+   width and its name reads whole at 1440 (SILVER 11-05: «…» at ≈150 px); the sector name stays in the dot's title */
+@media (min-width: 1280px) {
+  .rg .bd-row { grid-template-columns: 104px minmax(96px, .8fr) minmax(0, 1.8fr) minmax(196px, 1fr) 124px 108px 160px; }
+  .rg.has-sel .bd-row { grid-template-columns: 76px 104px minmax(96px, .8fr) minmax(0, 1.8fr) minmax(196px, 1fr) 124px 108px 160px; }
+  .bd.rg .bd-row .bd-sec { display: none; }
+  .rg .bd-buyer .bd-dot { display: inline-block; }
+  /* and a long name takes a second line before any «…» (the phone keeps its one line, DESIGN.md §7) */
+  .rg-v > :first-child { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; white-space: normal; }
+}
+@media (min-width: 901px) and (max-width: 1279px) {
+  .rg .bd-row { grid-template-columns: 96px minmax(96px, .8fr) minmax(0, 1.3fr) minmax(120px, 1fr) 120px 100px 140px; gap: 0 12px; }
+  .rg.has-sel .bd-row { grid-template-columns: 76px 96px minmax(96px, .8fr) minmax(0, 1.3fr) minmax(120px, 1fr) 120px 100px 140px; }
+}
+/* phone: the board's three lines (kit.css); the register adds a compare/quick-look column, and keeps its sort buttons */
+@media (max-width: 900px) {
+  .bd.rg { margin: 0; padding: 0; border-block: 0; }
+  .rg .bd-row.bd-cols { display: flex; flex-wrap: wrap; gap: 0 16px; }
+  .rg .bd-cols > span:not(:has(button)) { display: none; }
+  .rg .bd-row { font-size: 13px; }
+  .rg.has-sel .bd-list .bd-row { grid-template-columns: 44px auto auto minmax(0, 1fr) auto; grid-template-areas: 'sel buyer buyer buyer amt' 'sel vendor vendor vendor risk' 'sel age proc cat cat'; }
+  .rg .bd-list .rg-sel { grid-area: sel; flex-direction: column; align-self: start; }
+  .rg-sel .cx-check, .rg-sel .cx-peek { width: 44px; height: 32px; min-height: 0; margin: 0; }
+  .rg .bd-age { font-size: 13px; }
+  .rg .bd-amt { font-size: 14px; }
+}
+
+/* ── RegisterBoard options (Focos rojos L3, 2026-11-05): one supplier's list (no-vendor) · quiet levels ── */
+.rg-q { font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); white-space: nowrap; }
+.rg-q.is-high { color: var(--color-text-secondary); }
+.rg-q.is-critical { color: var(--color-risk-critical-text); }
+.rg-q.is-critical::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--color-risk-critical); vertical-align: 1px; }
+@media (min-width: 1280px) {
+  .rg.no-vendor .bd-row { grid-template-columns: 104px minmax(120px, 1fr) minmax(196px, 2fr) 124px 108px 160px; }
+}
+@media (min-width: 901px) and (max-width: 1279px) {
+  .rg.no-vendor .bd-row { grid-template-columns: 96px minmax(96px, .8fr) minmax(120px, 1.6fr) 120px 100px 140px; }
+}
+@media (max-width: 900px) {
+  .rg.no-vendor .bd-list .bd-row { grid-template-areas: 'buyer buyer buyer amt' 'cat cat cat risk' 'age proc . .'; }
+}

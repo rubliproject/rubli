@@ -1,0 +1,816 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "cases_count": 13,
+    "generated": "2026-10-03",
+    "note": "Regenerated from procurement_scandals WHERE is_verified = 1 after the weekend #10 fact-check. Only cases rewritten with fetched, cited sources are included; the 30 unpublished rows are deliberately absent so a re-run of scripts.load_scandals cannot republish them. is_verified = 1 means facts were cross-checked against the cited sources, not a judicial finding. Load with: python -m scripts.load_scandals"
+  },
+  "cases": [
+    {
+      "name_en": "Segalmex audit findings and prosecutions",
+      "name_es": "Segalmex: observaciones de auditoría y procesos penales",
+      "slug": "segalmex-food-distribution",
+      "fraud_type": "procurement_fraud",
+      "administration": "amlo",
+      "sector_id": 9,
+      "sector_ids": [
+        9
+      ],
+      "contract_year_start": 2020,
+      "contract_year_end": 2022,
+      "discovery_year": 2022,
+      "amount_mxn_low": 2700000000.0,
+      "amount_mxn_high": null,
+      "amount_note": "SFP (Sept 2024): estimated MXN 2,700 million diverted, 156 complaints. ASF observations for the 2020 account (MXN 8,636 million) are not determinations of damage.",
+      "severity": 4,
+      "legal_status": "prosecuted",
+      "legal_status_note": "156 complaints filed with the FGR (SFP, Sept 2024); a former director of administration and finance was ordered to stand trial in 2022. No final verdict reported in the cited sources.",
+      "compranet_visibility": "high",
+      "compranet_note": "LICONSA and DICONSA direct procurement contracts visible; risk model uses 6,326 matched contracts",
+      "summary_en": "Seguridad Alimentaria Mexicana (Segalmex), created in 2019, and its subsidiaries LICONSA and DICONSA were the subject of repeated observations by the Auditoría Superior de la Federación (ASF); in its review of the 2020 public account the ASF reported irregularities of MXN 8,636 million. By September 2024 the Secretaría de la Función Pública reported 156 criminal complaints filed with the FGR over an estimated MXN 2,700 million diverted. A former director of administration and finance was ordered to stand trial in 2022. ASF observations are not final determinations of damage.",
+      "summary_es": "Seguridad Alimentaria Mexicana (Segalmex), creada en 2019, y sus filiales LICONSA y DICONSA acumularon observaciones de la Auditoría Superior de la Federación (ASF); en la revisión de la Cuenta Pública 2020 la ASF reportó irregularidades por 8,636 millones de pesos. Para septiembre de 2024 la Secretaría de la Función Pública informó de 156 denuncias ante la FGR por un desvío estimado de 2,700 millones de pesos. Un exdirector de Administración y Finanzas fue vinculado a proceso en 2022. Las observaciones de la ASF no son determinaciones definitivas de daño.",
+      "key_actors": [
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        },
+        {
+          "name": "SFP",
+          "role": "institution",
+          "title": "Secretaría de la Función Pública",
+          "note": "Reported 156 criminal complaints (2024)"
+        },
+        {
+          "name": "Segalmex / LICONSA / DICONSA",
+          "role": "institution",
+          "title": "Seguridad Alimentaria Mexicana y filiales",
+          "note": "Audited entities"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Las claves del caso Segalmex: montos, desfalcos, denuncias y actores",
+          "outlet": "Expansión Política",
+          "date": "2024-09-17",
+          "type": "journalism",
+          "url": "https://politica.expansion.mx/mexico/2024/09/17/segalmex-que-es-claves-desfalco"
+        },
+        {
+          "title": "Informe ASF: más de 840 millones de pesos en irregularidades y 12 denuncias para la Segalmex",
+          "outlet": "Infobae",
+          "date": "2023-02-21",
+          "type": "journalism",
+          "url": "https://www.infobae.com/mexico/2023/02/21/informe-asf-mas-de-840-millones-de-pesos-en-irregularidades-y-12-denuncias-para-la-segalmex/"
+        }
+      ],
+      "ground_truth_case_id": 5,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Odebrecht bribery in Mexico",
+      "name_es": "Sobornos de Odebrecht en México",
+      "slug": "odebrecht-pemex-bribery",
+      "fraud_type": "bribery",
+      "administration": "epn",
+      "sector_id": 4,
+      "sector_ids": [
+        4,
+        3
+      ],
+      "contract_year_start": 2010,
+      "contract_year_end": 2014,
+      "discovery_year": 2016,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "About USD 10.5 million in bribes to Mexican officials, 2010-2014 (DOJ plea, Dec 2016). Not converted to MXN.",
+      "severity": 3,
+      "legal_status": "settled",
+      "legal_status_note": "Odebrecht S.A. pleaded guilty in the United States (21 Dec 2016). Mexican proceedings are covered in the Lozoya case.",
+      "compranet_visibility": "partial",
+      "compranet_note": "PEMEX subsidiary contracts partially visible; offshore work contracts have limited COMPRANET exposure",
+      "summary_en": "Odebrecht S.A. admitted in a 2016 US plea agreement that it paid about USD 10.5 million in bribes to Mexican officials between 2010 and 2014, part of a scheme the US Department of Justice described across 12 countries.",
+      "summary_es": "Odebrecht S.A. admitió en un acuerdo de culpabilidad de 2016 en Estados Unidos haber pagado cerca de 10.5 millones de dólares en sobornos a funcionarios mexicanos entre 2010 y 2014, como parte de un esquema que el Departamento de Justicia describió en 12 países.",
+      "key_actors": [
+        {
+          "name": "US Department of Justice",
+          "role": "institution",
+          "title": "Fraud Section",
+          "note": "Plea agreement, December 2016"
+        },
+        {
+          "name": "PEMEX",
+          "role": "institution",
+          "title": "Petróleos Mexicanos",
+          "note": "State-owned company"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Odebrecht and Braskem Plead Guilty and Agree to Pay at Least 3.5 Billion Dollars in Global Penalties",
+          "outlet": "US Department of Justice",
+          "date": "2016-12-21",
+          "type": "legal",
+          "url": "https://www.justice.gov/archives/opa/pr/odebrecht-and-braskem-plead-guilty-and-agree-pay-least-35-billion-global-penalties-resolve"
+        },
+        {
+          "title": "Investigation into PEMEX's Involvement with Odebrecht",
+          "outlet": "Stanford FCPA Clearinghouse",
+          "date": null,
+          "type": "academic",
+          "url": "https://fcpa.stanford.edu/investigation.htm?id=369"
+        }
+      ],
+      "ground_truth_case_id": 4,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "The Master Scam (La Estafa Maestra)",
+      "name_es": "La Estafa Maestra",
+      "slug": "estafa-maestra",
+      "fraud_type": "ghost_company",
+      "administration": "epn",
+      "sector_id": null,
+      "sector_ids": [
+        8,
+        3,
+        2,
+        9,
+        11
+      ],
+      "contract_year_start": 2013,
+      "contract_year_end": 2014,
+      "discovery_year": 2017,
+      "amount_mxn_low": 7670000000.0,
+      "amount_mxn_high": null,
+      "amount_note": "MXN 7,670 million channelled through 8 universities (2013-2014); MXN 3,433 million untraced (Animal Político / MCCI, on ASF audits).",
+      "severity": 4,
+      "legal_status": "acquitted",
+      "legal_status_note": "The FGR charged the former SEDESOL/SEDATU secretary in 2019 with ejercicio indebido del servicio público; a judge closed the case in 2022 and the SCJN confirmed it on 30 Oct 2024. Proceedings against other officials are reported separately.",
+      "compranet_visibility": "partial",
+      "compranet_note": "Direct agency-to-university contracts appear in COMPRANET; university-to-shell-company subcontracts are invisible",
+      "summary_en": "A 2017 investigation by Animal Político and Mexicanos contra la Corrupción y la Impunidad (MCCI), built on Auditoría Superior de la Federación (ASF) audits of the 2013 and 2014 public accounts, reported that 11 federal agencies channelled MXN 7,670 million through agreements with 8 public universities, which passed the work to 186 companies. The reporters found that 128 of them lacked the legal standing or infrastructure to provide the services, or could not be found, and that MXN 3,433 million could not be traced. The only charge brought against the former head of SEDESOL and SEDATU was closed without a conviction, an outcome the Supreme Court confirmed in October 2024.",
+      "summary_es": "Una investigación de 2017 de Animal Político y Mexicanos contra la Corrupción y la Impunidad (MCCI), basada en auditorías de la ASF a las Cuentas Públicas 2013 y 2014, reportó que 11 dependencias federales canalizaron 7,670 millones de pesos mediante convenios con 8 universidades públicas, que a su vez contrataron a 186 empresas. Los reporteros encontraron que 128 de ellas no tenían personalidad jurídica ni infraestructura para prestar los servicios, o no existían, y que no se sabe dónde quedaron 3,433 millones de pesos. El único cargo contra la extitular de SEDESOL y SEDATU se cerró sin condena, resolución que la Suprema Corte confirmó en octubre de 2024.",
+      "key_actors": [
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        },
+        {
+          "name": "Rosario Robles Berlanga",
+          "role": "official",
+          "title": "Secretaria de SEDESOL (2012-2015) y SEDATU (2015-2018)",
+          "note": "Charged in 2019; case closed, confirmed by the SCJN in Oct 2024"
+        },
+        {
+          "name": "8 universidades públicas",
+          "role": "institution",
+          "title": "Intermediarias de los convenios",
+          "note": "Received the agreements and subcontracted companies"
+        }
+      ],
+      "sources": [
+        {
+          "title": "La Estafa Maestra: Graduados en desaparecer dinero público",
+          "outlet": "Animal Político / MCCI",
+          "date": "2017-09-05",
+          "type": "journalism",
+          "url": "https://www.animalpolitico.com/estafa-maestra/"
+        },
+        {
+          "title": "Así inició la investigación de #LaEstafaMaestra",
+          "outlet": "Animal Político",
+          "date": "2017-09-05",
+          "type": "journalism",
+          "url": "https://grupoanimal.mx/noticias/asi-inicio-la-investigacion-laestafamaestra"
+        },
+        {
+          "title": "SCJN confirma absolución de Rosario Robles por la Estafa Maestra",
+          "outlet": "Proceso",
+          "date": "2024-10-30",
+          "type": "journalism",
+          "url": "https://www.proceso.com.mx/nacional/2024/10/30/scjn-confirma-absolucion-de-rosario-robles-por-la-estafa-maestra-337986.html"
+        }
+      ],
+      "ground_truth_case_id": 2,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Grupo Higa / Casa Blanca Conflict of Interest",
+      "name_es": "Grupo Higa / Casa Blanca",
+      "slug": "grupo-higa-casa-blanca",
+      "fraud_type": "conflict_of_interest",
+      "administration": "epn",
+      "sector_id": 3,
+      "sector_ids": [
+        3,
+        4
+      ],
+      "contract_year_start": 2012,
+      "contract_year_end": 2015,
+      "discovery_year": 2014,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "House valued at about MXN 86 million (independent appraisal commissioned by Aristegui Noticias, 2014). No sourced total for Higa's public contracts.",
+      "severity": 3,
+      "legal_status": "dismissed",
+      "legal_status_note": "SFP investigation (Aug 2015) found no conflict of interest; no criminal proceedings.",
+      "compranet_visibility": "high",
+      "compranet_note": "Contracts highly visible in COMPRANET; risk score driven by vendor concentration and network indicators",
+      "summary_en": "In November 2014 Aristegui Noticias reported that a house in Lomas de Chapultepec used by President Enrique Peña Nieto's family, valued at about MXN 86 million, was owned by a company of Grupo Higa. Higa's affiliate Constructora Teya had built public works in the State of Mexico and belonged to the consortium whose award of the Mexico City–Querétaro high-speed rail tender was revoked. In August 2015 the Secretaría de la Función Pública concluded there had been no conflict of interest. No criminal charges were filed.",
+      "summary_es": "En noviembre de 2014 Aristegui Noticias reveló que una casa en Lomas de Chapultepec usada por la familia del presidente Enrique Peña Nieto, con valor aproximado de 86 millones de pesos, era propiedad de una empresa de Grupo Higa. Su filial Constructora Teya había construido obra pública en el Estado de México e integraba el consorcio al que se le revocó la licitación del tren de alta velocidad México-Querétaro. En agosto de 2015 la Secretaría de la Función Pública concluyó que no hubo conflicto de interés. No se presentaron cargos penales.",
+      "key_actors": [
+        {
+          "name": "Grupo Higa",
+          "role": "vendor",
+          "title": "Grupo constructor",
+          "note": "Owned the house through a subsidiary; government contractor"
+        },
+        {
+          "name": "SFP",
+          "role": "institution",
+          "title": "Secretaría de la Función Pública",
+          "note": "Found no conflict of interest (Aug 2015)"
+        }
+      ],
+      "sources": [
+        {
+          "title": "La casa blanca de Enrique Peña Nieto (investigación especial)",
+          "outlet": "Aristegui Noticias",
+          "date": "2014-11-09",
+          "type": "journalism",
+          "url": "https://aristeguinoticias.com/0911/mexico/la-casa-blanca-de-enrique-pena-nieto/"
+        },
+        {
+          "title": "México: exculpan a Peña Nieto por el caso Casa Blanca",
+          "outlet": "BBC Mundo",
+          "date": "2015-08-21",
+          "type": "journalism",
+          "url": "https://www.bbc.com/mundo/noticias/2015/08/150821_mexico_investigacion_conflicto_interes_pena_nieto_casa_jp"
+        }
+      ],
+      "ground_truth_case_id": 6,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Oceanografía–Banamex invoice case",
+      "name_es": "Caso Oceanografía–Banamex",
+      "slug": "oceanografia-pemex-fraud",
+      "fraud_type": "invoice_fraud",
+      "administration": "multiple",
+      "sector_id": 4,
+      "sector_ids": [
+        4
+      ],
+      "contract_year_start": 2003,
+      "contract_year_end": 2013,
+      "discovery_year": 2014,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "Alleged fraud of about USD 400 million against Banamex (El País, 2025). Not converted to MXN.",
+      "severity": 3,
+      "legal_status": "unresolved",
+      "legal_status_note": "No final criminal judgment reported in the cited source; civil litigation against Citigroup continuing as of 2025.",
+      "compranet_visibility": "partial",
+      "compranet_note": "Offshore marine services contracts partially visible; subsidiary and subcontract layer obscures full picture",
+      "summary_en": "On 28 February 2014 federal authorities seized Oceanografía, one of PEMEX's main offshore-services contractors, after Banamex (Citigroup) reported that invoices used to obtain advances against PEMEX contracts had been falsified, an alleged fraud of about USD 400 million. The company went through bankruptcy and its owner spent more than two years in prison. The case remains contested: litigation by the company and its creditors against Citigroup was still under way in Mexico and Florida in 2025.",
+      "summary_es": "El 28 de febrero de 2014 las autoridades federales aseguraron Oceanografía, uno de los principales contratistas de servicios costa afuera de PEMEX, después de que Banamex (Citigroup) denunció la falsificación de facturas con las que obtenía adelantos sobre contratos de PEMEX, un presunto fraude de unos 400 millones de dólares. La empresa fue a quiebra y su dueño pasó más de dos años en prisión. El caso sigue en disputa: en 2025 continuaban litigios de la empresa y sus acreedores contra Citigroup en México y Florida.",
+      "key_actors": [
+        {
+          "name": "Oceanografía SA de CV",
+          "role": "vendor",
+          "title": "Contratista de servicios costa afuera de PEMEX",
+          "note": "Seized in 2014; bankrupt"
+        },
+        {
+          "name": "Banamex / Citigroup",
+          "role": "institution",
+          "title": "Banco",
+          "note": "Reported the alleged invoice fraud (2014)"
+        },
+        {
+          "name": "PEMEX",
+          "role": "institution",
+          "title": "Petróleos Mexicanos",
+          "note": "Contracting entity"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Un nuevo juicio millonario por el caso Oceanografía entorpece (aún más) la venta de Banamex",
+          "outlet": "El País",
+          "date": "2025-06-22",
+          "type": "journalism",
+          "url": "https://elpais.com/mexico/2025-06-22/un-nuevo-juicio-millonario-por-el-caso-oceanografia-entorpece-aun-mas-la-venta-de-banamex.html"
+        }
+      ],
+      "ground_truth_case_id": 7,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "PEMEX – Emilio Lozoya bribery case",
+      "name_es": "PEMEX – caso de sobornos de Emilio Lozoya",
+      "slug": "pemex-emilio-lozoya",
+      "fraud_type": "bribery",
+      "administration": "epn",
+      "sector_id": 4,
+      "sector_ids": [
+        4,
+        7
+      ],
+      "contract_year_start": 2012,
+      "contract_year_end": 2018,
+      "discovery_year": 2020,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "No sourced MXN total. Odebrecht's admitted Mexican bribes were about USD 10.5 million (see Odebrecht case).",
+      "severity": 4,
+      "legal_status": "prosecuted",
+      "legal_status_note": "On trial; no verdict as of the latest cited source (Feb 2024).",
+      "compranet_visibility": "low",
+      "compranet_note": "Bribery payments occurred outside COMPRANET; underlying contracts have partial visibility through PEMEX subsidiaries",
+      "summary_en": "Emilio Lozoya Austin, PEMEX's director general from 2012 to 2016, was arrested in Spain and returned to Mexico in 2020. In July 2020 a federal judge ordered him to stand trial for bribery, criminal association and money laundering, citing evidence that accounts he controlled received funds from an Odebrecht front company. A separate case concerns PEMEX's purchase of the Agro Nitrogenados plant. Talks on a reparation agreement in the Odebrecht case failed in 2023 and the FGR sought a 46-year sentence; in February 2024 he was moved from pre-trial detention to house arrest.",
+      "summary_es": "Emilio Lozoya Austin, director general de PEMEX de 2012 a 2016, fue detenido en España y entregado a México en 2020. En julio de 2020 un juez federal lo vinculó a proceso por cohecho, asociación delictuosa y operaciones con recursos de procedencia ilícita, con pruebas de que cuentas bajo su control recibieron fondos de una empresa fachada de Odebrecht. Un caso separado se refiere a la compra de la planta Agro Nitrogenados por PEMEX. En 2023 fracasó el acuerdo reparatorio en el caso Odebrecht y la FGR pidió 46 años de prisión; en febrero de 2024 pasó de prisión preventiva a prisión domiciliaria.",
+      "key_actors": [
+        {
+          "name": "Emilio Lozoya Austin",
+          "role": "official",
+          "title": "Director General de PEMEX 2012-2016",
+          "note": "Ordered to stand trial (July 2020); no verdict as of Feb 2024"
+        },
+        {
+          "name": "FGR",
+          "role": "institution",
+          "title": "Fiscalía General de la República",
+          "note": "Prosecuting authority"
+        },
+        {
+          "name": "PEMEX",
+          "role": "institution",
+          "title": "Petróleos Mexicanos",
+          "note": "State-owned company"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Vinculan a proceso a Emilio Lozoya; no irá a prisión y usará brazalete",
+          "outlet": "Proceso",
+          "date": "2020-07-28",
+          "type": "journalism",
+          "url": "https://www.proceso.com.mx/nacional/2020/7/28/vinculan-proceso-emilio-lozoya-no-ira-prision-usara-brazalete-246823.html"
+        },
+        {
+          "title": "Emilio Lozoya irá a juicio tras no llegar a acuerdo por caso Odebrecht",
+          "outlet": "El Financiero",
+          "date": "2023-03-10",
+          "type": "journalism",
+          "url": "https://www.elfinanciero.com.mx/nacional/2023/03/10/emilio-lozoya-ira-a-juicio-tras-no-llegar-a-acuerdo-por-caso-odebrecht/"
+        },
+        {
+          "title": "Emilio Lozoya abandona el Reclusorio Norte",
+          "outlet": "24 Horas",
+          "date": "2024-02-20",
+          "type": "journalism",
+          "url": "https://www.24-horas.mx/2024/02/20/emilio-lozoya-abandona-el-reclusorio-norte/"
+        }
+      ],
+      "ground_truth_case_id": 9,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Línea 12 Metro collapse – construction defects",
+      "name_es": "Colapso de la Línea 12 del Metro – fallas de construcción",
+      "slug": "linea-12-metro-collapse",
+      "fraud_type": "infrastructure_overrun",
+      "administration": "multiple",
+      "sector_id": 3,
+      "sector_ids": [
+        3
+      ],
+      "contract_year_start": 2008,
+      "contract_year_end": 2012,
+      "discovery_year": 2021,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "No sourced fraud amount; the earlier MXN 26.6 billion figure was the project cost, not a loss.",
+      "severity": 3,
+      "legal_status": "prosecuted",
+      "legal_status_note": "FGJCDMX charges (2021) for culpable homicide, injuries and damage to property; no fraud charges.",
+      "compranet_visibility": "none",
+      "compranet_note": "CDMX (Mexico City government) procurement does not appear in federal COMPRANET; city uses Sistema de Adquisiciones CDMX",
+      "summary_en": "On 3 May 2021 an elevated section of Mexico City's Metro Line 12, built in 2008–2012 by a consortium of ICA, Carso (CICSA) and Alstom, collapsed, killing 26 people. The preliminary report by DNV, commissioned by the city government, found missing studs, incomplete welds and different types of concrete in the beams. Mexico City prosecutors charged eight people and two company representatives with culpable homicide, injuries and damage to property. The charges concern construction and supervision failures, not procurement fraud.",
+      "summary_es": "El 3 de mayo de 2021 colapsó un tramo elevado de la Línea 12 del Metro de la Ciudad de México, construida entre 2008 y 2012 por un consorcio de ICA, Carso (CICSA) y Alstom; murieron 26 personas. El peritaje preliminar de DNV, contratado por el gobierno capitalino, encontró pernos faltantes, soldaduras incompletas y distintos tipos de concreto en las trabes. La Fiscalía capitalina imputó a ocho personas y a dos representantes de personas morales por homicidio, lesiones y daño a la propiedad culposos. Los cargos se refieren a fallas de construcción y supervisión, no a fraude en la contratación.",
+      "key_actors": [
+        {
+          "name": "Consorcio ICA – Carso (CICSA) – Alstom",
+          "role": "vendor",
+          "title": "Constructores de la Línea 12",
+          "note": "Construction consortium"
+        },
+        {
+          "name": "Gobierno de la Ciudad de México / FGJCDMX",
+          "role": "institution",
+          "title": "Contratante y fiscalía local",
+          "note": "Commissioned the DNV report; brought charges"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Línea 12 de metro: las primeras conclusiones sobre las causas del accidente",
+          "outlet": "BBC Mundo",
+          "date": "2021-06-16",
+          "type": "journalism",
+          "url": "https://www.bbc.com/mundo/noticias-america-latina-57506096"
+        },
+        {
+          "title": "FGJCDMX imputará a 10 personas por accidente en la Línea 12 del Metro",
+          "outlet": "Once Noticias",
+          "date": "2021",
+          "type": "journalism",
+          "url": "https://oncenoticias.digital/valle-de-mexico/fgjcdmx-imputara-a-10-personas-por-accidente-en-la-linea-12-del-metro/104938/"
+        }
+      ],
+      "ground_truth_case_id": 1388,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "PEMEX purchases of Fertinal and Agro Nitrogenados",
+      "name_es": "Compras de Fertinal y Agro Nitrogenados por PEMEX",
+      "slug": "fertinal-pemex-acquisition",
+      "fraud_type": "overpricing",
+      "administration": "epn",
+      "sector_id": 4,
+      "sector_ids": [
+        4,
+        9
+      ],
+      "contract_year_start": 2016,
+      "contract_year_end": 2016,
+      "discovery_year": 2017,
+      "amount_mxn_low": 4000000000.0,
+      "amount_mxn_high": null,
+      "amount_note": "PEMEX acknowledged a MXN 4,000 million overprice on Fertinal (Proceso, 2019, on ASF findings). PEMEX spent MXN 26,564 million on both purchases.",
+      "severity": 2,
+      "legal_status": "prosecuted",
+      "legal_status_note": "Agro Nitrogenados is part of the FGR case against Lozoya (trial pending); AHMSA's former owner agreed to repay USD 216 million. No separate charges over Fertinal reported in the cited sources.",
+      "compranet_visibility": "low",
+      "compranet_note": "Corporate acquisition through PEMEX board decision; not a standard procurement contract in COMPRANET",
+      "summary_en": "Under director general Emilio Lozoya, PEMEX bought the long-idle Agro Nitrogenados fertilizer plant from Altos Hornos de México (AHMSA) in 2014 and later bought Grupo Fertinal for USD 635 million, including USD 406 million of debt. The Auditoría Superior de la Federación judged much of the Agro Nitrogenados machinery to be scrap, and PEMEX acknowledged paying an overprice of MXN 4,000 million for Fertinal. Both units kept generating losses into the 2020s. The Agro Nitrogenados purchase is part of the criminal case against Lozoya; AHMSA's then-owner was arrested and avoided prison by promising to repay USD 216 million.",
+      "summary_es": "Bajo la dirección de Emilio Lozoya, PEMEX compró en 2014 a Altos Hornos de México (AHMSA) la planta de fertilizantes Agro Nitrogenados, inactiva desde hacía años, y después adquirió Grupo Fertinal por 635 millones de dólares, incluidos 406 millones de deuda. La Auditoría Superior de la Federación calificó como chatarra buena parte de la maquinaria de Agro Nitrogenados, y PEMEX reconoció un sobreprecio de 4,000 millones de pesos en la compra de Fertinal. Ambas empresas siguieron generando pérdidas en la década de 2020. La compra de Agro Nitrogenados forma parte del proceso penal contra Lozoya; el entonces dueño de AHMSA fue detenido y evitó la cárcel con la promesa de reembolsar 216 millones de dólares.",
+      "key_actors": [
+        {
+          "name": "PEMEX",
+          "role": "institution",
+          "title": "Petróleos Mexicanos",
+          "note": "Buyer"
+        },
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        },
+        {
+          "name": "Emilio Lozoya Austin",
+          "role": "official",
+          "title": "Director General de PEMEX 2012-2016",
+          "note": "On trial; see Lozoya case"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Pemex recompró chatarra... y a sobreprecio; la historia de Agronitrogenados y Fertinal",
+          "outlet": "Proceso",
+          "date": "2019-02-25",
+          "type": "journalism",
+          "url": "https://www.proceso.com.mx/reportajes/2019/2/25/pemex-recompro-chatarra-sobreprecio-la-historia-de-agronitrogenados-fertinal-220744.html"
+        },
+        {
+          "title": "Con AMLO continuaron los desfalcos de Fertinal y Agronitrogenados",
+          "outlet": "Proceso",
+          "date": "2025-02-20",
+          "type": "journalism",
+          "url": "https://www.proceso.com.mx/nacional/2025/2/20/con-amlo-continuaron-los-desfalcos-de-fertinal-agronitrogenados-344406.html"
+        }
+      ],
+      "ground_truth_case_id": 9,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Enciclomedia – ASF audit findings",
+      "name_es": "Enciclomedia – observaciones de la ASF",
+      "slug": "enciclomedia-sep",
+      "fraud_type": "overpricing",
+      "administration": "fox",
+      "sector_id": 2,
+      "sector_ids": [
+        2
+      ],
+      "contract_year_start": 2003,
+      "contract_year_end": 2006,
+      "discovery_year": 2006,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "ASF: more than MXN 24,000 million invested over five years (spending, not a loss figure).",
+      "severity": 3,
+      "legal_status": "unresolved",
+      "legal_status_note": "ASF requested administrative sanctions (2014); no criminal case reported in the cited source.",
+      "compranet_visibility": "partial",
+      "compranet_note": "SEP contracts from this era (Structure A) have very low data quality; COMPRANET coverage minimal for 2003-2006",
+      "summary_en": "Enciclomedia, the Fox administration's program to equip primary-school classrooms with computers, electronic whiteboards and projectors, was audited repeatedly by the Auditoría Superior de la Federación, which reported more than MXN 24,000 million invested in equipment over five years and numerous irregularities. In a 2014 follow-up the ASF found equipment relegated to office use in state governments and asked the SEP to sanction the officials responsible.",
+      "summary_es": "Enciclomedia, el programa del gobierno de Fox para equipar aulas de primaria con computadoras, pizarrones electrónicos y proyectores, fue auditado en varias ocasiones por la Auditoría Superior de la Federación, que reportó más de 24 mil millones de pesos invertidos en equipos en cinco años y numerosas irregularidades. En un seguimiento de 2014 la ASF encontró equipos destinados a uso de oficina en gobiernos estatales y pidió a la SEP sancionar a los funcionarios responsables.",
+      "key_actors": [
+        {
+          "name": "SEP",
+          "role": "institution",
+          "title": "Secretaría de Educación Pública",
+          "note": "Program owner"
+        },
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Enciclomedia, relegado a uso de oficina: ASF",
+          "outlet": "El Universal",
+          "date": "2014-02-20",
+          "type": "journalism",
+          "url": "https://archivo.eluniversal.com.mx/nacion-mexico/2014/impreso/enciclomedia-relegado-a-uso-de-oficina-asf-213273.html"
+        }
+      ],
+      "ground_truth_case_id": 1391,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Tren Maya – ASF audit findings at FONATUR",
+      "name_es": "Tren Maya – observaciones de la ASF a FONATUR",
+      "slug": "tren-maya-fonatur",
+      "fraud_type": "bid_rigging",
+      "administration": "amlo",
+      "sector_id": 3,
+      "sector_ids": [
+        3,
+        10
+      ],
+      "contract_year_start": 2019,
+      "contract_year_end": 2023,
+      "discovery_year": 2022,
+      "amount_mxn_low": 1736000000.0,
+      "amount_mxn_high": null,
+      "amount_note": "ASF observations pending justification for the 2019-2021 accounts, MXN 1,736 million (MCCI, Feb 2023). Observations, not determined damage.",
+      "severity": 3,
+      "legal_status": "unresolved",
+      "legal_status_note": "ASF observations pending clarification; no criminal case cited.",
+      "compranet_visibility": "partial",
+      "compranet_note": "FONATUR and SEDENA construction segments have different transparency levels; civilian FONATUR contracts visible, SEDENA segments exempt",
+      "summary_en": "In its reviews of the 2019–2021 public accounts the Auditoría Superior de la Federación promoted 286 actions against FONATUR and its subsidiary Fonatur Tren Maya over the Tren Maya works, for MXN 1,823 million, including overpayments to contractors and land bought and then left unused after route changes; MCCI reported in February 2023 that MXN 1,736 million remained to be justified. Later reviews found further overpayments: more than MXN 700 million to clarify in the 2022 account and MXN 87.8 million in the 2024 account. ASF observations are not final determinations of damage.",
+      "summary_es": "En sus revisiones de las Cuentas Públicas 2019 a 2021 la Auditoría Superior de la Federación promovió 286 acciones contra FONATUR y su filial Fonatur Tren Maya por las obras del Tren Maya, por 1,823 millones de pesos, entre ellas pagos en exceso a contratistas y predios comprados que quedaron sin uso por cambios de trazo; MCCI reportó en febrero de 2023 que faltaban por justificar 1,736 millones. Revisiones posteriores hallaron más pagos en exceso: más de 700 millones por aclarar en la Cuenta Pública 2022 y 87.8 millones en la de 2024. Las observaciones de la ASF no son determinaciones definitivas de daño.",
+      "key_actors": [
+        {
+          "name": "FONATUR / Fonatur Tren Maya",
+          "role": "institution",
+          "title": "Fondo Nacional de Fomento al Turismo",
+          "note": "Audited entity"
+        },
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Fonatur debe justificar 1,700 millones en anomalías del Tren Maya",
+          "outlet": "MCCI",
+          "date": "2023-02-21",
+          "type": "journalism",
+          "url": "https://contralacorrupcion.mx/asf-exhibe-anomalias-por-1399-mdp-en-obras-del-tren-maya/"
+        },
+        {
+          "title": "Tren Maya: pagos en exceso, sin vigilancia ambiental y con más de 700 mdp por aclarar ante la ASF",
+          "outlet": "Animal Político",
+          "date": "2024-02-20",
+          "type": "journalism",
+          "url": "https://grupoanimal.mx/politica/tren-maya-pagos-en-exceso-700-mdp-por-aclarar"
+        },
+        {
+          "title": "ASF detecta pagos en exceso por 87.8 mdp en Tren Maya",
+          "outlet": "El Universal",
+          "date": "2026-02-17",
+          "type": "journalism",
+          "url": "https://www.eluniversal.com.mx/cartera/asf-detecta-pagos-en-exceso-por-878-mdp-en-tren-maya-irregularidades-se-concentran-en-el-tramo-4/"
+        }
+      ],
+      "ground_truth_case_id": 1395,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "INSABI Medical Supply Chain Collapse",
+      "name_es": "Colapso de Abasto de Medicamentos INSABI",
+      "slug": "insabi-medicine-collapse",
+      "fraud_type": "overpricing",
+      "administration": "amlo",
+      "sector_id": 1,
+      "sector_ids": [
+        1
+      ],
+      "contract_year_start": 2020,
+      "contract_year_end": 2022,
+      "discovery_year": 2021,
+      "amount_mxn_low": 751811000.0,
+      "amount_mxn_high": null,
+      "amount_note": "ASF, 2021 account: MXN 940.8 million irregular in the oncology consolidated purchase, MXN 751.8 million still unaccounted for.",
+      "severity": 3,
+      "legal_status": "unresolved",
+      "legal_status_note": "ASF observations (2021 account); no criminal case cited.",
+      "compranet_visibility": "high",
+      "compranet_note": "Emergency contracts fully in COMPRANET; concentration and price anomalies clearly detectable",
+      "summary_en": "INSABI, created in 2020 to replace Seguro Popular and centralise medicine purchasing, was abolished by Congress in April 2023 and folded into IMSS-Bienestar after nationwide medicine shortages; in July 2024 President López Obrador acknowledged that the model had not worked. Auditing the 2021 consolidated purchase of cancer medicines run with UNOPS, the Auditoría Superior de la Federación reported irregularities of MXN 940.8 million, of which MXN 751.8 million remained unaccounted for, and found that by 31 March 2021 only 1.1% of the priority pieces requested had been delivered.",
+      "summary_es": "El INSABI, creado en 2020 para sustituir al Seguro Popular y centralizar la compra de medicamentos, fue extinguido por el Congreso en abril de 2023 e integrado al IMSS-Bienestar tras el desabasto nacional; en julio de 2024 el presidente López Obrador reconoció que el modelo no funcionó. Al auditar la compra consolidada de medicamentos oncológicos de 2021, operada con UNOPS, la Auditoría Superior de la Federación reportó irregularidades por 940.8 millones de pesos, de los que 751.8 millones seguían sin aclarar, y encontró que al 31 de marzo de 2021 solo se había entregado el 1.1% de las piezas prioritarias solicitadas.",
+      "key_actors": [
+        {
+          "name": "INSABI",
+          "role": "institution",
+          "title": "Instituto de Salud para el Bienestar (2020-2023)",
+          "note": "Consolidating buyer"
+        },
+        {
+          "name": "UNOPS",
+          "role": "institution",
+          "title": "Oficina de las Naciones Unidas de Servicios para Proyectos",
+          "note": "Ran the 2021 consolidated purchase"
+        },
+        {
+          "name": "ASF",
+          "role": "institution",
+          "title": "Auditoría Superior de la Federación",
+          "note": "Federal auditor"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Sin aclarar, 751 mdp del Insabi en compra de medicamentos para el cáncer: ASF",
+          "outlet": "El Financiero",
+          "date": "2023-02-20",
+          "type": "journalism",
+          "url": "https://www.elfinanciero.com.mx/nacional/2023/02/20/sin-aclarar-751-mdp-del-insabi-en-compra-de-medicamentos-para-el-cancer-asf/"
+        },
+        {
+          "title": "AMLO reconoce fallas en el Insabi: No funcionó lo que teníamos pensado",
+          "outlet": "Infobae",
+          "date": "2024-07-10",
+          "type": "journalism",
+          "url": "https://www.infobae.com/mexico/2024/07/10/amlo-reconoce-fallas-en-el-insabi-no-funciono-lo-que-teniamos-pensado/"
+        }
+      ],
+      "ground_truth_case_id": 1396,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "García Luna-linked public-security contracts",
+      "name_es": "Contratos de seguridad pública vinculados a García Luna",
+      "slug": "ssp-police-equipment-calderon",
+      "fraud_type": "overpricing",
+      "administration": "calderon",
+      "sector_id": 8,
+      "sector_ids": [
+        8
+      ],
+      "contract_year_start": 2006,
+      "contract_year_end": 2012,
+      "discovery_year": 2012,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "Mexican government alleges USD 745.9 million extracted from 30 contracts; Florida civil judgments of about USD 2,488 million (2025) and USD 578 million (2026). Not converted to MXN.",
+      "severity": 3,
+      "legal_status": "convicted",
+      "legal_status_note": "US criminal conviction (2023) is for drug trafficking, not procurement; procurement findings are civil judgments in Florida (May 2025, May 2026).",
+      "compranet_visibility": "partial",
+      "compranet_note": "Security equipment contracts have limited COMPRANET disclosure; classified items further reduce visibility",
+      "summary_en": "Genaro García Luna, Secretary of Public Security in 2006–2012, was convicted in New York in February 2023 of drug-trafficking conspiracy and other charges and sentenced to 38 years in October 2024, a case separate from procurement. Mexico's Financial Intelligence Unit sued in Florida in 2021, alleging that a business group linked to him obtained 30 contracts with public-security agencies from which USD 745.9 million were extracted. In May 2025 a Miami court ordered García Luna and his wife to pay about USD 2,488 million; in May 2026 it ordered associated businesspeople and companies to pay more than USD 578 million.",
+      "summary_es": "Genaro García Luna, secretario de Seguridad Pública de 2006 a 2012, fue declarado culpable en Nueva York en febrero de 2023 por narcotráfico y otros cargos y sentenciado a 38 años en octubre de 2024, un caso distinto al de las contrataciones. La Unidad de Inteligencia Financiera demandó en Florida en 2021 por la vía civil, al sostener que un grupo empresarial vinculado a él obtuvo 30 contratos con organismos de seguridad pública de los que se extrajeron 745.9 millones de dólares. En mayo de 2025 un tribunal de Miami condenó a García Luna y a su esposa a pagar unos 2,488 millones de dólares; en mayo de 2026 condenó a empresarios y empresas relacionados a pagar más de 578 millones de dólares.",
+      "key_actors": [
+        {
+          "name": "Genaro García Luna",
+          "role": "official",
+          "title": "Secretario de Seguridad Pública 2006-2012",
+          "note": "Convicted in the US (2023); civil judgment in Florida (2025)"
+        },
+        {
+          "name": "UIF",
+          "role": "institution",
+          "title": "Unidad de Inteligencia Financiera (SHCP)",
+          "note": "Plaintiff in the Florida civil suit"
+        },
+        {
+          "name": "SSP",
+          "role": "institution",
+          "title": "Secretaría de Seguridad Pública",
+          "note": "Contracting agency"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Genaro García Luna, sentenciado a 38 años de cárcel por narcotráfico y delincuencia organizada",
+          "outlet": "El País",
+          "date": "2024-10-16",
+          "type": "journalism",
+          "url": "https://elpais.com/mexico/2024-10-16/genaro-garcia-luna-sentenciado-a-38-anos-de-carcel-por-narcotrafico-y-delincuencia-organizada.html"
+        },
+        {
+          "title": "Dictan sentencia a García Luna y su esposa en Miami",
+          "outlet": "El Economista",
+          "date": "2025-05-22",
+          "type": "journalism",
+          "url": "https://www.eleconomista.com.mx/politica/dictan-sentencia-garcia-luna-esposa-miami-deberan-pagar-2-500-millones-dolares-fraude-gobierno-mexico-20250522-760277.html"
+        },
+        {
+          "title": "El Gobierno de México recuperará 578 millones de dólares de la trama de corrupción de García Luna",
+          "outlet": "El País",
+          "date": "2026-05-20",
+          "type": "journalism",
+          "url": "https://elpais.com/mexico/2026-05-20/el-gobierno-de-mexico-recuperara-578-millones-de-dolares-de-la-trama-de-corrupcion-de-garcia-luna.html"
+        }
+      ],
+      "ground_truth_case_id": 1397,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    },
+    {
+      "name_en": "Pegasus spyware contracts",
+      "name_es": "Contratos del software espía Pegasus",
+      "slug": "cisen-pegasus-surveillance",
+      "fraud_type": "overpricing",
+      "administration": "epn",
+      "sector_id": 8,
+      "sector_ids": [
+        8
+      ],
+      "contract_year_start": 2013,
+      "contract_year_end": 2018,
+      "discovery_year": 2017,
+      "amount_mxn_low": null,
+      "amount_mxn_high": null,
+      "amount_note": "Contract value MXN 1,970 million (SSPC, 2021); this is spending, not a determined loss.",
+      "severity": 2,
+      "legal_status": "unresolved",
+      "legal_status_note": "Contracts disclosed by the SSPC (2021); no procurement-related conviction in the cited sources.",
+      "compranet_visibility": "none",
+      "compranet_note": "Intelligence procurement classified under national security; no COMPRANET disclosure",
+      "summary_en": "In July 2021 the Secretaría de Seguridad y Protección Ciudadana reported finding 31 contracts, worth MXN 1,970 million (about USD 61 million), signed with companies linked to NSO Group, maker of the Pegasus spyware, for software, hardware, licences and maintenance. In 2017 Citizen Lab had documented more than 76 messages carrying links to NSO's exploit infrastructure sent to Mexican journalists, lawyers and others, including a child. No procurement-related conviction is cited here.",
+      "summary_es": "En julio de 2021 la Secretaría de Seguridad y Protección Ciudadana informó haber encontrado 31 contratos, por 1,970 millones de pesos (unos 61 millones de dólares), firmados con empresas vinculadas a NSO Group, fabricante del software espía Pegasus, para software, hardware, licencias y mantenimiento. En 2017 Citizen Lab documentó más de 76 mensajes con enlaces a la infraestructura de NSO enviados a periodistas, abogados y otras personas en México, incluido un menor. No se cita aquí ninguna condena relacionada con las contrataciones.",
+      "key_actors": [
+        {
+          "name": "SSPC",
+          "role": "institution",
+          "title": "Secretaría de Seguridad y Protección Ciudadana",
+          "note": "Disclosed the 31 contracts (2021)"
+        },
+        {
+          "name": "NSO Group",
+          "role": "vendor",
+          "title": "Fabricante de Pegasus",
+          "note": "Contracts signed with companies linked to it"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Encuentran 31 contratos relacionados con software espía Pegasus",
+          "outlet": "Forbes México",
+          "date": "2021-07-28",
+          "type": "journalism",
+          "url": "https://forbes.com.mx/encuentran-31-contratos-relacionados-con-software-espia-pegasus/"
+        },
+        {
+          "title": "Reckless Exploit: Mexican Journalists, Lawyers, and a Child Targeted with NSO Spyware",
+          "outlet": "Citizen Lab",
+          "date": "2017-06-19",
+          "type": "report",
+          "url": "https://citizenlab.ca/research/reckless-exploit-mexico-nso/"
+        }
+      ],
+      "ground_truth_case_id": 1406,
+      "investigation_case_ids": [],
+      "is_verified": 1
+    }
+  ]
+}

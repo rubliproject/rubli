@@ -1,0 +1,10 @@
+{
+  "risk_pyramid": {
+    "callout": "Critical-risk contracts average 21.8M MXN — 14x larger than low-risk contracts (1.6M MXN avg). The most suspicious contracts involve the most money."
+  },
+  "sector_paradox": {
+    "callout": "Competition rates alone don't predict corruption. What matters is vendor concentration, price manipulation, and network relationships — not the procurement procedure type.",
+    "annotation_ag": "93% direct awards, only 2% high-risk",
+    "annotation_salud": "3.1T MXN, highest risk"
+  }
+}

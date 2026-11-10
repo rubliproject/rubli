@@ -1,0 +1,157 @@
+import { defineConfig, loadEnv } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
+import checker from 'vite-plugin-checker'
+import { compression } from 'vite-plugin-compression2'
+
+const isProduction = process.env.NODE_ENV === 'production'
+
+// https://vite.dev/config/
+export default defineConfig(({ mode }) => {
+  // loadEnv reads .env, .env.local, .env.<mode>, .env.<mode>.local from
+  // the project root and returns the merged set. process.env alone misses
+  // .env.local, which is the gitignored file devs use to override the API
+  // proxy target (e.g. point local frontend at https://rubli.xyz when the
+  // local uvicorn is empty or unavailable).
+  const env = loadEnv(mode, process.cwd(), '')
+
+  // API target: env var for Docker / .env.local override, fall back to
+  // localhost. 127.0.0.1 avoids the ~2s Windows DNS delay vs "localhost".
+  const API_TARGET = env.VITE_API_URL || process.env.VITE_API_URL || 'http://127.0.0.1:8001'
+
+  return {
+  plugins: [
+    // SWC-based React transform — ~10x faster HMR than Babel
+    react(),
+
+    // TypeScript errors shown as browser overlay during dev (non-blocking)
+    checker({
+      typescript: true,
+      enableBuild: false, // don't block prod builds; tsc -b already runs in "build" script
+    }),
+
+    // Bundle size visualizer — writes bundle-stats.html after every production build.
+    // Outside dist/ (SECURITY_HARDENING_2026-10-28 § 3): in dist it shipped to prod as a public
+    // 2.4 MB /stats.html listing every source path, with an inline <script> the CSP now blocks.
+    isProduction &&
+      visualizer({
+        filename: 'bundle-stats.html',
+        open: false,
+        gzipSize: true,
+        brotliSize: true,
+        template: 'treemap',
+      }),
+
+    // Pre-compress all JS/CSS/JSON assets with gzip during build.
+    // Nginx serves the .gz files directly (gzip_static on) — zero per-request CPU cost.
+    isProduction &&
+      compression({
+        algorithms: ['gzip'],
+        exclude: [/\.(html|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/],
+        threshold: 1024, // Only compress files > 1KB
+      }),
+
+  ],
+  server: {
+    port: 3009,
+    strictPort: true,
+    host: true, // Allow external connections (needed for Docker)
+    proxy: {
+      '/api/': {
+        target: API_TARGET,
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    target: 'esnext', // Modern browsers for smaller bundle
+    sourcemap: false, // Disable sourcemaps in production
+    minify: 'esbuild', // Fast minification
+    chunkSizeWarningLimit: 1200, // VendorProfile/StoryNarrative are ~150KB — expected
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React + routing
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          // Recharts — used across many chart components
+          'vendor-recharts': ['recharts'],
+          // D3 modules the Atlas sky engine imports directly. Listed here so
+          // they get their own chunk: left alone they are folded into
+          // vendor-recharts (recharts depends on d3-interpolate & co.) and
+          // /atlas downloads all of recharts to get d3-zoom. (PERF launch § 4)
+          'vendor-d3': [
+            'd3-selection', 'd3-zoom', 'd3-quadtree',
+            // d3-zoom's own deps, spelled out: recharts shares d3-interpolate/d3-color
+            // and would otherwise claim them (and with them this chunk's imports).
+            'd3-interpolate', 'd3-color', 'd3-transition', 'd3-ease', 'd3-timer', 'd3-dispatch', 'd3-drag',
+          ],
+          // TanStack family - used across many pages
+          'vendor-tanstack': [
+            '@tanstack/react-query',
+            '@tanstack/react-table',
+            '@tanstack/react-virtual',
+          ],
+          // UI library components
+          'vendor-radix': [
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-progress',
+            '@radix-ui/react-scroll-area',
+            '@radix-ui/react-select',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+          ],
+          // Slot (+ compose-refs) on its own: the root ErrorBoundary's Button needs it, and inside
+          // vendor-radix it pulled all of Radix onto every first paint (launch audit 2026-10-28 S1).
+          'vendor-radix-slot': ['@radix-ui/react-slot', '@radix-ui/react-compose-refs'],
+          // i18n
+          'vendor-i18n': ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
+          // Command palette
+          'vendor-cmdk': ['cmdk'],
+          // URL state
+          'vendor-nuqs': ['nuqs'],
+          // Utilities
+          'vendor-utils': [
+            'axios',
+            'clsx',
+            'tailwind-merge',
+            'class-variance-authority',
+            'zustand',
+            'html-to-image',
+          ],
+          // Icons - often large
+          'vendor-icons': ['lucide-react'],
+          // Framer Motion — used by RedThread and editorial components
+          'vendor-motion': ['framer-motion'],
+          // three.js — only the lazy motion kit (components/kit/motion) imports it; never in the initial chunk
+          'vendor-three': ['three'],
+          // ECharts — used by echarts-for-react components
+          'vendor-echarts': ['echarts', 'echarts-for-react'],
+        },
+      },
+    },
+  },
+  // Optimize dependencies for faster dev server
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      '@tanstack/react-table',
+      '@tanstack/react-virtual',
+      'recharts',
+      'axios',
+      'lucide-react',
+    ],
+  },
+  }
+})

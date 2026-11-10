@@ -1,0 +1,122 @@
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './i18n' // Must be imported before App
+import './index.css'
+import './lib/theme' // sets <html data-theme> before the first render (DESIGN.md §6.7)
+import App from './App.tsx'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { BUILD_ID } from './lib/constants'
+
+// Surface the build ID at runtime so bumping it actually changes the bundle
+// content hash. Without a runtime reference, Vite tree-shakes the export
+// and the bundle hash never changes — defeating the cache-bust intent.
+console.info(`%c[RUBLI] build ${BUILD_ID}`, 'color:#a06820;font-weight:bold')
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stale-chunk recovery
+//
+// Every Vite production build generates new content-hashed chunk filenames
+// (e.g. Watchlist-baTb_uiZ.js). When we deploy, the old hashes are gone but
+// a user's cached index.html may still reference them — so route-level
+// dynamic imports 404 with "Failed to fetch dynamically imported module."
+//
+// The fix: catch the failure and reload the document. The reload pulls a
+// fresh index.html with valid chunk hashes. Guarded by sessionStorage so
+// we never enter an infinite-reload loop if the failure is real.
+// ─────────────────────────────────────────────────────────────────────────────
+const RELOAD_GUARD_KEY = 'rubli_chunk_reload_at'
+
+function isChunkLoadError(message: string): boolean {
+  return (
+    /Failed to fetch dynamically imported module/i.test(message) ||
+    /Loading chunk \d+ failed/i.test(message) ||
+    /Importing a module script failed/i.test(message)
+  )
+}
+
+function recoverFromChunkError(reason: string) {
+  // Offline, a reload lands on the browser's own offline page (launch audit 2026-10-28 S5): there is no
+  // service worker to serve the document. Stay put, keep what has loaded, and let ErrorBoundary say why.
+  if (!navigator.onLine) return false
+  const last = Number(sessionStorage.getItem(RELOAD_GUARD_KEY) ?? '0')
+  // Don't reload more than once per 30 seconds — if a fresh page still
+  // fails, the issue isn't stale chunks and the user should see the error.
+  if (Date.now() - last < 30_000) return false
+  sessionStorage.setItem(RELOAD_GUARD_KEY, String(Date.now()))
+  console.warn(`[chunk-recovery] reloading: ${reason}`)
+  window.location.reload()
+  return true
+}
+
+// Vite emits this custom event for module-preload failures.
+window.addEventListener('vite:preloadError', (event) => {
+  recoverFromChunkError('vite:preloadError')
+  event.preventDefault()
+})
+
+// Also catch unhandled rejections — dynamic-import promises that reject.
+window.addEventListener('unhandledrejection', (event) => {
+  const msg = String(event.reason?.message ?? event.reason ?? '')
+  if (isChunkLoadError(msg)) {
+    if (recoverFromChunkError('unhandledrejection: ' + msg.slice(0, 80))) {
+      event.preventDefault()
+    }
+  }
+})
+
+// 2026-05-11: catch the "Cannot read properties of undefined (reading 'default')"
+// TypeError raised during module evaluation. This happens when a vendor chunk
+// (most commonly vendor-i18n) loads successfully but its export-resolution
+// runs against a stale module graph — the imported `.default` is undefined
+// and the next access throws. ErrorBoundary can't catch this because it
+// fires before any React component renders.
+//
+// 26 hits in the latest 35h harness all match this pattern, all in vendor-i18n.
+// Reload pulls a fresh module graph that resolves the export correctly.
+window.addEventListener('error', (event) => {
+  const msg = String(event.error?.message ?? event.message ?? '')
+  if (/Cannot read propert(?:y|ies) of undefined \(reading ['"](?:default|exports)['"]\)/i.test(msg)) {
+    if (recoverFromChunkError('module-init TypeError: ' + msg.slice(0, 80))) {
+      event.preventDefault()
+    }
+  }
+})
+
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN as string | undefined
+// Sentry (+ replay) is its own chunk, fetched only when a DSN is configured.
+if (sentryDsn) {
+  void import('@sentry/react').then((Sentry) => Sentry.init({
+    dsn: sentryDsn,
+    tracesSampleRate: 0.05,
+    environment: import.meta.env.MODE,
+    release: import.meta.env.VITE_GIT_COMMIT ?? 'unknown',
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: false }),
+    ],
+    replaysSessionSampleRate: 0.01,
+    replaysOnErrorSampleRate: 1.0,
+  }))
+}
+
+// Root boundary (prod audit 2026-10-26): a crash above the route boundaries blanked the page.
+// Plain markup on purpose — no i18n, no app components — so the fallback cannot fail with the app.
+const ROOT_FALLBACK = (
+  <div style={{ maxWidth: 560, margin: '64px auto', padding: '0 16px', fontFamily: 'Georgia, serif', color: '#000000' }}>
+    <p style={{ fontSize: 22, fontWeight: 600, margin: '0 0 8px' }}>RUBLI no pudo mostrar esta página.</p>
+    <p style={{ fontSize: 15, margin: '0 0 16px' }}>RUBLI could not show this page.</p>
+    <p style={{ fontSize: 15 }}>
+      <a href={window.location.href} style={{ color: '#000000' }}>Recargar · Reload</a>
+      {' · '}
+      <a href="/" style={{ color: '#000000' }}>Portada · Front page</a>
+    </p>
+  </div>
+)
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ErrorBoundary fallback={ROOT_FALLBACK}>
+      <App />
+    </ErrorBoundary>
+  </StrictMode>,
+)

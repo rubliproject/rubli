@@ -1,0 +1,350 @@
+{
+  "salud": "Salud",
+  "educacion": "Educación",
+  "infraestructura": "Infraestructura",
+  "energia": "Energía",
+  "defensa": "Defensa",
+  "tecnologia": "Tecnología",
+  "hacienda": "Hacienda",
+  "gobernacion": "Gobernación",
+  "agricultura": "Agricultura",
+  "ambiente": "Ambiente",
+  "trabajo": "Trabajo",
+  "otros": "Otros",
+  "page": {
+    "title": "El libro mayor de la exposición",
+    "titleCategories": "Qué compra México, por categoría",
+    "subtitle": "{{totalValue}} en {{years}} años de datos COMPRANET",
+    "subtitleCategories": "{{totalValue}} canalizados por 72 categorías de adquisición",
+    "subtitleFallback": "~9.9 billones MXN en 23 años de datos COMPRANET",
+    "subtitleCategoriesFallback": "72 categorías de adquisición que cubren el 99.7% del gasto federal",
+    "rankedBy": "Ordenados por puntuación de riesgo promedio — haga clic para inspeccionar",
+    "sortBy": "Ordenar por",
+    "sortValue": "Gasto total",
+    "sortRisk": "Puntuación de riesgo",
+    "sortContracts": "Número de contratos",
+    "sortName": "Nombre (A–Z)",
+    "exploreLink": "Explorar sector",
+    "modelNote": "La tasa de riesgo elevada de Agricultura refleja concentración estructural del mercado (93% adjudicación directa) y composición del conjunto de entrenamiento (casos Segalmex/DICONSA/LICONSA), no necesariamente mayor prevalencia de corrupción. El sector Salud tiene mayor exposición de riesgo ponderada por valor. Trabajo ocupa el #1 en riesgo promedio debido a su pequeño tamaño (48K contratos): proveedores GT de otros sectores (DICONSA, Edenred, Toka, AXTEL) concentran el 31% de su gasto e inflan el promedio sectorial — no es evidencia de mayor corrupción en instituciones laborales.",
+    "clear": "Limpiar",
+    "fullProfile": "Perfil completo",
+    "compareWith": "Comparar…",
+    "failedToLoad": "Error al cargar sectores"
+  },
+  "statCards": {
+    "sectorsTracked": "SECTORES RASTREADOS",
+    "sectorsTrackedDetail": "Sectores gubernamentales activos",
+    "totalContracts": "TOTAL DE CONTRATOS",
+    "totalContractsDetail": "Todos los sectores, todos los años",
+    "totalValue": "VALOR TOTAL",
+    "totalValueDetail": "Solo montos validados",
+    "avgRiskScore": "RIESGO PROMEDIO",
+    "avgRiskScoreDetail": "Ponderado por número de contratos"
+  },
+  "card": {
+    "contracts": "contratos",
+    "vendors": "proveedores",
+    "riskDist": "Distribución de riesgo",
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo",
+    "directAward": "adj. directa",
+    "singleBid": "procedimiento con un solo adjudicado",
+    "institutions": "instituciones",
+    "providers": "proveedores"
+  },
+  "chips": {
+    "criticalRisk": "Riesgo Crítico",
+    "decemberRush": "Compras de fin de año",
+    "coBiddingFlags": "Alertas de Co-licitación",
+    "priceOutliers": "Montos atípicos"
+  },
+  "heatmap": {
+    "title": "Mapa de calor de riesgo sectorial",
+    "description": "El color codifica el ranking relativo de riesgo por métrica — rojo es el mayor riesgo, verde es el menor. Haga clic en una fila para abrir el perfil completo de ese sector.",
+    "avgRisk": "Riesgo promedio",
+    "directAward": "Adj. directa %",
+    "singleBid": "Un solo adj. %",
+    "highRisk": "Alto riesgo %"
+  },
+  "table": {
+    "title": "Comparación de sectores",
+    "subtitle": "Haga clic en los encabezados de columna para ordenar. Haga clic en un nombre de sector para ver su perfil completo.",
+    "sector": "Sector",
+    "vendor": "Proveedor",
+    "totalContracts": "Total de contratos",
+    "totalValueMxn": "Valor Total (MXN)",
+    "avgRiskScore": "Riesgo promedio",
+    "highRiskPct": "Alto riesgo %",
+    "directAwardPct": "Adj. directa %",
+    "riskTrend": "Tendencia de riesgo",
+    "topRamo": "Ramo principal"
+  },
+  "valueChart": {
+    "title": "Valor de contratos por sector"
+  },
+  "radar": {
+    "directAward": "Adj. directa",
+    "singleBid": "Un solo adj.",
+    "avgRisk": "Riesgo prom.",
+    "highRisk": "Alto riesgo %",
+    "valueShare": "Participación",
+    "volume": "Volumen",
+    "axisLabel": "todos los ejes 0–100",
+    "vsLabel": "vs"
+  },
+  "asf": {
+    "totalQuestioned": "Total cuestionado",
+    "yearsAudited": "Años auditados",
+    "institutions": "Instituciones"
+  },
+  "scatter": {
+    "directAwardRate": "Tasa de adjudicación directa",
+    "directAwardPct": "Adj. directa %",
+    "avgRisk": "Riesgo prom.",
+    "contracts": "Contratos"
+  },
+  "diagnostico": {
+    "reportLabel": "Informe de diagnóstico · 12 sectores · 2001–2025",
+    "title": "El diagnóstico nacional",
+    "subtitleDynamic": "Análisis sistémico de riesgo por sector en contratación pública federal. {{count}} sectores bajo vigilancia. Resultados basados en {{contracts}} contratos.",
+    "subtitleFallback": "Análisis sistémico de riesgo por sector en contratación pública federal. 12 sectores bajo vigilancia. Resultados basados en 3.05 millones de contratos.",
+    "hallazgoLabel": "Hallazgo principal",
+    "hallazgoText": "El sector <strong>Salud</strong> concentra el mayor riesgo absoluto: IMSS, ISSSTE y las compras de emergencia por COVID-19 suman más de 200 mil millones de pesos en contratos con indicador de riesgo alto.",
+    "signosVitales": "SIGNOS VITALES",
+    "matrizRiesgo": "MATRIZ DE RIESGO",
+    "paisajeInstitucional": "PAISAJE INSTITUCIONAL",
+    "gastoTotal": "Gasto total",
+    "riesgoPromedio": "Riesgo promedio",
+    "mayorGasto": "Mayor gasto",
+    "sourceFootnote": "Fuente: CompraNet + ComprasMX 2002–2026, modelo de riesgo v0.9.2 · Valores normalizados min-max por métrica"
+  },
+  "editorial": {
+    "kicker": "RUBLI · Análisis por sector · 2002-2026",
+    "headline": "Dónde se concentra el riesgo en el gasto federal",
+    "body": "12 sectores. 3.06 millones de contratos. MXN 9.88 billones. El modelo v0.9.2 asigna puntuaciones de riesgo a cada contrato usando 17 indicadores estadísticos (el historial del proveedor solo mira años anteriores; 16 con peso), entrenados con la base de casos etiquetados de RUBLI.",
+    "stat1Label": "AD en Agricultura · AMLO 2019-24",
+    "stat2Label": "valor en riesgo · sector salud",
+    "stat3Label": "sobre la línea UE del 10%"
+  },
+  "profile": {
+    "backToSectors": "Todos los Sectores",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "sectorProfile": "Perfil sectorial",
+    "totalSpend": "valor total de contratación",
+    "overviewTab": "Resumen",
+    "vendorsTab": "Principales proveedores",
+    "riskTab": "Análisis de riesgo",
+    "spendTrend": "Tendencia de gasto",
+    "spendTrendSubtitle": "Valor anual de contratación, 2010–{{year}}",
+    "topInstitutions": "Principales instituciones",
+    "topInstitutionsSubtitle": "Ordenadas por valor total de contratos en este sector",
+    "topVendors": "Principales proveedores por valor",
+    "topVendorsSubtitle": "Ordenados por valor total de contratación en este sector",
+    "riskDistribution": "Distribución de riesgo",
+    "riskDistributionSubtitle": "Cómo se distribuyen los contratos según niveles de riesgo",
+    "topRiskFactors": "Principales factores de riesgo",
+    "topRiskFactorsSubtitle": "Señales de alerta más frecuentes que impulsan las puntuaciones de riesgo",
+    "riskTrend": "Tendencia de riesgo anual",
+    "riskTrendSubtitle": "Riesgo promedio y tasa de alto riesgo por año, 2010–presente",
+    "procurementPatterns": "Patrones de contratación",
+    "contracts": "contratos",
+    "vendors": "proveedores",
+    "institutions": "instituciones",
+    "avgRisk": "riesgo prom.",
+    "directAward": "adj. directa",
+    "singleBid": "un solo adj.",
+    "highPlusCritical": "contratos alto+crítico",
+    "viewAll": "Ver todos",
+    "investigate": "Investigar",
+    "noTrendData": "Sin datos de tendencia para este sector",
+    "noVendorData": "Sin datos de proveedores disponibles",
+    "noInstitutionData": "Sin datos de instituciones disponibles",
+    "noRiskData": "Sin datos de distribución de riesgo",
+    "noFactorData": "Sin datos de factores disponibles",
+    "sectorNotFound": "Sector no encontrado",
+    "sectorNotFoundMsg": "El sector solicitado no pudo ser encontrado.",
+    "phiHeading": "Índice de Salud en contratación",
+    "riskTrendOverTime": "Perfil de riesgo en el tiempo",
+    "riskTrendOverTimeSubtitle": "Puntaje de riesgo promedio y proporción de contratos de alto riesgo por año",
+    "avgRiskLegend": "Riesgo prom. ×100",
+    "highRiskLegend": "Alto riesgo %",
+    "marketConcentration": "Concentración de mercado en el tiempo",
+    "giniSubtitle": "Coeficiente Gini — 1.0 = monopolio total, 0 = competencia perfecta",
+    "lowConcentration": "Baja concentración",
+    "noRiskTimelineData": "Sin datos de evolución de riesgo disponibles.",
+    "noConcentrationData": "Sin historial de concentración disponible.",
+    "contractsTooltip": "contratos",
+    "riskSuffix": "% riesgo"
+  },
+  "investigation": {
+    "caseSingular": "Caso de investigación",
+    "casePlural": "Casos de investigación",
+    "estimatedLoss": "pérdida est.:",
+    "viewAllCases": "Ver todos los casos",
+    "severity": "severidad"
+  },
+  "phi": {
+    "competitionRate": "Tasa de competencia",
+    "avgBidders": "Adjudicados prom.",
+    "singleBidRate": "Tasa de Un solo adj.",
+    "oecdCompetition": "Referencia: 75% competitivo",
+    "oecdBidders": "Por procedimiento competitivo · ganadores, no postores",
+    "oecdSingleBid": "De los contratos de procedimientos competitivos · sin línea externa (ganadores, no licitantes)"
+  },
+  "insight": {
+    "elevatedRisk": {
+      "title": "Tasa de alto riesgo elevada",
+      "body": "{{rate}}% de contratos de alto riesgo supera significativamente el promedio de la plataforma de {{baseline}}%."
+    },
+    "lowSignal": {
+      "title": "Señal de riesgo baja",
+      "body": "{{rate}}% de contratos de alto riesgo es inusualmente bajo — puede reflejar brechas de calidad de datos o características estructurales del sector."
+    },
+    "highDA": {
+      "title": "Alta tasa de adjudicación directa",
+      "body": "El {{rate}}% de los contratos son adjudicaciones directas, limitando la transparencia competitiva."
+    },
+    "singleBid": {
+      "title": "Licitaciones con Un solo adjudicado",
+      "body": "El {{rate}}% de los contratos de procedimientos competitivos vino de un procedimiento con un solo adjudicado."
+    }
+  },
+  "factors": {
+    "direct_award": "Adjudicación directa",
+    "single_bid": "Procedimiento con un solo adjudicado",
+    "price_anomaly": "Anomalía de monto",
+    "short_ad_period": "Período de convocatoria corto",
+    "short_ad_lt5d": "Convocatoria urgente (<5 días)",
+    "short_ad_lt15d": "Convocatoria corta (<15 días)",
+    "short_ad_lt30d": "Convocatoria breve (<30 días)",
+    "year_end": "Compras de fin de año",
+    "vendor_concentration": "Concentración de proveedor",
+    "threshold_splitting": "Fraccionamiento de contratos",
+    "network_risk": "Conexión en red",
+    "industry_mismatch": "Fuera de su giro",
+    "co_bid_high": "Alta tasa de co-licitación",
+    "co_bid_med": "Tasa media de co-licitación",
+    "price_hyp": "Monto atípico",
+    "co_sid_high": "Alta tasa de co-licitación",
+    "co_sid_med": "Tasa media de co-licitación"
+  },
+  "factorDesc": {
+    "direct_award": "Contrato adjudicado sin licitación competitiva",
+    "single_bid": "El procedimiento competitivo recibió solo una oferta",
+    "price_anomaly": "El valor del contrato es 3 veces superior a la mediana del sector",
+    "short_ad_period": "Plazo de convocatoria demasiado corto para competencia real",
+    "short_ad_lt5d": "Menos de 5 días entre publicación y adjudicación",
+    "short_ad_lt15d": "Menos de 15 días entre publicación y adjudicación",
+    "short_ad_lt30d": "Menos de 30 días entre publicación y adjudicación",
+    "year_end": "Adjudicado en diciembre — patrón de vaciado presupuestal",
+    "vendor_concentration": "Un proveedor controla más del 30% de los contratos del sector",
+    "threshold_splitting": "Múltiples contratos el mismo día para evadir umbrales de supervisión",
+    "network_risk": "El proveedor pertenece a un grupo de empresas relacionadas",
+    "industry_mismatch": "La industria principal del proveedor no corresponde al sector del contrato",
+    "co_bid_high": "El proveedor co-licita en más del 80% de los procedimientos con un socio",
+    "co_bid_med": "El proveedor co-licita en el 50–80% de los procedimientos con un socio",
+    "price_hyp": "Valor atípico estadístico detectado por el modelo IQR de montos"
+  },
+  "charts": {
+    "allSectors": "Todos los sectores",
+    "trendTitle": "Tendencia de riesgo por sector",
+    "noTrendData": "No hay datos de tendencia disponibles para los sectores seleccionados"
+  },
+  "finding": {
+    "kicker": "RUBLI · Hallazgo principal",
+    "headline": "El sector {{sector}} concentra el mayor riesgo de contratación pública en México",
+    "avgRiskLeader": "riesgo promedio — sector líder",
+    "totalContracted": "valor total contratado",
+    "ofTwelve": "de 12",
+    "sectorsExceedOECD": "sectores exceden la línea UE (10%)",
+    "competitionGapLabel": "Brecha de competencia",
+    "directAwardVsOECD": "Adj. directa vs. la línea UE (10%)",
+    "tooltipDirectAward": "Adj. directa:",
+    "tooltipAboveOECD": "{{x}}x sobre la línea UE",
+    "tooltipWithinOECD": "Dentro de la línea UE"
+  },
+  "trendChart": {
+    "eyebrow": "Tendencia temporal",
+    "title": "Riesgo promedio por sector 2015-2025"
+  },
+  "riskRanking": {
+    "eyebrow": "RIESGO — TODOS LOS SECTORES"
+  },
+  "riskFactors": {
+    "eyebrow": "RUBLI · Análisis de factores",
+    "title": "Qué empuja el riesgo en cada sector",
+    "description": "Coeficientes del modelo logístico v0.9.2 — positivos aumentan el riesgo, negativos son protectores.",
+    "sectorLabel": "Sector:",
+    "sectorAriaLabel": "Seleccionar sector para ver coeficientes del modelo",
+    "sectionAriaLabel": "Análisis de factores de riesgo por sector"
+  },
+  "slope": {
+    "dateline": "COMPETENCIA · UNA DÉCADA SOBRE LA LÍNEA UE",
+    "title": "Diez años sobre la línea UE",
+    "titleEn": "Ten years past the EU line",
+    "deck": "Adjudicación directa por sector, 2015–2025. La línea punteada cian es la línea de adjudicación directa del 10% del Tablero UE. Los sectores que terminan por encima están etiquetados en su color; los que quedan por debajo, en gris.",
+    "oecdLine": "UE 10%",
+    "covidBand": "Emergencia COVID",
+    "belowCeiling": "+ {{count}} bajo el techo",
+    "aboveCeiling": "sectores sobre la línea UE",
+    "showAll": "Mostrar todos los 12",
+    "showCrossers": "Solo los que cruzan la línea UE"
+  },
+  "swimlane": {
+    "kicker": "LO QUE EL ESTADO COMPRA · 12 CARRILES",
+    "headline": "Doce mercados, una hoja",
+    "deck": "Cada carril es un sector; cada punto, una categoría. La posición horizontal es el indicador de riesgo v0.9.2; el tamaño, el gasto. La línea cian marca el umbral de riesgo alto.",
+    "highRiskLabel": "RIESGO ALTO ≥ 25%",
+    "segalmexNote": "Puntaje inflado por Segalmex — ver /thread/segalmex",
+    "ariaLabel": "Diagrama de carriles: categorías por sector y riesgo",
+    "tooltipInvestigate": "Investigar →",
+    "tooltipValue": "Valor",
+    "tooltipContracts": "Contratos",
+    "tooltipRisk": "Riesgo",
+    "tooltipDirect": "Adj.Dir.",
+    "tooltipSingleBid": "Lic.Única",
+    "tooltipTopVendor": "Proveedor principal"
+  },
+  "featured": {
+    "kicker": "El sector a la cabeza · {{sector}}",
+    "leadsRisk": "encabeza el riesgo con",
+    "avgRiskSuffix": "de riesgo promedio",
+    "deck": "{{exceedingOECD}} de 12 sectores rebasan la línea del 10% en adjudicación directa del Tablero UE. El líder combina {{topRiskPct}}% de riesgo con {{topDaPct}}% de contratos adjudicados sin concurso.",
+    "meta": {
+      "leaderRisk": "Riesgo promedio líder",
+      "totalValue": "Valor total 2002–2026",
+      "contracts": "Contratos",
+      "sectorsBeyond": "Sectores > UE 10%"
+    }
+  },
+  "treemap": {
+    "kicker": "LA DISTRIBUCIÓN · DÓNDE VA EL DINERO",
+    "headline": "El gasto público no es uniforme",
+    "deck": "Cada rectángulo es un sector. El área = gasto total (MXN); la saturación del color = indicador de riesgo v0.9.2. El borde ámbar marca los sectores por encima de la línea de adjudicación directa del 10% del Tablero UE.",
+    "oecdViolatorNote": "Borde ámbar = sobre la línea UE del 10%",
+    "saturationNote": "Saturación = indicador de riesgo",
+    "ariaLabel": "Mapa de distribución del gasto sectorial",
+    "segalmexCaveat": "Puntaje inflado por Segalmex (caso documentado) — ver hilo Segalmex"
+  },
+  "beeswarm": {
+    "kicker": "EL CRUCE · RIESGO × GASTO",
+    "headline": "Donde el riesgo cuesta más",
+    "deck": "Cada sector como un círculo: riesgo en horizontal, gasto en vertical, tamaño = número de contratos. La esquina superior derecha — alto riesgo, alto gasto — es donde mirar primero.",
+    "ariaLabel": "Diagrama de burbujas: riesgo × gasto por sector",
+    "oecdRef": "UE 10%",
+    "priority": "PRIORIDAD",
+    "investigar": "Investigar →",
+    "agriculturaNote": "Puntaje inflado por Segalmex (caso documentado) — ver /thread/segalmex",
+    "keyboardHint": "↑ ↓ navegar sectores · Enter para abrir · clic en círculo"
+  },
+  "tiers": {
+    "Excelente": "Excelente",
+    "Satisfactorio": "Satisfactorio",
+    "Regular": "Regular",
+    "Deficiente": "Deficiente",
+    "Critico": "Crítico"
+  }
+}

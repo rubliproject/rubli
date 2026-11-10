@@ -1,0 +1,149 @@
+/* /methodology on «El Contrato» (frontend/DESIGN.md §2–§8). Page-local only. */
+
+.mt-body > * + * { margin-top: 12px; }
+.mt-body p { text-wrap: pretty; }
+.mt-body > .mt-h3 { margin-top: 20px; }
+.mt-h3 { font: 600 15px/1.5 var(--font-serif); color: var(--ct-ink); text-wrap: balance; }
+.mt-h3 + p, .mt-h3 + .mt-ol, .mt-h3 + pre { margin-top: 8px; }
+
+/* the lead: the active model's key figures, one ruled row of cells */
+.mt-lead { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 24px; border-top: 1px solid var(--ct-ink); }
+.mt-lead > div { padding: 12px 0; border-bottom: 1px solid var(--ct-rule); min-width: 0; }
+.mt-lead dt { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.mt-lead dd { margin: 4px 0 0; font: 600 24px/1.1 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ct-ink); overflow-wrap: anywhere; }
+.mt-lead dd.mt-lead-n { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.mt-lead + .ct-note { margin-top: 8px; }
+
+.mt-formula { padding: 12px 16px; border-left: 3px solid var(--ct-ink); background: var(--ct-tint); font: 400 13px/1.45 var(--font-mono); color: var(--ct-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
+.mt-body code { font: 400 13px/1.45 var(--font-mono); }
+
+.mt-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0 24px; border-top: 1px solid var(--ct-ink); }
+.mt-facts > div { padding: 8px 0; border-bottom: 1px solid var(--ct-rule); min-width: 0; }
+.mt-facts dt { font-size: 15px; line-height: 1.4; color: var(--color-text-secondary); }
+.mt-facts dd { margin: 4px 0 0; font-size: 15px; color: var(--ct-ink); }
+
+.mt-list { border-top: 1px solid var(--ct-ink); }
+.mt-list > li { padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+.mt-ol { list-style: decimal; padding-left: 24px; }
+.mt-ol > li + li { margin-top: 8px; }
+.mt-ul > li + li { margin-top: 4px; }
+
+.mt-pull { position: relative; padding-left: 24px; font-size: 17px; line-height: 1.55; color: var(--ct-ink); }
+.mt-pull::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ct-red); }
+
+.ct-table td.mt-td-h { font-weight: 600; color: var(--ct-ink); vertical-align: top; }
+.ct-table td.mt-td-h small { display: block; margin-top: 4px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.mt-page .ct-table td { vertical-align: top; }
+
+.mt-fold { border-top: 1px solid var(--ct-rule); }
+.mt-fold > button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); text-align: left; transition: transform var(--dur-press) ease-out; }
+.mt-fold > button:active { transform: scale(.97); }
+.mt-fold > button:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.mt-fold-mark { font: 400 15px/1 var(--font-mono); color: var(--ct-gray); }
+.mt-fold-body { padding: 8px 0 16px; }
+@media print { .mt-fold-anim { grid-template-rows: 1fr; } }
+
+.mt-weights { border-top: 1px solid var(--ct-ink); }
+.mt-weights > div { display: grid; grid-template-columns: minmax(160px, 2fr) 3fr 64px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); font-size: 15px; }
+.mt-weights > div > .ct-mono { text-align: right; font-size: 13px; }
+
+.mt-refs { list-style: decimal; padding-left: 24px; border-top: 1px solid var(--ct-ink); }
+.mt-refs > li { padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+
+.mt-next { border-top: 1px solid var(--ct-ink); }
+.mt-next li { display: grid; grid-template-columns: minmax(160px, 2fr) 5fr; gap: 4px 24px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+.mt-next a { display: inline-flex; align-items: center; min-height: 40px; }
+
+@media (max-width: 760px) {
+  .mt-lead { grid-template-columns: 1fr; }
+  .mt-lead > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 16px; align-items: baseline; padding: 8px 0; }
+  .mt-lead dd { margin: 0; font-size: 22px; text-align: right; }
+  .mt-lead dd.mt-lead-n { grid-column: 1 / -1; text-align: left; }
+  .mt-next li, .mt-weights > div { grid-template-columns: 1fr; }
+  .mt-weights > div > .ct-mono { text-align: left; }
+}
+
+/* the three plates (balance · calibration record · two worlds): a ruled figure, not a box */
+.mt-plate { padding-top: 16px; border-top: 1px solid var(--ct-ink); min-width: 0; }
+.mt-plate > figcaption { margin-top: 12px; }
+
+/* 2026-10-20 compaction: short prose blocks flow in balanced columns (multi-column, so the
+   column ends always meet); the feature ledger takes its capped width and the findings sit beside it */
+.mt-cols { columns: 2; column-gap: 32px; }
+.mt-cols.is-3 { columns: 3; }
+.mt-cols > * { break-inside: avoid; }
+.mt-cols > div > * + * { margin-top: 8px; }
+.mt-cols > div { padding-bottom: 16px; }
+.mt-list.mt-cols { border-top: 1px solid var(--ct-ink); }
+/* ledger + its notes as two balanced columns (multi-column, not grid): the notes flow under the chart and on
+   into column two, so both columns end together in either language (a grid row left Δ ≈ 0.18 × the chart's
+   height between ES and EN — review 2026-10-29) */
+.mt-balanza { columns: 2; column-gap: 32px; }
+.mt-balanza > figure { break-inside: avoid; margin: 0; }
+.mt-balanza .mt-h3 { break-after: avoid; }
+/* grid items may shrink below the ledger's 660px floor: the ledger scrolls in its own frame and the
+   notes wrap at the phone's width instead of running off-screen (owner «Sloppy», 2026-10-29) */
+.mt-balanza > * { min-width: 0; }
+.mt-balanza > div > :first-child { margin-top: 0 !important; padding-top: 0 !important; border-top: 0 !important; }
+.mt-aside > * + * { margin-top: 8px; }
+.mt-aside .mt-h3 + p { margin-top: 4px; }
+/* Key changes: four items flow in two balanced columns (the indent rides on each item, so column two keeps it) */
+.mt-ol.mt-cols { padding-left: 0; }
+.mt-ol.mt-cols > li { margin: 0 0 8px 24px; }
+/* the phone ledger (BalanzaLedger): HTML rows replace the 660 px SVG at ≤ 760 */
+.mt-bal-phone, .mt-lvl-m { display: none; }
+.mt-bal-key { display: flex; justify-content: space-between; gap: 12px; font: 600 13px/1.4 var(--font-serif); }
+.mt-bal-phone ol { margin-top: 8px; border-top: 1px solid var(--ct-ink); }
+.mt-bal-phone li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--ct-rule); font: 400 14px/1.35 var(--font-serif); color: var(--ct-ink); }
+.mt-bal-v { font: 600 13px/1.35 var(--font-mono); font-variant-numeric: tabular-nums; }
+.mt-bal-track { grid-column: 1 / -1; position: relative; height: 8px; background: linear-gradient(var(--ct-ink), var(--ct-ink)) 50% 0 / 1.5px 100% no-repeat; }
+.mt-bal-track > span { position: absolute; top: 0; bottom: 0; min-width: 1px; border: 1px solid var(--c); background: repeating-linear-gradient(45deg, var(--c) 0 1.4px, color-mix(in srgb, var(--c) 16%, transparent) 1.4px 3px); }
+.mt-bal-zero { margin-top: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+@media (max-width: 760px) {
+  .mt-bal-wide { display: none; }
+  .mt-bal-phone { display: block; }
+  /* the level and limitation tables wrap in the phone's width instead of scrolling past it */
+  .mt-page .ct-table.mt-fit { min-width: 0; }
+  /* the limitations: one record per row — the limitation, its impact, then the path to fix under its label */
+  .mt-lims thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .mt-lims, .mt-lims tbody, .mt-lims tr, .mt-lims td { display: block; }
+  .mt-lims tr { padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+  .mt-lims td { padding: 0; border: 0; }
+  .mt-lims td:first-child { font-weight: 600; }
+  .mt-lims td + td { margin-top: 2px; }
+  .mt-lims td[data-l] { color: var(--ct-gray); }
+  .mt-lims td[data-l]::before { content: attr(data-l) ': '; font-weight: 600; }
+  /* the level table: the meaning moves under the level name, so four columns fit 390 */
+  .mt-levels .mt-lvl-mcol { display: none; }
+  .mt-levels td.nowrap:has(.mt-lvl-m) { white-space: normal; }
+  .mt-levels .mt-lvl-m { display: block; margin-top: 2px; font-size: 13px; line-height: 1.4; color: var(--ct-gray); }
+}
+@media (max-width: 1279px) { .mt-cols.is-3 { columns: 2; } }
+@media (max-width: 1399px) { .mt-balanza { columns: 1; } .mt-balanza > div { margin-top: 16px; } }
+@media (max-width: 760px) { .mt-cols, .mt-cols.is-3 { columns: 1; } }
+
+/* Plate III·a — calibration record (CalibrationRecord.tsx): headline | lede at a ~68ch measure */
+.mt-cal-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 68ch); gap: 8px 32px; align-items: baseline; margin-bottom: 16px; }
+.mt-cal-head .mt-cal-title { font: 600 22px/1.2 var(--font-serif); color: var(--ct-ink); text-wrap: balance; }
+.mt-cal-lede { font-size: 15px; line-height: 1.5; color: var(--color-text-secondary); text-wrap: pretty; }
+/* the register: date · version | one line | value — one row per version */
+.mt-cal-body { display: grid; grid-template-columns: minmax(660px, 760px) minmax(0, 1fr); gap: 16px 32px; align-items: start; }
+.mt-cal-body > * { min-width: 0; }
+.mt-cal-reg { border-top: 1px solid var(--ct-ink); }
+@media (max-width: 1279px) { .mt-cal-body { grid-template-columns: minmax(0, 1fr); } }
+.mt-cal-reg > div { display: grid; grid-template-columns: 136px minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline; padding: 4px 0 4px 8px; border-bottom: 1px solid var(--ct-rule); border-left: 2px solid transparent; }
+.mt-cal-reg > div[data-active] { border-left-color: var(--ct-ink); }
+.mt-cal-reg dt { display: flex; gap: 12px; align-items: baseline; font: 400 13px/1.4 var(--font-mono); color: var(--ct-ink); }
+.mt-cal-reg dt b { font-weight: 700; }
+.mt-cal-date { width: 64px; flex: none; font-size: 12px; color: var(--ct-gray); }
+.mt-cal-reg dd { margin: 0; font-size: 15px; line-height: 1.4; color: var(--color-text-secondary); }
+.mt-cal-reg dd.mt-cal-val { font: 400 13px/1.4 var(--font-mono); color: var(--ct-ink); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .mt-cal-head { grid-template-columns: 1fr; }
+  .mt-cal-reg > div { grid-template-columns: minmax(0, 1fr) auto; }
+  .mt-cal-reg dd:not(.mt-cal-val) { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* «¿Qué más medimos?» (PURPLE-2): one block = title + text, kept whole in the two-column flow */
+.mt-block > * + * { margin-top: 8px; }
+.mt-block .mt-h3 { margin-top: 0; }

@@ -1,0 +1,25 @@
+{
+  "guide": {
+    "title": "Start Your Investigation",
+    "description": "Use dossiers to organize your investigation. Add vendors, institutions, and contracts to build a complete picture of procurement patterns.",
+    "createFirstDossier": "Create First Dossier",
+    "searchVendorLink": "Or search for a vendor to start",
+    "exampleInvestigations": "Example investigations",
+    "howItWorks": "How it works",
+    "howItWorksP1": "Dossiers are private investigation folders that live in your browser. Each dossier can hold any mix of vendors, institutions, and individual contracts.",
+    "howItWorksP2": "Use the Add to Dossier button on any vendor or institution profile page to start gathering research material. Dossiers persist between sessions so you can return to an investigation later.",
+    "howItWorksP3": "When you are ready to publish or share, Export your dossier as a CSV or structured JSON file containing all collected entities and their risk metadata.",
+    "dossiers": "Dossiers",
+    "addToDossierLabel": "Add to Dossier",
+    "exportLabel": "Export"
+  },
+  "search": {
+    "noResults": "No results for \"{{query}}\""
+  },
+  "folderSidebar": {
+    "allItems": "All items",
+    "namePlaceholder": "Folder name",
+    "create": "Create",
+    "newFolder": "New Folder"
+  }
+}

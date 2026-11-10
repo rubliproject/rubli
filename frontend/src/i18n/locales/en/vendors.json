@@ -1,0 +1,174 @@
+{
+  "notFound": "Vendor Not Found",
+  "notFoundDescription": "The requested vendor could not be found.",
+  "backToVendors": "Back to Vendors",
+  "tabs": {
+    "overview": "Overview",
+    "risk": "Risk Analysis",
+    "history": "Contract History",
+    "network": "Network",
+    "external": "External Records",
+    "aria": "ARIA",
+    "periodista": "Journalist"
+  },
+  "coBidding": {
+    "title": "Co-Bidding Pattern Detected",
+    "description": "This vendor frequently appears in the same procedures with specific partners.",
+    "suspiciousPatterns": "suspicious pattern(s) detected.",
+    "topPartners": "Top Co-Bidding Partners",
+    "sharedProcedures": "shared procedures",
+    "detectedPatterns": "Detected Patterns",
+    "coverBidding": "Potential Cover Bidding",
+    "bidRotation": "Potential Bid Rotation",
+    "noPatternsTitle": "No significant co-bidding patterns detected",
+    "noPatternsDescription": "Requires ≥3 shared competitive procedures with another vendor",
+    "analysisTitle": "Co-Bidding Analysis",
+    "proceduresAnalyzed": "procedures analyzed",
+    "coverBidder": "cover bidder?",
+    "alwaysWins": "always wins?",
+    "wins": "wins:",
+    "sameWinner": "same winner",
+    "ofTime": "of time",
+    "involves": "Involves:",
+    "heuristicNote": "This is a separate heuristic analysis. Note: co-bidding concentration (cobid_herfindahl, measured on co-award partners in years before the contract) is in the v0.9.2 risk model with coefficient −0.143: a higher concentration lowers the indicator. Raw co-bid rates shown here are a complementary view.",
+    "roleDecoy": "Decoy",
+    "roleDominant": "Dominant",
+    "roleRotation": "Rotation",
+    "roleModerate": "Co-bidder",
+    "thisVendorWinsLabel": "This vendor",
+    "partnerWinsLabel": "Partner"
+  },
+  "groundTruth": {
+    "documentedIn": "Documented in",
+    "documented": "Documented:",
+    "couldNotCheck": "Could not check case status"
+  },
+  "badges": {
+    "sfpSanctioned": "SFP Sanctioned",
+    "efosStageDef": "SAT EFOS Definitivo (Confirmed)",
+    "efosStagePresunto": "SAT EFOS Presunto (Alleged)"
+  },
+  "flags": {
+    "highDirectAward": "{{pct}}% of contracts were direct awards (awarded without a tender)",
+    "suspiciousCoBidding": "Notable co-bidding patterns detected (heuristic analysis — cobid_herfindahl concentration included in v0.9.2 risk model)",
+    "highClustering": "High network clustering ({{pct}}%) — bidding partners form a tightly-knit group",
+    "primaryDriver": "Primary driver: {{factor}} (z={{z}} — {{z}} SDs above sector average)",
+    "sectionLabel": "RISK INDICATORS FOR THIS VENDOR",
+    "disclaimer": "Flags are statistical risk indicators, not proof of wrongdoing. Use for investigation triage only."
+  },
+  "vendorFlags": {
+    "groundTruth": {
+      "headline": "Documented in a known corruption case",
+      "detail_one": "This vendor appears in {{count}} ground-truth case used to train the {{version}} risk model.",
+      "detail_other": "This vendor appears in {{count}} ground-truth cases used to train the {{version}} risk model."
+    },
+    "unverifiedLead": {
+      "headline": "Listed in an unverified lead",
+      "detail": "This vendor appears only in a case lead that has not been sourced or verified. It is not a documented case."
+    },
+    "efosDefinitivo": {
+      "headline": "SAT-confirmed ghost company (EFOS Definitivo)",
+      "detail": "The Mexican tax authority has definitively listed this RFC under Art. 69-B as a ghost company issuing simulated invoices."
+    },
+    "efosPresunto": {
+      "headline": "Alleged ghost company (EFOS Presunto)",
+      "detail": "Listed by SAT as an alleged ghost company and currently under investigation."
+    },
+    "sfp": {
+      "headline": "{{n}} SFP sanction record(s) on file",
+      "detail": "Sanctioned by the Secretaría de la Función Pública.",
+      "headlineName": "{{n}} possible SFP sanction match(es) — by name only",
+      "detailName": "Same company name as an entity sanctioned by the Secretaría de la Función Pública. The RFC was not provided at source, so identity is not confirmed.",
+      "detailAmbiguous": "This name is shared by several vendors in the registry; the sanction may belong to a different company.",
+      "activeUntil": "SFP sanction on record: debarment {{from}} – {{to}}, per the registry.",
+      "expired": "SFP sanction on record: debarment {{from}} – {{to}} (ended; not a current ban).",
+      "undated": "SFP sanction on record: {{n}}-month debarment; the registry gives no date.",
+      "fineOnly": "SFP fine on record, no debarment."
+    },
+    "ariaT1": {
+      "headline": "ARIA Tier 1 — highest risk-indicator tier (model output, not an investigation)",
+      "detail": "Primary pattern: {{pattern}}"
+    },
+    "ariaT2": {
+      "headline": "ARIA Tier 2 — priority review",
+      "detail": "Primary pattern: {{pattern}}"
+    },
+    "riskCritical": {
+      "headline": "Critical risk indicator ({{pct}}/100)"
+    },
+    "riskHigh": {
+      "headline": "High risk indicator ({{pct}}/100)"
+    },
+    "highDirectAward": {
+      "headline": "{{pct}}% direct awards — awarded without a tender"
+    },
+    "highClustering": {
+      "headline": "High network clustering ({{pct}}%) — bidding partners form a tightly-knit group"
+    },
+    "coBidding": {
+      "headline": "suspicious co-bidding"
+    },
+    "primaryDriver": {
+      "headline": "Raises it most: {{factor}}"
+    },
+    "fpStructural": {
+      "headline": "Structural monopoly — risk score is not an anomaly",
+      "detail": "This vendor is a sole-source supplier in a regulated market (e.g. medical gases, specialty pharma). High direct-award and concentration scores are expected and do not indicate malfeasance."
+    },
+    "institutionalCapture": {
+      "headline": "{{pct}}% of awards from a single institution ({{inst}})",
+      "detail": "Concentration of contracts from one buyer may indicate regulatory capture (P6 pattern). Verify whether procurement was competitive across the period."
+    }
+  },
+  "waterfall": {
+    "description": "Positive bars increase risk (red). Negative bars are protective (slate). Bar length reflects each factor's contribution to the overall score.",
+    "totalScore": "Total Score",
+    "contribution": "contribution",
+    "modelCoefficient": "Model coefficient",
+    "riskIncreasing": "Risk-increasing factor",
+    "riskReducing": "Risk-reducing factor"
+  },
+  "shap": {
+    "protectiveFactors": "Protective factors (reducing risk):"
+  },
+  "noContributingFactors": "No contributing risk factors found.",
+  "yearEnd": {
+    "title": "Year-End Concentration",
+    "vendorPct": "This vendor",
+    "sectorAvg": "Sector avg",
+    "description": "December contracts fall outside the usual review calendar — a timing anomaly associated with budget dumping."
+  },
+  "aria": {
+    "notInQueue": "This vendor is not in the ARIA investigation queue.",
+    "notInQueueNote": "Only vendors with a significant IPS score appear here.",
+    "ipsBanner": "IPS (Investigation Priority Score)",
+    "ipsBreakdown": "IPS Breakdown",
+    "patternConfidences": "Pattern Confidences",
+    "signals": "Signals",
+    "burstScore": "Burst Score",
+    "fpPenalty": "FP Penalty",
+    "riskScoreLabel": "Risk Score (v0.9.2)"
+  },
+  "sectorPercentile": "Top {{pct}}% in sector",
+  "vendorGroupTooltip": "This vendor belongs to a related network group",
+  "riskBadge": {
+    "critical": "CRIT",
+    "high": "HIGH",
+    "medium": "MED",
+    "low": "LOW"
+  },
+  "share": "Share",
+  "lede": {
+    "eyebrow": "VENDOR PROFILE",
+    "directAward": "{{pct}}% direct award",
+    "riskDetected": "{{level}} risk detected by model v0.9.2",
+    "contractsAnalyzed": "{{n}} contracts analyzed",
+    "contractsSuffix": "Total: {{value}} · {{n}} contracts",
+    "riskLabels": {
+      "critical": "CRITICAL",
+      "high": "HIGH",
+      "medium": "MEDIUM",
+      "low": "LOW"
+    }
+  }
+}

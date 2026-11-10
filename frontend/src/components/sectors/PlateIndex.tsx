@@ -1,0 +1,73 @@
+/**
+ * PlateIndex — the drawn column index for the two Marimekko plates (WHO and
+ * WHAT), their legends and the desktop hover readout.
+ *
+ * Replaces the U+2460 circled digits, which rendered in the Windows symbol
+ * fallback at ~9px optical and touched on 9–14px columns (PARALLAX D7b
+ * § Change 5). A hairline circle + a mono digit, so the digit stays real text
+ * (the a11y judge's Q2: the glyph keeps a text equivalent).
+ */
+
+const MONO = 'var(--font-family-mono, monospace)'
+
+/** Columns narrower than this draw no glyph; the legend keeps the index. */
+export const PLATE_INDEX_MIN_COL = 20
+
+/** SVG glyph centred on (cx, cy). */
+export function PlateIndexMark({ n, cx, cy }: { n: number; cx: number; cy: number }) {
+  return (
+    <g aria-hidden="true" pointerEvents="none" style={{ color: 'var(--color-text-muted)' }}>
+      <circle cx={cx} cy={cy} r={9} fill="none" stroke="currentColor" strokeWidth={1} />
+      <text
+        x={cx}
+        y={cy}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontFamily={MONO}
+        fontSize={12}
+        fill="currentColor"
+      >
+        {n}
+      </text>
+    </g>
+  )
+}
+
+/** HTML twin for legend rows and the hover readout. */
+export function PlateIndexBadge({ n }: { n: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center shrink-0 rounded-full tabular-nums"
+      style={{
+        width: 20,
+        height: 20,
+        border: '1px solid currentColor',
+        fontFamily: MONO,
+        fontSize: 12,
+        lineHeight: 1,
+        color: 'var(--color-text-muted)',
+      }}
+    >
+      {n}
+    </span>
+  )
+}
+
+/**
+ * A plate's hover readout: " · "-joined "label value" tokens, each kept whole
+ * (whitespace-nowrap) with a break opportunity only after a separator — a value
+ * never breaks from its label (PARALLAX D7b § judge 3).
+ */
+export function ReadoutTokens({ text }: { text: string }) {
+  const tokens = text.split(' · ')
+  return (
+    <>
+      {tokens.map((t, i) => (
+        <span key={i}>
+          <span className="whitespace-nowrap">{t}</span>
+          {i < tokens.length - 1 && <>{' · '}</>}
+        </span>
+      ))}
+    </>
+  )
+}

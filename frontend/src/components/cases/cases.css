@@ -1,0 +1,117 @@
+/* El Padrón (/cases) on «El Contrato» — DESIGN.md §2 type, §3 ladder, §7 motion, §8 table.
+   Page-local pieces the shell does not own: the filter line, the register (Anexo
+   table, hairline grid — ledgers only), the lead case. Tokens only. */
+
+/* ── filter line: inline chips, no boxes ─────────────────────── */
+.cl-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); position: relative; }
+.cl-search { position: relative; flex: 1 1 240px; max-width: 400px; }
+.cl-search input { width: 100%; height: 40px; padding: 0 32px 0 24px; border: 0; border-bottom: 1px solid var(--ct-ink); background: transparent; font: 400 15px/1 var(--font-serif); color: var(--ct-ink); border-radius: 0; }
+.cl-search input::placeholder { color: var(--ct-gray); }
+.cl-search svg { position: absolute; top: 50%; transform: translateY(-50%); color: var(--ct-gray); }
+.cl-search > svg { left: 0; }
+.cl-search button { position: absolute; right: 0; top: 0; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ct-gray); }
+.cl-search button svg { position: static; transform: none; }
+.cl-chip { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; font: 600 16px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); border: 2px solid var(--ct-ink); transition: background-color 160ms var(--ease-out), color 160ms var(--ease-out); }
+.cl-chip::-webkit-details-marker { display: none; }
+.cl-chip:hover { background: var(--ct-tint); }
+.cl-chip[data-active] { background: var(--ct-ink); color: var(--color-background); }
+.cl-chip b { font: 400 15px/1 var(--font-serif); letter-spacing: 0; }
+.cl-menu { position: absolute; left: 0; right: 0; z-index: 30; margin-top: 4px; padding: 4px 0; background: var(--color-background); border: 1px solid var(--ct-ink); border-radius: var(--radius); }
+@media (min-width: 640px) { .cl-details { position: relative; } .cl-menu { right: auto; min-width: 240px; } }
+.cl-menu button { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 16px; min-height: 40px; padding: 0 12px; text-align: left; font: 400 15px/1.4 var(--font-serif); color: var(--ct-ink); transition: background-color 80ms ease-out; }
+.cl-menu button:hover { background: var(--ct-tint); }
+.cl-menu button span:last-child { font: 400 13px/1 var(--font-mono); color: var(--ct-gray); font-variant-numeric: tabular-nums; }
+.cl-menu button.cl-all { color: var(--ct-gray); }
+.cl-clear { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); margin-left: auto; }
+.cl-clear:hover { color: var(--ct-ink); }
+
+/* ── the register (Anexo table) ──────────────────────────────── */
+.cl-scroll { overflow-x: auto; margin-top: 16px; padding-right: 12px; margin-right: -12px; }
+/* the register is a .ct-table.ct-stack (DESIGN.md §8 «Tablas», owner phone review 2026-10-29): one record per row on a phone */
+@media (min-width: 761px) { .cl-table { min-width: 960px; } .cl-table td.ct-key { min-width: 280px; } }
+.cl-table th button { text-transform: none; letter-spacing: var(--track-sc); font: 600 13px/1.4 var(--font-sc); min-height: 40px; margin: -6px 0; }
+.cl-table th.cl-num, .cl-table td.cl-num { text-align: right; }
+.cl-table .cl-mono { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cl-table .cl-gray { color: var(--ct-gray); }
+.cl-name { display: inline; font: 600 15px/1.4 var(--font-serif); color: var(--ct-ink); text-decoration: underline transparent; text-underline-offset: 3px; text-decoration-thickness: 1px; transition: text-decoration-color var(--dur-press) ease-out; text-wrap: pretty; }
+@media (hover: hover) and (pointer: fine) { .cl-table tr:hover .cl-name { text-decoration-color: currentColor; } }
+.cl-type { font-size: 14px; color: var(--ct-ink); white-space: nowrap; }
+.cl-status { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); white-space: nowrap; }
+.cl-status i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--c); }
+.cl-status i.is-ring { background: transparent; border: 2px solid var(--ct-ink); }
+/* selected row = the pulled record (DESIGN.md §7): the row you came back from */
+.cl-table tbody tr { position: relative; transition: transform 200ms var(--ease-exit); }
+.cl-table tbody tr.is-pulled { transform: translateX(12px); transition: transform var(--dur-pull) var(--ease-pull); }
+.cl-table tbody tr.is-pulled td:first-child { box-shadow: inset 3px 0 0 var(--ct-red); }
+.cl-skel td { height: 32px; }
+.cl-skel span { display: block; height: 12px; background: var(--ct-tint); }
+.cl-empty td { padding: 24px 12px; text-align: left; color: var(--ct-gray); }
+.cl-empty button { margin-left: 12px; min-height: 40px; color: var(--ct-ink); text-decoration: underline; text-underline-offset: 3px; }
+.cl-empty kbd { font: 400 13px/1 var(--font-mono); color: var(--ct-gray); margin-left: 4px; }
+
+/* disposition band (cover side) */
+.cl-band-h { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.cl-band-h span:last-child { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); letter-spacing: 0; }
+.cl-legend { display: flex; flex-wrap: wrap; gap: 0 16px; margin-top: 8px; }
+.cl-legend button { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); border-bottom: 2px solid transparent; transition: color var(--dur-press) ease-out, border-color var(--dur-press) ease-out; }
+.cl-legend button[aria-pressed='true'] { border-bottom-color: var(--ct-ink); }
+.cl-legend button span.cl-n { font: 400 13px/1 var(--font-mono); color: var(--ct-gray); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.cl-legend em { font: 400 13px/1 var(--font-serif); font-style: normal; color: var(--ct-gray); letter-spacing: 0; }
+.cl-hold-band { min-height: 136px; }
+
+@media (max-width: 640px) { .cl-search { flex-basis: 100%; max-width: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .cl-table tbody tr.is-pulled { transform: none; }
+}
+.cl-disposition { margin-top: 16px; }
+.cl-foot-lede { font-size: 15px; line-height: 1.6; text-wrap: pretty; margin: 8px 0 0; }
+
+/* ── the strip: fraud types (filters) + the figures, one compact block (OWNER_REVIEW 2026-10-28) ── */
+.cl-strip { margin-top: 12px; border-top: 1px solid var(--ct-ink); border-bottom: 1px solid var(--ct-rule); padding: 4px 0 6px; }
+.cl-types { display: flex; flex-wrap: wrap; align-items: center; gap: 0 14px; }
+.cl-strip-k { font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.cl-types button { display: inline-flex; align-items: center; min-height: 32px; font: 400 13px/1 var(--font-serif); color: var(--ct-ink); border-bottom: 2px solid transparent; transition: color var(--dur-press) ease-out, border-color var(--dur-press) ease-out; }
+.cl-types button .ct-sq { margin-right: 6px; vertical-align: 0; }
+.cl-types button .cl-n { margin-left: 6px; font: 400 13px/1 var(--font-mono); color: var(--ct-gray); font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) { .cl-types button:hover { border-bottom-color: var(--ct-rule); } }
+.cl-types button[aria-pressed='true'] { border-bottom-color: var(--ct-ink); font-weight: 600; }
+.cl-types button[data-dim] { color: var(--ct-gray); }
+.cl-types button:active { transform: scale(.97); }
+.cl-hold-types { display: inline-block; min-height: 32px; }
+.cl-figs { display: flex; flex-wrap: wrap; gap: 2px 24px; margin: 2px 0 0; font-size: 13px; line-height: 1.5; color: var(--ct-gray); }
+.cl-figs b { font: 600 13px/1.5 var(--font-mono); color: var(--ct-ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  /* phone: one swipeable row of types instead of five wrapped lines */
+  .cl-types { flex-wrap: nowrap; gap: 0 12px; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+  .cl-types::-webkit-scrollbar { display: none; }
+  .cl-types > * { flex: none; white-space: nowrap; }
+  .cl-figs { gap: 2px 16px; }
+}
+
+/* SAND 11-05 (docs/PAGE_QUESTIONS.md Casos): the follow-up «¿Los habría visto el modelo?» under the
+   question, and «Cómo leer esto» numbered marks on the band's worked example (CasesBand.tsx). */
+.cb-guide { margin-top: 8px; }
+.cb-guide p { margin: 0; font: 400 14px/1.6 var(--font-serif); color: var(--cb-ink); text-wrap: pretty; }
+.cb-guide p > b { font-weight: 600; }
+.cb-guide i, .cb-ann { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--cb-ink); color: var(--color-background); font: 600 12px/1 var(--font-mono); font-style: normal; vertical-align: 1px; }
+.cb-guide i { margin: 0 4px 0 2px; }
+.cb-guide .ct-link { font: inherit; }
+.cb-ann { position: absolute; top: calc(var(--cy) - 9px); margin-left: -9px; pointer-events: none; box-shadow: 0 0 0 2px var(--color-background); transition: left var(--cb-cam) var(--cb-inout); }
+.cb-ann--tk { margin-left: -24px; }
+.cb-ann--led { position: static; margin: 0 -2px 0 0; flex: none; }
+.cb-seen { margin: 8px 0 0; font: 400 14px/1.4 var(--font-serif); color: var(--cb-ink); text-wrap: pretty; }
+.cb-seen b { font-weight: 600; }
+
+/* SAND-2 (owner 11-05): «Cómo terminó» is one quiet filter row under «Tipo», same grammar (was a six-box band). */
+.cl-ends { border-top: 1px solid var(--ct-rule); }
+.cl-ends .cl-status { font: 400 13px/1 var(--font-serif); letter-spacing: 0; color: var(--ct-ink); gap: 6px; }
+.cl-ends button[data-dim] .cl-status { color: var(--ct-gray); }
+.cl-ends button[aria-pressed='true'] .cl-status { font-weight: 600; }
+.cl-ends .cl-only { margin-left: 6px; font: 400 13px/1 var(--font-serif); font-style: normal; color: var(--ct-gray); }
+.cl-figs { border-top: 1px solid var(--ct-rule); padding-top: 4px; }
+/* «¿Los habría visto el modelo?»: the head's follow-up, its three lines on the kit ReadLines grid (.ph-read) */
+.cl-follow { display: grid; gap: 16px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--ct-ink); }
+.cl-follow-q { margin: 0; font: 400 17px/24px var(--font-serif); color: var(--color-text-secondary); }
+@media (max-width: 600px) {
+  .cl-types button { min-height: 44px; }
+}

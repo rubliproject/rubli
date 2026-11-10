@@ -1,0 +1,57 @@
+{
+  "filters": {
+    "all": "Todos los casos",
+    "search": "Buscar casos...",
+    "clearFilters": "Limpiar filtros"
+  },
+  "fraudTypes": {
+    "ghost_company": "Empresa fantasma",
+    "bid_rigging": "Manipulación de licitación",
+    "overpricing": "Sobreprecios",
+    "conflict_of_interest": "Conflicto de interés",
+    "embezzlement": "Desfalco",
+    "bribery": "Soborno",
+    "procurement_fraud": "Fraude en adquisiciones",
+    "monopoly": "Monopolio",
+    "emergency_fraud": "Fraude de emergencia",
+    "tender_rigging": "Manipulación de concurso",
+    "infrastructure_overrun": "Sobrecosto de Infraestructura",
+    "invoice_fraud": "Fraude de facturación",
+    "state_capture": "Captura del Estado",
+    "cartel_infiltration": "Infiltración del crimen organizado",
+    "other": "Otro"
+  },
+  "administrations": {
+    "fox": "Fox (2000–2006)",
+    "calderon": "Calderón (2006–2012)",
+    "epn": "Peña Nieto (2012–2018)",
+    "amlo": "AMLO (2018–2024)",
+    "sheinbaum": "Sheinbaum (2024–)",
+    "multiple": "Múltiples administraciones",
+    "unknown": "Administración desconocida"
+  },
+  "severity": {
+    "1": "Bajo",
+    "2": "Medio",
+    "3": "Alto",
+    "4": "Crítico",
+    "label": "SEVERIDAD"
+  },
+  "legalStatuses": {
+    "impunity": "Impunidad",
+    "investigation": "En investigación",
+    "prosecuted": "Procesado",
+    "convicted": "Condenado",
+    "acquitted": "Absuelto",
+    "dismissed": "Desestimado",
+    "unresolved": "Sin resolver",
+    "ongoing": "En curso",
+    "settled": "Resuelto"
+  },
+  "loadError": "Error al cargar los casos.",
+  "loadErrorDetail": "El servidor puede estar temporalmente no disponible. Los datos aparecerán una vez que se restablezca la conexión.",
+  "resultCount": "{{count}} casos",
+  "noResultsHint": "Amplíe la búsqueda o quite filtros. La combinación actual puede ser demasiado restrictiva.",
+  "noResultsExplain": "No hay casos documentados que coincidan con \"{{query}}\". Esto no significa que no haya corrupción en esta área — significa que aún no hemos documentado un caso con estos criterios.",
+  "noResults": "Ningún caso coincide con los filtros actuales."
+}

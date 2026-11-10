@@ -1,0 +1,356 @@
+"""
+Precompute the category-dossier enrichment payloads that are too slow to compute
+live (each is a multi-second-to-30s aggregation over the 3.1M-row contracts
+table). Mirrors the sector-dossier precompute scripts.
+
+Produces:
+  1. TABLE category_vendor_institution_topn — top-12 vendor x institution capture
+     pairs per category (so the dossier renders them INSTANTLY instead of hiding
+     them behind a ~14s "Load capture pairs" button).
+  2. precomputed_stats['category_largest_contracts'] = {cat_id: [up to 8 named,
+     datable, clickable contracts]} — mirrors sector_largest_contracts.
+  3. precomputed_stats['category_top_institutions'] = {cat_id: [up to 6 buying
+     institutions by value, with share]} — who SPENDS in the category.
+  4. precomputed_stats['category_price_distribution'] = {cat_id: {p25/p50/p75,
+     mean, mean_median_ratio, outlier_count/value, mega (>=1B) share, n}}.
+
+Pure stdlib (sqlite3/json) — runs with bare host Python too. Idempotent.
+
+Capture pairs are keyed by canonical vendor and institution ids (scripts/_institution_canonical.py).
+
+Run: python -m scripts._precompute_category_enrichments [DB_PATH]
+     python -m scripts._precompute_category_enrichments DB_PATH --only top_institutions
+     (--only: comma list of capture_pairs, largest_contracts, top_institutions,
+      price_distribution; rebuilds just those, e.g. after institution_category_stats)
+     python -m scripts._precompute_category_enrichments DB_PATH --out-db OUT
+--out-db builds only the capture-pairs table in OUT with DB_PATH attached read-only
+(scripts/_out_db.py); the precomputed_stats keys are not written.
+"""
+import json
+import sqlite3
+import sys
+import time
+from datetime import datetime
+from pathlib import Path
+import os as _os, sys as _sys  # noqa: E401
+_sys.path.insert(0, _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))))  # backend/ → api.* (also for `python scripts/x.py`)
+from api.config.constants import proc_den, proc_known  # noqa: E402  DQ1 § 2
+
+try:
+    from scripts._institution_canonical import install_contracts_canon
+    from scripts._out_db import open_db
+except ImportError:  # run as a plain file from backend/scripts
+    from _institution_canonical import install_contracts_canon
+    from _out_db import open_db
+
+MAX_CONTRACT_VALUE = 100_000_000_000  # 100B MXN — reject ceiling
+MEGA_THRESHOLD = 1_000_000_000        # 1B MXN — "mega-contract"
+PAIRS_TOP_N = 12
+CONTRACTS_TOP_N = 8
+INSTITUTIONS_TOP_N = 6
+
+
+def _resolve_db_path() -> Path:
+    base = Path(__file__).resolve().parent.parent
+    for name in ("RUBLI_NORMALIZED.db", "RUBLI_DEPLOY.db"):
+        p = base / name
+        if p.exists() and p.stat().st_size > 0:
+            return p
+    raise FileNotFoundError(f"No DB found at {base}/RUBLI_*.db")
+
+
+def _set_stat(cur, key: str, payload: dict) -> None:
+    cur.execute(
+        "INSERT INTO precomputed_stats (stat_key, stat_value, updated_at) VALUES (?, ?, ?) "
+        "ON CONFLICT (stat_key) DO UPDATE SET stat_value = excluded.stat_value, updated_at = excluded.updated_at",
+        (key, json.dumps(payload), datetime.now().isoformat()),
+    )
+
+
+# ── 1. Capture pairs (vendor x institution) ──────────────────────────────────
+def build_capture_pairs(cur) -> None:
+    print("[1/4] capture pairs -> category_vendor_institution_topn ...")
+    t0 = time.time()
+    install_contracts_canon(cur.connection, vendors=True)
+    cur.execute("DROP TABLE IF EXISTS category_vendor_institution_topn")
+    cur.execute("""
+        CREATE TABLE category_vendor_institution_topn (
+            category_id      INTEGER NOT NULL,
+            rank             INTEGER NOT NULL,
+            vendor_id        INTEGER NOT NULL,
+            vendor_name      TEXT    NOT NULL,
+            institution_id   INTEGER NOT NULL,
+            institution_name TEXT    NOT NULL,
+            contract_count   INTEGER NOT NULL,
+            total_value      REAL    NOT NULL,
+            avg_risk         REAL,
+            max_risk         REAL,
+            direct_award_pct REAL,
+            single_bid_pct   REAL,
+            PRIMARY KEY (category_id, rank)
+        )
+    """)
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_cvit_category ON category_vendor_institution_topn(category_id)"
+    )
+    cur.execute(f"""
+        INSERT INTO category_vendor_institution_topn
+        WITH agg AS (
+            SELECT c.category_id, c.vendor_id, c.institution_id,
+                   COUNT(*)                                  AS cnt,
+                   SUM(c.amount_mxn)                         AS val,
+                   AVG(c.risk_score)                         AS ar,
+                   MAX(c.risk_score)                         AS mr,
+                   SUM({proc_known('c.is_direct_award', 'c.contract_year')}) * 100.0 / {proc_den('c.is_direct_award', 'c.contract_year')} AS da,
+                   SUM({proc_known('c.is_single_bid', 'c.contract_year')})   * 100.0 / {proc_den('c.is_single_bid', 'c.contract_year')} AS sb
+            FROM contracts_canon c
+            WHERE c.category_id IS NOT NULL
+              AND c.vendor_id IS NOT NULL
+              AND c.institution_id IS NOT NULL
+              AND c.amount_mxn IS NOT NULL
+            GROUP BY c.category_id, c.vendor_id, c.institution_id
+        ),
+        ranked AS (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY val DESC) AS rn
+            FROM agg
+        )
+        SELECT r.category_id, r.rn, r.vendor_id, v.name, r.institution_id,
+               COALESCE(i.siglas, i.name), r.cnt, ROUND(r.val, 2),
+               ROUND(r.ar, 4), ROUND(r.mr, 4), ROUND(r.da, 1), ROUND(r.sb, 1)
+        FROM ranked r
+        JOIN vendors v      ON v.id = r.vendor_id
+        JOIN institutions i ON i.id = r.institution_id
+        WHERE r.rn <= {PAIRS_TOP_N}
+    """)
+    n = cur.execute("SELECT COUNT(*) FROM category_vendor_institution_topn").fetchone()[0]
+    print(f"      {n} pairs in {time.time()-t0:.1f}s")
+
+
+# ── 2. Largest contracts ──────────────────────────────────────────────────────
+def build_largest_contracts(cur, cat_ids) -> None:
+    print("[2/4] largest contracts -> precomputed_stats[category_largest_contracts] ...")
+    t0 = time.time()
+    out: dict = {}
+    for cid in cat_ids:
+        rows = cur.execute(
+            """
+            SELECT ct.id AS contract_id, ct.amount_mxn, ct.contract_year,
+                   ct.risk_level, ct.risk_score, ct.title,
+                   ct.vendor_id, v.name AS vendor_name,
+                   ct.institution_id, i.name AS institution_name, i.siglas
+            FROM contracts ct
+            LEFT JOIN vendors v ON v.id = ct.vendor_id
+            LEFT JOIN institutions i ON i.id = ct.institution_id
+            WHERE ct.category_id = ? AND ct.amount_mxn IS NOT NULL
+              AND ct.amount_mxn > 0 AND ct.amount_mxn <= ?
+            ORDER BY ct.amount_mxn DESC
+            LIMIT ?
+            """,
+            (cid, MAX_CONTRACT_VALUE, CONTRACTS_TOP_N),
+        ).fetchall()
+        out[str(cid)] = [
+            {
+                "contract_id": r["contract_id"],
+                "amount_mxn": r["amount_mxn"] or 0,
+                "year": r["contract_year"],
+                "risk_level": r["risk_level"],
+                "risk_score": round(r["risk_score"], 4) if r["risk_score"] is not None else None,
+                "vendor_id": r["vendor_id"],
+                "vendor_name": r["vendor_name"],
+                "institution_id": r["institution_id"],
+                "institution_name": r["siglas"] or r["institution_name"],
+                "title": (r["title"] or "")[:160] or None,
+            }
+            for r in rows
+        ]
+    _set_stat(cur, "category_largest_contracts", out)
+    print(f"      {len(out)} categories in {time.time()-t0:.1f}s")
+
+
+# ── 3. Top buying institutions ────────────────────────────────────────────────
+def build_top_institutions(cur, cat_totals) -> None:
+    print("[3/4] top institutions -> precomputed_stats[category_top_institutions] ...")
+    t0 = time.time()
+    # One base with the institution dossier's «What they buy» panel: read the
+    # institution x category precompute when it exists (PARALLAX D9b F9 — the
+    # two surfaces printed 145,131 vs 173,351 IMSS medication contracts).
+    # Fallback: the same filter that table is built with (amount <= 100B).
+    try:
+        cur.execute("SELECT 1 FROM institution_category_stats LIMIT 1")
+        agg_sql = """
+            SELECT category_id, institution_id,
+                   contract_count AS cnt, total_value_mxn AS spend, avg_risk_score AS ar
+            FROM institution_category_stats
+        """
+        agg_params: tuple = ()
+    except sqlite3.OperationalError:
+        agg_sql = """
+            SELECT c.category_id, c.institution_id,
+                   COUNT(*)                          AS cnt,
+                   SUM(COALESCE(c.amount_mxn, 0))    AS spend,
+                   AVG(c.risk_score)                 AS ar
+            FROM contracts c
+            WHERE COALESCE(c.amount_mxn, 0) <= ?
+              AND c.category_id IS NOT NULL AND c.institution_id IS NOT NULL
+            GROUP BY c.category_id, c.institution_id
+        """
+        agg_params = (MAX_CONTRACT_VALUE,)
+    rows = cur.execute(
+        f"""
+        WITH agg AS ({agg_sql}),
+        ranked AS (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY category_id ORDER BY spend DESC) AS rn
+            FROM agg
+        )
+        SELECT r.category_id, r.institution_id, i.name, i.siglas,
+               r.cnt, r.spend, r.ar
+        FROM ranked r
+        JOIN institutions i ON i.id = r.institution_id
+        WHERE r.rn <= {INSTITUTIONS_TOP_N}
+        ORDER BY r.category_id, r.spend DESC
+        """,
+        agg_params,
+    ).fetchall()
+    out: dict = {}
+    for r in rows:
+        cid = r["category_id"]
+        total = cat_totals.get(cid) or 0
+        spend = float(r["spend"] or 0)
+        out.setdefault(str(cid), []).append({
+            "institution_id": r["institution_id"],
+            "name": r["siglas"] or r["name"],
+            "full_name": r["name"],
+            "contract_count": r["cnt"],
+            "value_mxn": spend,
+            "share_pct": round(spend / total * 100, 1) if total > 0 else 0.0,
+            "avg_risk": round(r["ar"], 4) if r["ar"] is not None else None,
+        })
+    _set_stat(cur, "category_top_institutions", out)
+    print(f"      {len(out)} categories in {time.time()-t0:.1f}s")
+
+
+# ── 4. Price distribution / outliers ──────────────────────────────────────────
+def build_price_distribution(cur, cat_ids) -> None:
+    """Index-backed SQL approach — percentiles via OFFSET, tails via COUNT/SUM.
+
+    The earlier "pull every amount into Python and sort" approach was both slow
+    (~15 min over the 3.1M-row table) and memory-heavy enough to trip the prod
+    backend container's healthcheck mid-run. This version touches only a handful
+    of rows per category and relies on a (category_id, amount_mxn) composite
+    index (created below if missing) so each OFFSET/aggregate query is fast.
+    """
+    print("[4/4] price distribution -> precomputed_stats[category_price_distribution] ...")
+    t0 = time.time()
+    cur.execute(
+        "CREATE INDEX IF NOT EXISTS idx_c_cat_amount ON contracts(category_id, amount_mxn)"
+    )
+    base = "FROM contracts WHERE category_id = ? AND amount_mxn > 0 AND amount_mxn < ?"
+    out: dict = {}
+    for cid in cat_ids:
+        n = cur.execute(f"SELECT COUNT(*) {base}", (cid, MAX_CONTRACT_VALUE)).fetchone()[0]
+        if not n:
+            out[str(cid)] = {"n": 0}
+            continue
+
+        def _pct(k: int) -> float:
+            return cur.execute(
+                f"SELECT amount_mxn {base} ORDER BY amount_mxn LIMIT 1 OFFSET ?",
+                (cid, MAX_CONTRACT_VALUE, k),
+            ).fetchone()[0]
+
+        p25, p50, p75 = _pct(n // 4), _pct(n // 2), _pct((3 * n) // 4)
+        agg = cur.execute(
+            f"SELECT AVG(amount_mxn) m, SUM(amount_mxn) s {base}", (cid, MAX_CONTRACT_VALUE)
+        ).fetchone()
+        mean, total = agg["m"], agg["s"]
+        iqr = p75 - p25
+        fence = p75 + 1.5 * iqr
+        o = cur.execute(
+            f"SELECT COUNT(*) c, COALESCE(SUM(amount_mxn), 0) s {base} AND amount_mxn > ?",
+            (cid, MAX_CONTRACT_VALUE, fence),
+        ).fetchone()
+        mg = cur.execute(
+            f"SELECT COUNT(*) c, COALESCE(SUM(amount_mxn), 0) s {base} AND amount_mxn >= ?",
+            (cid, MAX_CONTRACT_VALUE, MEGA_THRESHOLD),
+        ).fetchone()
+        out[str(cid)] = {
+            "n": n,
+            "p25": round(p25),
+            "p50": round(p50),
+            "p75": round(p75),
+            "mean": round(mean),
+            "iqr": round(iqr),
+            "mean_median_ratio": round(mean / p50, 2) if p50 > 0 else None,
+            "outlier_count": o["c"],
+            "outlier_value": round(o["s"]),
+            "outlier_value_pct": round(o["s"] / total * 100, 1) if total else 0.0,
+            "mega_count": mg["c"],
+            "mega_value": round(mg["s"]),
+            "mega_value_pct": round(mg["s"] / total * 100, 1) if total else 0.0,
+            "total_value": round(total),
+        }
+    _set_stat(cur, "category_price_distribution", out)
+    print(f"      {len(out)} categories in {time.time()-t0:.1f}s")
+
+
+def run_out_db(db_path: str, out_db: str) -> None:
+    conn = open_db(db_path, out_db, ["category_vendor_institution_topn"], timeout=600)
+    build_capture_pairs(conn.cursor())
+    conn.commit()
+    conn.close()
+
+
+STEPS = ("capture_pairs", "largest_contracts", "top_institutions", "price_distribution")
+
+
+def run(db_path: str, only=STEPS) -> None:
+    t_all = time.time()
+    conn = sqlite3.connect(db_path, timeout=600)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA wal_autocheckpoint=0")
+    cur = conn.cursor()
+    print(f"DB: {db_path}")
+
+    cat_ids = [r["category_id"] for r in cur.execute(
+        "SELECT category_id FROM category_stats ORDER BY category_id"
+    ).fetchall()]
+    cat_totals = {r["category_id"]: r["total_value"] for r in cur.execute(
+        "SELECT category_id, total_value FROM category_stats"
+    ).fetchall()}
+    print(f"{len(cat_ids)} categories")
+
+    if "capture_pairs" in only:
+        build_capture_pairs(cur)
+        conn.commit()
+    if "largest_contracts" in only:
+        build_largest_contracts(cur, cat_ids)
+        conn.commit()
+    if "top_institutions" in only:
+        build_top_institutions(cur, cat_totals)
+        conn.commit()
+    if "price_distribution" in only:
+        build_price_distribution(cur, cat_ids)
+        conn.commit()
+    # Persist the WAL into the main DB file — prod is a SINGLE-FILE bind mount +
+    # WAL, so the -wal sidecar is ephemeral to the container and is lost on
+    # recreate. Checkpoint here so a completed run survives the next deploy.
+    conn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    conn.close()
+    print(f"\n==> all category enrichments written ({time.time()-t_all:.1f}s total).")
+
+
+if __name__ == "__main__":
+    if "--out-db" in sys.argv:
+        i = sys.argv.index("--out-db")
+        run_out_db(sys.argv[1], sys.argv[i + 1])
+    else:
+        only = STEPS
+        if "--only" in sys.argv:
+            only = tuple(sys.argv[sys.argv.index("--only") + 1].split(","))
+            unknown = set(only) - set(STEPS)
+            if unknown:
+                sys.exit(f"unknown --only step(s): {sorted(unknown)}; choose from {STEPS}")
+        args = [a for a in sys.argv[1:] if a != "--only" and a not in (",".join(only),)]
+        run(args[0] if args else str(_resolve_db_path()), only)

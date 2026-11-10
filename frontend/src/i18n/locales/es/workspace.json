@@ -1,0 +1,25 @@
+{
+  "guide": {
+    "title": "Inicie su investigación",
+    "description": "Use expedientes para organizar su investigación. Agregue proveedores, instituciones y contratos para construir un panorama completo de los patrones de contratación.",
+    "createFirstDossier": "Crear su primer expediente",
+    "searchVendorLink": "O busca un proveedor para comenzar",
+    "exampleInvestigations": "Ejemplos de investigaciones",
+    "howItWorks": "Cómo funciona",
+    "howItWorksP1": "Los expedientes son carpetas privadas de investigación que se guardan en su navegador. Cada expediente puede contener proveedores, instituciones y contratos individuales.",
+    "howItWorksP2": "Use el botón «Agregar al expediente» en cualquier perfil de proveedor o institución para empezar a reunir evidencia. Los expedientes se conservan entre sesiones para que pueda retomar la investigación más tarde.",
+    "howItWorksP3": "Cuando quiera publicar o compartir, exporte su expediente como CSV o JSON con todas las entidades reunidas y sus metadatos de riesgo.",
+    "dossiers": "Expedientes",
+    "addToDossierLabel": "Agregar al expediente",
+    "exportLabel": "Exportar"
+  },
+  "search": {
+    "noResults": "Sin resultados para \"{{query}}\""
+  },
+  "folderSidebar": {
+    "allItems": "Todos los elementos",
+    "namePlaceholder": "Nombre de carpeta",
+    "create": "Crear",
+    "newFolder": "Nueva carpeta"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "back": "Volver",
+  "subtitle": "Análisis comparativo de perfiles de riesgo para dos proveedores seleccionados.",
+  "errorTitle": "No se pudo cargar la información",
+  "errorBody": "Uno o ambos IDs de proveedor pueden ser inválidos. Verifique los IDs y vuelva a intentarlo.",
+  "viewProfile": "Ver perfil completo",
+  "radarTitle": "Perfil de riesgo multidimensional",
+  "radarSubtitle": "Línea sólida = Proveedor A. Línea discontinua = Proveedor B. Valores hacia el borde = mayor desviación de la norma sectorial.",
+  "noRadarData": "No hay datos z-score disponibles para la comparación de radar.",
+  "metricTitle": "Métricas de contratación",
+  "metricSubtitle": "La columna “Delta” muestra cómo difiere el Proveedor B. Rojo = peor riesgo; verde = mejor.",
+  "metricColLabel": "Métrica",
+  "metricColDelta": "Delta",
+  "deltaEqual": "igual",
+  "vendorA": "Proveedor A",
+  "vendorB": "Proveedor B",
+  "picker": {
+    "labelA": "Proveedor A",
+    "labelB": "Proveedor B",
+    "placeholderA": "Buscar proveedor...",
+    "compare": "Comparar",
+    "hint": "También puede llegar aquí desde el perfil de cualquier proveedor usando el botón “Comparar”."
+  },
+  "verdict": {
+    "section": "VEREDICTO",
+    "title": "¿Quién presenta más riesgo?",
+    "narrative": "{{winner}} presenta un puntaje de riesgo {{pct}}% mayor que {{loser}}",
+    "tiedMessage": "Ambos proveedores presentan perfiles de riesgo similares.",
+    "higherRisk": "Mayor riesgo",
+    "vs": "vs"
+  },
+  "contracts": "contratos",
+  "noResults": "Sin resultados",
+  "searching": "Buscando...",
+  "headline": {
+    "section": "COMPARATIVA DE PROVEEDORES",
+    "title": "Cara a cara: análisis comparativo",
+    "subtitle": "Seleccione dos proveedores para revelar sus diferencias en patrones de contratación y riesgo"
+  }
+}

@@ -1,0 +1,291 @@
+{
+  "title": "Contracts",
+  "header": {
+    "kicker": "THE FEDERAL LEDGER · 2002–2026 · v0.9.2",
+    "indexed": "Indexed",
+    "withAmount": "Contracts with an amount",
+    "actLedger": "THE LEDGER",
+    "highRisk": "High or critical",
+    "totalSpend": "Total spend",
+    "validAmount": "with a valid amount"
+  },
+  "dictionary": {
+    "title": "About this archive",
+    "frozen": "CompraNet through Sep 28 2025 — its federal feed closed after its legal abolition (Apr 2025); ComprasMX open data after that, up to the cut-off, refreshed weekly.",
+    "export": "Downloads honor your current filters (title/description search, sector, year, institution, category, risk level, procedure flags, amount and risk-factor), capped at the first 10,000 rows — narrow the filters to retrieve a full slice.",
+    "fieldsTitle": "Field glossary",
+    "contract": "Contract — one awarded procurement record (vendor · institution · amount · date).",
+    "directAward": "Direct award (adjudicación directa) — awarded without a competitive tender.",
+    "singleBid": "Single award — a competitive procedure that ended with only one winner.",
+    "risk": "Risk indicator, of 100 — model resemblance to the contracts of vendors later linked to documented cases. An investigation signal, not proof of irregularity.",
+    "category": "Category (partida) — the CUCoP spending classification of the goods/services."
+  },
+  "searchPlaceholder": "Search by title or contract number...",
+  "guidance": "Choose a preset or a filter. A row opens the contract's dossier; the chevron previews it here; the checkbox adds it to a comparison.",
+  "presets": {
+    "suspiciousMonopolies": {
+      "label": "Single-award Contracts",
+      "description": "Critical-risk single-award contracts — one vendor in a competitive procedure"
+    },
+    "decemberRush": {
+      "label": "December Rush",
+      "description": "High- or critical-risk year-end contracts — elevated spending before fiscal close"
+    },
+    "priceOutliers": {
+      "label": "Amount outliers",
+      "description": "High- or critical-risk amount outliers — contracts far larger than the sector norm"
+    },
+    "ghostCompanies": {
+      "label": "Industry Mismatch",
+      "description": "Direct awards to vendors working outside their registered line of business. A signal to check, not proof of a shell company."
+    },
+    "networkClusters": {
+      "label": "Network Clusters",
+      "description": "Critical-risk contracts of vendors inside a detected vendor network"
+    },
+    "splitContracts": {
+      "label": "Same-day splits",
+      "description": "Several contracts to one vendor on the same day"
+    },
+    "mostAnomalous": {
+      "label": "Most Anomalous",
+      "description": "Contracts furthest from statistical norms — highest Mahalanobis distance across all risk dimensions"
+    },
+    "recentCritical": {
+      "label": "Recent & Critical",
+      "description": "Critical-risk contracts from the latest year on record ({{year}}) — highest indicator first"
+    },
+    "biggestDirectAwards": {
+      "label": "Largest direct awards",
+      "description": "Awarded without a tender — highest value first"
+    },
+    "liveCount_one": "{{formatted}} contract",
+    "liveCount_other": "{{formatted}} contracts"
+  },
+  "columns": {
+    "risk": "Risk",
+    "vendor": "Vendor",
+    "institution": "Institution",
+    "amount": "Amount (MXN)",
+    "date": "Date",
+    "sector": "Sector",
+    "procedure": "Procedure",
+    "anomalyScore": "Anomaly D²",
+    "contract": "Contract",
+    "who": "Who"
+  },
+  "detail": {
+    "title": "Contract Detail",
+    "contractNumber": "Contract Number",
+    "amount": "Amount",
+    "date": "Contract Date",
+    "year": "Year",
+    "vendor": "Vendor",
+    "institution": "Institution",
+    "sector": "Sector",
+    "riskBreakdown": "Risk Breakdown",
+    "riskFactors": "Risk Factors",
+    "confidenceInterval": "Confidence Interval",
+    "mahalanobisDistance": "Mahalanobis Distance",
+    "noFactors": "No risk factors identified",
+    "overview": "Overview",
+    "riskAssessment": "Risk Assessment",
+    "noRiskScore": "No risk score available",
+    "errorLoading": "Failed to load contract details",
+    "numberLabel": "Number",
+    "anomalyLabel": "Anomaly"
+  },
+  "filters": {
+    "heading": "Filters",
+    "sector": "Sector",
+    "allSectors": "All Sectors",
+    "year": "Year",
+    "allYears": "All Years",
+    "riskLevel": "Risk Level",
+    "directAward": "Direct award",
+    "singleBid": "Single award",
+    "minAmount": "Min (MXN)",
+    "maxAmount": "Max (MXN)",
+    "minAmountPlaceholder": "Min MXN",
+    "maxAmountPlaceholder": "Max MXN",
+    "riskFactor": "Risk Factor",
+    "allFactors": "All Factors",
+    "perPage": "Per page",
+    "clearAll": "Clear all",
+    "clearMin": "Clear minimum amount",
+    "clearMax": "Clear maximum amount",
+    "showResults": "Show {{formatted}} results",
+    "done": "Done"
+  },
+  "stats": {
+    "totalContracts": "Total Contracts",
+    "totalValue": "Total Value",
+    "pageTotal": "Page total",
+    "avgRisk": "Page avg risk",
+    "critical": "Page critical",
+    "highPlus": "Page high+",
+    "direct": "Page direct",
+    "directAwardRate": "Direct Award Rate"
+  },
+  "table": {
+    "anomalyTooltip": "Mahalanobis distance — how statistically unusual this contract is across all risk dimensions. Higher = more unusual.",
+    "selectForCompare": "Select to compare",
+    "clearSelection": "Clear selection",
+    "viewFullDetails": "View full details",
+    "fullDetails": "Full details",
+    "riskScoreTooltipTitle": "About the risk score",
+    "riskScoreTooltipBody": "The risk indicator, of 100, measures resemblance to the contracts of vendors later linked to documented cases. It is not proof of irregularity — it is an investigation signal.",
+    "peek": "Quick look",
+    "scrollHint": "scroll →"
+  },
+  "actions": {
+    "exportHeading": "Export",
+    "filterSaved": "Saved",
+    "copied": "Copied",
+    "copyLink": "Copy shareable link",
+    "exportCsv": "Export to CSV",
+    "exportXlsx": "Export to Excel (.xlsx)",
+    "dismissNotice": "Dismiss data quality notice",
+    "searchLabel": "Search contracts by title or contract number",
+    "clearSearch": "Clear search",
+    "filterRisk": "Filter by risk level",
+    "filterRiskLevel": "Filter by {{level}} risk",
+    "filterSector": "Filter by sector",
+    "filterYear": "Filter by year",
+    "filterFactor": "Filter by risk factor",
+    "perPage": "Results per page",
+    "removeFilter": "Remove filter: {{label}}",
+    "saveFilter": "Save filter",
+    "saveFilterLabel": "Save current filter configuration",
+    "savedCount": "Saved ({{count}})",
+    "showSaved": "Show saved filters",
+    "removeSaved": "Remove saved filter: {{label}}",
+    "compare": "Compare",
+    "selectedCount": "{{count}} selected",
+    "clearSelection": "Clear selection",
+    "retry": "Retry",
+    "pagination": "Pagination",
+    "prevPage": "Previous page",
+    "nextPage": "Next page",
+    "contractsList": "Contracts list",
+    "rangeOf": "{{start}}–{{end}} of {{total}}",
+    "opensNewTab": "(opens in new tab)"
+  },
+  "error": {
+    "failedToLoad": "Failed to load contracts",
+    "exportCapped": "Export capped",
+    "exportComplete": "Export complete",
+    "exportFailed": "Export failed",
+    "copyFailed": "Copy failed",
+    "linkCopied": "Link copied"
+  },
+  "pre2010Banner": "Contracts from 2002–2010 have limited data quality (RFC <1%). Risk indicators for this period are directional estimates only.",
+  "empty": "No contracts found matching your filters.",
+  "emptyInitial": "{{total}} contracts · 2002–2026",
+  "emptyInitialDesc": "Search any contract, institution, or vendor name to begin. Or use the filters above to browse by sector, year, or risk level.",
+  "emptyFiltered": "No contracts match your filters",
+  "emptyFilteredDesc": "Try adjusting your search or clearing the active filters",
+  "riskLevels": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "statsBar": {},
+  "peek": {
+    "openDossier": "Open full dossier"
+  },
+  "senalados": {
+    "kicker": "THE FLAGGED",
+    "honesty": "Flagged by the model and documented cases — not an accusation.",
+    "empty": "No standout flags in this filter.",
+    "notAccusation": "not an accusation",
+    "more": "see {{count}} more",
+    "show": "Show {{count}}",
+    "hide": "Hide"
+  },
+  "filterTags": {
+    "year": "Year {{year}}",
+    "risk": "Risk: {{level}}",
+    "directAwards": "Direct awards",
+    "singleBidders": "Single-award procedures",
+    "category": "Category #{{id}}",
+    "riskMin": "Risk: {{level}} or above"
+  },
+  "toast": {
+    "tooManyTitle": "Too many selected",
+    "tooManyBody": "You can compare up to {{max}} contracts at a time",
+    "exportCappedBody": "Your filters match {{total}} contracts. Only the first {{max}} will be exported. Narrow your filters to get the full set.",
+    "exportCompleteCapped": "Downloaded {{exported}} of {{total}} matching contracts (capped at {{max}}).",
+    "exportCompleteBody": "Downloaded {{exported}} contracts",
+    "exportCompleteXlsx": "Downloaded {{exported}} contracts (Excel)",
+    "exportFailedBody": "Unable to export contracts",
+    "excelUnavailable": "Excel unavailable",
+    "excelUnavailableBody": "Excel export isn’t enabled on this server yet — use the CSV download instead.",
+    "linkCopiedBody": "Filter URL copied to clipboard",
+    "copyFailedBody": "Unable to copy link",
+    "networkError": "Unable to connect to server.",
+    "unexpectedError": "An unexpected error occurred."
+  },
+  "compare": {
+    "title": "Compare contracts",
+    "selected_one": "({{count}} selected)",
+    "selected_other": "({{count}} selected)",
+    "close": "Close comparison",
+    "loading": "Loading the selected contracts",
+    "tableLabel": "Contract comparison",
+    "untitled": "Untitled",
+    "fullDetails": "Open the contract record",
+    "directAward": "Direct award",
+    "singleBid": "Single award",
+    "rows": {
+      "risk": "Risk indicator",
+      "amount": "Amount",
+      "date": "Date",
+      "vendor": "Vendor",
+      "institution": "Institution",
+      "sector": "Sector",
+      "procedure": "Procedure",
+      "flags": "Flags",
+      "riskTags": "Risk tags"
+    }
+  },
+  "archiveTitle": "The Archive",
+  "archiveDek": "Every federal contract in the register, searchable and downloadable.",
+  "archiveTitleFiltered_one": "{{formatted}} contract · {{tags}}",
+  "archiveTitleFiltered_other": "{{formatted}} contracts · {{tags}}",
+  "countNoAmount": "· includes {{formatted}} without a valid amount",
+  "ct": {
+    "doc": "Contracts",
+    "figures": "In figures",
+    "figCount": "Contracts in view",
+    "figCountAll": "the whole record, 2002–{{year}}",
+    "figCountFiltered": "with the active filters",
+    "figAmount": "Amount in view",
+    "figAmountAll": "contracts with a valid amount",
+    "figAmountScoped": "sum for the chosen sector and year",
+    "figAmountNA": "the sum is computed by sector and year only",
+    "figCrit": "Critical indicator",
+    "figCritNote": "{{formatted}} contracts with an indicator ≥ 0.60",
+    "figDa": "Direct award",
+    "figDaNote": "{{formatted}} contracts without a tender",
+    "railShortcuts": "Shortcuts",
+    "railRisk": "Indicator",
+    "railProcedure": "Procedure",
+    "railNarrow": "Narrow",
+    "railActive": "Active filters",
+    "flagged": "The flagged",
+    "register": "The register",
+    "pageOf": "Page {{page}} of {{total}}",
+    "prev": "Previous",
+    "next": "Next",
+    "clearFilters": "Clear filters",
+    "person": "person",
+    "personTitle": "Natural person, not a company",
+    "colWho": "Vendor · institution",
+    "colRisk": "Risk indicator",
+    "perPage": "per page",
+    "compareBar": "{{count}} picked",
+    "declarations": "Declarations"
+  }
+}

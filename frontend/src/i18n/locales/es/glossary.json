@@ -1,0 +1,244 @@
+{
+  "riskScore": {
+    "title": "Indicador de riesgo",
+    "description": "Un indicador estadístico de riesgo (0-1) que ordena los contratos por el parecido con los contratos de proveedores que después aparecen vinculados a casos documentados. Mayor = más parecido. No es una probabilidad de corrupción: las etiquetas con las que aprendió marcan todos los contratos de un proveedor del caso en los años del caso, no contratos probados como corruptos. No es una determinación legal ni prueba de irregularidad."
+  },
+  "riskScoreDisclaimer": {
+    "title": "Cómo interpretar esta puntuación",
+    "description": "Esta puntuación mide el parecido con los contratos de proveedores que después aparecen vinculados a casos documentados — no es una determinación legal ni prueba de irregularidad. Una puntuación alta significa que las características de contratación de esta entidad se parecen a las de ellos. Úsela solo para priorizar investigaciones."
+  },
+  "riskLevel": {
+    "title": "Nivel de riesgo",
+    "description": "Categorización basada en la puntuación: Crítico (>=60%), Alto (>=40%), Medio (>=25%), Bajo (<25%). Estos umbrales son propios de RUBLI, fijados en la calibración (docs/RISK_METHODOLOGY_v6.md)."
+  },
+  "singleBid": {
+    "title": "Un solo adjudicado",
+    "description": "Un procedimiento competitivo (no adjudicación directa) que terminó con un solo ganador. CompraNet registra ganadores, no participantes, así que no muestra cuántas empresas ofertaron; la tasa se expresa solo sobre procedimientos competitivos."
+  },
+  "directAward": {
+    "title": "Adjudicación directa",
+    "description": "Un contrato otorgado directamente a un proveedor sin licitación competitiva. Legal en México bajo ciertas condiciones (emergencias, proveedor único). Tener un solo adjudicado en adjudicación directa es esperado — NO es lo mismo que un solo adjudicado."
+  },
+  "vendorConcentration": {
+    "title": "Concentración de proveedores",
+    "description": "Qué proporción del valor total de contrataciones de un sector va a un solo proveedor. Alta concentración significa que un proveedor domina — un predictor principal de riesgo de corrupción en nuestro modelo (coeficiente +0.327)."
+  },
+  "mahalanobisDistance": {
+    "title": "Distancia de Mahalanobis",
+    "description": "Una medida estadística de qué tan inusual es un contrato en TODAS las 16 dimensiones de riesgo simultáneamente. Como preguntar: '¿Qué tan lejos está este contrato de lo normal?' Valores más altos = más anómalo."
+  },
+  "zScore": {
+    "title": "Puntuación Z",
+    "description": "Una medida estandarizada que muestra cuántas desviaciones estándar un valor está del promedio del sector/año. Una puntuación z de +2 significa que el valor es inusualmente alto comparado con contratos similares."
+  },
+  "hhi": {
+    "title": "IHH (índice Herfindahl-Hirschman)",
+    "description": "Medida de concentración de mercado (0-10,000). Menos de 1,500 = mercado competitivo. 1,500-2,500 = moderadamente concentrado. Más de 2,500 = altamente concentrado. Usado para detectar monopolios de proveedores."
+  },
+  "puLearning": {
+    "title": "Aprendizaje PU",
+    "description": "Aprendizaje Positivo-No etiquetado: técnica para entrenar modelos cuando solo algunos ejemplos están etiquetados (aquí: contratos de proveedores que después aparecen vinculados a casos documentados, dentro de los años de cada caso) y el resto es desconocido (no etiquetado, no necesariamente limpio). Nuestro modelo usa la corrección de Elkan & Noto (2008)."
+  },
+  "aucRoc": {
+    "title": "AUC-ROC",
+    "description": "Área Bajo la Curva ROC — con qué frecuencia el modelo coloca un año-proveedor de una empresa que después aparece vinculada a un caso documentado por encima de uno sin caso. 0.5 = adivinanza aleatoria, 1.0 = perfecto. v0.9.2 obtiene 0.827 encadenado hacia adelante: entrenado con años anteriores y probado con los proveedores del año siguiente (2019–2025), IC 95% de 0.763 a 0.883; 0.741 a igual tamaño de proveedor. Mide cómo ordena años-proveedor, no si detecta contratos corruptos. El 0.852 publicado para v0.9.1 venía de otra prueba y usaba datos posteriores a cada contrato, así que no se comparan."
+  },
+  "industryMismatch": {
+    "title": "Discrepancia de industria",
+    "description": "Cuando un proveedor gana contratos en un sector que no coincide con su negocio principal. Por ejemplo, una constructora que gana contratos de salud. Puede indicar una empresa fachada o favoritismo."
+  },
+  "priceAnomaly": {
+    "title": "Anomalía de monto",
+    "description": "Monto de contrato estadísticamente inusual comparado con contratos similares del mismo sector y año. Detectado usando el método IQR de Tukey — valores más allá de 1.5x el rango intercuartil son señalados."
+  },
+  "cobidding": {
+    "title": "Patrón de Co-licitación",
+    "description": "Cuando dos o más proveedores aparecen consistentemente juntos en procedimientos de licitación. Puede indicar especialización legítima, pero altas tasas de co-licitación con victorias alternadas sugieren rotación de ofertas (una forma de colusión)."
+  },
+  "clusteringCoefficient": {
+    "title": "Coeficiente de agrupamiento",
+    "description": "Coeficiente de agrupamiento Wachs-Fazekas (2021): mide qué tan interconectados están entre sí los socios de co-licitación de este proveedor. Un valor cercano a 1.0 significa que todos los co-licitantes también licitan entre sí — una característica de los anillos estructurados de manipulación de ofertas."
+  },
+  "yearEnd": {
+    "title": "Cierre del ejercicio fiscal",
+    "description": "Contratos otorgados en diciembre, cuando las dependencias se apresuran a gastar el presupuesto restante. Este 'gasto de fin de año' crea presión para adjudicar rápidamente, reduciendo la supervisión y aumentando el riesgo de corrupción."
+  },
+  "thresholdSplitting": {
+    "title": "Fraccionamiento de contratos",
+    "description": "Múltiples contratos otorgados al mismo proveedor el mismo día, potencialmente para mantener cada contrato debajo del umbral que requeriría licitación competitiva. Una técnica clásica de fraude en contrataciones."
+  },
+  "networkRisk": {
+    "title": "Riesgo de red",
+    "description": "Riesgo por relaciones entre proveedores — empresas que comparten domicilio, representante legal, o consistentemente licitan juntos. La membresía en redes puede indicar redes de empresas fantasma o cárteles de licitación."
+  },
+  "confidenceInterval": {
+    "title": "Intervalo de confianza",
+    "description": "El rango dentro del cual probablemente cae la verdadera puntuación de riesgo (95% de confianza). Una puntuación de 0.35 [0.22, 0.48] significa que el indicador de riesgo es 0.35, pero dada la incertidumbre de los datos podría estar razonablemente entre 0.22 y 0.48."
+  },
+  "calibratedProbability": {
+    "title": "Indicador de riesgo",
+    "description": "Un indicador estadístico de riesgo que mide el parecido con los contratos de proveedores que después aparecen vinculados a casos documentados. La puntuación se deriva de regresión logística y debe interpretarse como una señal de similitud de patrones, no como una estimación de probabilidad de corrupción."
+  },
+  "perSectorModel": {
+    "title": "Normalización por sector",
+    "description": "v0.9.2 es un solo modelo global. Las diferencias entre sectores entran por la normalización z: cada variable se compara con la línea base del sector y año del contrato. Versiones anteriores (v5.x) entrenaban submodelos por sector; v0.9.2 no."
+  },
+  "groundTruth": {
+    "title": "Base de casos documentados",
+    "description": "La base de casos etiquetados de RUBLI, usada para entrenar y evaluar el modelo: 1,417 casos hoy. 361 provienen de reportajes de prensa, 25 de registros oficiales y 1 de una auditoría; 989 son pistas que el modelo o ARIA detectó y un analista documentó. La mayoría no son resoluciones, y no todo proveedor vinculado ha sido confirmado como responsable."
+  },
+  "adPeriod": {
+    "title": "Período de publicación",
+    "description": "Días entre la publicación de la convocatoria y la adjudicación del contrato. Periodos muy cortos (<15 días) pueden indicar que el proceso se apresuró para favorecer a un proveedor predeterminado."
+  },
+  "rfc": {
+    "title": "RFC (Registro Federal de Contribuyentes)",
+    "description": "Registro Federal de Contribuyentes — número de identificación fiscal de México para empresas e individuos. Usado para identificar proveedores de forma única. La cobertura varía: 0.1% en datos 2002-2010 a 47% en 2023-2025."
+  },
+  "compranet": {
+    "title": "COMPRANET",
+    "description": "Plataforma electrónica de contrataciones del gobierno federal de México, operativa desde 1996 y obligatoria para todas las compras por encima del umbral. Abolida por el Congreso el 10 de abril de 2025, reemplazada por ComprasMX. Antes del reemplazo formal, 1.9 millones de contratos de 2012–2023 ya habían sido eliminados del acceso público en agosto de 2024. Fuente de los contratos en esta base de datos."
+  },
+  "licitacionPublica": {
+    "title": "Licitación pública",
+    "description": "El procedimiento de contratación más transparente bajo la ley mexicana. Obligatorio para contratos por encima de los umbrales de valor legal. Incluye período de publicación pública (mínimo 20 días), licitantes ilimitados y publicación obligatoria en COMPRANET. En la práctica, solo el 29% de los contratos federales usa este procedimiento — el otro 71% omite la competencia abierta."
+  },
+  "laassp": {
+    "title": "LAASSP",
+    "description": "Ley de Adquisiciones, Arrendamientos y Servicios del Sector Público — ley federal de contrataciones de México, promulgada el 4 de enero de 2000. Define cuándo las dependencias deben usar licitación abierta versus adjudicación directa, establece umbrales de valor y requisitos de publicación. La ley original fue abrogada y reemplazada en abril de 2025."
+  },
+  "inai": {
+    "title": "INAI",
+    "description": "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales — organismo autónomo de transparencia de México, establecido en 2002. Ciudadanos y periodistas podían apelar al INAI cuando las dependencias negaban solicitudes de información. Abolido constitucionalmente el 20 de diciembre de 2024. Reemplazado por «Transparencia para el Pueblo», órgano dentro del Poder Ejecutivo, con aproximadamente el 2% del presupuesto anterior del INAI."
+  },
+  "comprasmx": {
+    "title": "ComprasMX",
+    "description": "Plataforma de reemplazo de COMPRANET, lanzada el 18 de abril de 2025. Construida con la misma arquitectura técnica que el 'Tianguis Digital', plataforma de contrataciones de la Ciudad de México durante el mandato de Sheinbaum — que no divulgó contratos durante ese período. Incluye una regla de retención de datos de 5 años que podría eventualmente eliminar registros históricos del acceso público."
+  },
+  "sector": {
+    "title": "Sector",
+    "description": "Una de las 12 categorías de gasto del gobierno federal (Salud, Educación, Energía, etc.) clasificadas a partir de los códigos de Ramo presupuestario de México. Cada sector tiene diferentes patrones de contratación y perfiles de riesgo."
+  },
+  "sfp": {
+    "title": "SFP (Secretaría de la Función Pública, hoy Secretaría Anticorrupción y Buen Gobierno)",
+    "description": "Dependencia federal de control interno y rendición de cuentas. Mantiene el registro oficial de empresas sancionadas de la contratación federal (Proveedores y Contratistas Sancionados). Las empresas en esta lista tienen prohibido ganar contratos del gobierno durante el periodo de sanción."
+  },
+  "rupc": {
+    "title": "RUPC (Registro Único de Proveedores y Contratistas)",
+    "description": "Registro unificado de empresas habilitadas para la contratación federal de México. Las empresas reciben calificaciones de cumplimiento basadas en su historial de desempeño. Estaba alojado en CompraNet (abolido en abril de 2025); continuidad bajo ComprasMX incierta."
+  },
+  "risk_factors": {
+    "vendor_concentration": {
+      "label": "Concentración de proveedor",
+      "coefficient": "+0.099",
+      "validation_strength": "Moderada en v0.9.2 (lugar 7 de 16 variables con peso)",
+      "key_citation": "Fazekas & Tóth (2016), Political Research Quarterly",
+      "mexico_note": "Coeficiente +0.099 en v0.9.2 (lugar 7 de 16 variables con peso; v0.9.1: +0.242); un valor más alto sube la puntuación."
+    },
+    "price_volatility": {
+      "label": "Montos muy dispares entre sus contratos",
+      "coefficient": "+0.505",
+      "validation_strength": "Fuerte en v0.9.2 (lugar 2 de 16 variables con peso)",
+      "key_citation": "Porter & Zona (1993): La manipulación de precios es detectable",
+      "mexico_note": "Segundo predictor más fuerte en v0.9.2 (+0.505, después de la amplitud del proveedor); en v0.9.1 encabezaba con +0.729. Mide cuánto varían los montos de sus contratos frente a la norma del sector; no mide precios unitarios."
+    },
+    "institution_diversity": {
+      "label": "Diversidad institucional",
+      "coefficient": "+0.269",
+      "validation_strength": "Fuerte en v0.9.2 (lugar 3 de 16 variables con peso)",
+      "key_citation": "Coviello & Mariniello (2014)",
+      "mexico_note": "v0.9.2 mide la concentración institucional a la fecha del contrato: un índice Herfindahl sobre las instituciones a las que el proveedor les vendió en años anteriores al contrato (1.0 si no tiene historial). Coeficiente +0.269 (lugar 3 de 16 variables con peso): a igual amplitud, un proveedor concentrado en pocos compradores puntúa más alto. v0.9.1 usaba una versión de toda la historia, casi nula (+0.0004); en v0.8.5 era −0.388."
+    },
+    "win_rate": {
+      "label": "Tasa de éxito",
+      "coefficient": "+0.007",
+      "validation_strength": "Débil en v0.9.2 (lugar 15 de 16 variables con peso)",
+      "key_citation": "Conley & Decarolis (2016)",
+      "mexico_note": "Coeficiente +0.007 en v0.9.2 (lugar 15 de 16 variables con peso; v0.9.1: −0.045); casi sin efecto."
+    },
+    "single_bid": {
+      "label": "Procedimiento con un solo adjudicado",
+      "coefficient": "+0.079",
+      "validation_strength": "Moderada en v0.9.2 (lugar 9 de 16 variables con peso)",
+      "key_citation": "Charron et al. (2017), Journal of Politics",
+      "mexico_note": "Peso positivo en v0.9.2 (+0.079; v0.9.1: +0.034). No es raro en México: de los contratos firmados en procedimientos competitivos (sin contar adjudicaciones directas), el 62.0% vino de un procedimiento con un solo adjudicado con Peña Nieto (dic 2012–nov 2018) y el 47.3% con López Obrador (dic 2018–sep 2024). Se cuenta por contrato, no por procedimiento; CompraNet registra ganadores, no postores."
+    },
+    "direct_award": {
+      "label": "Adjudicación directa",
+      "coefficient": "+0.051",
+      "validation_strength": "Moderada en v0.9.2 (lugar 12 de 16 variables con peso)",
+      "key_citation": "OCDE (2016): Prevención de la Corrupción en Compras Públicas",
+      "mexico_note": "Peso positivo pequeño en v0.9.2 (+0.051; v0.9.1: −0.016). Con una base de 70%+ de adjudicaciones directas en México, la bandera por sí sola distingue poco cuando es la norma."
+    },
+    "industry_mismatch": {
+      "label": "Discrepancia de industria",
+      "coefficient": "—",
+      "validation_strength": "No está en v0.9.2",
+      "key_citation": "Fazekas & Kocsis (2020)",
+      "mexico_note": "Retirada en v0.9.2 (enmienda 2 del pre-registro): solo puede activarse para proveedores con industria verificada, y los proveedores de casos tienen esa cobertura más a menudo (22.6% frente a 13.7%), así que en parte codificaría «ya investigado». En v0.9.1 pesaba +0.032."
+    },
+    "same_day_count": {
+      "label": "Contratos en el mismo día",
+      "coefficient": "+0.073",
+      "validation_strength": "Moderada en v0.9.2 (lugar 10 de 16 variables con peso)",
+      "key_citation": "ISO 37001 Sistemas Antisoborno",
+      "mexico_note": "Coeficiente +0.073 en v0.9.2 (lugar 10 de 16 variables con peso; v0.9.1: +0.045); un valor más alto sube la puntuación."
+    },
+    "network_member_count": {
+      "label": "Membresía en red",
+      "coefficient": "+0.091",
+      "validation_strength": "Moderada en v0.9.2 (lugar 8 de 16 variables con peso)",
+      "key_citation": "Fazekas, Skuhrovec & Wachs (2020)",
+      "mexico_note": "Coeficiente +0.091 en v0.9.2 (lugar 8 de 16 variables con peso; v0.9.1: +0.061); un valor más alto sube la puntuación. v0.9.2 solo cuenta miembros de la red activos antes del año del contrato."
+    },
+    "year_end": {
+      "label": "Contrato de fin de año",
+      "coefficient": "0.000",
+      "validation_strength": "Regularizada a cero en v0.9.2",
+      "key_citation": "IMCO (México): Presupuesto de diciembre",
+      "mexico_note": "Regularizada a exactamente cero por la penalización ElasticNet en v0.9.2 (v0.9.1: +0.005); no contribuye a la puntuación."
+    },
+    "institution_risk": {
+      "label": "Riesgo institucional",
+      "coefficient": "—",
+      "validation_strength": "No está en v0.9.2",
+      "key_citation": "Metodología CRI del FMI",
+      "mexico_note": "No está en v0.9.2: la reconstrucción a la fecha del contrato la retiró. En v0.9.1 estaba regularizada a exactamente cero."
+    },
+    "ad_period_days": {
+      "label": "Período de publicación",
+      "coefficient": "—",
+      "validation_strength": "No está en v0.9.2",
+      "key_citation": "Directiva UE 2014/24",
+      "mexico_note": "Retirada en v0.9.2 (enmienda 1 del pre-registro): las fechas de apertura solo existen en los registros de ComprasMX, así que la variable marcaría la fuente de los datos y no el riesgo. En v0.9.1 pesaba +0.053."
+    },
+    "sector_spread": {
+      "label": "Distribución sectorial",
+      "coefficient": "−0.162",
+      "validation_strength": "Moderada en v0.9.2 (lugar 5 de 16 variables con peso)",
+      "key_citation": "Fazekas & Kocsis (2020)",
+      "mexico_note": "Peso negativo en v0.9.2 (−0.162; v0.9.1: −0.052): a igual amplitud, la presencia en varios sectores baja la puntuación."
+    },
+    "price_ratio": {
+      "label": "Monto frente a contratos parecidos",
+      "coefficient": "+0.256",
+      "validation_strength": "Fuerte en v0.9.2 (lugar 4 de 16 variables con peso)",
+      "key_citation": "Banco Mundial INT (2019)",
+      "mexico_note": "Coeficiente +0.256 en v0.9.2 (lugar 4 de 16 variables con peso; v0.9.1: +0.449); un valor más alto sube la puntuación."
+    },
+    "co_bid_rate": {
+      "label": "Tasa de co-licitación",
+      "coefficient": "—",
+      "validation_strength": "No está en v0.9.2",
+      "key_citation": "Porter & Zona (1993)",
+      "mexico_note": "No está en v0.9.2: falta su tabla de origen, así que la reconstrucción a la fecha del contrato la retiró. En v0.9.1 estaba regularizada a exactamente cero."
+    },
+    "price_hyp_confidence": {
+      "label": "Confianza de monto atípico",
+      "coefficient": "—",
+      "validation_strength": "No está en v0.9.2",
+      "key_citation": "Método IQR de Tukey",
+      "mexico_note": "No está en v0.9.2: falta su columna de origen, así que la reconstrucción a la fecha del contrato la retiró. En v0.9.1 estaba regularizada a exactamente cero."
+    }
+  }
+}

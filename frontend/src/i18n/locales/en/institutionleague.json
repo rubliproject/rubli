@@ -1,0 +1,165 @@
+{
+  "kicker": "INSTITUTIONS · THE GRADE",
+  "meta": "FEDERAL · 2002–2025 · v0.9.2",
+  "headline": {
+    "beforeNone": "Of {{total}} {{who}}, ",
+    "accentNone": "none reaches Excellent",
+    "afterNone": " — and {{failing}} operate at Deficient or worse.",
+    "beforeSome": "Of {{total}} {{who}}, only ",
+    "accentSome": "{{n}} reach Excellent",
+    "afterSome": " — and {{failing}} operate at Deficient or worse."
+  },
+  "lede": "The {{name}} concentrates {{money}} in high- and critical-risk contracts — the highest exposure {{where}}. Position on the plate below is the integrity score; stroke height is money at risk.",
+  "ledeScorecard": "Grades come from RUBLI's own transparency scorecard. Across {{total}} {{who}}, the weakest pillar is {{pillar}}: on average they earn {{pct}}% of its points.",
+  "ledeScorecardShort": "Grades come from RUBLI's own transparency scorecard.",
+  "tableKicker": "Full Table",
+  "tableHeadline": "Complete ranking — {{total}} institutions",
+  "acts": {
+    "one": "LEADERS OF THE PACK",
+    "two": "THE FULL RANKING"
+  },
+  "histogram": {
+    "kicker": "THE SHAPE OF ACCOUNTABILITY",
+    "headline": "Score distribution across {{total}} federal institutions",
+    "sub": "Every institution fits in one of five bands. The median is {{median}}.",
+    "bandLabel": "{{min}}–{{max}}",
+    "ariaLabel": "Score distribution histogram showing institutions grouped by 20-point score bands"
+  },
+  "boleta": {
+    "title": "The scorecard — five pillars"
+  },
+  "peerPercentileLine": "Worse than {{pct}}% of its sector",
+  "confidenceLine": "Confidence: {{band}}",
+  "p90Line": "P90 risk indicator {{score}}",
+  "moneyAtRiskLine": "{{money}} at risk",
+  "expandRow": "Show pillar breakdown — {{name}}",
+  "collapseRow": "Hide pillar breakdown — {{name}}",
+  "openDossier": "Open full dossier",
+  "finding": {
+    "critical": "Only {{pct}}% of institutions reach Satisfactory or better. {{failing}} are flagged at the Critical level.",
+    "normal": "Only {{pct}}% of {{total}} evaluated institutions reach the Satisfactory level or better."
+  },
+  "filters": {
+    "searchPlaceholder": "Search institutions…",
+    "sectorLabel": "Sector",
+    "allSectors": "All sectors",
+    "allTiers": "All grades",
+    "adjustFilters": "Try adjusting your filters or search query.",
+    "search": "Search institutions",
+    "tier": "Level",
+    "results": "{{num}} institutions"
+  },
+  "scope": {
+    "label": "Scope",
+    "federal": "Federal (APF)",
+    "subnational": "Subnational",
+    "all": "All",
+    "federalOnly": "Federal (APF)",
+    "disclaimerFederal": "Federal scope — the validated federal-administration buyers (IMSS · PEMEX · CFE · secretariats). Grades are absolute, not a curve: no Mexican federal buyer earns 'Excellent' on merit. The Honor Roll and Red Flags exclude institutions with fewer than 30 contracts.",
+    "disclaimerSubnational": "State and municipal institutions, ranked on their own board — their small samples and locally-set procedures cannot be benchmarked against federal-procurement norms. Never co-mingled with the federal ranking.",
+    "disclaimerAll": "Every institution in COMPRANET, federal and subnational together. Use the separate boards for comparable rankings."
+  },
+  "stats": {
+    "totalScored": "Scored Institutions",
+    "medianScore": "Median Score",
+    "topPerformer": "Top Performer",
+    "worstPerformer": "Worst Performer",
+    "outOfHundred": "/ 100",
+    "evaluated": "Evaluated institutions",
+    "critical": "Deficient or critical",
+    "median": "Median score",
+    "tiers": "Levels",
+    "tiersRange": "Excellent → Critical"
+  },
+  "statsAriaLabel": "General statistics",
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "pageOf": "Page {{page}} of {{total}}",
+    "ariaLabel": "Pagination",
+    "previousAriaLabel": "Previous page",
+    "nextAriaLabel": "Next page"
+  },
+  "hallazgo": "FINDING",
+  "columns": {
+    "institution": "Institution",
+    "grade": "Level",
+    "score": "Grade",
+    "moneyAtRisk": "Money at risk",
+    "trend": "Trend",
+    "percentile": "National %ile"
+  },
+  "tiers": {
+    "Excelente": "Excellent",
+    "Satisfactorio": "Satisfactory",
+    "Regular": "Adequate",
+    "Deficiente": "Deficient",
+    "Critico": "Critical"
+  },
+  "distribution": {
+    "title": "Distribution by transparency level",
+    "ariaLabel": "Distribution by transparency level"
+  },
+  "trend": {
+    "improving": "Improving",
+    "stable": "Stable",
+    "declining": "Declining",
+    "none": "No trend data"
+  },
+  "percentileLabel": "Percentile {{n}}",
+  "tableAriaLabel": "Institution ranking",
+  "empty": "No institutions match your current filters.",
+  "loadingShort": "Loading…",
+  "error": "Failed to load institution rankings. Please try again.",
+  "sortAriaLabel": "Sort by {{label}}",
+  "dossierLinkAriaLabel": "Open full institution dossier for {{name}}",
+  "dossierLinkTitle": "Open full dossier",
+  "methodologyFootnote": "RUBLI Procurement Health Index v0.9.2 · COMPRANET 2002–2025 · OECD / IMF methodology · Source: COMPRANET / SHCP",
+  "tabs": {
+    "ranking": "Ranking",
+    "fichas": "Scorecards",
+    "reporte": "Report",
+    "ariaLabel": "Institution views"
+  },
+  "exposure": {
+    "kicker": "Money-at-Risk",
+    "headline": "The biggest exposures the integrity score can't see",
+    "sub": "Ranked by value flowing through high- and critical-risk contracts — a distinct axis from transparency. Institutions with 100+ contracts."
+  },
+  "plate": {
+    "eyebrow": "PLATE · I — THE SPECTRAL REGISTER",
+    "emptyExcelente": "No federal institution reaches this band",
+    "medianTag": "MEDIAN {{score}}",
+    "tooltipScore": "Score {{score}}/100",
+    "tooltipContracts": "{{n}} contracts",
+    "unavailableSubnational": "The Spectral Register plots only the federal board — state and municipal institutions have incomparable sample sizes and procedures. Switch to Federal scope to see the plate.",
+    "unavailableAll": "The Spectral Register plots only the federal board. Switch to Federal scope to see the plate.",
+    "emptyExcelenteBand": "No federal institution reaches the Excellent band (80–100).",
+    "bandsLegend": "Bands, left to right"
+  },
+  "methodologyLink": "Methodology",
+  "zeroMoneyAtRisk": "No high- or critical-risk contracts",
+  "thinSample": "Below the {{n}}-contract reliability floor — listed here, excluded from the headline, the plate, the honor roll and the red flags",
+  "confidenceBands": {
+    "wide": "low",
+    "medium": "medium",
+    "narrow": "high",
+    "high": "very high"
+  },
+  "lastContract": "last contract {{year}}",
+  "lastContractTitle": "No contracts since {{year}} — outside the 2018+ officials window",
+  "lowestInSector": "Lowest in its sector",
+  "redSignalsLine_one": "{{count}} red signal",
+  "redSignalsLine_other": "{{count}} red signals",
+  "listStatus": "{{num}} institutions · page {{page}} of {{total}} · sorted by {{label}}",
+  "scopeWho": {
+    "federal": "federal buyers",
+    "subnational": "state and municipal buyers",
+    "all": "buyers on CompraNet"
+  },
+  "scopeWhere": {
+    "federal": "on the federal register",
+    "subnational": "on the subnational board",
+    "all": "across CompraNet"
+  }
+}

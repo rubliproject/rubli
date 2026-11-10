@@ -1,0 +1,8 @@
+# /etc/cron.d/rubli-ops — install: install -m 644 /opt/rubli/scripts/rubli-ops.cron /etc/cron.d/rubli-ops
+# Config: /etc/rubli-ops.env (template scripts/rubli-ops.env.example). Runbook: docs/OPS_LAUNCH.md.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+*/5 * * * * root /bin/bash /opt/rubli/scripts/uptime-check.sh >> /var/log/rubli-ops.log 2>&1
+# rclone mode only (pull mode streams the nightly to the PC, nothing staged on the VPS):
+#30 3 * * *  root /bin/bash /opt/rubli/scripts/offsite-backup.sh >> /var/log/rubli-ops.log 2>&1
+#0 5 * * 0   root /bin/bash /opt/rubli/scripts/restore-test.sh >> /var/log/rubli-ops.log 2>&1

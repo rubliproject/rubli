@@ -1,0 +1,10 @@
+{
+  "risk_pyramid": {
+    "callout": "Los contratos de riesgo crítico promedian 21.8 MDP — 14 veces más que los de bajo riesgo (promedio 1.6 MDP). Los contratos más sospechosos involucran el mayor dinero."
+  },
+  "sector_paradox": {
+    "callout": "Las tasas de competencia por sí solas no predicen la corrupción. Lo que importa es la concentración de proveedores, la manipulación de precios y las relaciones de red — no el tipo de procedimiento.",
+    "annotation_ag": "93% adjudicaciones directas, solo 2% alto riesgo",
+    "annotation_salud": "3.1 billones MXN, mayor riesgo"
+  }
+}

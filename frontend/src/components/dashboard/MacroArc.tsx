@@ -1,0 +1,429 @@
+/**
+ * MacroArc — the direct-award rate trend, 2011–2025 (Folio·III).
+ *
+ * «El Contrato» reskin (FIX_BRIEF_R1 § C.2): one ink line for Mexico's DA rate,
+ * the EU scoreboard 10% reference as a red ruler, administration names above the
+ * plot with a hairline at each change of government, four callouts (Casa Blanca ·
+ * Estafa Maestra · COVID · Peak year) on leader lines, no boxes. Axis in meta mono.
+ *
+ * PARALLAX D10 § Change 2 — "HTML owns glyphs, SVG owns geometry": the
+ * plate measures its own width (useMeasuredWidth) and draws at 1:1; every
+ * glyph (ticks, era labels, edge labels, callouts, the hover value) is an
+ * absolutely positioned HTML label, measured with measureLabel and seated
+ * with collision checks. Marks (bands, line, area, dots, leaders, box frames)
+ * stay in the svg.
+ */
+
+import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useYearOverYear } from '@/components/stories/live/useEmergencyData'
+import { RISK_COLORS, RISK_TEXT_COLORS } from '@/lib/constants'
+import { ADMINISTRATIONS, ADMIN_DISPLAY_ACCENTED } from '@/lib/administrations'
+import { useFontsReady, useMeasuredWidth } from '@/hooks/useMeasuredWidth'
+import { measureLabel, type LabelBox } from '@/lib/plateLabels'
+
+import { DUR, css } from '@/lib/motion'
+// Structure B (the 2010 files) is the first COMPRANET structure that codes the
+// procedure type; Structure A (2002–2009) reads 0.0–0.05%, which drawn as a
+// rate would say Mexico had no direct awards for eight years. 2010 itself is a
+// seam (mostly Structure A, 11% direct award), so the comparable series
+// starts in 2011 (contract_year migration, 2026-09-30).
+const DA_SERIES_FLOOR = 2011
+
+
+// FT-style annotation callouts BELOW the data line, zigzag depths so
+// adjacent callouts cannot share Y space.
+const CALLOUTS: Array<{ year: number; en: string; es: string; dy: number }> = [
+  { year: 2014, en: 'Casa Blanca',         es: 'Casa Blanca',         dy: 60 },
+  { year: 2017, en: 'Estafa Maestra',      es: 'Estafa Maestra',      dy: 110 },
+  { year: 2020, en: 'COVID emergency',     es: 'Emergencia COVID',    dy: 60 },
+  { year: 2023, en: 'Peak year',           es: 'Año pico',            dy: 110 },
+]
+
+const MONO = '"IBM Plex Mono", monospace'
+const H_WIDE = 260
+const H_NARROW = 300 // phones: a deeper plot so the callouts find a depth
+const PAD_T_ONE_ROW = 36 // era labels above the plot (a second row adds one line)
+const PAD_B = 32 // x ticks
+
+interface Props {
+  lang: 'en' | 'es'
+}
+
+export function MacroArc({ lang }: Props) {
+  const [hoverYear, setHoverYear] = useState<number | null>(null)
+  const isEs = lang === 'es'
+  const yoy = useYearOverYear()
+  const plate = useRef<HTMLDivElement>(null)
+  const W = useMeasuredWidth(plate)
+  const narrow = W > 0 && W < 560
+  const H = narrow ? H_NARROW : H_WIDE
+  const FS = 12
+  const TICK_FONT = `${FS}px ${MONO}`
+  const EDGE_FONT = `700 12px ${MONO}`
+  const CALLOUT_FONT = `400 12px ${MONO}`
+  const fontsReady = useFontsReady([TICK_FONT, EDGE_FONT, CALLOUT_FONT])
+
+  const series = (yoy.data ?? [])
+    // unknown years (no procedure type before 2011) drop out instead of plotting 0 (DQ1 § 2)
+    .flatMap((d) => (d.year >= DA_SERIES_FLOOR && d.direct_award_pct != null && d.direct_award_pct > 0
+      ? [{ year: d.year, da: d.direct_award_pct }] : []))
+    .sort((a, b) => a.year - b.year)
+
+  const Y_MIN_YR = series.length ? series[0].year : DA_SERIES_FLOOR
+  const Y_MAX_YR = series.length ? series[series.length - 1].year : 2025
+  const Y_MAX_PCT = 100
+  // European Commission, Single Market Scoreboard: a direct-award share at or
+  // above 10% is rated unsatisfactory. External reference, not a RUBLI measure.
+  const EU_LINE = 10
+  const last = series[series.length - 1]
+  // Phones print the value alone (the red line is the only series).
+  const mexicoLabel = last ? (narrow ? `${last.da.toFixed(1)}%` : `${isEs ? 'México' : 'Mexico'} · ${last.da.toFixed(1)}%`) : ''
+  const euLabel = isEs ? `UE ${EU_LINE}%` : `EU ${EU_LINE}%`
+
+  // Canvas-measured in the real faces; the plate draws only once they landed.
+  const measure = (text: string, font: string, lh = FS + 4) => measureLabel(text, font, 999, lh)
+  const yTickW = measure('100%', TICK_FONT).width
+  const PAD_L = Math.ceil(yTickW) + 10
+  const edgeW = Math.max(measure(mexicoLabel, EDGE_FONT).width, measure(euLabel, EDGE_FONT).width)
+  // Desktop: the edge labels sit in a right margin; phones print them inside
+  // the plot (right-aligned) so the line keeps the width.
+  const PAD_R = narrow ? 12 : Math.ceil(edgeW) + 16
+  const CW = Math.max(1, W - PAD_L - PAD_R)
+
+  const xOf = (year: number) => PAD_L + ((year - Y_MIN_YR) / Math.max(1, Y_MAX_YR - Y_MIN_YR)) * CW
+
+  // Bands clipped to the drawn window (Calderón → 2011–12; Fox leaves).
+  const eraBands = ADMINISTRATIONS
+    .filter((a) => a.yearEnd >= Y_MIN_YR && a.yearStart <= Y_MAX_YR)
+    .map((a) => ({
+      key: a.key,
+      label: ADMIN_DISPLAY_ACCENTED[a.key],
+      start: Math.max(a.yearStart, Y_MIN_YR),
+      end: Math.min(a.yearEnd, Y_MAX_YR),
+    }))
+    .map((b) => {
+      const x1 = xOf(b.start)
+      const x2 = b.end > b.start ? xOf(b.end) : Math.min(x1 + 16, PAD_L + CW)
+      return { ...b, x1, x2 }
+    })
+
+  // Era labels — full names at every width (Day 7/8 rule). Centred on the
+  // band, clamped to the plate edge (a narrow band's label overhangs its band
+  // leftwards, the last one sits right-anchored to the plate); a label that
+  // still meets its neighbour drops to a second row. Placement depends on x
+  // only, so the plot's top (PAD_T) follows the row count.
+  const ERA_FS = 12
+  const ERA_FONT = `400 ${ERA_FS}px ${MONO}`
+  const eraTrack = 0
+  const ERA_LH = ERA_FS + 4
+  const eraPlaced = new Map<string, { text: string; left: number; row: number }>()
+  {
+    const taken: LabelBox[] = []
+    const hits = (a: LabelBox) => taken.some((t) => !(a.x1 <= t.x0 - 6 || a.x0 >= t.x1 + 6 || a.y1 <= t.y0 || a.y0 >= t.y1))
+    for (const b of eraBands) {
+      const w = measure(b.label, ERA_FONT).width + b.label.length * ERA_FS * eraTrack
+      const x0 = Math.min(Math.max(0, (b.x1 + b.x2) / 2 - w / 2), W - w)
+      for (const row of [0, 1]) {
+        const box = { x0, y0: row * (ERA_LH + 2), x1: x0 + w, y1: row * (ERA_LH + 2) + ERA_LH }
+        if (row === 1 || !hits(box)) {
+          taken.push(box)
+          eraPlaced.set(b.key, { text: b.label, left: x0, row })
+          break
+        }
+      }
+    }
+  }
+  const eraRows = Math.max(1, ...[...eraPlaced.values()].map((e) => e.row + 1))
+  const PAD_T = PAD_T_ONE_ROW + (eraRows - 1) * (ERA_LH + 2)
+  const CH = H - PAD_T - PAD_B
+  const yOf = (pct: number) => PAD_T + CH * (1 - pct / Y_MAX_PCT)
+  const EU_Y = yOf(EU_LINE)
+  const AXIS_Y = PAD_T + CH
+
+  // The measured plate div stays mounted through loading (useMeasuredWidth
+  // attaches its observer once, on mount).
+  if (yoy.isLoading || yoy.isError || !series.length) {
+    return (
+      <div ref={plate} className="w-full">
+        <p className="ct-note">
+          {yoy.isLoading
+            ? (isEs ? 'Cargando la serie anual…' : 'Loading the annual series…')
+            : (isEs
+              ? 'La serie anual de adjudicación directa no cargó. No se dibuja nada en su lugar.'
+              : 'The annual direct-award series did not load. Nothing is drawn in its place.')}
+        </p>
+      </div>
+    )
+  }
+
+  const linePath = series
+    .map((d, i) => `${i === 0 ? 'M' : 'L'} ${xOf(d.year).toFixed(2)} ${yOf(d.da).toFixed(2)}`)
+    .join(' ')
+
+  const yTicks = [0, 25, 50, 75, 100]
+
+  // X ticks: desktop = first, last and every fourth year; phones = the band
+  // starts + the data horizon (the Day 8 seam pattern). Kept right-to-left
+  // while a label width apart, so the horizon wins over its neighbour.
+  const tickCandidates = narrow
+    ? [...new Set([...eraBands.map((b) => b.start), Y_MAX_YR])]
+    : series.map((d) => d.year).filter((y, i, a) => i === 0 || i === a.length - 1 || y % 4 === 0)
+  const tickW = measure('2025', TICK_FONT).width + 8
+  const xTicks: number[] = []
+  for (const yr of [...tickCandidates].sort((a, b) => b - a)) {
+    if (!xTicks.length || xOf(xTicks[xTicks.length - 1]) - xOf(yr) >= tickW) xTicks.push(yr)
+  }
+
+  // Edge labels (Mexico · %, EU 10%).
+  const lastX = xOf(last.year)
+  const lastY = yOf(last.da)
+  const edgeH = (narrow ? 11 : 12) + 4
+  const mexicoW = measure(mexicoLabel, EDGE_FONT).width
+  const euW = measure(euLabel, EDGE_FONT).width
+  // Phones print both edge labels inside the plot, right-aligned below their
+  // line (the value under its last point, EU under the dashed line).
+  const mexicoPos = narrow
+    ? { left: Math.max(PAD_L, lastX - mexicoW), top: lastY + 8 }
+    : { left: lastX + 6, top: lastY - edgeH / 2 }
+  const euPos = narrow
+    ? { left: PAD_L + CW - euW, top: EU_Y + 2 }
+    : { left: PAD_L + CW + 6, top: EU_Y - edgeH / 2 }
+
+  // Callouts — below the line at their zigzag depth; a box that would collide
+  // or leave the plot is dropped rather than overprinted.
+  const calloutObstacles: LabelBox[] = narrow
+    ? [{ x0: mexicoPos.left, y0: mexicoPos.top, x1: mexicoPos.left + mexicoW, y1: mexicoPos.top + edgeH },
+       { x0: euPos.left, y0: euPos.top, x1: euPos.left + euW, y1: euPos.top + edgeH },
+       // a box never sits on the EU reference line
+       { x0: PAD_L, y0: EU_Y - 1, x1: PAD_L + CW, y1: EU_Y + 1 }]
+    : []
+  // Priority: the COVID pull-out first; each box may fall back to the other
+  // zigzag depth before it is dropped.
+  const PRIORITY = [2020, 2017, 2014, 2023]
+  const calloutCands = [...CALLOUTS].sort((a, b) => PRIORITY.indexOf(a.year) - PRIORITY.indexOf(b.year)).flatMap((c) => {
+    const pt = series.find((d) => d.year === c.year)
+    if (!pt) return []
+    const isCovid = c.year === 2020
+    const label = isEs ? c.es : c.en
+    const font = CALLOUT_FONT
+    const padX = 4
+    const boxH = 16
+    const w = measure(label, font).width + padX * 2
+    const cx = xOf(c.year)
+    const cy = yOf(pt.da)
+    const altDy = c.dy === 60 ? 110 : 60
+    return [{ id: c.year, x: cx, y: cy, width: w, height: boxH, above: -c.dy - boxH, below: altDy, label, isCovid, cy }]
+  })
+  const calloutBounds: LabelBox = { x0: PAD_L + 2, y0: PAD_T, x1: PAD_L + CW - 2, y1: AXIS_Y + 0.5 }
+  // Seat each box at its depth, then the other depth; centred, then flush
+  // left/right of its year. A box is refused when it leaves the plot, meets
+  // another box or label, or when its leader crosses one (or an earlier
+  // leader crosses it) — dropped rather than overprinted.
+  const hit = (a: LabelBox, b: LabelBox) => !(a.x1 <= b.x0 || a.x0 >= b.x1 || a.y1 <= b.y0 || a.y0 >= b.y1)
+  const leaderHits = (x1: number, y1: number, x2: number, y2: number, b: LabelBox) => {
+    for (let t = 0; t <= 1; t += 0.04) {
+      const x = x1 + (x2 - x1) * t
+      const y = y1 + (y2 - y1) * t
+      if (x > b.x0 && x < b.x1 && y > b.y0 && y < b.y1) return true
+    }
+    return false
+  }
+  const placedCallouts: Array<{ id: number; box: LabelBox }> = []
+  {
+    const taken: LabelBox[] = [...calloutObstacles]
+    const leaders: Array<[number, number, number, number]> = []
+    for (const c of calloutCands) {
+      let seat: LabelBox | null = null
+      for (const top of [c.cy - c.above - c.height, c.cy + c.below]) {
+        for (const x0 of [c.x - c.width / 2, c.x - 8, c.x - c.width + 8]) {
+          const box = { x0, y0: top, x1: x0 + c.width, y1: top + c.height }
+          const inside = box.x0 >= calloutBounds.x0 && box.x1 <= calloutBounds.x1 && box.y0 >= calloutBounds.y0 && box.y1 <= calloutBounds.y1
+          if (!inside || taken.some((t) => hit(box, t))) continue
+          const lead: [number, number, number, number] = [c.x, c.cy + 2, (box.x0 + box.x1) / 2, box.y0]
+          if (taken.some((t) => leaderHits(...lead, t)) || leaders.some((l) => leaderHits(...l, box))) continue
+          seat = box
+          leaders.push(lead)
+          break
+        }
+        if (seat) break
+      }
+      if (seat) {
+        taken.push(seat)
+        placedCallouts.push({ id: c.id, box: seat })
+      }
+    }
+  }
+  const calloutMeta = new Map(calloutCands.map((c) => [c.id, c]))
+
+  function handleMouseMove(e: React.MouseEvent<SVGSVGElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const rawYear = Y_MIN_YR + ((e.clientX - rect.left - PAD_L) / CW) * (Y_MAX_YR - Y_MIN_YR)
+    const year = Math.round(Math.max(Y_MIN_YR, Math.min(Y_MAX_YR, rawYear)))
+    setHoverYear((prev) => (prev === year ? prev : year))
+  }
+  const hoverPt = hoverYear !== null ? series.find((d) => d.year === hoverYear) : undefined
+
+  const label = (style: React.CSSProperties, text: string, key?: string | number, extra?: Record<string, string>) => (
+    <div key={key} className="absolute whitespace-nowrap pointer-events-none" style={style} {...extra}>
+      {text}
+    </div>
+  )
+
+  return (
+    <div ref={plate} className="w-full">
+      <div className="relative w-full" style={{ height: H }}>
+        {W > 0 && fontsReady && (
+          <>
+            <svg
+              data-figure="macroarc"
+              width={W}
+              height={H}
+              viewBox={`0 0 ${W} ${H}`}
+              style={{ display: 'block', overflow: 'visible' }}
+              role="img"
+              aria-label={isEs
+                ? `Tasa de adjudicación directa ${Y_MIN_YR}–${Y_MAX_YR} frente a la línea UE de ${EU_LINE}%`
+                : `Direct-award rate ${Y_MIN_YR}–${Y_MAX_YR} against the EU ${EU_LINE}% line`}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={() => setHoverYear(null)}
+            >
+              {/* A hairline at each change of government */}
+              {eraBands.slice(1).map((b) => (
+                <line key={b.key} x1={b.x1} x2={b.x1} y1={PAD_T} y2={AXIS_Y} stroke="var(--color-border)" strokeWidth={1} />
+              ))}
+
+              {/* Y grid */}
+              {yTicks.map((t) => (
+                <line
+                  key={`y-${t}`}
+                  x1={PAD_L}
+                  x2={PAD_L + CW}
+                  y1={yOf(t)}
+                  y2={yOf(t)}
+                  stroke="var(--color-border)"
+                  strokeWidth={t === 0 ? 1 : 0.5}
+                  strokeDasharray={t === 0 ? '' : '2 4'}
+                  opacity={t === 0 ? 0.6 : 0.35}
+                />
+              ))}
+
+              {/* EU scoreboard reference — the red ruler */}
+              <line x1={PAD_L} x2={PAD_L + CW} y1={EU_Y} y2={EU_Y} stroke={RISK_COLORS.critical} strokeWidth={1} />
+
+              {/* Mexico DA-rate line */}
+              <motion.path
+                d={linePath}
+                fill="none"
+                stroke="var(--color-text-primary)"
+                strokeWidth={2}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: DUR.story, ease: [0.2, 0.7, 0.2, 1], delay: DUR.base }}
+              />
+
+              {/* Year dots */}
+              {series.map((d) => (
+                <circle
+                  key={d.year}
+                  cx={xOf(d.year)}
+                  cy={yOf(d.da)}
+                  r={hoverYear === d.year ? 4 : 2}
+                  fill="var(--color-text-primary)"
+                  data-da={d.da}
+                  style={{ transition: css(['r'], DUR.instant) }}
+                />
+              ))}
+
+              {/* Callout leaders + box frames (the text is HTML) */}
+              {placedCallouts.map((p) => {
+                const c = calloutMeta.get(p.id)!
+                const bx = (p.box.x0 + p.box.x1) / 2
+                return (
+                  <g key={p.id}>
+                    <line
+                      x1={c.x}
+                      y1={c.cy + 2}
+                      x2={bx}
+                      y2={p.box.y0}
+                      stroke="var(--color-text-muted)"
+                      strokeWidth={0.75}
+                      opacity={0.6}
+                    />
+                  </g>
+                )
+              })}
+
+              {/* Hover guide */}
+              {hoverPt && (
+                <line
+                  x1={xOf(hoverPt.year)}
+                  x2={xOf(hoverPt.year)}
+                  y1={PAD_T}
+                  y2={AXIS_Y}
+                  stroke="var(--color-text-muted)"
+                  strokeWidth={0.5}
+                  strokeDasharray="2 3"
+                  opacity={0.5}
+                />
+              )}
+            </svg>
+
+            {/* ── HTML label layer (1:1 with the svg) ── */}
+            {eraBands.map((b) => {
+              const p = eraPlaced.get(b.key)
+              if (!p) return null
+              return label({
+                left: p.left, top: 8 + p.row * (ERA_LH + 2), fontFamily: MONO, fontSize: ERA_FS,
+                lineHeight: `${ERA_LH}px`, color: 'var(--color-text-muted)',
+              }, p.text, `era-${b.key}`, { 'data-era-label': '' })
+            })}
+            {yTicks.map((t) => label({
+              left: 0, width: PAD_L - 6, top: yOf(t) - (FS + 4) / 2, textAlign: 'right', fontFamily: MONO,
+              fontSize: FS, lineHeight: `${FS + 4}px`, color: 'var(--color-text-muted)',
+            }, `${t}%`, `yt-${t}`))}
+            {xTicks.map((y) => {
+              const w = measure(String(y), TICK_FONT).width
+              return label({
+                left: Math.min(W - w, Math.max(0, xOf(y) - w / 2)), top: AXIS_Y + 6, fontFamily: MONO, fontSize: FS,
+                lineHeight: `${FS + 4}px`, color: 'var(--color-text-muted)',
+              }, String(y), `xt-${y}`, { 'data-x-tick': String(y) })
+            })}
+            {label({
+              left: euPos.left, top: euPos.top, fontFamily: MONO, fontSize: 12, fontWeight: 700,
+              lineHeight: `${edgeH}px`, color: RISK_TEXT_COLORS.critical,
+            }, euLabel, 'eu')}
+            {label({
+              left: mexicoPos.left, top: mexicoPos.top, fontFamily: MONO, fontSize: 12, fontWeight: 700,
+              lineHeight: `${edgeH}px`, color: 'var(--color-text-primary)',
+            }, mexicoLabel, 'mx')}
+            {placedCallouts.map((p) => {
+              const c = calloutMeta.get(p.id)!
+              return label({
+                left: p.box.x0, top: p.box.y0, width: p.box.x1 - p.box.x0, height: p.box.y1 - p.box.y0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: MONO, fontSize: 12, lineHeight: '16px',
+                color: 'var(--color-text-secondary)', background: 'var(--color-background)',
+              }, c.label, `co-${p.id}`, { 'data-callout': String(p.id) })
+            })}
+            {hoverPt && label({
+              left: xOf(hoverPt.year), top: yOf(hoverPt.da) - 28, transform: 'translateX(-50%)', fontFamily: MONO,
+              fontSize: 13, fontWeight: 700, lineHeight: '16px', color: 'var(--color-text-primary)',
+              background: 'var(--color-background)', padding: '0 4px',
+            }, `${hoverPt.da.toFixed(1)}%`, 'hover')}
+          </>
+        )}
+      </div>
+
+      {/* Caption — minimal, methodology-only */}
+      <p className="ct-note">
+        {isEs
+          ? `Tasa de adjudicación directa anual · línea roja: el Tablero UE considera insatisfactorio ≥ ${EU_LINE}%. Fuente: COMPRANET ${Y_MIN_YR}–${Y_MAX_YR}. 2002–2009 no se dibujan: la Estructura A no codifica el tipo de procedimiento.`
+          : `Yearly direct-award rate · red rule: the EU scoreboard rates ≥ ${EU_LINE}% unsatisfactory. Source: COMPRANET ${Y_MIN_YR}–${Y_MAX_YR}. 2002–2009 not drawn: Structure A does not code the procedure type.`}
+      </p>
+    </div>
+  )
+}

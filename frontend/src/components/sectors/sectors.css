@@ -1,0 +1,11 @@
+/* /sectors on «El Contrato» — surface-local rules (DESIGN.md §2–§7). Shared
+   primitives live in components/contrato/contrato.css; nothing here overrides them. */
+.sx-plate { margin: 0; padding-top: 16px; border-top: 1px solid var(--color-text-primary); background: var(--color-background); }
+.sx-plate > figcaption { margin-top: 12px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); text-wrap: pretty; }
+/* the Marimekko leads the cover at full measure */
+.sx-lead { margin-top: 16px; }
+.sx-fig-h { font: 600 17px/1.4 var(--font-serif); text-wrap: balance; color: var(--color-text-primary); margin-bottom: 8px; }
+/* ledger / register tables: th SC 13 gray, ink rule under; td 8 × 12 */
+.sx-th { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.sx-meta { font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.sx-sc { font-family: var(--font-sc); font-weight: 600; letter-spacing: var(--track-sc); }

@@ -1,0 +1,41 @@
+{
+  "name": "RUBLI — Procurement Intelligence",
+  "short_name": "RUBLI",
+  "description": "AI-powered procurement risk analysis platform for Mexican government contracting",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf9f6",
+  "theme_color": "#faf9f6",
+  "categories": ["government", "finance", "analytics"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "The Map",
+      "url": "/mapa",
+      "description": "Open El Mapa (connections)"
+    },
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Open the executive dashboard"
+    },
+    {
+      "name": "ARIA Queue",
+      "url": "/aria",
+      "description": "Investigation queue"
+    },
+    {
+      "name": "Sector Analysis",
+      "url": "/sectors",
+      "description": "Sector risk breakdown"
+    }
+  ]
+}

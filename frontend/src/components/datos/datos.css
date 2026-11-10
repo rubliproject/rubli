@@ -1,0 +1,20 @@
+/* /datos «Los datos» (Plataforma remake 2026-10-28). Page-local only; the shell is plataforma.css. */
+
+/* the citation: a pulled record with its copy button */
+.dt-cite { margin: 0; }
+.dt-cite .plt-btn { margin-top: 12px; }
+
+/* the export builder: five controls in one row, the URL it makes, two actions */
+.dt-builder { padding: 16px; background: var(--ct-tint); }
+.dt-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 12px 16px; align-items: end; }
+.dt-fields label, .dt-fields fieldset { display: grid; gap: 4px; min-width: 0; font-size: 14px; color: var(--color-text-secondary); }
+.dt-fields select { min-height: 40px; padding: 0 8px; border: 1px solid var(--ct-ink); background: var(--color-background); color: var(--ct-ink); font: inherit; font-size: 15px; }
+.dt-fields select:focus-visible, .dt-radio input:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.dt-fields fieldset { border: 0; padding: 0; margin: 0; grid-template-columns: auto auto; column-gap: 16px; }
+.dt-fields legend { grid-column: 1 / -1; padding: 0; margin-bottom: 4px; }
+.dt-fields .dt-radio { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; color: var(--ct-ink); font-size: 15px; cursor: pointer; }
+.dt-radio input { width: 16px; height: 16px; accent-color: var(--ct-ink); }
+.dt-url { display: block; margin-top: 12px; font: 400 13px/1.5 var(--font-mono); color: var(--ct-ink); overflow-wrap: anywhere; }
+.dt-actions { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 12px; }
+
+@media (max-width: 900px) { .dt-fields { grid-template-columns: 1fr 1fr; } }

@@ -1,0 +1,26 @@
+{
+  "seasonality": {
+    "toggle_risk": "Riesgo prom.",
+    "toggle_amount": "Monto prom.",
+    "callout": "La presión fiscal de fin de año impulsa contratos más grandes y menos competitivos a través de cadenas de aprobación apresuradas cada diciembre — un patrón que se repite sin excepción en los 23 años de datos.",
+    "center_vsAvg": "vs prom. Oct",
+    "legend_dec": "Dic",
+    "legend_adjMonths": "Nov / Ene",
+    "legend_other": "Otros",
+    "annotation_label": "Vaciado presupuestal"
+  },
+  "months": {
+    "Jan": "Ene",
+    "Feb": "Feb",
+    "Mar": "Mar",
+    "Apr": "Abr",
+    "May": "May",
+    "Jun": "Jun",
+    "Jul": "Jul",
+    "Aug": "Ago",
+    "Sep": "Sep",
+    "Oct": "Oct",
+    "Nov": "Nov",
+    "Dec": "Dic"
+  }
+}

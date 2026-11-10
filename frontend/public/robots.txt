@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /explore/
+# /aria (Focos Rojos) and /vendors/ stay out of search until a legal read (SEO audit 2026-10-26): they name
+# vendors next to a risk indicator. Crawlable on purpose (launch audit 2026-10-28 S4): they answer with
+# X-Robots-Tag: noindex, which Google can only see if it may fetch the page. lib/seo/routeMeta NOINDEX_PREFIXES.
+# Non-content surfaces (SEO audit 2026-10-26)
+Disallow: /_dev/
+Disallow: /print/
+Disallow: /login
+Disallow: /register
+Disallow: /settings
+Disallow: /api/
+Allow: /
+
+Sitemap: https://rubli.xyz/sitemap.xml

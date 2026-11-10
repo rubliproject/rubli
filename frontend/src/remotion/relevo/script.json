@@ -1,0 +1,50 @@
+{
+  "source": "_films_playbook/v3/RELEVO_v3.md § 3 (owner-approved), with the 2026-10-14 close (factcheck/relevo_concentration.*)",
+  "beats": [
+    {
+      "id": "peak",
+      "en": "In 2017, a single company was awarded 19.9 billion pesos in federal contracts for medicine: Grupo Fármacos Especializados.",
+      "es": "En 2017, una sola empresa obtuvo contratos federales de medicamentos por 19,900 millones de pesos: Grupo Fármacos Especializados."
+    },
+    {
+      "id": "four",
+      "en": "It was one of four large IMSS suppliers, with Farmacéuticos Maypo, Laboratorios PISA and the distributor Dimesa. Since 2002, the four have been awarded 326 billion pesos.",
+      "es": "Era una de las cuatro grandes proveedoras del IMSS, junto con Farmacéuticos Maypo, Laboratorios PISA y la distribuidora Dimesa. Desde 2002, las cuatro suman contratos por 326 mil millones de pesos."
+    },
+    {
+      "id": "buyer",
+      "en": "That is about one peso in ten that the Social Security Institute contracted.",
+      "es": "Casi uno de cada diez pesos que contrató el Seguro Social."
+    },
+    {
+      "id": "relay",
+      "en": "From 2011, Grupo Fármacos led every year.",
+      "es": "Desde 2011, Grupo Fármacos fue la primera cada año."
+    },
+    {
+      "id": "order",
+      "en": "In 2019, the new government ordered it, Maypo and Dimesa kept out of government contracts. A judge ruled the order illegal. But that July, the public-administration ministry barred it for two years, for false information about a medicine's origin in an IMSS tender.",
+      "es": "En 2019, el nuevo gobierno ordenó dejarla fuera de los contratos federales, junto con Maypo y Dimesa. Un juez declaró ilegal la orden. Pero en julio, la Función Pública la inhabilitó dos años por falsear el origen de un medicamento en una licitación del IMSS."
+    },
+    {
+      "id": "cliff",
+      "en": "Its contracts fell from 17.6 billion pesos in 2019 to half a million in 2020. Then they stopped.",
+      "es": "Sus contratos pasaron de 17,600 millones de pesos en 2019 a medio millón en 2020. Después, ninguno más."
+    },
+    {
+      "id": "after",
+      "en": "Dimesa fell 97 percent, and Maypo by half. Meanwhile, the government changed how it buys medicine three times.",
+      "es": "Dimesa cayó 97% y Maypo, a la mitad. Entretanto, el gobierno cambió tres veces su forma de comprar medicinas."
+    },
+    {
+      "id": "return",
+      "en": "PISA was not named in the 2019 order. By September 2025, it had been awarded 19.5 billion pesos, nearly the best year of Grupo Fármacos.",
+      "es": "PISA no figuraba en la orden de 2019. Para septiembre de 2025, ya sumaba contratos por 19,500 millones: casi el mejor año de Grupo Fármacos."
+    },
+    {
+      "id": "end",
+      "en": "Few companies can supply what IMSS buys, so none of this, alone, points to wrongdoing. From 2012 to 2019, Grupo Fármacos, Maypo and Dimesa took about half of what IMSS contracted for medicine. Since 2020, the four largest suppliers together have taken less than a quarter.",
+      "es": "Pocas empresas pueden surtir lo que compra el IMSS; nada de esto, por sí solo, indica una irregularidad. De 2012 a 2019, Grupo Fármacos, Maypo y Dimesa se llevaron cerca de la mitad de lo que el IMSS contrató en medicamentos. Desde 2020, las cuatro mayores proveedoras juntas no han llegado ni a la cuarta parte."
+    }
+  ]
+}

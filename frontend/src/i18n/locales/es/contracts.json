@@ -1,0 +1,291 @@
+{
+  "title": "Contratos",
+  "header": {
+    "kicker": "EL REGISTRO FEDERAL · 2002–2026 · v0.9.2",
+    "indexed": "Indexados",
+    "withAmount": "Contratos con monto",
+    "actLedger": "EL REGISTRO",
+    "highRisk": "Alto o crítico",
+    "totalSpend": "Gasto total",
+    "validAmount": "con importe válido"
+  },
+  "dictionary": {
+    "title": "Sobre este archivo",
+    "frozen": "CompraNet hasta el 28 sep 2025 — su padrón federal cerró tras su abolición legal (abr 2025); ComprasMX después, hasta el corte, con datos abiertos que se actualizan cada semana.",
+    "export": "Las descargas respetan los filtros activos (búsqueda en título/descripción, sector, año, institución, categoría, nivel de riesgo, tipo de procedimiento, monto y factor de riesgo), con un tope de las primeras 10,000 filas — acota los filtros para obtener un corte completo.",
+    "fieldsTitle": "Glosario de campos",
+    "contract": "Contrato — un registro de adjudicación (proveedor · institución · monto · fecha).",
+    "directAward": "Adjudicación directa — otorgado sin licitación competitiva.",
+    "singleBid": "Un solo adjudicado — un procedimiento competitivo que terminó con un solo adjudicado.",
+    "risk": "Indicador de riesgo, de 100 — el parecido con los contratos de proveedores que después aparecen vinculados a casos documentados. Una señal de investigación, no una prueba de irregularidad.",
+    "category": "Categoría (partida) — la clasificación de gasto CUCoP de los bienes/servicios."
+  },
+  "searchPlaceholder": "Buscar por título o número de contrato...",
+  "guidance": "Elija un atajo o un filtro. Cada fila abre el expediente del contrato; la flecha lo muestra aquí; la casilla lo agrega a una comparación.",
+  "presets": {
+    "suspiciousMonopolies": {
+      "label": "Contratos con un solo adjudicado",
+      "description": "Contratos de riesgo crítico con un solo adjudicado — un proveedor en procedimiento competitivo"
+    },
+    "decemberRush": {
+      "label": "Compras de fin de año",
+      "description": "Contratos de fin de año de riesgo alto o crítico — gasto elevado antes del cierre fiscal"
+    },
+    "priceOutliers": {
+      "label": "Montos atípicos",
+      "description": "Montos atípicos de riesgo alto o crítico — contratos mucho más grandes que la norma sectorial"
+    },
+    "ghostCompanies": {
+      "label": "Fuera de su giro",
+      "description": "Adjudicaciones directas a proveedores que trabajan fuera de su giro registrado. Una señal para revisar, no prueba de una empresa fantasma."
+    },
+    "networkClusters": {
+      "label": "Redes de proveedores",
+      "description": "Contratos de riesgo crítico de proveedores dentro de una red de proveedores detectada"
+    },
+    "splitContracts": {
+      "label": "Contratos del mismo día",
+      "description": "Varios contratos a un mismo proveedor el mismo día"
+    },
+    "mostAnomalous": {
+      "label": "Más anómalos",
+      "description": "Contratos más alejados de las normas estadísticas — mayor distancia de Mahalanobis en todas las dimensiones de riesgo"
+    },
+    "recentCritical": {
+      "label": "Recientes y críticos",
+      "description": "Contratos de riesgo crítico del año más reciente registrado ({{year}}) — indicador más alto primero"
+    },
+    "biggestDirectAwards": {
+      "label": "Mayores adjudicaciones directas",
+      "description": "Adjudicados sin licitación — mayor valor primero"
+    },
+    "liveCount_one": "{{formatted}} contrato",
+    "liveCount_other": "{{formatted}} contratos"
+  },
+  "columns": {
+    "risk": "Riesgo",
+    "vendor": "Proveedor",
+    "institution": "Institución",
+    "amount": "Monto (MXN)",
+    "date": "Fecha",
+    "sector": "Sector",
+    "procedure": "Procedimiento",
+    "anomalyScore": "Anomalía D²",
+    "contract": "Contrato",
+    "who": "Quién"
+  },
+  "detail": {
+    "title": "Detalle del contrato",
+    "contractNumber": "Número de contrato",
+    "amount": "Monto",
+    "date": "Fecha del contrato",
+    "year": "Año",
+    "vendor": "Proveedor",
+    "institution": "Institución",
+    "sector": "Sector",
+    "riskBreakdown": "Desglose de riesgo",
+    "riskFactors": "Factores de riesgo",
+    "confidenceInterval": "Intervalo de confianza",
+    "mahalanobisDistance": "Distancia de Mahalanobis",
+    "noFactors": "Sin factores de riesgo identificados",
+    "overview": "Resumen",
+    "riskAssessment": "Evaluación de riesgo",
+    "noRiskScore": "Sin puntuación de riesgo",
+    "errorLoading": "Error al cargar los detalles del contrato",
+    "numberLabel": "Número",
+    "anomalyLabel": "Anomalía"
+  },
+  "filters": {
+    "heading": "Filtros",
+    "sector": "Sector",
+    "allSectors": "Todos los sectores",
+    "year": "Año",
+    "allYears": "Todos los años",
+    "riskLevel": "Nivel de riesgo",
+    "directAward": "Adj. directa",
+    "singleBid": "Un solo adjudicado",
+    "minAmount": "Mín (MXN)",
+    "maxAmount": "Máx (MXN)",
+    "minAmountPlaceholder": "Mín. MXN",
+    "maxAmountPlaceholder": "Máx. MXN",
+    "riskFactor": "Factor de riesgo",
+    "allFactors": "Todos los factores",
+    "perPage": "Por página",
+    "clearAll": "Limpiar todo",
+    "clearMin": "Borrar monto mínimo",
+    "clearMax": "Borrar monto máximo",
+    "showResults": "Ver {{formatted}} resultados",
+    "done": "Listo"
+  },
+  "stats": {
+    "totalContracts": "Total de contratos",
+    "totalValue": "Valor total",
+    "pageTotal": "Total de página",
+    "avgRisk": "Riesgo prom. pág.",
+    "critical": "Críticos pág.",
+    "highPlus": "Alto+ pág.",
+    "direct": "Directos pág.",
+    "directAwardRate": "Tasa de adj. directa"
+  },
+  "table": {
+    "anomalyTooltip": "Distancia de Mahalanobis — qué tan estadísticamente inusual es este contrato en todas las dimensiones de riesgo. Mayor = más inusual.",
+    "selectForCompare": "Seleccionar para comparar",
+    "clearSelection": "Limpiar selección",
+    "viewFullDetails": "Ver detalles completos",
+    "fullDetails": "Detalles completos",
+    "riskScoreTooltipTitle": "Sobre la puntuación de riesgo",
+    "riskScoreTooltipBody": "El indicador de riesgo, de 100, mide el parecido con los contratos de proveedores que después aparecen vinculados a casos documentados. No es prueba de irregularidad — es una señal de investigación.",
+    "peek": "Vista rápida",
+    "scrollHint": "deslice →"
+  },
+  "actions": {
+    "exportHeading": "Exportar",
+    "filterSaved": "Guardado",
+    "copied": "Copiado",
+    "copyLink": "Copiar enlace para compartir",
+    "exportCsv": "Exportar a CSV",
+    "exportXlsx": "Exportar a Excel (.xlsx)",
+    "dismissNotice": "Cerrar aviso de calidad de datos",
+    "searchLabel": "Buscar contratos por título o número de contrato",
+    "clearSearch": "Borrar búsqueda",
+    "filterRisk": "Filtrar por nivel de riesgo",
+    "filterRiskLevel": "Filtrar por riesgo {{level}}",
+    "filterSector": "Filtrar por sector",
+    "filterYear": "Filtrar por año",
+    "filterFactor": "Filtrar por factor de riesgo",
+    "perPage": "Resultados por página",
+    "removeFilter": "Quitar filtro: {{label}}",
+    "saveFilter": "Guardar filtro",
+    "saveFilterLabel": "Guardar la configuración de filtros actual",
+    "savedCount": "Guardados ({{count}})",
+    "showSaved": "Mostrar filtros guardados",
+    "removeSaved": "Quitar filtro guardado: {{label}}",
+    "compare": "Comparar",
+    "selectedCount": "{{count}} seleccionados",
+    "clearSelection": "Limpiar selección",
+    "retry": "Reintentar",
+    "pagination": "Paginación",
+    "prevPage": "Página anterior",
+    "nextPage": "Página siguiente",
+    "contractsList": "Lista de contratos",
+    "rangeOf": "{{start}}–{{end}} de {{total}}",
+    "opensNewTab": "(se abre en una pestaña nueva)"
+  },
+  "error": {
+    "failedToLoad": "Error al cargar contratos",
+    "exportCapped": "Exportación limitada",
+    "exportComplete": "Exportación completa",
+    "exportFailed": "Error al exportar",
+    "copyFailed": "Error al copiar",
+    "linkCopied": "Enlace copiado"
+  },
+  "pre2010Banner": "Los contratos de 2002–2010 tienen cobertura limitada (RFC <1%). Los indicadores de riesgo para este período son estimaciones orientativas.",
+  "empty": "No se encontraron contratos con los filtros seleccionados.",
+  "emptyInitial": "{{total}} contratos · 2002–2026",
+  "emptyInitialDesc": "Busca cualquier contrato, institución o proveedor para empezar, o usa los filtros de arriba para explorar por sector, año o nivel de riesgo.",
+  "emptyFiltered": "Ningún contrato coincide con los filtros",
+  "emptyFilteredDesc": "Ajuste la búsqueda o quite los filtros activos",
+  "riskLevels": {
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo"
+  },
+  "statsBar": {},
+  "peek": {
+    "openDossier": "Abrir expediente completo"
+  },
+  "senalados": {
+    "kicker": "LOS SEÑALADOS",
+    "honesty": "Señalados por el modelo y por casos documentados — no es una acusación.",
+    "empty": "Sin señalamientos destacados en este filtro.",
+    "notAccusation": "no es una acusación",
+    "more": "ver {{count}} más",
+    "show": "Ver {{count}}",
+    "hide": "Ocultar"
+  },
+  "filterTags": {
+    "year": "Año {{year}}",
+    "risk": "Riesgo: {{level}}",
+    "directAwards": "Adjudicaciones directas",
+    "singleBidders": "Un solo adjudicado",
+    "category": "Categoría #{{id}}",
+    "riskMin": "Riesgo: {{level}} o más"
+  },
+  "toast": {
+    "tooManyTitle": "Demasiados seleccionados",
+    "tooManyBody": "Puede comparar hasta {{max}} contratos a la vez",
+    "exportCappedBody": "Los filtros coinciden con {{total}} contratos. Solo se exportarán los primeros {{max}}. Acote los filtros para obtener el conjunto completo.",
+    "exportCompleteCapped": "Se descargaron {{exported}} de {{total}} contratos coincidentes (tope de {{max}}).",
+    "exportCompleteBody": "Se descargaron {{exported}} contratos",
+    "exportCompleteXlsx": "Se descargaron {{exported}} contratos (Excel)",
+    "exportFailedBody": "No se pudieron exportar los contratos",
+    "excelUnavailable": "Excel no disponible",
+    "excelUnavailableBody": "La exportación a Excel aún no está habilitada en este servidor — usa la descarga CSV.",
+    "linkCopiedBody": "URL del filtro copiada al portapapeles",
+    "copyFailedBody": "No se pudo copiar el enlace",
+    "networkError": "No se pudo conectar con el servidor.",
+    "unexpectedError": "Ocurrió un error inesperado."
+  },
+  "compare": {
+    "title": "Comparar contratos",
+    "selected_one": "({{count}} seleccionado)",
+    "selected_other": "({{count}} seleccionados)",
+    "close": "Cerrar comparación",
+    "loading": "Cargando los contratos seleccionados",
+    "tableLabel": "Comparación de contratos",
+    "untitled": "Sin título",
+    "fullDetails": "Abrir el acta del contrato",
+    "directAward": "Adjudicación directa",
+    "singleBid": "Un solo adjudicado",
+    "rows": {
+      "risk": "Indicador de riesgo",
+      "amount": "Monto",
+      "date": "Fecha",
+      "vendor": "Proveedor",
+      "institution": "Institución",
+      "sector": "Sector",
+      "procedure": "Procedimiento",
+      "flags": "Alertas",
+      "riskTags": "Señales de riesgo"
+    }
+  },
+  "archiveTitle": "El Archivo",
+  "archiveDek": "Cada contrato federal del registro, para buscar y descargar.",
+  "archiveTitleFiltered_one": "{{formatted}} contrato · {{tags}}",
+  "archiveTitleFiltered_other": "{{formatted}} contratos · {{tags}}",
+  "countNoAmount": "· incluye {{formatted}} sin monto válido",
+  "ct": {
+    "doc": "Contratos",
+    "figures": "En cifras",
+    "figCount": "Contratos en vista",
+    "figCountAll": "todo el registro, 2002–{{year}}",
+    "figCountFiltered": "con los filtros activos",
+    "figAmount": "Monto en vista",
+    "figAmountAll": "contratos con monto válido",
+    "figAmountScoped": "suma del sector y el año elegidos",
+    "figAmountNA": "la suma solo se calcula por sector y año",
+    "figCrit": "Indicador crítico",
+    "figCritNote": "{{formatted}} contratos con indicador ≥ 0.60",
+    "figDa": "Adjudicación directa",
+    "figDaNote": "{{formatted}} contratos sin licitación",
+    "railShortcuts": "Atajos",
+    "railRisk": "Indicador",
+    "railProcedure": "Procedimiento",
+    "railNarrow": "Acotar",
+    "railActive": "Filtros activos",
+    "flagged": "Los señalados",
+    "register": "El registro",
+    "pageOf": "Página {{page}} de {{total}}",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "clearFilters": "Quitar filtros",
+    "person": "p. física",
+    "personTitle": "Persona física, no una empresa",
+    "colWho": "Proveedor · institución",
+    "colRisk": "Indicador de riesgo",
+    "perPage": "por página",
+    "compareBar": "{{count}} elegidos",
+    "declarations": "Declaraciones"
+  }
+}

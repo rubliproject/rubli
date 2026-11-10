@@ -1,0 +1,275 @@
+{
+  "chapters": {
+    "subject": "Subject",
+    "timeline": "Timeline",
+    "pattern": "Pattern",
+    "network": "Network",
+    "money": "Money",
+    "verdict": "Summary",
+    "headings": {
+      "subject": "Chapter I · The Subject",
+      "timeline": "Chapter II · The Timeline",
+      "network": "Chapter III · The Network",
+      "money": "Chapter IV · The Money",
+      "pattern": "Chapter V · The Pattern",
+      "verdict": "Chapter VI · The Summary"
+    }
+  },
+  "patterns": {
+    "P1": {
+      "label": "Institutional monopoly",
+      "description": "Holds a disproportionate share of sector contracts — potential market capture through non-competitive means."
+    },
+    "P2": {
+      "label": "Low-footprint supplier (no RFC)",
+      "description": "Exhibits shell-company indicators: short operating history, few contracts, near-100% direct awards, unverifiable presence."
+    },
+    "P3": {
+      "label": "Intermediary",
+      "description": "Acts as a pass-through entity, winning contracts outside its primary industry and likely reselling to actual providers."
+    },
+    "P4": {
+      "label": "Co-award pattern",
+      "description": "Multiple vendors show coordinated bidding — rotation, cover bids, or geographic market allocation."
+    },
+    "P5": {
+      "label": "Amount out of range",
+      "description": "The contract is much larger (or smaller) than others of its kind — a size signal, not a measured unit price."
+    },
+    "P6": {
+      "label": "Single-buyer dependence",
+      "description": "Receives a disproportionate share from a single institution, typically through direct awards."
+    },
+    "P7": {
+      "label": "Linked to a documented case",
+      "description": "Embedded in a co-contracting network, suggesting coordinated vendor rings."
+    }
+  },
+  "subject": {
+    "riskBadge": "{{level}} risk",
+    "ariaTier": "ARIA Tier {{tier}}",
+    "scrollHint": "Continue",
+    "introText": "This analysis thread follows the procurement history of {{name}}, tracing the patterns, relationships, and financial flows that triggered automated detection. Scroll to explore the analysis."
+  },
+  "kpi": {
+    "totalValue": "Total Value",
+    "contracts": "Contracts",
+    "directAwards": "Direct Awards",
+    "highRisk": "High-Risk"
+  },
+  "notes": {
+    "allContracts": "All contracts awarded, 2002–2026",
+    "vsNational": "vs. ~48% national average",
+    "oecdBenchmark": "Calibration target: 2–15%"
+  },
+  "timeline": {
+    "heading": "{{total}} Contracts, {{minYear}}–{{maxYear}}",
+    "dotDescription": "Each dot is one year. Size reflects total value. Color reflects average risk. Hover for details.",
+    "hourglassDescription": "One bar per year. Height reflects total contract value (log scale); color reflects average risk. The small dot below each bar shows relative contract count — a tall bar above a tiny dot means money concentrated in a few contracts; a short bar over a fat dot means many small awards.",
+    "hourglassLegend": "BAR = TOTAL VALUE · COLOR = AVG RISK · DOT BELOW AXIS = CONTRACT COUNT",
+    "countAxis": "contracts",
+    "valueAxis": "log(value)",
+    "era": {
+      "stable": "Stable era",
+      "watch": "Watch era",
+      "alert": "Alert era"
+    },
+    "eraAll": "All",
+    "eraNarrative": "opens in {{year}}. {{share}}% of total value (≈ {{value}}) flowed during high-risk years.",
+    "filter": "Filter:",
+    "unpin": "Unpin year",
+    "detail": {
+      "hovering": "Year hovered",
+      "pinned": "Year pinned",
+      "spotlight": "Spotlight year",
+      "contracts": "Contracts",
+      "value": "Value",
+      "ofTotal": "of total",
+      "avgRisk": "Avg risk"
+    },
+    "legend": {
+      "sizeLabel": "Size = annual contract value"
+    },
+    "sourceFooter": "Source: COMPRANET · RUBLI v0.9.2"
+  },
+  "pattern": {
+    "heading": "What the Algorithm Found",
+    "description": "Risk scores are built from 16 z-score features normalized against sector baselines. These are the factors that drove this vendor's score.",
+    "raisesRisk": "▲ raises risk",
+    "lowersRisk": "▼ lowers risk",
+    "raises": "raises",
+    "lowers": "lowers",
+    "sectorReference": "sector p25–p75",
+    "diagnosis": "{{anomalous}} of {{total}} lab values outside sector reference range",
+    "noData": "Feature attribution data not available for this vendor.",
+    "shapNote": "Positive values increase risk score (red). Negative values reduce it (green). Values are SHAP-style feature contributions: β_i × (z_i − E[z_i]).",
+    "sourceFooter": "Source: COMPRANET · RUBLI v0.9.2"
+  },
+  "network": {
+    "heading": "Connections & Relationships",
+    "description": "Vendor networks reveal co-contracting rings, shared entities, and institutional dependencies invisible in contract-by-contract analysis.",
+    "constellationDescription": "A reach topology. The outer ring marks the institutions this vendor served; the inner ring marks the vendors who bid alongside them. The shape exposes whether this vendor operates inside a network or as a single source.",
+    "topology": {
+      "tightSingleSource": "Tight single-source profile. No co-bidders, narrow institutional reach — typical of capture or sole-source contracts.",
+      "broadSingleSource": "Broad single-source profile. No coordinated co-bidding, but contracts spread across many institutions — possible direct-award dominance.",
+      "thinNetwork": "Thin co-bidding network. The vendor occasionally bids alongside a small set of others.",
+      "denseNetwork": "Dense co-bidding network. The vendor consistently bids alongside the same group — review for rotation or decoy patterns."
+    },
+    "noCoordinatedBidding": "── NO COORDINATED BIDDING ──",
+    "noCoordinatedBiddingNote": "single-source / direct-award dominant",
+    "ringLabels": {
+      "institutions": "INSTITUTIONS",
+      "shown": "SHOWN",
+      "sector": "SECTOR",
+      "sectors": "SECTORS",
+      "coBidder": "CO-BIDDER",
+      "coBidders": "CO-BIDDERS"
+    },
+    "topologyRead": "Read",
+    "mostFrequent": "Most-frequent co-bidder:",
+    "sharedProcedures": "{{count}} shared procedures",
+    "institutionalRibbonLabel": "INSTITUTIONAL FOOTPRINT",
+    "institutionalRibbonHeading": "Where the relationships landed, year by year",
+    "institutionalRibbonDescription": "Each lane is one institution. The ribbon spans the years that institution received contracts from this vendor; thickness encodes total value, color encodes average risk. Sorted top-down by money received. Click any lane to open the institution.",
+    "ribbonSourceFooter": "Source: COMPRANET · RUBLI v0.9.2 · Institutions with ≥1 contract",
+    "institutionsServed": "Institutions Served",
+    "sectorsActive": "Sectors Active",
+    "institutionsNote": {
+      "few": "Very few institutions — possible institutional capture.",
+      "many": "Wide institutional reach — diversified vendor profile.",
+      "moderate": "Moderate institutional diversity."
+    },
+    "sectorsNote": {
+      "single": "Single-sector presence — typical for specialists.",
+      "multi": "Cross-sector activity — may indicate intermediary behavior.",
+      "moderate": "Multi-sector vendor."
+    },
+    "coBiddingPartners": "Co-Bidding Partners",
+    "noCoBidders": "No coordinated bidding patterns detected.",
+    "openNetworkGraph": "Open Full Network Graph",
+    "openNetworkGraphDesc": "Interactive force-directed graph showing co-bidders, related entities, and community clusters.",
+    "coBidderAnalysis": "Co-Bidder Analysis",
+    "coBidderAnalysisDesc": "Vendors that consistently appear in the same procedures — potential coordination rings."
+  },
+  "roles": {
+    "possibleDecoy": "Low-Activity Co-Bidder",
+    "rotationPattern": "Rotation Pattern",
+    "possibleAccomplice": "Associated Vendor",
+    "coBidder": "Co-bidder"
+  },
+  "money": {
+    "heading": "{{value}} Over Time",
+    "description": "Annual contract value and risk trajectory — where the money went, and when the risk spiked.",
+    "staircaseDescription": "The journey of money. Each step is a year. Step color is the average risk that year. The taller the step, the larger the year-over-year jump — pinned annotations mark the three largest. The final number is the cumulative total.",
+    "flowedIn": "flowed in {{year}}",
+    "peakRiskYearShort": "peak risk year",
+    "byYear": "by {{year}}",
+    "detail": {
+      "delta": "Year contribution",
+      "cumulative": "Cumulative",
+      "toDate": "to date"
+    },
+    "peakByValue": "Peak Year by Value",
+    "peakByRisk": "Peak Year by Risk",
+    "peakValueLabel": "{{year}} — {{value}}",
+    "peakRiskLabel": "{{year}} — {{pct}}% avg score",
+    "chartValueLabel": "Contract Value by Year (MXN millions)",
+    "chartRiskLabel": "Average Risk Score by Year (%)",
+    "riskNote": "Risk thresholds: Critical ≥60%, High ≥40%, Medium ≥25%. Calibration target: 2–15% high-risk."
+  },
+  "verdict": {
+    "heading": "Investigation Summary",
+    "description": "Statistical signals warrant attention. A high score is not proof of wrongdoing — it means this vendor closely resembles documented corruption patterns.",
+    "theQuestion": "The Question",
+    "theEvidence": "The Evidence",
+    "theFinding": "The Finding",
+    "theNextStep": "The Next Step",
+    "questionText": "Does this vendor's procurement record warrant investigation?",
+    "finding": {
+      "critical": "The data warrants urgent investigation.",
+      "high": "Statistical signals warrant scrutiny.",
+      "medium": "Anomalies present. Verification recommended.",
+      "low": "No standout signals against sector baseline."
+    },
+    "evidence": {
+      "signal": "Statistical signal",
+      "pattern": "Pattern detected",
+      "aria": "ARIA classification",
+      "external": "External validation",
+      "network": "Network"
+    },
+    "tierIps": "Tier {{tier}} · IPS {{ips}}",
+    "networkRow": "{{coBidders}} co-bidder{{coBiddersPlural}} · {{institutions}} inst. · {{sectors}} sector{{sectorsPlural}}",
+    "readFullMemo": "+ Read full memo",
+    "collapseMemo": "— Collapse",
+    "riskIndicatorScore": "Risk Indicator Score",
+    "outOf100": "out of 100",
+    "ariaIps": "ARIA IPS: {{ips}} · Tier {{tier}}",
+    "efosLabel": "SAT EFOS Definitivo",
+    "sfpLabel": "SFP Sanctioned",
+    "groundTruthLabel": "In Ground Truth Cases",
+    "groundTruthShort": "GT",
+    "ariaMemoTitle": "ARIA Intelligence Memo",
+    "fullVendorProfile": "Full Vendor Profile",
+    "exportPdf": "Export PDF Briefing",
+    "addToWorkspace": "Add to Workspace",
+    "methodologyNote": "Risk scores measure similarity to labelled cases in Mexican federal contracts (2002–2026). Scores are statistical indicators for investigation triage — not proof of wrongdoing. Model v0.9.2, forward-chained AUC 0.827 (trained on earlier years, tested on the next). See",
+    "methodologyLink": "full methodology",
+    "viewArticle": "View article →",
+    "webEvidence": "Web evidence",
+    "webEvidenceCentinela": "Web evidence · press and registries",
+    "webVerdictSanction": "SANCTION",
+    "webVerdictCorruption": "CORRUPTION",
+    "webVerdictRisk": "RISK",
+    "webVerdictExculpatory": "EXCULP.",
+    "webVerdictNeutral": "NEUTRAL",
+    "documentedSanction": "Documented sanction",
+    "newsMention": "News mention",
+    "pressCoverage": "Press coverage",
+    "noCoverageFound": "No coverage found",
+    "riskIndicatorLabel": "Risk indicator",
+    "riskLevelLabel": "Risk level",
+    "assessmentLabel": "Assessment"
+  },
+  "press": {
+    "heading": "External Press & Registry Mentions",
+    "description": "Web evidence — press mentions retrieved from public news sources and government registries.",
+    "noResults": "No external press coverage found for this vendor.",
+    "listLabel": "Press mentions",
+    "allNeutral": "All retrieved articles were classified as neutral — no corruption or risk language detected.",
+    "chapterLabel": "§ PRESS · REGISTRIES"
+  },
+  "institutional": {
+    "label": "Institution",
+    "valueContracts": "Value · contracts",
+    "concentration": "Concentration",
+    "likelyCapture": "(likely institutional capture)",
+    "footprintLabel": "§ INSTITUTIONAL FOOTPRINT",
+    "totalMxn": "Total MXN",
+    "numContracts": "# Contracts",
+    "yearRange": "Year Range"
+  },
+  "diagnostic": {
+    "diagnosisLabel": "Diagnosis",
+    "featureLabel": "Feature",
+    "shapLabel": "SHAP",
+    "tailRaisesRisk": "tail (|z| ≥ 1) raises risk",
+    "withinRange": "within range or protective"
+  },
+  "disclosure": {
+    "label": "What this thread can't tell you",
+    "body": "The COMPRANET dataset has known structural gaps. RFC (vendor tax ID) coverage is uneven across periods (0.1% in 2002–2010, 47% in 2023+). Beneficial-ownership data is not tracked. Contract documents (the actual scope of work, deliverables, modifications) are not in this dataset. Subcontracting relationships are not exposed. The risk score measures statistical similarity to documented corruption patterns — not proof of wrongdoing. Treat every flag as a hypothesis to verify, not a verdict."
+  },
+  "nav": {
+    "back": "Back",
+    "redThread": "Red Thread",
+    "fullProfile": "Full Profile"
+  },
+  "loading": "Building investigation thread…",
+  "errors": {
+    "invalidId": "Invalid vendor ID.",
+    "loadFailed": "Could not load information. Please try again later.",
+    "goBack": "Go back",
+    "vendorNotFound": "Vendor not found."
+  }
+}

@@ -1,0 +1,43 @@
+/* Case dossier (/cases/:slug) on «El Contrato» — DESIGN.md §2 type, §3 ladder, §4 measure.
+   Page-local pieces the shell does not own: the cover lead (outcome | facts, two columns
+   that end together), the account (prose | the figure), ledger cell styles. Tokens only. */
+
+.case-page .cd-hold { min-height: 640px; }
+.cd-kicker { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); padding-bottom: 8px; border-bottom: 1px solid var(--ct-ink); }
+.cd-step { display: inline-flex; align-items: center; gap: 16px; }
+.cd-step a, .cd-step > span[aria-hidden] { display: inline-flex; align-items: center; min-height: 40px; }
+.cd-step > span[aria-hidden] { opacity: .45; }
+.cd-aside { font-size: 13px; color: var(--ct-gray); }
+
+/* cover: summary + outcome 7fr | facts 5fr; the facts rows stretch so both columns end level */
+.cd-outcome { margin-top: 24px; }
+.cd-seal { margin-top: 16px; }
+.cd-outcome > p { margin-top: 12px; text-wrap: pretty; }
+.cd-out-note { color: var(--color-text-secondary); }
+.case-page .ct-side { align-self: stretch; }
+.cd-facts { flex: 1; display: flex; flex-direction: column; }
+.cd-facts dl { display: flex; flex-direction: column; flex: 1; border-bottom: 1px solid var(--ct-rule); }
+.cd-facts dl > div { display: grid; grid-template-columns: minmax(120px, 2fr) 3fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); flex: 1; align-items: center; }
+.cd-facts dl > div:last-child { border-bottom: 0; }
+.cd-facts dt { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.cd-facts dd { font-size: 15px; line-height: 1.45; color: var(--ct-ink); min-width: 0; overflow-wrap: anywhere; }
+.cd-facts dd .ct-mono { font-size: 13px; }
+
+/* ledger cells */
+.case-page .ct-table td { vertical-align: baseline; }
+.cd-name { font-weight: 600; color: var(--ct-ink); }
+.cd-role { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); white-space: nowrap; }
+.cd-title { display: block; }
+.cd-sub { display: block; margin-top: 4px; font: 400 13px/1.45 var(--font-serif); color: var(--ct-gray); font-weight: 400; }
+.cd-caption { caption-side: top; text-align: left; padding-bottom: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--ct-gray); }
+.cd-status { display: inline-flex; align-items: center; gap: 8px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); }
+.cd-status i { width: 8px; height: 8px; border-radius: 50%; flex: none; background: var(--c); }
+.cd-status i.is-ring { background: transparent; border: 2px solid var(--ct-ink); }
+.cd-more { margin-top: 8px; }
+.cd-more summary { display: inline-flex; align-items: center; min-height: 40px; cursor: pointer; list-style: none; }
+.cd-more summary::-webkit-details-marker { display: none; }
+.cd-method { margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--ct-rule); }
+
+@media (max-width: 900px) {
+  .cd-facts dl > div { flex: none; }
+}

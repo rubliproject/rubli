@@ -1,0 +1,1000 @@
+/**
+ * ConcentrationConstellation — a static dot-density "sky" of contract risk,
+ * with three clustering modes that re-organize the same dot population around
+ * different attractor geographies:
+ *
+ *   PATRONES (default)  — 7 ARIA corruption pattern clusters (P1..P7)
+ *   SECTORES            — 12 sector attractors in a 4×3 grid
+ *   SEXENIOS            — 6 presidential periods in a horizontal timeline
+ *
+ * 1,200 fixed dots laid out in a Halton(2,3) sequence fill an 840x220 panel.
+ * Each dot is colored by risk level in exact proportion to risk_distribution.
+ * Critical dots are allocated to the active attractor set by a weighted Halton
+ * draw (proportional to each cluster's T1 vendor count), then joined to their
+ * nearest in-cluster neighbors with hairline edges — the architectures of
+ * state capture made legible, from three different vantage points.
+ *
+ * Design grammar: same particle vocabulary as ContractField, but frozen.
+ * Ring radius ∝ √(T1 count); ring color = cluster identity; hover exposes
+ * the full cluster summary with a DotBar visualization of highRiskPct.
+ */
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { halton, mulberry32 } from '@/lib/particle'
+import { PatternGlyph } from '@/components/charts/cluster-glyphs'
+import type { GlyphProps } from '@/components/charts/cluster-glyphs'
+import { RISK_COLORS } from '@/lib/constants'
+import { DotBar } from '@/components/ui/DotBar'
+
+import { DUR, STAGGER, css, ms, stagger } from '@/lib/motion'
+import { buildPatternMeta, buildSectorMeta, buildSexenioMeta } from './constellationMeta'
+export interface ConstellationRiskRow {
+  level: 'critical' | 'high' | 'medium' | 'low'
+  count: number
+  pct: number // 0-100
+}
+
+export type ConstellationMode = 'patterns' | 'sectors' | 'sexenios' | 'categories'
+
+/** Named vendor to display as a large labeled outlier dot near its cluster attractor. */
+export interface NamedVendorDot {
+  clusterCode: string
+  vendorId: number
+  name: string
+  riskScore: number
+}
+
+interface ConcentrationConstellationProps {
+  rows: ConstellationRiskRow[]
+  totalContracts: number
+  mode?: ConstellationMode
+  /**
+   * Optional override for the cluster meta — when provided, replaces the
+   * default mode-based meta generation. Used by /atlas to pass an expanded
+   * 32+ category set without baking that into the dashboard's compact view.
+   */
+  metaOverride?: ClusterMeta[]
+  /**
+   * Optional override for the seed used to position dots — useful when an
+   * override meta is paired with an extra dimension (e.g. year) so dots
+   * visibly re-shuffle on each combination.
+   */
+  seedOverride?: number
+  /**
+   * Code of a pinned cluster — its attractor ring will pulse continuously
+   * to mark it across mode/year changes. Used by /atlas pin feature.
+   */
+  pinnedCode?: string | null
+  /**
+   * Named vendor outliers — top critical vendors per cluster, rendered as
+   * large (r=4) labeled dots near the attractor. Dims anonymous dots to 0.30.
+   * Reuters "Forever Pollution" pattern: named outliers paired with persistent
+   * labels; NYT Upshot annotated dot strip.
+   * Max 3 per cluster (if >5 provided for a cluster, only top 3 by riskScore).
+   */
+  namedVendors?: NamedVendorDot[]
+  /**
+   * When set, only clusters in this list render at full opacity; all others
+   * dim to 0.15. Used by story-chart binding (N2) to focus the constellation
+   * on the chapter's subject cluster.
+   * ICIJ Pandora Papers / NYT "How the Virus Got Out" pattern.
+   */
+  highlightedClusterCodes?: string[]
+  onClusterClick?: (clusterCode: string) => void
+  className?: string
+  /**
+   * BUG-3 fix (2026-05-17): when true, renders ONLY the static low-risk
+   * background dot field + SVG border. No edges, halos, attractor rings,
+   * named-vendor dots, margin annotations, captions, or animations.
+   * Used as a position:absolute backdrop layer behind the transform layer
+   * in AtlasZoomLayer so the "gas" star field stays anchored while the
+   * user pans/zooms the cluster data on top.
+   */
+  backgroundLayer?: boolean
+  /**
+   * BUG-3 fix (2026-05-17): when true, skips rendering the low-risk dot
+   * layer (the cosmic gas). Pair with `backgroundLayer` in a sibling
+   * render so the background renders once (static) and the foreground
+   * renders the rest (transform-able).
+   */
+  noBackground?: boolean
+}
+
+
+// ── Layout constants ──────────────────────────────────────────────────────
+// 2026-05-09: SVG_H bumped 220 → 540 so the constellation reads as a
+// proper canvas rather than a 200px-tall sliver. Aspect now 840:540
+// (~1.55:1 widescreen) instead of the original 3.8:1 letterbox band.
+// FIELD_H grows from 176 to 496 — bodies have ~3× more vertical room
+// to breathe and the (fx, fy) fractions still work proportionally.
+const SVG_W = 840
+const SVG_H = 540
+const PAD_L = 16
+const PAD_R = 200 // reserve right margin for annotations
+const PAD_T = 16
+const PAD_B = 28
+const FIELD_W = SVG_W - PAD_L - PAD_R
+const FIELD_H = SVG_H - PAD_T - PAD_B
+const N_DOTS = 1200
+
+// ── Cluster metadata (shared shape across the 3 modes) ────────────────────
+export interface ClusterMeta {
+  code: string     // e.g. 'P5', 'salud', 'amlo'
+  label: string    // human-readable
+  desc: string     // tooltip description
+  color: string    // stroke/ring color
+  vendors: number  // total vendors in the cluster
+  t1: number       // T1 critical vendors (drives weight & ring radius)
+  highRiskPct: number // 0..1 — rendered as DotBar in tooltip
+  fx: number       // 0..1, fraction of FIELD_W
+  fy: number       // 0..1, fraction of FIELD_H
+  kicker?: string  // optional extra line (e.g. sexenio years)
+}
+
+// ── MODE 4: CATEGORÍAS (top 12 spending categories around their parent sector) ──
+// Categories are positioned in 4 columns × 3 rows, jittered slightly toward
+// their sector affinity. Ring radius ∝ √(total spend), color = sector palette.
+// Critical-dot weight uses the avg_risk × log(spend) so high-risk + high-spend
+// categories pull the most critical mass.
+// PATTERN_SHORT_LABEL removed with omega-P2 revert; bilingual labels are
+// already in the meta data above.
+
+// Meta label shown in tooltip kicker and caption
+function buildModeKickers(isEs: boolean): Record<ConstellationMode, { short: string; caption: string }> {
+  return {
+    patterns:   { short: isEs ? 'PATRÓN' : 'PATTERN',     caption: isEs ? '7 patrones ARIA (P1–P7) · clic para abrir la tipología' : '7 ARIA patterns (P1–P7) · click to open typology' },
+    sectors:    { short: isEs ? 'SECTOR' : 'SECTOR',      caption: isEs ? '12 sectores federales · clic para abrir el sector' : '12 federal sectors · click to open sector' },
+    sexenios:   { short: isEs ? 'SEXENIO' : 'TERM',       caption: isEs ? '6 periodos presidenciales · clic para abrir el sexenio' : '6 presidential terms · click to open term' },
+    categories: { short: isEs ? 'CATEGORÍA' : 'CATEGORY', caption: isEs ? '12 categorías de gasto · clic para explorar' : '12 spending categories · click to explore' },
+  }
+}
+
+// Risk visual styling (mirrors ContractField + RiskStrata)
+const DOT_STYLE: Record<ConstellationRiskRow['level'], { r: number; fill: string; alpha: number; halo?: number }> = {
+  critical: { r: 1.8, fill: RISK_COLORS.critical, alpha: 0.95, halo: 3.6 },
+  high:     { r: 1.3, fill: RISK_COLORS.high, alpha: 0.78 },
+  medium:   { r: 0.95, fill: RISK_COLORS.medium, alpha: 0.55 },
+  low:      { r: 0.6,  fill: RISK_COLORS.low, alpha: 0.42 },
+}
+
+interface DotPos {
+  x: number
+  y: number
+  level: ConstellationRiskRow['level']
+  cluster: number // -1 for non-critical, else 0..nClusters-1
+}
+
+export function ConcentrationConstellation({
+  rows,
+  totalContracts,
+  mode = 'patterns',
+  metaOverride,
+  seedOverride,
+  pinnedCode,
+  namedVendors,
+  highlightedClusterCodes,
+  onClusterClick,
+  className,
+  backgroundLayer = false,
+  noBackground = false,
+}: ConcentrationConstellationProps) {
+  const { i18n } = useTranslation()
+  const isEs = i18n.language === 'es'
+  const [hoveredCluster, setHoveredCluster] = useState<number | null>(null)
+
+  // Pick the active meta array for the current mode (or use override)
+  const activeMeta: ClusterMeta[] = useMemo(() => {
+    if (metaOverride && metaOverride.length > 0) return metaOverride
+    if (mode === 'sectors')    return buildSectorMeta(isEs)
+    if (mode === 'sexenios')   return buildSexenioMeta(isEs)
+    // No curated categories meta: the hardcoded table that lived here painted
+    // invented cohorts. Categories only render from live cluster-stats.
+    if (mode === 'categories') return []
+    return buildPatternMeta(isEs)
+  }, [mode, isEs, metaOverride])
+
+  const MODE_KICKERS = useMemo(() => buildModeKickers(isEs), [isEs])
+
+  // ── Named vendor outlier prep ────────────────────────────────────────────
+  // Ref: Reuters "Forever Pollution" (named outliers + persistent labels) +
+  //      NYT Upshot annotated dot strip.
+  // Cap each cluster to top 3 by riskScore; skip clusters with >5 named
+  // vendors by only taking top 3 (no label collision).
+  const namedVendorsByCluster = useMemo(() => {
+    if (!namedVendors || namedVendors.length === 0) return new Map<string, NamedVendorDot[]>()
+    const byCluster = new Map<string, NamedVendorDot[]>()
+    for (const nv of namedVendors) {
+      const arr = byCluster.get(nv.clusterCode) ?? []
+      arr.push(nv)
+      byCluster.set(nv.clusterCode, arr)
+    }
+    // Sort descending by riskScore, cap at 3
+    for (const [code, arr] of byCluster) {
+      byCluster.set(code, arr.sort((a, b) => b.riskScore - a.riskScore).slice(0, 3))
+    }
+    return byCluster
+  }, [namedVendors])
+
+  const hasNamedVendors = namedVendorsByCluster.size > 0
+  const hasHighlight = highlightedClusterCodes !== undefined && highlightedClusterCodes.length > 0
+  const highlightSet = useMemo(
+    () => new Set(highlightedClusterCodes ?? []),
+    [highlightedClusterCodes],
+  )
+
+  const { dots, criticalEdges, marginAnchors, attractors } = useMemo(() => {
+    // Reset hover when mode changes — avoid stale index referencing old meta
+    // (setState inside useMemo would be a bug; we instead cap hoveredCluster
+    //  at paint time).
+
+    const nClusters = activeMeta.length
+
+    // Sort to deterministic order: critical, high, medium, low
+    const order = ['critical', 'high', 'medium', 'low'] as const
+    const byLevel = Object.fromEntries(order.map((l) => [l, rows.find((r) => r.level === l)?.pct ?? 0])) as Record<typeof order[number], number>
+
+    // Allocate dot counts proportional to percentages, preserving N_DOTS total
+    const counts: Record<typeof order[number], number> = { critical: 0, high: 0, medium: 0, low: 0 }
+    let allocated = 0
+    for (const lvl of order) {
+      const c = Math.round((byLevel[lvl] / 100) * N_DOTS)
+      counts[lvl] = c
+      allocated += c
+    }
+    // Adjust low to make sum exactly N_DOTS
+    counts.low += N_DOTS - allocated
+
+    // Build flat label array in critical-first order so they paint LAST (on top)
+    const labels: ConstellationRiskRow['level'][] = []
+    for (const lvl of order) {
+      for (let i = 0; i < counts[lvl]; i++) labels.push(lvl)
+    }
+
+    // Attractors: resolve fractional coords into pixel positions
+    const attractors = activeMeta.map((m) => ({
+      x: PAD_L + m.fx * FIELD_W,
+      y: PAD_T + m.fy * FIELD_H,
+    }))
+
+    // Cluster weights ∝ T1 count (critical attribution follows risk mass)
+    const totalT1 = activeMeta.reduce((s, m) => s + m.t1, 0) || 1
+    const weights = activeMeta.map((m) => m.t1 / totalT1)
+    const cumWeights: number[] = []
+    for (let i = 0; i < weights.length; i++) {
+      cumWeights.push((cumWeights[i - 1] ?? 0) + weights[i])
+    }
+    cumWeights[cumWeights.length - 1] = 1
+
+    // Seed varies by mode so dot positions change when user toggles — the
+    // panel feels alive and re-organizing rather than frozen. seedOverride
+    // (used by /atlas year scrubber) lets us re-seed per year.
+    const seed = seedOverride !== undefined ? seedOverride
+      : mode === 'sectors'    ? 27182
+      : mode === 'sexenios'   ? 16180
+      : mode === 'categories' ? 14142
+      : 31415
+    const rng = mulberry32(seed)
+    const built: DotPos[] = []
+
+    let criticalIdx = 0
+
+    for (let i = 0; i < N_DOTS; i++) {
+      // Halton(2,3) for even-but-organic positions
+      const u = halton(i + 1, 2)
+      const v = halton(i + 1, 3)
+      // Tiny jitter so the lattice doesn't betray itself
+      const jx = (rng() - 0.5) * 4
+      const jy = (rng() - 0.5) * 4
+      let x = PAD_L + u * FIELD_W + jx
+      let y = PAD_T + v * FIELD_H + jy
+
+      const level = labels[i]
+      let cluster = -1
+
+      if (level === 'critical') {
+        // Weighted assignment via fresh Halton base-5 so cluster distribution
+        // tracks T1 counts, not i-modulo.
+        const uCluster = halton(criticalIdx * 7 + 1, 5)
+        let picked = cumWeights.findIndex((cw) => uCluster < cw)
+        if (picked === -1) picked = nClusters - 1
+        cluster = picked
+        criticalIdx++
+
+        const a = attractors[cluster]
+        const ang = rng() * Math.PI * 2
+        // In sexenios mode, slightly tighten the clusters so 6 nodes read
+        // as a row, not a loose cloud.
+        const rMax = mode === 'sexenios' ? 16 : 22
+        const radius = 6 + Math.pow(rng(), 1.6) * rMax
+        x = a.x + Math.cos(ang) * radius
+        y = a.y + Math.sin(ang) * radius
+      }
+
+      // Clamp inside field
+      x = Math.max(PAD_L + 2, Math.min(PAD_L + FIELD_W - 2, x))
+      y = Math.max(PAD_T + 2, Math.min(PAD_T + FIELD_H - 2, y))
+
+      built.push({ x, y, level, cluster })
+    }
+
+    // Edges: each critical dot → its 2 nearest critical neighbors in same cluster
+    const edges: Array<{ x1: number; y1: number; x2: number; y2: number; primary: boolean }> = []
+    const criticals = built.filter((d) => d.level === 'critical')
+    for (let i = 0; i < criticals.length; i++) {
+      const a = criticals[i]
+      let best1 = -1
+      let best2 = -1
+      let d1 = Infinity
+      let d2 = Infinity
+      for (let j = 0; j < criticals.length; j++) {
+        if (j === i || criticals[j].cluster !== a.cluster) continue
+        const b = criticals[j]
+        const dx = a.x - b.x
+        const dy = a.y - b.y
+        const d = dx * dx + dy * dy
+        if (d < d1) { d2 = d1; best2 = best1; d1 = d; best1 = j }
+        else if (d < d2) { d2 = d; best2 = j }
+      }
+      if (best1 >= 0) {
+        const b = criticals[best1]
+        edges.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, primary: true })
+      }
+      if (best2 >= 0) {
+        const b = criticals[best2]
+        edges.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y, primary: false })
+      }
+    }
+
+    // Pick representative anchor dots for margin labels (always same cluster[0])
+    const findAnchor = (lvl: ConstellationRiskRow['level'], targetY: number): DotPos | null => {
+      let best: DotPos | null = null
+      let bd = Infinity
+      for (const d of built) {
+        if (d.level !== lvl) continue
+        const score = Math.abs(d.y - targetY) + (PAD_L + FIELD_W - d.x) * 0.3
+        if (score < bd) { bd = score; best = d }
+      }
+      return best
+    }
+    const findCriticalAnchorInCluster = (clusterIdx: number): DotPos | null => {
+      const a = attractors[clusterIdx]
+      let best: DotPos | null = null
+      let bd = Infinity
+      for (const d of built) {
+        if (d.level !== 'critical' || d.cluster !== clusterIdx) continue
+        const dx = d.x - a.x
+        const dy = d.y - a.y
+        const d2 = dx * dx + dy * dy
+        if (d2 < bd) { bd = d2; best = d }
+      }
+      return best
+    }
+
+    return {
+      dots: built,
+      criticalEdges: edges,
+      attractors,
+      marginAnchors: {
+        critical: findCriticalAnchorInCluster(0) ?? findAnchor('critical', PAD_T + FIELD_H * 0.40),
+        high:     findAnchor('high',     PAD_T + FIELD_H * 0.55),
+        low:      findAnchor('low',      PAD_T + FIELD_H * 0.82),
+      },
+    }
+  }, [rows, activeMeta, mode, seedOverride])
+
+  const criticalRow = rows.find((r) => r.level === 'critical')
+  const highRow = rows.find((r) => r.level === 'high')
+  const lowRow = rows.find((r) => r.level === 'low')
+
+  // BUG-3 fix (2026-05-17): when used as the static backdrop in
+  // AtlasZoomLayer, render ONLY the low-risk dot field + the SVG border.
+  // No edges, halos, attractor rings, named-vendor dots, margin
+  // annotations, captions, animations, or tooltip. This layer sits
+  // position:absolute behind the transform layer and never moves, so
+  // panning a zoomed cluster no longer drags the cosmic gas with it.
+  if (backgroundLayer) {
+    return (
+      <div className="relative" aria-hidden="true">
+        <svg
+          viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+          width="100%"
+          preserveAspectRatio="xMidYMid meet"
+          className={className}
+        >
+          <rect
+            x={PAD_L - 4}
+            y={PAD_T - 4}
+            width={FIELD_W + 8}
+            height={FIELD_H + 8}
+            fill="none"
+            stroke="var(--color-border)"
+            strokeOpacity={0.6}
+            strokeWidth={1}
+          />
+          {dots.map((d, idx) => {
+            if (d.level !== 'low') return null
+            const s = DOT_STYLE.low
+            return (
+              <circle
+                key={`bg-${idx}`}
+                cx={d.x}
+                cy={d.y}
+                r={s.r}
+                fill={s.fill}
+                fillOpacity={s.alpha}
+              />
+            )
+          })}
+        </svg>
+      </div>
+    )
+  }
+
+  // Annotation positions in the right margin
+  const annoX = PAD_L + FIELD_W + 24
+  const annoLines = [
+    { row: criticalRow, anchor: marginAnchors.critical, color: 'var(--color-risk-critical)', label: 'critical', y: PAD_T + 12 },
+    { row: highRow,     anchor: marginAnchors.high,     color: RISK_COLORS.high, label: 'high',     y: PAD_T + FIELD_H * 0.45 },
+    { row: lowRow,      anchor: marginAnchors.low,      color: 'var(--color-text-muted)', label: 'low',      y: PAD_T + FIELD_H * 0.85 },
+  ]
+
+  // Guard hovered index against mode changes (stale high index after toggle)
+  const safeHover =
+    hoveredCluster !== null && hoveredCluster < activeMeta.length ? hoveredCluster : null
+
+  // worstClusterIdx removed with the omega-P2 ▲ star marker revert.
+
+  const kickerLabel = MODE_KICKERS[mode]
+  const modeAriaHint = mode === 'sectors'
+    ? (isEs
+        ? 'Los puntos de riesgo crítico se agrupan en 12 sectores federales en una cuadrícula.'
+        : 'Critical-risk dots cluster into 12 federal sectors arranged in a grid.')
+    : mode === 'sexenios'
+      ? (isEs
+          ? 'Los puntos de riesgo crítico se agrupan en 6 periodos presidenciales cronológicamente.'
+          : 'Critical-risk dots cluster into 6 presidential periods arranged chronologically.')
+      : (isEs
+          ? 'Los puntos de riesgo crítico se agrupan en 7 patrones de corrupción ARIA (P1–P7).'
+          : 'Critical-risk dots cluster into 7 ARIA corruption patterns (P1–P7).')
+
+  return (
+    <div className="relative">
+      <svg
+        viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+        width="100%"
+        preserveAspectRatio="xMidYMid meet"
+        className={className}
+        data-atlas-constellation="true"
+        role="img"
+        aria-label={isEs
+          ? `Panorama de ${totalContracts.toLocaleString()} contratos. ${modeAriaHint} Pase el cursor o haga clic en un grupo para abrir su página.`
+          : `Panorama of ${totalContracts.toLocaleString()} contracts. ${modeAriaHint} Hover or click a cluster to open its page.`}
+      >
+        {/* ── Animation keyframes — scoped to this SVG ─────────────────────── */}
+        <defs>
+          <style>{`
+            @keyframes atlas-fade-in {
+              from { opacity: 0; }
+            }
+            @keyframes atlas-halo-pulse {
+              0%, 100% { opacity: 0.10; }
+              50% { opacity: 0.20; }
+            }
+            @keyframes atlas-edge-draw {
+              from { stroke-dashoffset: 280; opacity: 0; }
+              to { stroke-dashoffset: 0; opacity: 1; }
+            }
+            @keyframes atlas-ring-emerge {
+              from { transform: scale(0.4); opacity: 0; }
+              to { transform: scale(1); opacity: 1; }
+            }
+            @keyframes atlas-pin-pulse {
+              0%, 100% { stroke-opacity: 0.95; r: 1; }
+              50% { stroke-opacity: 0.45; r: 1.25; }
+            }
+            .atlas-pin-ring {
+              transform-box: fill-box;
+              transform-origin: center;
+              animation: atlas-fade-in 0.5s ease-out backwards;
+            }
+            .atlas-dot {
+              animation: atlas-fade-in 0.55s ease-out backwards;
+              /* Year-change interpolation: when cx/cy/fill-opacity update on
+                 the same dot (no re-mount), browser animates between values
+                 instead of snapping. Modern browsers (Chrome 77+, Firefox
+                 64+, Safari 16+) support transitions on SVG cx/cy. */
+              transition:
+                cx 0.9s cubic-bezier(0.4, 0.0, 0.2, 1),
+                cy 0.9s cubic-bezier(0.4, 0.0, 0.2, 1),
+                fill-opacity 0.6s ease-out,
+                r 0.7s ease-out;
+            }
+            .atlas-edge {
+              stroke-dasharray: 280;
+              animation: atlas-edge-draw 0.7s ease-out backwards;
+              transition:
+                stroke-opacity 0.6s ease-out,
+                x1 0.9s cubic-bezier(0.4, 0.0, 0.2, 1),
+                y1 0.9s cubic-bezier(0.4, 0.0, 0.2, 1),
+                x2 0.9s cubic-bezier(0.4, 0.0, 0.2, 1),
+                y2 0.9s cubic-bezier(0.4, 0.0, 0.2, 1);
+            }
+            .atlas-ring {
+              transform-box: fill-box;
+              transform-origin: center;
+              animation: atlas-ring-emerge 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+            }
+            .atlas-anno {
+              animation: atlas-fade-in 0.5s ease-out backwards;
+            }
+          `}</style>
+        </defs>
+
+        {/* ── Field border (hairline) ──────────────────────────────────────── */}
+        <rect
+          x={PAD_L - 4}
+          y={PAD_T - 4}
+          width={FIELD_W + 8}
+          height={FIELD_H + 8}
+          fill="none"
+          stroke="var(--color-border)"
+          strokeOpacity={0.6}
+          strokeWidth={1}
+        />
+
+        {/* ── Sexenios timeline baseline (subtle spine under attractors) ──── */}
+        {mode === 'sexenios' && (
+          <line
+            x1={PAD_L + FIELD_W * 0.04}
+            y1={PAD_T + FIELD_H * 0.50}
+            x2={PAD_L + FIELD_W * 0.96}
+            y2={PAD_T + FIELD_H * 0.50}
+            stroke="var(--color-border-hover)"
+            strokeOpacity={0.5}
+            strokeWidth={1}
+            strokeDasharray="2 4"
+          />
+        )}
+
+        {/* ─── Animated payload — re-keyed on mode so toggles retrigger reveal ─── */}
+        <g key={`atlas-${mode}`}>
+
+        {/* ── Edges (drawn first, under the dots) ──────────────────────────── */}
+        {criticalEdges.map((e, idx) => (
+          <line
+            key={`edge-${idx}`}
+            x1={e.x1}
+            y1={e.y1}
+            x2={e.x2}
+            y2={e.y2}
+            stroke={RISK_COLORS.critical}
+            strokeOpacity={e.primary ? 0.32 : 0.16}
+            strokeWidth={e.primary ? 0.7 : 0.5}
+            className="atlas-edge"
+            style={{ animationDelay: `${1100 + idx * 4}ms` }}
+          />
+        ))}
+
+        {/* ── Halos for critical dots (under the dot core) ─────────────────── */}
+        {dots.map((d, idx) => {
+          if (d.level !== 'critical') return null
+          const s = DOT_STYLE.critical
+          // Critical halo: fade in around 700-1000ms, then pulse infinitely
+          const fadeDelay = 700 + (idx % 80) * 4
+          const pulseDelay = fadeDelay + 600
+          return (
+            <circle
+              key={`halo-${idx}`}
+              cx={d.x}
+              cy={d.y}
+              r={(s.halo ?? 3) * 1.0}
+              fill={s.fill}
+              fillOpacity={0.10}
+              style={{
+                animation:
+                  `atlas-fade-in 0.6s ease-out ${fadeDelay}ms backwards, ` +
+                  `atlas-halo-pulse 3.5s ease-in-out ${pulseDelay}ms infinite`,
+              }}
+            />
+          )
+        })}
+
+        {/* ── Dots, painted in order: low → medium → high → critical (on top) ── */}
+        {/* Dimming rules (omega-N):
+            - namedVendors provided → anonymous dot fill-opacity → 0.30
+            - highlightedClusterCodes → clusters not in the set dim to 0.15
+              Both can be active simultaneously; the more restrictive wins. */}
+        {(['low', 'medium', 'high', 'critical'] as const).flatMap((paintLevel) => {
+          // BUG-3: when paired with a static backgroundLayer sibling, skip
+          // the low-risk dot field here so it isn't double-painted (and
+          // doesn't move when the user pans the transform layer).
+          if (noBackground && paintLevel === 'low') return []
+          return dots.map((d, idx) => {
+            if (d.level !== paintLevel) return null
+            const s = DOT_STYLE[d.level]
+            // Stagger by Halton index within risk-level bands so the field
+            // forms gas → background stars → bright stars in a clear cascade.
+            const levelOffset =
+              paintLevel === 'low' ? 0
+              : paintLevel === 'medium' ? 120
+              : paintLevel === 'high' ? 280
+              : 600 // critical
+            const indexJitter = (idx / N_DOTS) * 380
+            const delay = levelOffset + indexJitter
+
+            // Compute effective opacity based on omega-N dimming rules
+            let effectiveAlpha = s.alpha
+            if (hasHighlight && d.cluster >= 0) {
+              const clusterCode = activeMeta[d.cluster]?.code
+              if (clusterCode && !highlightSet.has(clusterCode)) {
+                effectiveAlpha = 0.15
+              }
+            } else if (hasNamedVendors) {
+              effectiveAlpha = s.alpha * 0.30 / s.alpha < 0.30 ? s.alpha * 0.30 : 0.30
+              // Simplification: dim all anonymous dots to 0.30
+              effectiveAlpha = 0.30
+            }
+
+            return (
+              <circle
+                key={`dot-${paintLevel}-${idx}`}
+                cx={d.x}
+                cy={d.y}
+                r={s.r}
+                fill={s.fill}
+                fillOpacity={effectiveAlpha}
+                className="atlas-dot"
+                style={{ animationDelay: `${delay}ms` }}
+              />
+            )
+          })
+        })}
+
+        {/* ── Attractor rings, labels, hit targets (above dots) ───────────── */}
+        {/* omega-N: highlight dimming — clusters not in highlightedClusterCodes
+            render at reduced opacity (0.20 on ring, 0.12 on label).
+            Ref: ICIJ Pandora Papers + NYT "How the Virus Got Out" — story chapters
+            drive entity highlights so the camera follows the narrative. */}
+        {attractors.map((a, idx) => {
+          const isHovered = safeHover === idx
+          const meta = activeMeta[idx]
+          const isPinned = pinnedCode === meta.code
+          const isHighlighted = !hasHighlight || highlightSet.has(meta.code)
+          const ringOpacityBase = isHighlighted ? 1.0 : 0.15
+          // Ring radius ∝ √T1 so high-t1 nodes read larger.
+          // Floor at 4 so small clusters remain visible; cap at 16.
+          const ringR = Math.max(4, Math.min(16, Math.sqrt(meta.t1)))
+          // omega-N-FIX2: revert to short label (P5 / SAL / etc) at idle macro.
+          // Full names + T1 count read as overload at the constellation scale —
+          // the user sees them all at once instead of focusing on one cluster.
+          // Full names land in the right panel + cluster detail when zoomed.
+          const shortLabel =
+            mode === 'patterns' ? meta.code : meta.label.slice(0, 3).toUpperCase()
+          return (
+            <g
+              key={`attractor-${meta.code}-${idx}`}
+              data-cluster-code={meta.code}
+              className="atlas-ring"
+              style={{ animationDelay: `${ms(DUR.story + DUR.slow + stagger(idx, STAGGER.section))}ms`, opacity: ringOpacityBase, transition: css('opacity', DUR.base) }}
+            >
+              {/* Pinned outer halo — pulsing ring around pinned cluster */}
+              {isPinned && (
+                <>
+                  <circle
+                    cx={a.x}
+                    cy={a.y}
+                    r={ringR + 8}
+                    fill="none"
+                    stroke={meta.color}
+                    strokeWidth={1.4}
+                    strokeOpacity={0.95}
+                    style={{
+                      transformBox: 'fill-box',
+                      transformOrigin: 'center',
+                      animation: 'atlas-pin-pulse 2.2s ease-in-out infinite',
+                    }}
+                  />
+                  <circle
+                    cx={a.x}
+                    cy={a.y}
+                    r={ringR + 14}
+                    fill="none"
+                    stroke={meta.color}
+                    strokeWidth={0.6}
+                    strokeOpacity={0.45}
+                    strokeDasharray="3 4"
+                  />
+                </>
+              )}
+
+              {/* ── omega-C-P4: patterns mode → distinct typographic glyph
+                      other modes → original ring rendering (sacred geometry)    */}
+              {mode === 'patterns' ? (
+                <g transform={`translate(${a.x - ringR}, ${a.y - ringR})`}>
+                  <PatternGlyph
+                    code={meta.code as GlyphProps['code']}
+                    size={ringR * 2}
+                    color={meta.color}
+                    isHovered={isHovered}
+                    isPinned={isPinned}
+                    ariaLabel={isEs
+                      ? `Glifo ${meta.label}`
+                      : `${meta.label} glyph`}
+                  />
+                  {/* omega-N-FIX2: short code label (P5 etc) — 7.5px mono 600.
+                      Full name + T1 count moved to the cluster detail panel
+                      (right rail when zoomed) so the macro view stays clean. */}
+                  <text
+                    x={ringR}
+                    y={ringR * 2 + 9}
+                    fill={meta.color}
+                    fillOpacity={isHovered ? 0.95 : 0.65}
+                    fontSize={7.5}
+                    fontFamily="var(--font-family-mono, monospace)"
+                    fontWeight="600"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    style={{ transition: css('fill-opacity', DUR.instant) }}
+                  >
+                    {shortLabel}
+                  </text>
+                </g>
+              ) : (
+                <>
+                  {/* Non-patterns modes: original ring + persistent full label */}
+                  <circle
+                    cx={a.x}
+                    cy={a.y}
+                    r={ringR}
+                    fill="none"
+                    stroke={meta.color}
+                    strokeOpacity={isHovered || isPinned ? 0.85 : 0.30}
+                    strokeWidth={isPinned ? 1.4 : 1}
+                    style={{ transition: css(['stroke-opacity', 'stroke-width'], DUR.instant) }}
+                  />
+                  {/* omega-N-FIX2: short label restored (3-char abbrev) — 10px mono bold.
+                      Full name in cluster detail panel when zoomed. */}
+                  <text
+                    x={a.x}
+                    y={a.y + ringR + 8}
+                    fill={meta.color}
+                    fillOpacity={isHovered ? 1 : 0.80}
+                    fontSize={12}
+                    fontFamily="var(--font-family-mono, monospace)"
+                    fontWeight="bold"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    style={{ transition: css('fill-opacity', DUR.instant) }}
+                  >
+                    {shortLabel}
+                  </text>
+                </>
+              )}
+
+              {/* Transparent hit target — larger than visible ring */}
+              <circle
+                cx={a.x}
+                cy={a.y}
+                r={Math.max(18, ringR + 10)}
+                fill="transparent"
+                style={{ cursor: onClusterClick ? 'pointer' : 'default' }}
+                onMouseEnter={() => setHoveredCluster(idx)}
+                onMouseLeave={() => setHoveredCluster(null)}
+                onFocus={() => setHoveredCluster(idx)}
+                onBlur={() => setHoveredCluster(null)}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onClusterClick?.(meta.code)
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onClusterClick?.(meta.code)
+                  }
+                }}
+                tabIndex={onClusterClick ? 0 : -1}
+                role={onClusterClick ? 'button' : undefined}
+                aria-label={onClusterClick ? `${meta.label}. ${meta.desc}. Open details.` : undefined}
+              />
+            </g>
+          )
+        })}
+
+        {/* ── Named vendor outlier dots (omega-N N1) ──────────────────────────
+            Large (r=4) labeled dots placed near each cluster's attractor.
+            Deterministic angle derived from vendorId for stability.
+            Ref: Reuters "Forever Pollution" + NYT Upshot annotated dot strip. */}
+        {hasNamedVendors && Array.from(namedVendorsByCluster.entries()).flatMap(([clusterCode, vendors]) => {
+          const clusterIdx = activeMeta.findIndex((m) => m.code === clusterCode)
+          if (clusterIdx < 0) return []
+          const meta = activeMeta[clusterIdx]
+          const a = attractors[clusterIdx]
+          if (!a) return []
+          const isHighlighted = !hasHighlight || highlightSet.has(clusterCode)
+          const dotOpacity = isHighlighted ? 0.95 : 0.20
+          return vendors.map((nv, vi) => {
+            // Deterministic angle from vendorId so placement is stable across re-renders
+            const angle = ((nv.vendorId * 137.508) % 360) * (Math.PI / 180) + vi * (Math.PI * 2 / 3)
+            const jitterR = 14 + vi * 5 // slight spiral so labels don't stack
+            const nx = a.x + Math.cos(angle) * jitterR
+            const ny = a.y + Math.sin(angle) * jitterR
+            // Label offset: push name to the right unless near the right edge
+            const labelX = nx + 6
+            const labelAnchor = 'start'
+            return (
+              <g key={`named-${clusterCode}-${nv.vendorId}`}>
+                {/* Named-outlier dot: r=4, cluster color */}
+                <circle
+                  cx={nx}
+                  cy={ny}
+                  r={4}
+                  fill={meta.color}
+                  fillOpacity={dotOpacity}
+                  stroke="var(--color-background, #faf9f6)"
+                  strokeWidth={0.8}
+                  data-named-vendor="true"
+                />
+                {/* Vendor name label — 9px mono. atlas-named-vendor-label
+                    class lets AtlasZoomLayer hide these when zoomed (the
+                    right panel shows the same vendor list more legibly). */}
+                <text
+                  x={labelX}
+                  y={ny + 1}
+                  fill={meta.color}
+                  fillOpacity={dotOpacity}
+                  fontSize={13}
+                  fontFamily="var(--font-family-mono, monospace)"
+                  fontWeight="600"
+                  textAnchor={labelAnchor}
+                  dominantBaseline="middle"
+                  className="atlas-named-vendor-label"
+                  style={{ pointerEvents: 'none' }}
+                >
+                  {nv.name.length > 20 ? nv.name.slice(0, 19) + '…' : nv.name}
+                </text>
+              </g>
+            )
+          })
+        })}
+
+        {/* ── Margin annotations: count + label, with leader to a real dot ─── */}
+        {annoLines.map((a, annoIdx) =>
+          a.anchor && a.row ? (
+            <g
+              key={`anno-${a.label}`}
+              className="atlas-anno"
+              style={{ animationDelay: `${1700 + annoIdx * 110}ms` }}
+            >
+              {/* Leader from anchor dot to label */}
+              <line
+                x1={a.anchor.x + 4}
+                y1={a.anchor.y}
+                x2={annoX - 6}
+                y2={a.y + 4}
+                stroke="var(--color-border-hover)"
+                strokeOpacity={0.7}
+                strokeWidth={1}
+                strokeDasharray="2 3"
+              />
+              {/* Tiny color dot in margin so the eye knows what level we're labeling */}
+              <circle cx={annoX - 12} cy={a.y + 4} r={2.4} fill={a.color} fillOpacity={0.95} />
+              {/* Count */}
+              <text
+                x={annoX}
+                y={a.y - 1}
+                fill={a.color}
+                fontSize={13}
+                fontFamily="var(--font-family-mono, monospace)"
+                fontWeight="bold"
+                dominantBaseline="middle"
+              >
+                {a.row.count.toLocaleString()}
+              </text>
+              {/* Label */}
+              <text
+                x={annoX}
+                y={a.y + 12}
+                fill="var(--color-text-muted)"
+                fontSize={12}
+                fontFamily="var(--font-family-mono, monospace)"
+                dominantBaseline="middle"
+              >
+                {a.label} · {a.row.pct.toFixed(2)}%
+              </text>
+            </g>
+          ) : null
+        )}
+
+        {/* ── Caption strip ────────────────────────────────────────────────── */}
+        <text
+          x={PAD_L}
+          y={SVG_H - 10}
+          fill="var(--color-text-muted)"
+          fontSize={12}
+          fontFamily="var(--font-family-mono, monospace)"
+          className="atlas-anno"
+          style={{ animationDelay: '2000ms' }}
+        >
+          1 dot ≈ {Math.round(totalContracts / N_DOTS).toLocaleString()} {isEs ? 'contratos' : 'contracts'} · {kickerLabel.caption}
+        </text>
+
+        {/* omega-P2 right-margin encoding glossary REVERTED 2026-05-05 — decoration */}
+
+        {/* close animated payload group */}
+        </g>
+      </svg>
+
+      {/* ── Floating cluster tooltip (DOM, positioned over SVG) ──────────── */}
+      {safeHover !== null && (() => {
+        const meta = activeMeta[safeHover]
+        // Convert attractor frac to CSS percent of wrapping div
+        const topPct = ((PAD_T + meta.fy * FIELD_H) / SVG_H) * 100
+        const leftPct = ((PAD_L + meta.fx * FIELD_W) / SVG_W) * 100
+        // On the far-right column, flip tooltip to the left so it doesn't
+        // clip off the edge of the card.
+        const flipLeft = meta.fx > 0.80
+        const transform = flipLeft
+          ? 'translate(-90%, -130%)'
+          : meta.fx < 0.15
+            ? 'translate(-10%, -130%)'
+            : 'translate(-50%, -130%)'
+        return (
+          <div
+            data-cluster-hover-preview="true"
+            className="absolute z-10 pointer-events-none rounded-md border border-border bg-background-card backdrop-blur-sm p-2.5 shadow-xl"
+            style={{
+              top: `${topPct}%`,
+              left: `${leftPct}%`,
+              transform,
+              minWidth: '200px',
+              maxWidth: '280px',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="text-[12px] font-mono font-bold tracking-[0.15em]"
+                style={{ color: meta.color }}
+              >
+                {mode === 'patterns' ? `${meta.code} · ${kickerLabel.short}` : kickerLabel.short}
+              </span>
+              <span className="h-1 flex-1 rounded-full" style={{ backgroundColor: `${meta.color}44` }} aria-hidden="true" />
+            </div>
+            <div className="text-sm font-bold text-text-primary mb-0.5">
+              {meta.label}
+              {meta.kicker && (
+                <span className="ml-1.5 text-[12px] font-mono text-text-muted">{meta.kicker}</span>
+              )}
+            </div>
+            <div className="text-[13px] text-text-secondary leading-snug mb-1.5">
+              {meta.desc}
+            </div>
+            {/* DotBar — highRiskPct visualized as filled dots */}
+            <div className="mb-1.5">
+              <div className="flex items-center justify-between mb-0.5">
+                <span className="text-[12px] font-mono uppercase tracking-wider text-text-muted">
+                  {isEs ? 'Alto + crítico' : 'High + critical'}
+                </span>
+                <span className="text-[12px] font-mono font-bold" style={{ color: meta.color }}>
+                  {(meta.highRiskPct * 100).toFixed(1)}%
+                </span>
+              </div>
+              <DotBar value={meta.highRiskPct} max={1} color={meta.color} />
+            </div>
+            <div className="flex items-center gap-3 text-[12px] font-mono text-text-muted mb-1">
+              <span>{meta.vendors.toLocaleString()} {isEs ? 'proveedores' : 'vendors'}</span>
+              <span className="text-text-muted">·</span>
+              <span style={{ color: meta.color }}>{meta.t1} T1</span>
+            </div>
+            {onClusterClick && (
+              <div className="text-[12px] font-mono text-risk-high tracking-wider uppercase">
+                {isEs ? '→ Ver detalle' : '→ View detail'}
+              </div>
+            )}
+          </div>
+        )
+      })()}
+    </div>
+  )
+}

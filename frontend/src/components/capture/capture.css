@@ -1,0 +1,24 @@
+/* /captura «Pasada la mitad» on «El Contrato» — surface-local rules (DESIGN.md §2–§7).
+   Shared primitives live in components/contrato/contrato.css; nothing here overrides them. */
+.cap-lead { margin-top: 32px; }
+.cap-lead-body { margin-top: 16px; }
+.cap-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+.cap-h3 { font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); margin-bottom: 12px; }
+.cap-h3 .ct-mono { font-size: 13px; letter-spacing: 0; }
+.cap-p { font-size: 15px; line-height: 1.6; color: var(--color-text-secondary); text-wrap: pretty; }
+.cap-honesty { display: grid; gap: 12px; }
+.cap-honesty li { font-size: 15px; line-height: 1.6; color: var(--color-text-secondary); text-wrap: pretty; }
+.cap-honesty strong { color: var(--color-text-primary); font-weight: 600; }
+.cap-out { margin-top: 12px; border-top: 1px solid var(--color-text-primary); }
+.cap-out li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; line-height: 1.45; color: var(--color-text-primary); }
+.cap-num { font-size: 13px; color: var(--color-text-muted); white-space: nowrap; }
+.cap-dl { margin-top: 24px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-secondary); }
+.cap-dl dt { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.cap-summary { cursor: pointer; list-style: none; }
+.cap-summary::-webkit-details-marker { display: none; }
+.cap-summary:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 4px; }
+@media (max-width: 1023px) { .cap-two { grid-template-columns: 1fr; gap: 32px; } }
+/* object-first (owner 2026-10-15): the ledger opens right under the one-line h1 */
+.ct-cover.is-op + .cap-lead { margin-top: 16px; }
+.cap-line { border-top: 1px solid var(--color-text-primary); padding-top: 24px; }
+.cap-foot-lede { font: 400 15px/1.6 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; margin: 0; }

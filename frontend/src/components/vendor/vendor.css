@@ -1,0 +1,334 @@
+/* Vendor dossier on «El Contrato» (frontend/DESIGN.md §2–§8). Tokens only; the shell
+   primitives live in components/contrato/contrato.css and nothing here overrides them
+   except the vendor cover (full measure) and the 5-up «En cifras» row. */
+
+/* cover: h1 + lede at full measure, then the lead row (gauge | verdict) */
+.ct-cover.vd-cover { display: block; }
+.vd-meta { margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.vd-meta button { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; color: var(--ct-ink); text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+.vd-meta button:hover { text-decoration-color: var(--ct-ink); }
+.vd-cover .ct-lede { margin-top: 4px; }
+.vd-cover .vd-lede-link { color: inherit; text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+@media (hover: hover) and (pointer: fine) { .vd-cover .vd-lede-link:hover { text-decoration-color: var(--ct-ink); } }
+.vd-meta { min-height: 40px; }
+/* the band: risk reading | verdict + note, one row under one ink rule (owner 2026-10-27, «headers more compact») */
+.vd-band { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0 24px; align-items: start; margin-top: 8px; padding: 8px 0; border-top: 1px solid var(--ct-ink); }
+.vd-band-score { padding-right: 24px; border-right: 1px solid var(--ct-rule); align-self: stretch; }
+.vd-band h2 { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-band .ct-gw { margin-top: 4px; }
+.vd-band .ct-rv { font: 600 24px/1.1 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+.vd-band .ct-lvl { font-size: 14px; }
+.vd-band-read p:not(.ct-note) { text-wrap: pretty; }
+.vd-band-read .ct-note { margin-top: 4px; }
+.vd-verdict-l { font-weight: 600; color: var(--ct-ink); }
+.vd-verdict-l.is-critical { color: var(--color-risk-critical-text); }
+.vd-verdict-l.is-high { color: var(--color-risk-high-text); }
+
+/* «En cifras»: five figures in one ruled row — column rules, no cards, no gaps (DESIGN.md §2 fig 24, §3) */
+.ct-clauses.vd-cifras { margin-top: 8px; }
+.vd-cifras .ct-cl-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--ct-rule); border-bottom: 1px solid var(--ct-rule); }
+.vd-cifras .ct-clause { border-bottom: 0; padding: 8px 16px; }
+.vd-cifras .ct-clause + .ct-clause { border-left: 1px solid var(--ct-rule); }
+.vd-cifras .ct-clause:first-child { padding-left: 0; }
+.vd-cifras .ct-clause:last-child { padding-right: 0; }
+.vd-cifras .ct-clause .ct-note { margin-top: 4px; }
+.vd-cifras .ct-dim { margin-top: 4px; }
+
+/* signals on record: lead line + a ruled list flowing in columns (was a run-on of bullets) */
+.vd-sev { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.is-critical > .vd-sev { color: var(--color-risk-critical-text); }
+.is-high > .vd-sev { color: var(--color-risk-high-text); }
+.is-medium > .vd-sev { color: var(--color-risk-medium-text); }
+.vd-flag-lead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 12px; padding: 6px 0; }
+.vd-flag-lead b { font-weight: 600; }
+.vd-flag-lead.is-critical b { color: var(--color-risk-critical-text); }
+.vd-flag-lead.is-high b { color: var(--color-risk-high-text); }
+.vd-flag-detail { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+/* a wrapping row, not CSS columns: 5 signals in 3 columns left the middle one alone beside a void (proof:ui); a short last row widens instead */
+.vd-flag-list { display: flex; flex-wrap: wrap; gap: 0 32px; border-top: 1px solid var(--ct-rule); }
+.vd-flag-list > li { flex: 1 1 280px; }
+.vd-flag-list li { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 0 8px; align-items: baseline; padding: 5px 0; border-bottom: 1px solid var(--ct-rule); break-inside: avoid; text-wrap: pretty; }
+.vd-flagrow a { color: inherit; text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; }
+@media (hover: hover) and (pointer: fine) { .vd-flagrow a:hover { text-decoration-color: currentColor; } }
+
+/* sub-sections inside a ct-section */
+.vd-sub { margin-top: 16px; }
+.vd-sub:first-child { margin-top: 0; }
+.vd-sub > h3, .vd-h3 { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); padding-bottom: 4px; border-bottom: 1px solid var(--ct-ink); margin-bottom: 8px; }
+.vd-sub > h3 .ct-mono, .vd-h3 .ct-mono { font-family: var(--font-mono); font-size: 13px; font-weight: 400; letter-spacing: 0; color: var(--ct-gray); }
+.vd-sub > h3 .vd-h3-note, .vd-h3 .vd-h3-note { font: 400 13px/1.45 var(--font-serif); letter-spacing: 0; color: var(--ct-gray); } /* a sentence beside the head: body face (DESIGN.md §2) */
+.vd-sub > p { text-wrap: pretty; }
+.vd-sub > p + * { margin-top: 12px; }
+.vd-two { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; }
+.vd-two > * { min-width: 0; }
+.vd-two + .vd-two { margin-top: 16px; }
+.vd-sub > p, .vd-two section > p:not([class]) { margin-bottom: 8px; text-wrap: pretty; }
+/* a ruled list of long institution names beside a short chart: give the names the wide track */
+.vd-two.vd-two-wl { grid-template-columns: 7fr 5fr; }
+
+/* risk over time: a ruled step line on the gauge's scale */
+.vd-trend svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vd-trend .ax { stroke: var(--ct-ink); stroke-width: 1; }
+.vd-trend .th { stroke: var(--ct-ink); stroke-width: 1; stroke-dasharray: 2 3; }
+.vd-trend .th.crit { stroke: var(--color-risk-critical); }
+.vd-trend .ln { fill: none; stroke: var(--ct-ink); stroke-width: 2; }
+.vd-trend .pt { fill: var(--ct-ink); }
+.vd-trend .pt.crit { fill: var(--color-risk-critical); }
+.vd-trend text { font: 400 12px var(--font-mono); fill: var(--ct-gray); }
+
+/* contracts ledger: flag glyphs + pager */
+.vd-flags { font: 400 13px/1 var(--font-mono); color: var(--color-risk-high-text); white-space: nowrap; }
+.vd-legend { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); margin-bottom: 8px; }
+.vd-legend b { font-weight: 400; color: var(--color-risk-high-text); }
+.vd-code { display: block; margin-top: 0; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); overflow-wrap: anywhere; }
+.vd-pager { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.vd-pager div { display: flex; gap: 8px; }
+.vd-pager button { min-height: 40px; min-width: 40px; padding: 0 12px; border: 1px solid var(--ct-rule); font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); transition: border-color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.vd-pager button:hover:not(:disabled) { border-color: var(--ct-ink); }
+.vd-pager button:active:not(:disabled) { transform: scale(.97); }
+.vd-pager button:disabled { color: var(--ct-gray); opacity: .5; }
+.vd-hold-row td { height: 56px; }
+.vd-hold { min-height: 160px; }
+
+/* deviation ledger (vs sector median) */
+.vd-dev-row { display: grid; grid-template-columns: 160px 1fr 168px; align-items: center; gap: 16px; padding: 5px 0; border-bottom: 1px solid var(--ct-rule); }
+.vd-dev-row > span:first-child { font-size: 15px; line-height: 1.4; }
+.vd-dev-val { font: 400 13px/1.45 var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.vd-dev-val b { font-weight: 700; color: var(--ct-ink); margin-right: 8px; }
+.vd-dev-val b.is-crit { color: var(--color-risk-critical); }
+.vd-dev-key { display: flex; gap: 16px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.vd-dev-key i { display: inline-block; width: 12px; height: 0; border-top: 1px solid var(--ct-ink); vertical-align: middle; margin-right: 4px; }
+.vd-dev-key i.eu { border-top: 2px solid var(--color-accent-data); }
+.vd-finding { border-left: 3px solid var(--ct-red); padding-left: 12px; margin-bottom: 12px; text-wrap: pretty; }
+
+/* registry / signal rows */
+.vd-dl > div { display: grid; grid-template-columns: 160px 1fr; border-bottom: 1px solid var(--ct-rule); }
+.vd-dl dt, .vd-dl dd { padding: 5px 0; }
+.vd-dl dt { font: 600 13px/1.6 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-dl dd { text-wrap: pretty; min-width: 0; }
+.vd-dl .ct-mono { font-size: 13px; color: var(--ct-gray); }
+
+/* limits: two columns of prose, each fills its track */
+.vd-limits { display: grid; grid-template-columns: 1fr 1fr; gap: 0 32px; margin-top: 8px; }
+.vd-limits p + p { margin-top: 8px; }
+
+@media (max-width: 900px) {
+  .vd-two, .vd-two.vd-two-wl, .vd-limits { grid-template-columns: 1fr; gap: 20px 0; }
+
+  /* 2-up figures: rules between the pair and under each row */
+  .vd-cifras .ct-cl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 0; }
+  .vd-cifras .ct-clause { padding: 6px 0 6px 12px; border-bottom: 1px solid var(--ct-rule); }
+  .vd-cifras .ct-clause + .ct-clause { border-left: 0; }
+  .vd-cifras .ct-clause:nth-child(odd) { padding: 6px 12px 6px 0; border-right: 1px solid var(--ct-rule); }
+  .vd-cifras .ct-cl-grid > :last-child:nth-child(odd) { border-right: 0; }
+  .vd-dev-row { grid-template-columns: 120px minmax(0, 1fr) max-content; gap: 12px; }
+  .vd-dl > div { grid-template-columns: 120px 1fr; }
+}
+@media (max-width: 760px) {
+  /* phone (owner 2026-10-21): tight cover — meta one line, lead blocks 8 apart, cifras 2-up with the odd last one spanning */
+  .vd-band { grid-template-columns: 1fr; gap: 4px 0; }
+  .vd-band-score { padding-right: 0; border-right: 0; display: flex; align-items: baseline; gap: 12px; }
+  .vd-band .ct-gw { margin-top: 0; }
+  .vd-band .ct-rv { font-size: 20px; }
+  .vd-flag-list li { grid-template-columns: 56px minmax(0, 1fr); padding: 4px 0; }
+  .vd-cifras .ct-dim { display: none; }
+  /* «Years active» repeats the lede («active 24 years») and the meta line (2002–2025): phone keeps 4 figures, 2 rows */
+  .vd-cifras #vd-anos { display: none; }
+  .vd-meta { gap: 0 12px; }
+  /* sector median: label · numbers on one line, no drawn bar (the ratio and percentile carry it) */
+  .vd-dev-row { grid-template-columns: minmax(0, 1fr) max-content; padding: 4px 0; }
+  .vd-dev-row > span:first-child { font-size: 14px; }
+  .vd-dev-bar, .vd-dev-key { display: none; }
+  .vd-finding { margin-bottom: 8px; }
+  .vd-limits { gap: 8px 0; margin-top: 4px; }
+  #methodology .ct-annex-row { row-gap: 0; }
+  #methodology .ct-annex-row .ct-more { margin-top: 0; }
+  /* contracts ledger on phone: the .ct-stack two-line record (DESIGN.md §8.1); the CPV code stays on desktop */
+  .vd-ctable .vd-code { display: none; }
+  .vd-ctable .vd-hold-row td { height: 64px; }
+}
+
+/* ponytail: the shared AriaMemoPanel (components/widgets) still sets mono uppercase kickers
+   inline; on this sheet they read as small caps' sentence case (DESIGN.md §2). Drop when the
+   memo panel is migrated. */
+.vd-memo .uppercase, .vd-memo [style*="uppercase"] { text-transform: none !important; letter-spacing: 0 !important; }
+
+/* «El expediente por sexenios» (owner 2026-10-27: concept B + C's glyph lens + C's «La lectura»
+   rail + A's orbit, small, in the head). Buyers carry the categorical set (DESIGN.md §6.3); red
+   only on a critical indicator (§6.2). Type: SC 13 keys, mono 12 ticks/numerals, mono 13 data. */
+.ct-cover.vd-cover:not(.is-solo) { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 0 32px; }
+.vd-orbit { margin: 0; }
+.vd-orbit svg { display: block; width: 180px; height: 180px; }
+.vd-orbit figcaption { margin-top: 4px; font: 400 12px/1.45 var(--font-mono); color: var(--ct-gray); text-wrap: pretty; }
+.vd-orbit-w { fill: var(--ct-ink); fill-opacity: .035; }
+.vd-orbit-w.is-alt { fill-opacity: 0; }
+.vd-orbit-ring { fill: none; stroke: var(--ct-rule); stroke-width: 1; }
+.vd-orbit-core { fill: var(--ct-ink); }
+.vd-orbit-b { cursor: pointer; outline: none; transition: opacity 150ms ease; }
+.vd-orbit-b[data-dim] { opacity: .35; }
+.vd-orbit-b[data-on] circle + circle { stroke: var(--ct-ink); stroke-width: 1.5; }
+.vd-orbit-b:focus-visible circle + circle { stroke: var(--color-accent); stroke-width: 2; }
+.vd-orbit-hot { display: block; margin-bottom: 4px; font: 400 13px/1.4 var(--font-serif); color: var(--ct-ink); }
+@media (prefers-reduced-motion: reduce) { .vd-orbit-b { transition: none; } }
+div.vd-orbit { height: 180px; }   /* the loading placeholder reserves the plate */
+
+/* the ARIA case layer's facts (lib/aria/caseLayer.ts): the 0.60 crossing and the documented case, in red */
+.vd-exp-facts > span.is-case, .vd-exp-ph-facts li.is-case > span:last-child { color: var(--color-accent-text); }
+
+.vd-exp { margin-top: 16px; }
+.vd-exp-body.is-wide { display: grid; column-gap: 32px; align-items: stretch; }
+/* the figures close the rail on the spine's last line, however many claims hold (proof:ui RAGGED) */
+.vd-exp-body.is-wide .vd-lec { display: flex; flex-direction: column; justify-content: space-between; } /* spare height spreads between the claims, not one hole above the figures */
+.vd-exp-body.is-wide .vd-lec-figs { padding-top: 0; }
+.vd-exp-body.is-wide .vd-lec-claim:last-of-type { margin-bottom: 12px; }
+.vd-exp-grid { display: grid; }
+.vd-exp-keys > div { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.vd-exp-k { font: 400 12px/1.45 var(--font-mono); color: var(--ct-gray); }
+.vd-exp-k b { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-exp-keys > .vd-exp-k:nth-child(2) { justify-content: flex-start; padding-top: 8px; }
+.vd-exp-keys > .vd-exp-lane { flex-direction: row; align-items: center; justify-content: flex-start; gap: 8px; font: 400 14px/1.1 var(--font-serif); }
+/* names never truncate (DESIGN.md §9): a long buyer wraps to a second line inside its 30 px lane */
+.vd-exp-lane .vd-exp-chip { min-width: 0; overflow-wrap: break-word; }
+.vd-exp-lane i { flex: none; width: 10px; height: 10px; }
+.vd-exp-chip { color: var(--ct-ink); text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+@media (hover: hover) and (pointer: fine) { .vd-exp-chip:hover { text-decoration-color: currentColor; } }
+.vd-exp-plot { position: relative; min-width: 0; }
+.vd-exp-plot svg, .vd-exp-ph svg { display: block; overflow: visible; }
+.vd-exp-chap { fill: var(--ct-ink); fill-opacity: .035; }
+.vd-exp-chap.is-alt { fill-opacity: 0; }
+.vd-exp-cut, .vd-exp-evl { stroke: var(--ct-ink); stroke-width: 1; }
+.vd-exp-axis, .vd-exp-tenure { stroke: var(--ct-rule); stroke-width: 1; }
+.vd-exp-ch { font: 600 13px var(--font-sc); letter-spacing: var(--track-sc); fill: var(--ct-ink); }
+.vd-exp-chf { font: 400 12px var(--font-mono); letter-spacing: 0; fill: var(--ct-gray); }
+.vd-exp-yr, .vd-exp-share { font: 400 12px var(--font-mono); fill: var(--ct-gray); font-variant-numeric: tabular-nums; }
+.vd-exp-ind { fill: var(--color-text-primary); font: 700 12px var(--font-mono); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--color-background); stroke-width: 3px; stroke-linejoin: round; }
+.vd-exp-bar { fill: var(--ct-ink); fill-opacity: .8; }
+.vd-exp-lead { font: 400 12px var(--font-serif); fill: var(--ct-ink); paint-order: stroke; stroke: var(--color-background); stroke-width: 3px; stroke-linejoin: round; }
+.vd-exp-facts { position: absolute; left: 0; right: 0; pointer-events: none; }
+.vd-exp-facts > span { position: absolute; padding-left: 4px; font: 400 13px/18px var(--font-mono); color: var(--ct-ink); white-space: nowrap; pointer-events: auto; }
+.vd-exp-facts > span.is-end { padding: 0 4px 0 0; transform: translateX(-100%); }
+.vd-exp-cap { margin-top: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); text-wrap: pretty; }
+.vd-exp-cap b { color: var(--ct-ink); font-weight: 400; }
+.vd-lens { display: flex; gap: 12px; }
+.vd-lens button { min-height: 40px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); border-bottom: 2px solid transparent; transition: color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.vd-lens button:hover { color: var(--ct-ink); }
+.vd-lens button:active { transform: scale(.97); }
+.vd-lens button[aria-pressed='true'] { color: var(--ct-ink); border-bottom-color: var(--ct-ink); }
+
+/* «La lectura»: the computed claims + four figures, beside the spine (stacked under it < 1100) */
+.vd-lec-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 4px; border-bottom: 1px solid var(--ct-ink); font: 600 19px/1.25 var(--font-serif); color: var(--ct-ink); }
+.vd-lec-k { font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-lec-claim { margin-top: 8px; font: 400 15px/1.5 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }
+.vd-lec-claim b { font-weight: 600; }
+.vd-lec-figs { margin-top: 12px; border-top: 1px solid var(--ct-rule); }
+.vd-lec-lead { margin-top: 12px; }
+.vd-lec-lead > .vd-lec-k { padding-bottom: 2px; }
+.vd-lec-lead dl > div { display: grid; grid-template-columns: 84px minmax(0, 1fr) max-content; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--ct-rule); font: 400 14px/1.35 var(--font-serif); }
+.vd-lec-lead dt { font: 400 12px/1.6 var(--font-mono); color: var(--ct-gray); }
+.vd-lec-lead dd.mono { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.vd-lec-figs > div { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--ct-rule); font: 400 14px/1.4 var(--font-serif); }
+.vd-lec-figs dd { font: 400 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; }
+.vd-exp-body:not(.is-wide) .vd-lec { margin-top: 16px; }
+@media (min-width: 761px) and (max-width: 1099px) { .vd-exp-body:not(.is-wide) .vd-lec-figs { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; } }
+
+/* phone: years as rows, lanes as columns (concept B-390) */
+.vd-exp-ph-top { display: flex; justify-content: space-between; align-items: center; }
+.vd-exp-ph-heads { display: flex; height: 96px; align-items: flex-end; }
+.vd-exp-ph-heads > div { display: flex; justify-content: center; }
+.vd-exp-ph-heads span { writing-mode: vertical-rl; transform: rotate(180deg); padding-top: 4px; border-top: 3px solid; font: 400 13px/1 var(--font-serif); white-space: nowrap; max-height: 92px; overflow: hidden; text-overflow: ellipsis; }
+.vd-exp-ph-facts { margin-top: 8px; border-top: 1px solid var(--ct-rule); }
+.vd-exp-ph-facts li { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--ct-rule); font: 400 13px/1.4 var(--font-mono); }
+.vd-exp-ph-facts li > span:first-child { color: var(--ct-gray); }
+@media (max-width: 760px) {
+  .ct-cover.vd-cover:not(.is-solo) { grid-template-columns: 1fr; gap: 8px; }
+  .vd-orbit { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; align-items: center; }
+  .vd-orbit svg { width: 140px; height: 140px; }
+}
+
+/* ── the spine moves to explain (OWNER_REVIEW 2026-10-28 vendor row · CRITIQUE §3 V36; DESIGN §7) ──
+   1 · it draws in once, along time (left → right; phone top → bottom), 1.1 s --ease-draw; the facts
+       arrive as the wipe passes them. 2 · the lens morphs: the money ribbon thins to its line while
+       each year's procedure glyph grows out of it (and back), 320 ms, 10 ms a year (cap 240).
+   3 · the year scrub: one band follows the pointer or the arrows, the key reads the year out.
+   4 · the year card docks out of the clicked mark (WAAPI in YearCard). Reduced motion: final states. */
+@keyframes vd-exp-wipe-x { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes vd-exp-wipe-y { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes vd-exp-fade { from { opacity: 0; } to { opacity: 1; } }
+.vd-exp[data-reveal='wait'] .vd-exp-plot > svg { clip-path: inset(0 100% 0 0); }
+.vd-exp[data-reveal='wait'] .vd-exp-ph > svg { clip-path: inset(0 0 100% 0); }
+.vd-exp[data-reveal='wait'] .vd-exp-facts > span { opacity: 0; }
+.vd-exp[data-reveal='play'] .vd-exp-plot > svg { animation: vd-exp-wipe-x 1100ms var(--ease-draw) both; }
+.vd-exp[data-reveal='play'] .vd-exp-ph > svg { animation: vd-exp-wipe-y 1100ms var(--ease-draw) both; }
+.vd-exp[data-reveal='play'] .vd-exp-facts > span { animation: vd-exp-fade 300ms var(--ease-out) both; }
+
+.vd-exp-rib, .vd-exp-gl { transform-box: fill-box; transform-origin: center; transition: opacity 240ms var(--ease-out), transform 320ms var(--ease-out); }
+svg[data-lens='proc'] .vd-exp-rib { opacity: 0; transform: scaleY(.15); pointer-events: none; }
+svg[data-lens='money'] .vd-exp-gl { opacity: 0; transform: scale(.4); transition-delay: 0ms !important; pointer-events: none; }
+
+.vd-exp-plot > svg:focus-visible, .vd-exp-ph > svg:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 4px; }
+.vd-exp-hit { fill: transparent; cursor: pointer; }
+.vd-exp-scrub { fill: var(--ct-ink); fill-opacity: 0; pointer-events: none; transition: fill-opacity var(--dur-press) ease-out, transform var(--dur-press) var(--ease-out); }
+.vd-exp-scrub.is-on { fill-opacity: .06; }
+.vd-exp-yr.is-hot { fill: var(--ct-ink); font-weight: 700; paint-order: stroke; stroke: var(--color-background); stroke-width: 6px; stroke-linejoin: round; }
+.vd-exp-seam { stroke: var(--ct-gray); stroke-width: 1; stroke-dasharray: 3 3; }
+.vd-exp-read { color: var(--ct-ink); }
+
+.vd-exp-card { z-index: 2; padding: 8px 12px 12px; background: var(--color-background); border: 1px solid var(--ct-ink); box-shadow: 0 6px 20px -8px color-mix(in srgb, var(--ct-ink) 35%, transparent); font: 400 14px/1.4 var(--font-serif); color: var(--ct-ink); }
+.vd-exp-card:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.vd-exp-ph .vd-exp-card { margin-top: 8px; }
+.vd-exp-card-h { display: flex; align-items: center; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid var(--ct-ink); }
+.vd-exp-card-h b { font: 600 17px/1.2 var(--font-serif); font-variant-numeric: tabular-nums; }
+.vd-exp-card-h span { font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-exp-card-h button { margin-left: auto; min-height: 32px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); transition: color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+@media (hover: hover) and (pointer: fine) { .vd-exp-card-h button:hover { color: var(--ct-ink); } }
+.vd-exp-card-h button:active { transform: scale(.97); }
+.vd-exp-card-d > div { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 12px; padding: 3px 0; border-bottom: 1px solid var(--ct-rule); }
+.vd-exp-card-d dd { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.vd-exp-card-d small { font-size: 12px; color: var(--ct-gray); }
+.vd-exp-card-n { padding: 6px 0; color: var(--ct-gray); }
+.vd-exp-card-l { margin-top: 6px; }
+.vd-exp-card-l li { display: grid; grid-template-columns: 10px minmax(0, 1fr) max-content; align-items: center; gap: 8px; padding: 3px 0; }
+.vd-exp-card-l li i { width: 10px; height: 10px; }
+.vd-exp-card-l li > span { font: 400 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.vd-exp-card-l li.is-on .vd-exp-chip { font-weight: 600; }
+.vd-exp-card-a { display: flex; flex-direction: column; gap: 2px; margin-top: 8px; font: 400 14px/1.4 var(--font-serif); }
+.vd-exp-card-a a { display: inline-flex; align-items: center; min-height: 28px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vd-exp[data-reveal] .vd-exp-plot > svg, .vd-exp[data-reveal] .vd-exp-ph > svg, .vd-exp[data-reveal] .vd-exp-facts > span { animation: none; clip-path: none; opacity: 1; }
+  .vd-exp-rib, .vd-exp-gl { transition: none; transform: none !important; }
+  .vd-exp-scrub { transition: none; }
+}
+
+/* ─── the dossier objects (DossierObjects.tsx): «La columna» · «Homenaje al cuadrado» ─── */
+.vd-obj { margin-top: 24px; padding-top: 8px; border-top: 1px solid var(--ct-ink); }
+.vd-obj-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.vd-obj-k { font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.vd-obj-h h3 { flex: 1 1 260px; min-width: 0; font: 600 17px/1.3 var(--font-serif); color: var(--ct-ink); text-wrap: balance; }
+.vd-obj-flat { min-height: 32px; font: 400 13px/1 var(--font-mono); color: var(--ct-gray); text-decoration: underline; text-underline-offset: 3px; transition: color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+@media (hover: hover) and (pointer: fine) { .vd-obj-flat:hover { color: var(--ct-ink); } }
+.vd-obj-flat:active { transform: scale(.97); }
+.vd-obj-flat:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.vd-obj-b { display: grid; gap: 12px 32px; margin-top: 8px; grid-template-columns: minmax(0, 1fr); }
+.vd-obj-stage, .vd-obj-side { min-width: 0; }
+.vd-obj-stage { position: relative; } /* the hidden twin hangs from the stage's top (its text stays inside the column) */
+.vd-obj-claim { font: 400 15px/1.5 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }
+.vd-obj-claim + .vd-obj-claim { margin-top: 6px; }
+.vd-obj-key { margin-top: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); text-wrap: pretty; }
+.vd-obj-key b { color: var(--ct-ink); font-weight: 400; }
+.vd-obj-tones { white-space: nowrap; }
+.vd-obj-tones > span { display: inline-flex; gap: 2px; margin: 0 4px; vertical-align: -1px; }
+.vd-obj-tones i { width: 12px; height: 12px; border: 1px solid var(--ct-rule); }
+.vd-obj-credit { margin-top: 6px; font: italic 400 13px/1.45 var(--font-serif); color: var(--ct-gray); }
+.vd-obj-side .vd-exp-card { margin-top: 12px; max-width: 360px; }
+@media (min-width: 760px) {
+  .vd-obj-b { grid-template-columns: minmax(0, 380px) minmax(0, 1fr); }
+  /* a long record makes the column taller than the key + card: the side travels beside it (as mp-frame-obj does) */
+  .vd-obj-b:not(.is-wide) .vd-obj-side { position: sticky; top: 16px; align-self: start; }
+  /* Albers: the squares take the full width at their own aspect; below them, the reading beside the term's card */
+  .vd-obj-b.is-wide { grid-template-columns: minmax(0, 1fr) minmax(0, 360px); }
+  .vd-obj-b.is-wide .vd-exp-card { margin-top: 0; }
+}
+.vd-obj-hatch { display: inline-block; width: 12px; height: 12px; vertical-align: -1px; border: 1px solid var(--ct-rule); background: repeating-linear-gradient(-45deg, var(--color-text-muted) 0 1px, var(--color-background) 1px 4px); }
+.vd-obj-card { scroll-margin-bottom: 16px; }
+.vd-obj-text.is-below { margin-top: 12px; }

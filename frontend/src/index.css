@@ -1,0 +1,1470 @@
+/* Web fonts are self-hosted: src/fonts.css + public/fonts/ (PERF launch § 2) */
+@import "./fonts.css";
+/* PERF launch § 3: scan src/ only — the auto-detected root also read public/, e2e/,
+   scripts and dotfiles (650 files), which only added stray utilities. */
+@import "tailwindcss" source(".");
+@plugin "@tailwindcss/typography";
+/* Enable class-based dark mode so dark: variants respond to html.dark */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* UI 1.0 P0: EB Garamond metric fallback removed; the name now aliases Spectral (fonts.css). */
+
+/* RUBLI Editorial Design System — Investigative Journalism Platform */
+@theme {
+  /* Sector Colors — CLAUDE.md spec (canonical source of truth) */
+  --color-sector-salud: #dc2626;
+  --color-sector-educacion: #3b82f6;
+  --color-sector-infraestructura: #ea580c;
+  --color-sector-energia: #eab308;
+  --color-sector-defensa: #1e3a5f;
+  --color-sector-tecnologia: #8b5cf6;
+  --color-sector-hacienda: #16a34a;
+  --color-sector-gobernacion: #be123c;
+  --color-sector-agricultura: #22c55e;
+  --color-sector-trabajo: #f97316;
+  --color-sector-otros: #64748b;
+
+  /* Risk Colors — canonical Phase 1 palette (dark-first, no green for "low")
+     Rationale: green overclaims safety on a corruption platform — use neutral zinc
+     for the noise floor instead. Critical=red-500, high=amber-500, medium=amber-800. */
+  --color-risk-critical: #dc2626;
+  --color-risk-high: #d97706;
+  --color-risk-medium: #a16207;
+  --color-risk-low: #71717a;
+  /* Weekend D4: type twins of the risk marks for Tailwind class sites (text-risk-*-text).
+     Same values as RISK_TEXT_COLORS.critical and RISK_INK_ON_PLATE (lib/constants.ts),
+     which hold AA on the page and on the elevated plate paper. Marks keep the vivid fills. */
+  --color-risk-critical-text: #b91c1c;
+  --color-risk-high-text: #b45309;
+  --color-risk-medium-text: #854d0e;
+
+  /* Amber accent — bible §2 gold */
+  --color-amber-500: #a06820;
+
+  /* Canonical surface tokens — LIGHT-MODE, bible §2. These are the source of
+     truth for .surface-card, .card, and .fern-card. Sidebar stays dark via its
+     own --color-sidebar-* tokens below. */
+  --color-bg-base: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ececec;
+
+  /* Light-first editorial palette — bible §2 */
+  --color-background: #ffffff;
+  --color-background-card: #ffffff;
+  --color-background-elevated: #ececec;
+  --color-border: #bfbfbf;
+  --color-border-hover: #000000;
+
+  /* Text tokens — bible §3.4 */
+  /* Owner sampler pick 2026-10-28 «Sala de redacción» (DESIGN.md §6.1): pure ink, neutral gray. */
+  --color-text-primary: #000000;
+  --color-text-secondary: #444444;
+  /* PARALLAX D1 § Change 1: #7a716c failed WCAG AA (4.22 on elevated,
+     4.27 on the sidebar). #736a65 clears 4.5 on every surface. */
+  --color-text-muted: #444444;
+  --color-text-disabled: #b0b0b0;
+
+  /* Legacy dark-context tokens, now aliased to light-mode text. The sidebar
+     used to be dark (#1a1714) and these tokens carried the inverted text.
+     After the 2026-04 editorial-unification pass the sidebar became cream,
+     so these tokens now match the regular text tokens — kept as aliases so
+     existing usage across Sidebar.tsx continues working without a rename. */
+  --color-text-on-dark-primary: #000000;
+  --color-text-on-dark-secondary: #444444;
+  /* PARALLAX D1 § Change 1: #9c9490 was a dark-sidebar leftover reading
+     2.67 on the cream sidebar. Aliased to the AA muted token. */
+  --color-text-on-dark-muted: #444444;
+
+  /* Primary accent — UI 1.0 «El Contrato» (DESIGN.md §6): the seal red, used
+     for the pulled record and the cited clause only. Replaces the ochre. */
+  --color-accent: #d0021b;
+  --color-accent-hover: #a50216;
+  /* Weekend D1: text-only accent for SMALL type (kickers, folio labels,
+     chips, eyebrows < 18.66px bold / 24px). #a06820 is 4.14:1 on the
+     elevated paper and 4.44:1 on the page; this is 6.0:1. Large display
+     accents, rules, fills and borders keep --color-accent. */
+  --color-accent-text: #d0021b;
+  --color-accent-glow: #d0021b18;
+
+  /* Secondary accent — blue for data/links (bible §2) */
+  --color-accent-data: #2563eb;
+  --color-accent-data-glow: #2563eb11;
+
+  /* OECD reference lines — DESIGN §6.3 C6 cyan (was #22d3ee) */
+  --color-oecd: #0e8fb5;
+
+  /* DESIGN §6.3 — ONE categorical set of 8, used by index. Red/amber reserved for risk.
+     Owner sampler pick 2026-10-28 «ajustados» (teal, cyan raised in chroma; brown re-stepped). */
+  --color-cat-ink: #000000;     --color-cat-ink-text: #000000;
+  --color-cat-blue: #2563eb;    --color-cat-blue-text: #1d4ed8;
+  --color-cat-teal: #0f9f8a;    --color-cat-teal-text: #115e59;
+  --color-cat-violet: #6d28d9;  --color-cat-violet-text: #5b21b6;
+  --color-cat-magenta: #be185d; --color-cat-magenta-text: #9d174d;
+  --color-cat-cyan: #0e8fb5;    --color-cat-cyan-text: #155e75;
+  --color-cat-brown: #9a4a0a;   --color-cat-brown-text: #78350f;
+  --color-cat-slate: #64748b;   --color-cat-slate-text: #475569;
+  /* Purchase families (/categories, TEAL-4 2026-11-05): own categorical set, not the sector palette, no grey, no risk red.
+     Validated with the dataviz skill (validate_palette.js --mode light): all checks pass. */
+  --color-fam-salud: #9c3d8a;
+  --color-fam-obra: #c2581c;
+  --color-fam-mantenimiento: #00909a;
+  --color-fam-servicios: #6b5bd6;
+  --color-fam-energia: #9a7a12;
+  --color-fam-equipo: #d06aa8;
+  --color-fam-comida: #5c8f2a;
+  --color-fam-personas: #3d78b5;
+  /* DESIGN §6.4 ramps (light → dark) */
+  --color-ramp-ink-1: #ececec; --color-ramp-ink-2: #bfbfbf; --color-ramp-ink-3: #8c8c8c; --color-ramp-ink-4: #444444; --color-ramp-ink-5: #000000;
+  --color-ramp-red-1: #fde8e8; --color-ramp-red-2: #f5b5b5; --color-ramp-red-3: #e57373; --color-ramp-red-4: #dc2626; --color-ramp-red-5: #991b1b;
+
+  /* Sidebar — unified editorial light (2026-04 aesthetic pass).
+     Previously dark (#1a1714) to read as "command center chrome" on a cream
+     page. That split (dark tool / light newspaper) worked for Bloomberg
+     Terminal but fought RUBLI's investigative-journalism positioning —
+     NYT/ProPublica/OCCRP run single-palette editorial layouts. Sidebar now
+     uses a cream variant just 3% darker than the page, giving visual
+     separation without the "two different apps glued together" feel.
+     Active/hover states lean on the amber accent + bolder typography. */
+  --color-sidebar: #ffffff;
+  --color-sidebar-hover: #ececec;
+  --color-sidebar-active: #ececec;
+
+  /* Signal colors */
+  --color-signal-pulse: #d0021b;
+  --color-signal-live: #16a34a;
+  --color-signal-warn: #d97706;
+  --color-signal-danger: #dc2626;
+
+  /* Typography — canonical per ART_DIRECTION.md §3.1
+     Tailwind v4 maps `font-serif`/`font-sans`/`font-mono` utilities to the
+     short-form tokens below. The long-form aliases are kept for existing
+     `var(--font-family-*)` consumers (utility classes in this file). */
+  /* UI 1.0 «El Contrato» (DESIGN.md §2, owner sampler pick 2026-10-28): one text face,
+     Source Serif 4 (optical size follows font-size). font-sans resolves to it too so existing
+     `font-sans` callers keep working. The label voice (`--font-sc`, the name kept) is
+     Source Sans 3 semibold in sentence case, tracking `--track-sc` (0); no faux small caps. */
+  --font-mono: "Source Code Pro", "Cascadia Mono", Consolas, monospace;
+  --font-sans: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-sc: "Source Sans 3", system-ui, sans-serif;
+  --font-family-mono: var(--font-mono);
+  --font-family-sans: var(--font-sans);
+  --font-family-serif: var(--font-serif);
+  /* Folio-bible faces (rubli-folio-aesthetic § fonts): archival mono for
+     folio numbers / date stamps / eyebrows, editorial serif for plate
+     captions and ledes. Loaded by src/fonts.css; tokens so callers stop
+     hard-coding the family strings. */
+  --font-family-archival: var(--font-mono);
+  --font-family-editorial: var(--font-serif);
+
+  /* Editorial border-radius — ART_DIRECTION.md §5 & §11
+     Cards are 2px (editorial, not SaaS-rounded). Tailwind's `rounded-sm`
+     maps to --radius-sm. We expose --radius as the editorial default
+     alongside a slightly larger variant for pill/badge chrome. */
+  /* Owner sampler pick 2026-10-28: radius 0 (printed paper). */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-editorial: 0px;
+
+  /* UI 1.0 text scale (DESIGN.md §2): floor 12, body 15. Drives text-xs…text-2xl. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.6;
+  /* R1 (FIX_BRIEF_R1 § A): display tier shrunk — h1 36/1.15, h2 22/1.25. */
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.25;
+  /* Template v3 (DESIGN.md §2, locked 2026-10-28): the type scale as tokens. contrato.css and the
+     shared primitives read these; nothing on a page is set above --text-h1 (24). */
+  --text-h1: 1.5rem;            --text-h1--line-height: 1.2;
+  --text-h1-phone: 1.375rem;
+  --text-h2: 0.875rem;          --text-h2--line-height: 1.4;
+  --text-fig: 1.0625rem;        --text-fig--line-height: 1.2;
+  --text-fig-story: 1.5rem;     --text-fig-story--line-height: 1.1;
+  --text-fig-story-phone: 1.25rem;
+  --text-lede: 0.9375rem;       --text-lede--line-height: 1.5;
+  --text-body: 0.9375rem;       --text-body--line-height: 1.6;
+  --text-chip: 0.875rem;        --text-chip--line-height: 1.3;
+  --text-tab: 0.8125rem;
+  --text-label: 0.75rem;        --text-label--line-height: 1.4;
+  --text-data: 0.8125rem;       --text-data--line-height: 1.45;
+  --text-meta: 0.75rem;         --text-meta--line-height: 1.45;
+  --text-2xl: 2.25rem;
+  --text-2xl--line-height: 1.15;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.04em;
+  --tracking-widest: 0.05em;
+
+  /* Typography Scale */
+  --font-size-display: 3rem;
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.5rem;
+  --font-size-h3: 1.25rem;
+  --font-size-body: 0.9375rem;
+  --font-size-small: 0.875rem;
+  --font-size-tiny: 0.75rem;
+
+  /* Named container widths — these drive max-w-xs/sm/md/lg/xl/2xl utilities in Tailwind v4 */
+  --spacing-xs: 20rem;   /* 320px  — matches Tailwind v3 max-w-xs  */
+  --spacing-sm: 24rem;   /* 384px  — matches Tailwind v3 max-w-sm  */
+  --spacing-md: 28rem;   /* 448px  — matches Tailwind v3 max-w-md  */
+  --spacing-lg: 32rem;   /* 512px  — matches Tailwind v3 max-w-lg  */
+  --spacing-xl: 36rem;   /* 576px  — matches Tailwind v3 max-w-xl  */
+  --spacing-2xl: 42rem;  /* 672px  — matches Tailwind v3 max-w-2xl */
+
+  /* Motion easings — mirror of EASE in src/lib/motion.ts (Track B).
+     Gives `ease-standard` / `ease-emphasized` / `ease-exit` utilities, and
+     makes the house `transition-* duration-150|200` classes ease on-curve. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --default-transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* R1 motion tokens (FIX_BRIEF_R1 § D.1, DESIGN.md §7). `static` so the variables are
+   emitted even where no utility uses them — contrato.css reads them with var(). */
+@theme static {
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --ease-draw: cubic-bezier(.2, .7, .2, 1);
+  --ease-pull: cubic-bezier(.3, .7, .2, 1.25);
+  --ease-settle: cubic-bezier(.34, 1.5, .6, 1);
+  --ease-exit: cubic-bezier(.4, 0, 1, 1);
+  /* docks / sheets entering (the iOS drawer curve) and the long symmetric layout swaps (audit #19) */
+  --ease-drawer: cubic-bezier(.32, .72, 0, 1);
+  --ease-swap: cubic-bezier(.77, 0, .175, 1);
+  --dur-press: 120ms;
+  --dur-state: 200ms;
+  --dur-pull: 420ms;
+  --dur-reveal: 700ms;
+  --dur-settle: 900ms;
+  --stagger: 60ms;
+}
+
+/* Tailwind v4 strips --color-sector-ambiente (#10b981 = emerald-500 in oklch)
+   because it deduplicates @theme values that match built-in tokens.
+   Declare it here outside @theme so it survives the build. */
+:root {
+  /* iOS safe areas (viewport-fit=cover + black-translucent status bar): chrome pads by these */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --bar-h: var(--sat); /* UI 1.0: the shell does not stick, so sticky rails start at the status-bar inset */
+  --color-sector-ambiente: #10b981;
+  --color-sector-otros: #64748b; /* = slate-500: stripped the same way (category drill of an «otros» category drew nothing) */
+
+  /* UI 1.0 shell (DESIGN.md §5): nav group hues, nav only. --nav-h is the
+     measured height of the top bar + items row (MainLayout keeps it current);
+     full-height pages subtract it instead of each typing a header height. */
+  --g-descubrir: #2563eb;
+  --g-investigar: #be123c;
+  --g-explorar: #16a34a;
+  --g-analisis: #1e3a5f;
+  --g-plataforma: #444444;
+  --nav-h: 49px;
+
+  /* Motion durations — mirror of DUR / STAGGER in src/lib/motion.ts (Track B).
+     House Tailwind classes: duration-150 (colour/hover), duration-200 (transform). */
+  --dur-instant: 120ms;
+  --dur-fast: 200ms;
+  --dur-base: 320ms;
+  --dur-slow: 500ms;
+  --dur-story: 700ms;
+  --stagger-cell: 4ms;
+  --stagger-row: 30ms;
+
+  /* Template v3 space + shell (DESIGN.md §3/§5, locked 2026-10-28). */
+  --space-section: 24px;
+  --space-col: 32px;
+  --pad-td-y: 8px;  /* DESIGN.md §8.1: rows as La fila of /aria (owner 2026-10-29) */
+  --pad-td-x: 12px;
+  --pad-clause: 8px;
+  /* the label voice's tracking (sampler pick 2026-10-28: Source Sans 3 600, no tracking) */
+  --track-sc: 0;
+  --top-h: 48px;
+  --wire-h: 32px;
+  /* «Contratos de la semana» board (owner 2026-11-02; v2 2026-11-03 «it is all black»): a light board by day on the
+     plate paper, the dark board by night (below). Text roles ≥ 4.5:1 on --board-bg; chips carry --board-chip-ink. */
+  --board-bg: #f3f1ec;
+  --board-row: #e7e4dc;
+  --board-rule: #d2cec3;
+  --board-ring: #14141299;
+  --board-ink: #141412;
+  --board-dim: #4f4b43;
+  --board-amber: #8a4b00;
+  --board-crit: #b91c1c;
+  --board-high: #b45309;
+  --board-high-text: #9a4a07;
+  --board-med: #854d0e;
+  --board-chip-ink: #ffffff;
+  /* «Tablero del anaquel» (category drill, 2026-11-03): the Salidas board's roles. By day a printed platform
+     timetable (ink on the tint), by night the dark departures board (re-valued below). */
+  --sb-bg: var(--color-background-elevated);
+  --sb-row: color-mix(in srgb, var(--color-text-primary) 7%, var(--color-background-elevated));
+  --sb-rule: var(--color-border);
+  --sb-ink: var(--color-text-primary);
+  --sb-dim: var(--color-text-muted);
+  --sb-hi: var(--color-text-primary);
+  --sb-hi-ink: var(--color-background);
+  --sb-st-ink: var(--color-background);
+  --sb-st-high-ink: var(--color-text-primary);
+  /* the arrival tint (§7): 8 % seal on whatever the paper is */
+  --tint-arrival: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+/* ── Night edition (DESIGN.md §6.7, locked 2026-10-28): the SAME roles re-valued, one stylesheet.
+   Set by lib/theme.ts on <html data-theme="night">. Unlayered so it wins over @layer theme.
+   Values: owner sampler pick 2026-10-28 «Sala de redacción» night (OLED black) + «ajustados»;
+   categorical marks validated with the dataviz validator on #000000 (band .48–.67, CVD ΔE ≥ 8,
+   ≥ 3:1), text ≥ 4.5:1. OPT-IN only: lib/theme.ts never follows prefers-color-scheme. ── */
+:root[data-theme='night'] {
+  color-scheme: dark;
+  --sb-bg: var(--board-bg);
+  --sb-row: var(--board-row);
+  --sb-rule: var(--board-rule);
+  --sb-ink: var(--board-ink);
+  --sb-dim: var(--board-dim);
+  --sb-hi: var(--board-amber);
+  --sb-hi-ink: var(--board-bg);
+  --sb-st-ink: var(--board-bg);
+  --sb-st-high-ink: var(--board-bg);
+  --color-background: #000000;
+  --color-background-card: #000000;
+  --color-background-elevated: #121212;
+  --color-bg-base: #000000;
+  --color-bg-card: #000000;
+  --color-bg-elevated: #121212;
+  --color-border: #3a3a3a;
+  --color-border-hover: #ffffff;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-text-muted: #b3b3b3;
+  --color-text-disabled: #5c5c5c;
+  --color-text-on-dark-primary: #ffffff;
+  --color-text-on-dark-secondary: #b3b3b3;
+  --color-text-on-dark-muted: #b3b3b3;
+  --color-accent: #ff4d4d;
+  --color-accent-hover: #ff7070;
+  --color-accent-text: #ff6b6b;
+  --color-accent-glow: #ff4d4d24;
+  --color-accent-data: #7aa2ff;
+  --color-accent-data-glow: #7aa2ff1a;
+  --color-oecd: #1599b8;
+  /* the board's night values (the original dark departures board) */
+  --board-bg: #141412;
+  --board-row: #1f1e1b;
+  --board-rule: #2e2d29;
+  --board-ring: #f2eee399;
+  --board-ink: #f2eee3;
+  --board-dim: #a6a194;
+  --board-amber: #f2c14e;
+  --board-crit: #f05252;
+  --board-high: #f5a524;
+  --board-high-text: #f5a524;
+  --board-med: #d4a72c;
+  --board-chip-ink: #141412;
+  --color-risk-critical: #f05252;
+  --color-risk-high: #f5a524;
+  --color-risk-medium: #d4a72c;
+  --color-risk-low: #8b8680;
+  --color-risk-critical-text: #f05252;
+  --color-risk-high-text: #f2b35a;
+  --color-risk-medium-text: #d4a72c;
+  --color-sector-defensa: #8fb0e8; /* light navy (day #1e3a5f read 1.8:1 on black); = SECTOR_COLORS night */
+  --color-sector-gobernacion: #e11d48;
+  --color-cat-ink: #ffffff;     --color-cat-ink-text: #ffffff;
+  --color-cat-blue: #4d82f0;    --color-cat-blue-text: #7aa2ff;
+  --color-cat-teal: #1aa892;    --color-cat-teal-text: #2dd4bf;
+  --color-cat-violet: #8b6cf0;  --color-cat-violet-text: #a78bfa;
+  --color-cat-magenta: #e0558f; --color-cat-magenta-text: #f472b6;
+  --color-cat-cyan: #1599b8;    --color-cat-cyan-text: #22d3ee;
+  --color-cat-brown: #d97706;   --color-cat-brown-text: #e0a46a;
+  --color-cat-slate: #94a3b8;   --color-cat-slate-text: #94a3b8;
+  /* Purchase families (/categories, TEAL-4 2026-11-05): own categorical set, not the sector palette, no grey, no risk red.
+     Validated with the dataviz skill (validate_palette.js --mode dark --surface #000000): all checks pass. */
+  --color-fam-salud: #b4569f;
+  --color-fam-obra: #d06b2d;
+  --color-fam-mantenimiento: #00a3a8;
+  --color-fam-servicios: #8073e6;
+  --color-fam-energia: #b08c1c;
+  --color-fam-equipo: #c86fa6;
+  --color-fam-comida: #6fa236;
+  --color-fam-personas: #4f8ccc;
+  --color-ramp-ink-1: #121212; --color-ramp-ink-2: #3a3a3a; --color-ramp-ink-3: #5c5c5c; --color-ramp-ink-4: #b3b3b3; --color-ramp-ink-5: #ffffff;
+  --color-ramp-red-1: #3a1a1a; --color-ramp-red-2: #6b2222; --color-ramp-red-3: #b33a3a; --color-ramp-red-4: #f05252; --color-ramp-red-5: #fca5a5;
+  --color-sidebar: #000000;
+  --color-sidebar-hover: #121212;
+  --color-sidebar-active: #121212;
+  --color-signal-pulse: #ff4d4d;
+  --color-signal-live: #22c55e;
+  --color-signal-warn: #f5a524;
+  --color-signal-danger: #f05252;
+  --color-surface-glass: rgb(0 0 0 / 0.92);
+  --g-analisis: #8fb0e8;
+}
+/* the theme swap itself: paper and ink only, short, never `all` (emil: colour change = ease) */
+body { transition: background-color 200ms ease, color 200ms ease; }
+@media (prefers-reduced-motion: reduce) { body { transition: none; } }
+::selection { background: color-mix(in srgb, var(--color-accent) 12%, var(--color-background)); color: var(--color-text-primary); }
+
+/* Base Styles */
+@layer base {
+  :root {
+    font-family: var(--font-family-sans);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    /* ─── Editorial tokens (bible §5, §11) ─────────────────────────────── */
+    /* Multi-layer shadows — light/paper mode: warm umber alpha */
+    --shadow-sm: 0 1px 2px 0 rgb(26 23 20 / 0.04);
+    --shadow-md: 0 2px 6px -1px rgb(26 23 20 / 0.06), 0 1px 2px -1px rgb(26 23 20 / 0.04);
+    --shadow-lg: 0 6px 12px -3px rgb(26 23 20 / 0.08), 0 2px 4px -2px rgb(26 23 20 / 0.04);
+    --shadow-xl: 0 12px 20px -5px rgb(26 23 20 / 0.10), 0 4px 6px -4px rgb(26 23 20 / 0.04);
+
+    /* Editorial card treatment — 2px radius per bible §5, not SaaS-rounded */
+    --card-border: 1px solid var(--color-border);
+    --card-radius: var(--radius);
+
+    /* Frosted glass surfaces (header, overlays) — cream */
+    --color-surface-glass: rgba(255, 255, 255, 0.92);
+
+    /* Border refinements — semantic aliases */
+    --border-color: var(--color-border);
+    --border-color-strong: var(--color-border-hover);
+
+    /* Transitions — Phase 1 canonical timing (snappy but unhurried) */
+    --transition-fast: var(--dur-instant) var(--ease-standard);
+    --transition-base: var(--dur-fast) var(--ease-standard);
+    --transition-slow: var(--dur-base) var(--ease-standard);
+  }
+
+  html {
+    color-scheme: light;
+  }
+
+  /* Dark mode retired — RUBLI commits to cream light-mode broadsheet per
+     ART_DIRECTION.md §2. The sidebar and select dark cards/modals get
+     --color-text-on-dark-* overrides; the rest of the platform renders on
+     --color-background (#faf9f6). Kept as a no-op so existing toggleTheme()
+     consumers don't throw; cleanup lives in Header.tsx. */
+  html.dark {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-background text-text-primary m-0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-variant-numeric: tabular-nums; /* DESIGN.md §2 «Numbers tabular-nums», site-wide (taste audit 2026-10-26: 5–28 % of figures had it) */
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums; /* 2026-10-15: no longer switches the face — headline numbers inside serif text were rendering in bold Plex */
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-text-primary outline-offset-2;
+  }
+
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50;
+    @apply focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-md;
+  }
+
+  /* Typography
+   * Weight scale: 400 body, 500 labels/captions, 600 headings, 700 display, 900 hero numbers
+   * Use font-weight sparingly — only 2-3 weights per page to maintain hierarchy.
+   */
+  /* UI 1.0 P0: .text-display / .text-h1-3 / .text-body / .text-small / .text-tiny removed (0 importers). */
+  h1 { font-size: var(--font-size-h1); line-height: 1.1; font-weight: 600; letter-spacing: -0.015em; text-wrap: balance; }
+  h2 { font-size: var(--font-size-h2); line-height: 1.2; font-weight: 600; text-wrap: balance; }
+  h3 { font-size: var(--font-size-h3); line-height: 1.3; font-weight: 600; }
+  p { font-size: var(--font-size-body); line-height: 1.6; font-weight: 400; text-wrap: pretty; }
+}
+
+/* Scrollbar */
+@layer base {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-border/60 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-border-hover; }
+}
+
+/* Utility Classes */
+@layer utilities {
+  /* Editorial serif typography */
+  .font-editorial {
+    font-family: var(--font-family-serif);
+    letter-spacing: -0.02em;
+  }
+
+  /* UI 1.0 P0: .text-editorial-display / -h1 / -h2 removed (0 importers). */
+
+  /* ─── EDITORIAL HIERARCHY (commit 4) ─────────────────────────────── */
+
+  /* Kicker — small mono caps above a headline */
+  .text-kicker {
+    font-family: var(--font-sc);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: var(--track-sc);
+    color: var(--color-text-muted);
+  }
+
+  /* Kicker variants by category */
+  .text-kicker--investigation { color: var(--color-risk-critical-text); } /* face S1: AA token, not raw red (3 live users) */
+  .text-kicker--analysis { color: var(--color-accent-text); }
+  .text-kicker--data { color: var(--color-accent-data); }
+
+  /* UI 1.0 P0: .text-deck / .text-byline / .text-lede removed (0 importers). */
+
+  /* Drop-cap — first letter of a story */
+  .drop-cap::first-letter {
+    font-family: var(--font-family-serif);
+    float: left;
+    font-size: 4.25rem;
+    font-weight: 800;
+    line-height: 0.85;
+    padding: 0.35rem 0.6rem 0 0;
+    margin-top: 0.15rem;
+    color: var(--color-accent);
+    letter-spacing: -0.03em;
+  }
+  html.dark .drop-cap::first-letter {
+    color: #d4922a;
+  }
+
+  /* Dossier lede drop cap — the colour comes from --dropcap-color (the
+     sector accent); ::first-letter keeps the word whole for AT (D9b § 7). */
+  .lede-dropcap::first-letter {
+    font-family: var(--font-serif);
+    font-style: normal;
+    font-weight: 800;
+    font-size: 3.2em;
+    float: left;
+    line-height: 0.82;
+    color: var(--dropcap-color, var(--color-accent));
+    margin-right: 0.09em;
+    margin-top: 0.04em;
+    margin-bottom: -0.04em;
+  }
+
+  /* UI 1.0 P0: .text-pullquote removed (0 importers). */
+
+  /* Section kicker rule — kicker + hairline rule combo */
+  .editorial-kicker-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.875rem;
+  }
+  .editorial-kicker-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+
+  /* UI 1.0 P0: .text-display-num removed (0 importers). */
+
+  /* DEPRECATED: .card, .card-elevated, .fern-card are kept only as
+   * backward-compatibility aliases. All three now render as .surface-card —
+   * the canonical editorial surface (white on cream, 2px radius, bible §5).
+   * New code should use .surface-card. */
+  .card,
+  .card-elevated {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, var(--color-accent), var(--color-accent-data));
+  }
+
+  /* Risk badges */
+  /* light: the AA text twins (axe 2026-10-07: raw fills on their tints read 2.0–3.1:1) */
+  .risk-critical { @apply bg-risk-critical/10 text-risk-critical-text border border-risk-critical/25; }
+  .risk-high { @apply bg-risk-high/10 text-risk-high-text border border-risk-high/25; }
+  .risk-medium { @apply bg-risk-medium/10 text-risk-medium-text border border-risk-medium/25; }
+  .risk-low { @apply bg-risk-low/10 text-risk-low border border-risk-low/25; }
+
+  html.dark .risk-critical { @apply bg-risk-critical/15 text-risk-critical border-risk-critical/30; }
+  html.dark .risk-high { @apply bg-risk-high/15 text-risk-high border-risk-high/30; }
+  html.dark .risk-medium { @apply bg-risk-medium/20 text-risk-medium border-risk-medium/30; }
+  html.dark .risk-low { @apply bg-risk-low/15 text-risk-low border-risk-low/30; }
+
+  .sector-badge { @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium; }
+
+  /* Canonical chart tooltip — paper-dark (bible §8, V9)
+     Dark editorial ground #1a1714 with cream text — reads like a printed
+     newspaper callout against the cream page. */
+  .chart-tooltip {
+    background: #1a1714;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+    color: #faf9f6;
+    box-shadow: 0 6px 18px rgba(26, 23, 20, 0.18);
+  }
+
+  /* Canonical editorial surface — white card on cream ground (bible §5).
+     2px radius, 1px warm-gray border, subtle lift shadow. */
+  .surface-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+  .surface-card--elevated {
+    background: var(--color-bg-elevated);
+    border-color: var(--color-border-hover);
+  }
+  .surface-card--glass {
+    background: var(--color-surface-glass);
+    backdrop-filter: blur(12px);
+    border-color: var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  /* Live signal pulse */
+  .signal-live {
+    position: relative;
+  }
+  .signal-live::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-signal-live);
+    box-shadow: 0 0 8px var(--color-signal-live);
+    animation: signalPulse 2s ease-in-out infinite;
+  }
+
+  /* Accent glow for active elements */
+  .glow-accent {
+    box-shadow: 0 0 15px -3px var(--color-accent-glow);
+  }
+
+  /* Grid pattern for backgrounds */
+  .grid-pattern {
+    background-image:
+      linear-gradient(var(--color-border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    background-position: -1px -1px;
+    opacity: 0.15;
+  }
+
+  /* Animations */
+  .animate-fade-in { animation: fadeIn var(--dur-base) var(--ease-standard); }
+  .animate-slide-up { animation: slideUp var(--dur-base) var(--ease-standard) forwards; }
+  .animate-slide-in-right { animation: slideInRight var(--dur-base) var(--ease-standard); }
+  .animate-pulse-subtle { animation: pulseSubtle 2s ease-in-out infinite; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideInRight { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulseSubtle { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  @keyframes signalPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--color-signal-live); }
+    50% { opacity: 0.5; box-shadow: 0 0 16px var(--color-signal-live), 0 0 32px var(--color-signal-live); }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+    background: linear-gradient(90deg, var(--color-background-elevated) 0%, var(--color-border) 50%, var(--color-background-elevated) 100%);
+    background-size: 200% 100%;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  /* Note: a second shimmer keyframe below (shimmerSweep) has been intentionally kept separate */
+
+  .stagger-animate > * { opacity: 0; animation: fadeSlideUp var(--dur-base) var(--ease-standard) forwards; }
+  .stagger-animate > *:nth-child(1) { animation-delay: calc(var(--stagger-row) * 0); }
+  .stagger-animate > *:nth-child(2) { animation-delay: calc(var(--stagger-row) * 1); }
+  .stagger-animate > *:nth-child(3) { animation-delay: calc(var(--stagger-row) * 2); }
+  .stagger-animate > *:nth-child(4) { animation-delay: calc(var(--stagger-row) * 3); }
+  .stagger-animate > *:nth-child(5) { animation-delay: calc(var(--stagger-row) * 4); }
+  .stagger-animate > *:nth-child(6) { animation-delay: calc(var(--stagger-row) * 5); }
+  .stagger-animate > *:nth-child(7) { animation-delay: calc(var(--stagger-row) * 6); }
+  .stagger-animate > *:nth-child(8) { animation-delay: calc(var(--stagger-row) * 7); }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Nav active indicator — left accent bar */
+  .nav-active-indicator {
+    position: relative;
+  }
+  .nav-active-indicator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--color-accent);
+    box-shadow: 0 0 8px var(--color-accent-glow);
+  }
+
+  .hover-lift { @apply transition-all duration-200; }
+  .hover-lift:hover { transform: translateY(-1px); }
+
+  .interactive { @apply transition-colors duration-150 cursor-pointer; }
+  .interactive:hover { @apply bg-background-elevated; }
+
+  .interactive-card { cursor: pointer; transition: box-shadow var(--dur-instant) var(--ease-standard), transform var(--dur-fast) var(--ease-standard); }
+  .interactive-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+
+  html.dark .interactive-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.25); }
+
+  .data-cell { @apply px-3 py-2 text-sm border-b border-border; }
+  .data-cell-header { @apply px-3 py-2 text-xs font-medium text-text-muted uppercase tracking-wider bg-background-elevated border-b border-border; }
+
+  /* ─── FERN EDITORIAL UTILITIES ─────────────────────────────────────────── */
+
+  /* ─── DATA TYPOGRAPHY SCALE (normalized) ──────────────────────────────────
+     One coherent system. No more ad-hoc clamp() values. Use these classes
+     consistently so numbers across the platform feel like one family.
+     All sizes are tabular-nums for column alignment.
+     ─────────────────────────────────────────────────────────────────────── */
+
+  .stat-hero {
+    font-family: var(--font-family-sans);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-lg {
+    font-family: var(--font-family-sans);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-md {
+    font-family: var(--font-family-sans);
+    font-size: 1.375rem;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-sm {
+    font-family: var(--font-family-sans);
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-xs {
+    font-family: var(--font-family-sans);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-label {
+    font-family: var(--font-family-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+
+  /* Section divider with label — "SECTION NAME ────────────────" */
+  .editorial-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .editorial-rule::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  /* Editorial label — small all-caps tracking label above sections */
+  .editorial-label {
+    font-family: var(--font-family-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* DEPRECATED: .fern-card — backward-compat alias for .surface-card.
+   * Renders as white-on-cream, 2px radius (bible §5). */
+  .fern-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+  }
+
+  /* Shimmer overlay for cards/panels — different from animate-shimmer (which sweeps the bg color) */
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  /* Accent rule — thin colored rule used for section emphasis */
+  .accent-rule {
+    height: 2px;
+    background: var(--color-accent);
+    width: 2.5rem;
+    border-radius: 999px;
+  }
+
+  /* Pull quote — large contextual data point */
+  .pull-stat {
+    font-size: 1.875rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── FERN/NYT BOLD ANIMATION KEYFRAMES ─────────────────────────────── */
+
+  @keyframes slideUpFern {
+    0% { opacity: 0; transform: translateY(60px) scale(0.94); filter: blur(6px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+
+  @keyframes countReveal {
+    0% { opacity: 0; transform: scale(0.7) translateY(20px); }
+    65% { opacity: 1; transform: scale(1.08) translateY(-4px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes barFill {
+    0% { width: 0%; }
+    75% { width: calc(var(--fill-target, 50%) * 1.03); }
+    100% { width: var(--fill-target, 50%); }
+  }
+
+  @keyframes shimmerSweep {
+    0% { transform: translateX(-100%); opacity: 0.6; }
+    100% { transform: translateX(200%); opacity: 0; }
+  }
+
+  @keyframes numberPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    50% { transform: scale(1.12); opacity: 1; }
+    75% { transform: scale(0.96); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* Fern reveal utilities */
+  .fern-reveal {
+    animation: slideUpFern var(--dur-story) var(--ease-emphasized) both;
+  }
+
+  .fern-reveal-fast {
+    animation: slideUpFern var(--dur-slow) var(--ease-emphasized) both;
+  }
+
+  .number-pop {
+    animation: numberPop var(--dur-story) var(--ease-standard) both;
+  }
+
+  /* Institution row stagger — fade+slide from left, triggered by parent class */
+  @keyframes instRowFade {
+    0% { opacity: 0; transform: translateX(-12px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  .inst-tbody-hidden .inst-row-stagger {
+    opacity: 0;
+  }
+  .inst-tbody-visible .inst-row-stagger {
+    animation: instRowFade var(--dur-base) var(--ease-standard) both;
+  }
+
+  /* InstitutionDotScale — dot pop-in animation */
+  @keyframes dotPop {
+    0%   { opacity: 0; transform: scale(0) translateY(20px); }
+    60%  { opacity: 1; transform: scale(1.25) translateY(-2px); }
+    80%  { transform: scale(0.9) translateY(1px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  @keyframes narrativeHeaderSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .dot-scale-dot {
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+  .dot-scale-visible .dot-scale-dot {
+    animation: dotPop var(--dur-base) var(--ease-standard) both;
+  }
+
+  /* Dossier folder strip — case file classification bar above vendor/investigation pages */
+  .dossier-folder-strip {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    background: color-mix(in oklab, var(--color-accent) 6%, var(--color-background-card));
+    border-bottom: 1px solid color-mix(in oklab, var(--color-accent) 20%, var(--color-border));
+    padding: 0.375rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  html.dark .dossier-folder-strip {
+    background: color-mix(in oklab, var(--color-accent) 8%, var(--color-background));
+    border-bottom-color: color-mix(in oklab, var(--color-accent) 15%, var(--color-border));
+  }
+
+  /* ─── EDITORIAL PAGE SHELL — lede block ───────────────────────────── */
+  .lede-dateline {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .lede-headline {
+    font-family: var(--font-family-serif);
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+    color: var(--color-text-primary);
+  }
+  .measure-headline { max-width: 36rem; }
+  .lede-paragraph {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+  }
+
+  /* ─── STAT STRIP ───────────────────────────────────────────────────── */
+  .stat-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+  }
+  .stat-strip-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+  .stat-strip-value {
+    font-family: var(--font-family-sans);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-accent);
+  }
+  .stat-strip-label {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* ─── ACT DIVIDER ──────────────────────────────────────────────────── */
+  .act-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .act-num {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .act-rule {
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+  }
+  .act-label {
+    font-family: var(--font-family-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+  .act-title {
+    font-family: var(--font-family-serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+  }
+
+}
+
+
+/* Track B — dot-matrix reveal. One CSS animation per mark, no framer-motion
+   node (a 10-row DotStrip used to mount 500 motion.circle). --r = row index
+   (capped at 12, STAGGER_CAP), --i = mark index within the row. Runs once on
+   mount; stable keys mean a refetch never replays it. Reduced motion: the
+   block below zeroes duration + delay. */
+@keyframes dot-in { from { opacity: 0; } }
+@keyframes dot-pop { from { opacity: 0; transform: scale(0); } }
+.dot-in {
+  animation: dot-in var(--dur-fast) var(--ease-standard) backwards;
+  animation-delay: calc(min(var(--r, 0), 12) * var(--stagger-row) + var(--i, 0) * var(--stagger-cell));
+}
+.dot-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dot-pop var(--dur-base) var(--ease-emphasized) backwards;
+}
+
+/* Track B — editorial line/area charts draw once on reveal: the wrapper's
+   class flips draw-pending -> draw-on exactly once (useReveal), Recharts' own
+   animation stays off, so a refetch or re-render never replays the draw. */
+@keyframes draw-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.draw-pending :is(.recharts-line, .recharts-area) { clip-path: inset(0 100% 0 0); }
+.draw-on :is(.recharts-line, .recharts-area) { animation: draw-wipe var(--dur-slow) var(--ease-emphasized) backwards; }
+@media print { .draw-pending :is(.recharts-line, .recharts-area) { clip-path: none; } }
+@media (prefers-reduced-motion: reduce) { .draw-pending :is(.recharts-line, .recharts-area) { clip-path: none; } }
+
+/* Track B — overlay entrances (mount-only; the overlays unmount on close).
+   overlay-fade: backdrops + anything positioned with a transform.
+   overlay-in:   dialogs/popovers (opacity + 4 px rise).
+   sheet-in-right: side drawers. Reduced motion zeroes them (block below). */
+@keyframes overlay-fade { from { opacity: 0; } }
+@keyframes overlay-in { from { opacity: 0; transform: translateY(4px); } }
+@keyframes sheet-in-right { from { transform: translateX(100%); } }
+.overlay-fade { animation: overlay-fade var(--dur-fast) var(--ease-standard) backwards; }
+.overlay-in { animation: overlay-in var(--dur-fast) var(--ease-standard) backwards; }
+.sheet-in-right { animation: sheet-in-right var(--dur-base) var(--ease-emphasized) backwards; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    /* Track B: staggered keyframes would otherwise still wait out their delay. */
+    animation-delay: 0s !important;
+    /* §7: reduced motion drops MOVEMENT, not state — colour/opacity changes still ease (as contrato.css does). */
+    transition-property: color, background-color, border-color, text-decoration-color, opacity, fill, stroke, fill-opacity !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+  .hover-lift:hover { transform: none; }
+  .signal-live::after { animation: none; }
+}
+
+/* Scan-line shimmer for stat bombs */
+@keyframes scan-line {
+  0% { transform: translateY(-100%); opacity: 0; }
+  30% { opacity: 0.15; }
+  100% { transform: translateY(200%); opacity: 0; }
+}
+.stat-bomb-value::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.12), transparent);
+  height: 40%;
+  animation: scan-line var(--dur-story) var(--ease-standard) var(--dur-base) 1 forwards;
+  pointer-events: none;
+}
+
+/* Number-pop: scale 0.7 → 1.08 → 1.0 with spring */
+@keyframes number-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1.0); opacity: 1; }
+}
+.anim-number-pop {
+  animation: number-pop var(--dur-story) var(--ease-emphasized) both;
+}
+
+/* ─── REPORT CARD CINEMATIC ANIMATIONS ──────────────────────────────── */
+
+/* Grade badge concentric pulse rings */
+.rc-grade-ring {
+  border: 2px solid currentColor;
+  border-radius: 9999px;
+  animation: rc-ring-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes rc-ring-pulse {
+  0% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0.2; }
+  100% { transform: scale(1.3); opacity: 0; }
+}
+
+/* Scanning lines for loading intro */
+.rc-scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(196, 30, 58, 0.4) 50%, transparent 100%);
+}
+.rc-scan-line-1 { animation: rc-scan-move 1.8s linear infinite; top: 30%; }
+.rc-scan-line-2 { animation: rc-scan-move 2.2s linear infinite 0.5s; top: 50%; }
+.rc-scan-line-3 { animation: rc-scan-move 1.5s linear infinite 1.0s; top: 70%; }
+
+@keyframes rc-scan-move {
+  0% { transform: translateY(-100vh); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Typewriter cursor blink */
+.rc-typing-cursor {
+  animation: rc-cursor-blink 0.6s step-end infinite;
+  color: var(--color-accent);
+  font-weight: bold;
+}
+@keyframes rc-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Print */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; color: black; }
+  .card { border: 1px solid #e5e7eb; background: white; }
+  .stat-bomb-value::after { display: none; }
+}
+
+/* ── Editorial drop caps for /stories chapter variants ─────────────────────
+   Hero chapter — large drop cap, accent-colored, Playfair serif. The first
+   letter floats left and three lines tall. Falls back gracefully on small
+   screens where floating an enlarged glyph creates layout pressure. */
+.hero-dropcap::first-letter,
+.feature-dropcap::first-letter {
+  font-family: var(--font-serif);
+  font-weight: 800;
+  color: var(--dropcap-color, var(--color-accent));
+  float: left;
+  line-height: 0.85;
+  margin: 0.08em 0.12em 0 0;
+  padding-right: 0.04em;
+}
+.hero-dropcap::first-letter {
+  font-size: 5.4em;
+  margin-top: 0.05em;
+}
+.feature-dropcap::first-letter {
+  font-size: 3.6em;
+  margin-top: 0.06em;
+}
+@media (max-width: 640px) {
+  /* Smaller drop caps on phones to avoid wrapping problems */
+  .hero-dropcap::first-letter { font-size: 4em; }
+  .feature-dropcap::first-letter { font-size: 2.8em; }
+}
+
+/* Legibility directive (2026-07-03): kill ALL italic site-wide. The Tailwind
+   .italic utility and any residual italic class render upright. Inline
+   fontStyle:'italic' is removed at source by the legibility codemod. */
+.italic, em, i { font-style: normal !important; }
+
+/* One footer per page (PARALLAX D1 § Change 8, 2026-09-17).
+   MainLayout closes every route with an editorial colophon. Pages that render
+   their own credibility strip (<PageFooter>, Executive's own footer) therefore
+   stacked two <footer> landmarks — measured on /dashboard, /cases,
+   /journalists, /administrations, /methodology, /institutions and /captura.
+   The page's footer lives inside <main>, the colophon is main's next sibling,
+   so :has() suppresses exactly the duplicate and nothing else. Card-level
+   <footer>s (CorruptionClusters' typology + spotlight cards) are untouched
+   because they do not carry the .page-footer marker.
+   :has() is Chrome 105+ / Safari 15.4+ / Firefox 121+; older Firefox keeps the
+   double colophon, which is the pre-existing behaviour. */
+main:has(.page-footer) + footer {
+  display: none;
+}
+
+/* Measure directive (PARALLAX D2c, 2026-09-18): one line length, site-wide.
+   Prod census at 1440 (18 routes): running text with no cap stretched to
+   122–188 characters per line (median on /methodology 122ch, 60% of
+   paragraphs over 80ch) while capped paragraphs stopped at 46–68ch — the
+   "sometimes the box stretches, sometimes it doesn't" flaw. This sets ONE
+   measure for every block of running text and one for headlines, in `ch`
+   so it scales with each font. `:where()` keeps specificity at zero, so any
+   explicit `max-w-*` utility or inline `maxWidth` still wins — the rule only
+   reaches text nobody bounded. Table cells and centered tiles keep their
+   boxes. Alignment is left / ragged-right everywhere (justify is banned by
+   lint:tokens); `text-wrap` trims orphans on the ragged edge. */
+/* Cascade fix (Weekend Track A, 2026-10-02 — docs/FRONTEND_WEEKEND_2026-10-03.md
+   § Track A): this block was unlayered, and Tailwind v4 puts every utility in
+   `@layer utilities`. Unlayered beats layered regardless of specificity, so the
+   measure and `text-wrap` here silently overrode every `max-w-*`, `text-balance`
+   and `text-pretty` utility on the site — the opposite of the promise below.
+   Inside `@layer base` the rules reach only text nobody bounded, as intended. */
+@layer base {
+  main :where(p, li, dd, dt, figcaption, blockquote) {
+    max-width: 68ch;
+    text-wrap: pretty;
+  }
+  main :where(h1, .text-editorial-display) { max-width: 32ch; text-wrap: balance; }
+  main :where(.text-deck, [data-deck]) { text-wrap: balance; }
+  main :where(h2, h3) { max-width: 44ch; text-wrap: balance; }
+  main :where(table, .text-center, [style*="text-align: center"]) :where(p, li, dd, dt, h1, h2, h3) {
+    max-width: none;
+  }
+
+  /* Labels are not paragraphs (PARALLAX D2d § Change 1, 2026-09-18).
+     The 68ch rule above caught single-line editorial furniture as if it were
+     running text: on /methodology the masthead eyebrow
+     "RUBLI · EL DICTAMEN · MODEL v0.8.5 · RUN CAL-v8-…" and every clause kicker
+     wrapped onto a second line at 1440. Eyebrows, kickers, datelines, bylines and
+     editorial-labels are meant to read as one unbroken line regardless of length,
+     so they are exempt. Same `:where()` zero specificity as the D2c block and
+     later in the cascade, so this wins on the labels and nothing else. */
+  main :where(.uppercase, .text-kicker, .text-byline, .lede-dateline, .editorial-label, [style*="text-transform: uppercase"]) {
+    max-width: none;
+  }
+
+  /* A chart caption is not running text (STORY_DAYS.md § 7, 2026-09-18).
+     User, second complaint the same night: "Again with the text not properly
+     formatted below the graphic." The D2c measure above is expressed in `ch`, so
+     applied to a 12.5px mono caption it resolves to roughly 490px — inside a
+     712px card interior that is a narrow ragged column sitting under a full-width
+     chart, with the figure's own white space to its right. A caption belongs to
+     its figure and spans the figure's interior; the 68ch measure is for prose a
+     reader reads line after line, not for text that annotates a drawing directly
+     above it. Same zero-specificity `:where()` and later in the cascade, so it
+     wins inside a figure and changes nothing outside one. */
+  main figure :where(p, figcaption, li, dd) {
+    max-width: none;
+  }
+}
+
+/* Chapter anchors clear the sticky story bar (PARALLAX
+   docs/parallax/DAY-03-redaccion-story-template.md § Change 5, 2026-09-18).
+   ChapterNav links jump to #chapter-*, which without this lands the chapter
+   banner underneath the sticky reading-progress header. */
+main :where([id^="chapter-"]) {
+  scroll-margin-top: 7rem;
+}
+
+/* ─── PageMasthead («EL ÍNDICE», face spec § 3) ─────────────────────────────
+   Exact px in three steps (<640 · 640–1399 · ≥1400), no clamp(). The one
+   exception is the sentence-led portada h1, which keeps the dashboard's shipped
+   36 / 52 (sm) / 64 (md) breakpoints so the gold headline does not move.
+   Kill switches without a code revert: --mh-rule (head rule ink),
+   --mh-kicker (furniture ink). */
+:root {
+  --mh-rule: var(--color-text-primary);
+  --mh-kicker: var(--color-text-muted);
+}
+@layer components {
+  .mh { position: relative; }
+
+  .mh-rule { height: 2px; background: var(--mh-rule); }
+  .mh-rail { height: 6px; }
+  .mh-foot { height: 1px; background: var(--color-border); }
+
+  /* Eyebrow — three slots, each middot sub-label its own nowrap unit. */
+  .mh-eyebrow-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .mh-eyebrow {
+    margin: 0; max-width: none; display: flex; flex-wrap: wrap; align-items: baseline;
+    font-family: var(--font-family-archival); font-size: 12px; line-height: 1.35;
+    font-weight: 400; letter-spacing: 0.05em; text-transform: uppercase; color: var(--mh-kicker);
+  }
+  .mh-unit { white-space: nowrap; }
+  .mh-unit--kicker { display: contents; }
+  .mh-sep { margin: 0 0.5em; }
+  .mh-held { visibility: hidden; }
+  .mh-held::before { content: attr(data-hold); }
+  .mh-num { color: var(--color-accent-text); font-weight: 500; white-space: nowrap; }
+  .mh-num--brand { color: var(--color-text-primary); }
+  .mh-actions { flex-shrink: 0; display: flex; align-items: baseline; gap: 16px; }
+
+  /* h1 — Garamond sets words; Playfair only for a figure title. */
+  .mh-h1 { margin: 0; font-family: var(--font-family-editorial); font-weight: 500; font-style: normal; color: var(--color-text-primary); text-wrap: balance; }
+  .mh-h1--figure { font-family: var(--font-family-serif); font-weight: 800; font-variant-numeric: tabular-nums lining-nums; }
+  .mh-h1--portada { font-size: 36px; line-height: 0.98; letter-spacing: -0.012em; max-width: 32ch; }
+  .mh-h1--portada-compact { font-size: 24px; line-height: 1.1; max-width: none; }
+  .mh-h1--story { font-size: 32px; line-height: 1.04; max-width: 760px; }
+  .mh-h1--indice { font-size: 28px; line-height: 1.06; max-width: 32ch; }
+  .mh-h1--expediente { font-size: 26px; line-height: 1.08; max-width: 760px; }
+
+  .mh-dek { margin: 0; max-width: 640px; font-family: var(--font-family-editorial); font-weight: 400; font-size: 17px; line-height: 1.45; color: var(--color-text-secondary); text-wrap: balance; }
+  .mh-status { height: 24px; display: flex; align-items: center; margin-top: 8px; }
+  .mh-dek-short { display: none; }
+  @media (max-width: 639px) { .mh-dek-full { display: none; } .mh-dek-short { display: inline; } }
+
+  /* Rhythm (§ 3.5–3.7). */
+  .mh--portada .mh-eyebrow-row { margin-top: 28px; }
+  .mh--portada .mh-h1 { margin-top: 14px; }
+  .mh--portada .mh-dek { margin-top: 18px; }
+  .mh--portada .mh-foot { margin-top: 28px; }
+  .mh--portada-compact .mh-eyebrow-row { border-top: 2px solid var(--mh-rule); border-bottom: 1px solid var(--color-border); padding: 6px 0; flex-wrap: wrap; }
+  .mh--portada-compact .mh-h1 { margin-top: 10px; }
+  .mh--portada-compact .mh-foot { display: none; }
+  /* The strip is one 11 px line (LH 14): 2 + 6 + 14 + 6 + 1 = 29 px (§ 3.5). */
+  .mh--portada-compact .mh-eyebrow, .mh--portada-compact .mh-edition { font-size: 12px; line-height: 14px; }
+  .mh--portada-compact .mh-eyebrow-row { row-gap: 0; }
+  /* Phone strip: one line — the numeral, the kicker and the data cut (§ 8). The
+     range drops here (the cut carries the end year) so the plate does not move;
+     the h1 reserves two lines so EN and ES put the plate at the same height. */
+  @media (max-width: 639px) {
+    .mh-edition--compact .mh-edition-index,
+    .mh-edition--compact .mh-edition-facts > .mh-unit:not(:first-child),
+    .mh-edition--compact .mh-edition-facts > .mh-unit:first-child > .mh-sep,
+    .mh--portada-compact .mh-unit--kicker > .mh-unit:nth-child(3),
+    .mh--portada-compact .mh-unit--kicker > .mh-unit:nth-child(2):nth-last-child(2) > .mh-sep { display: none; }
+    .mh--portada-compact .mh-h1 { min-height: 2lh; }
+  }
+  /* The one ochre h1 fragment (§ 3.4): Garamond 600, never split. */
+  .mh-accent { font-weight: 600; color: var(--color-accent-text); white-space: nowrap; }
+  .mh--indice .mh-h1 { margin-top: 10px; }
+  .mh--indice .mh-dek { margin-top: 14px; }
+  .mh--indice .mh-foot { margin-top: 24px; margin-bottom: 24px; }
+  .mh--expediente .mh-eyebrow-row { margin-top: 16px; }
+  .mh--expediente .mh-h1 { margin-top: 10px; }
+  .mh--expediente .mh-foot { margin-top: 24px; }
+  .mh--story .mh-eyebrow-row { margin-top: 16px; }
+  .mh--story .mh-h1 { margin-top: 14px; }
+  .mh--story .mh-dek { margin-top: 18px; }
+  .mh--story .mh-foot { margin-top: 28px; }
+
+  /* Justified editorial prose — the measure is set by the container, never a ragged stub. */
+  /* Owner 2026-10-06 overrides the ragged-right default for these blocks: the
+     container sets the measure, so the base-layer 68ch cap is lifted here. */
+  .prose-just { text-align: justify; hyphens: auto; -webkit-hyphens: auto; text-wrap: pretty; max-width: none; }
+  .sx-page :where(h2, h3, li, dd, dt) { max-width: none; }
+  .mh--just .mh-dek { text-align: justify; hyphens: auto; -webkit-hyphens: auto; text-wrap: pretty; max-width: none; }
+  .mh-body--ear, .mh-body--aside { display: grid; gap: 16px 32px; }
+  .mh-main { min-width: 0; }
+  @media (min-width: 640px) { .mh-body--aside { grid-template-columns: minmax(0, 1fr) auto; } }
+  /* The ear takes its own width; the 760 column yields to it in a narrower page frame. */
+  @media (min-width: 1024px) { .mh-body--ear { grid-template-columns: minmax(0, 760px) auto; justify-content: space-between; } .mh-ear { justify-self: end; } }
+  /* Plate-led: the full-bleed header gives the strip the width and the ear its natural size. */
+  @media (min-width: 1024px) { .mh--portada-compact .mh-body--ear { grid-template-columns: minmax(0, 1fr) auto; } }
+
+  /* Edition line — thick over hairline, dated by the data cut. */
+  .mh-edition {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 16px;
+    border-top: 2px solid var(--mh-rule); border-bottom: 1px solid var(--color-border); padding: 8px 0;
+    font-family: var(--font-family-archival); font-size: 12px; line-height: 15px; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--color-text-muted);
+  }
+  .mh-edition--compact { border: 0; padding: 0; margin-left: 0; }
+  .mh-edition-facts { margin: 0; max-width: none; display: flex; flex-wrap: wrap; font-size: inherit; line-height: inherit; }
+  .mh-ver { text-transform: none; }
+  .mh-edition-index { display: flex; gap: 0 0.7em; }
+  .mh-abbr { text-decoration: none; cursor: help; }
+  .mh-index-link { position: relative; color: var(--color-text-muted); display: inline-block; min-width: 24px; text-align: center; padding-block: 5px; margin-block: -5px; } /* WCAG 2.5.8: ≥ 24 px box, zero layout shift */
+  .mh-index-link:hover, .mh-index-link:focus-visible { color: var(--color-text-primary); }
+  .mh-index-link::after { content: ''; position: absolute; inset: -14px -8px; } /* 44 px tap target, no layout cost */
+  .mh-index-here { color: var(--color-accent-text); font-weight: 500; white-space: nowrap; }
+
+  /* Jump line (§ 6). */
+  .mh-jump { margin: 32px 0 0; max-width: none; text-align: right; font-family: var(--font-family-archival); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .mh-jump-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent-text); }
+  .mh-jump-link:hover { color: var(--color-accent); }
+
+  @media (min-width: 640px) {
+    .mh-eyebrow { font-size: 12px; }
+    .mh-edition { font-size: 12px; }
+    .mh-h1--portada { font-size: 52px; }
+    .mh-h1--portada-compact { font-size: 28px; }
+    .mh-h1--story { font-size: 44px; }
+    .mh-h1--indice { font-size: 36px; }
+    .mh-h1--expediente { font-size: 32px; }
+    .mh-dek { font-size: 18px; }
+    .mh-jump-link { min-height: 0; }
+  }
+  @media (min-width: 768px) { .mh-h1--portada { font-size: 64px; } }
+  /* Off-TOC pages (Settings, Privacy, Terms, 404): the Índice frame with the h1
+     at the dossier step (face § 7, S3). Opt-in by class; additive. */
+  .mh--offtoc .mh-h1--indice { font-size: 26px; line-height: 1.08; }
+  @media (min-width: 640px) { .mh--offtoc .mh-h1--indice { font-size: 32px; } }
+  @media (min-width: 1400px) { .mh--offtoc .mh-h1--indice { font-size: 34px; } }
+  /* Dossier aside (seal / verdict card) starts on the eyebrow's line, 16 px under
+     the rail like the eyebrow itself, instead of touching the rail (S3). */
+  @media (min-width: 640px) { .mh--expediente .mh-aside { margin-top: 16px; } }
+  @media (min-width: 1400px) {
+    .mh-h1--portada-compact { font-size: 30px; }
+    .mh-h1--story { font-size: 48px; }
+    .mh-h1--indice { font-size: 40px; }
+    .mh-h1--expediente { font-size: 34px; }
+    .mh-dek { font-size: 20px; }
+    .mh-dek--indice { font-size: 19px; }
+  }
+}
+
+/* Running head toggle (face spec § 5). PageMasthead sets html[data-mh] from one
+   IntersectionObserver; a route without a masthead never sets it and shows the
+   running head. CSS only, so the Header never re-renders on scroll. */
+.rh-crumb, .rh-head { transition: opacity 200ms ease, visibility 200ms; }
+html:not([data-mh="on"]) .rh-crumb, html[data-mh="on"] .rh-head { opacity: 0; visibility: hidden; transition: none; }
+@media (prefers-reduced-motion: reduce) { .rh-crumb, .rh-head { transition: none; } }
+
+/* El Mapa · the «Vínculos» segment (merge spec S1 addendum): three twinkling points,
+   and a soft 3× first-visit pulse once the page settles. Reduced motion: static. */
+.vista-twinkle i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: currentColor; animation: vistaTwinkle 2.4s ease-in-out infinite; }
+.vista-twinkle i:nth-child(1) { left: 0; top: 1px; }
+.vista-twinkle i:nth-child(2) { left: 4px; top: 5px; animation-delay: 0.8s; }
+.vista-twinkle i:nth-child(3) { left: 9px; top: 0; animation-delay: 1.6s; }
+@keyframes vistaTwinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+.vista-beckon { animation: vistaBeckon 1.1s ease-in-out 1.5s 3; }
+@keyframes vistaBeckon {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 30%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vista-twinkle i, .vista-beckon { animation: none; }
+  .vista-twinkle i { opacity: 0.7; }
+}
+
+/* The route outlet holds the viewport while a lazy page loads, so the colophon (Firmas) does not
+   flash near the top and then jump down (launch audit 2026-10-28: CLS 0.3–1.4 on 10 of 20 pages). */
+/* minus the 48px top bar: a full 100svh left a 70px blank under short pages (proof:ui CHASM on /contracts, OWNER_REVIEW § G2) */
+#main-content { min-height: calc(100svh - 48px); }

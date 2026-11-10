@@ -1,0 +1,129 @@
+{
+  "columns": {
+    "contracts": "Contracts"
+  },
+  "profile": {
+    "breadcrumb": "Institutions",
+    "sectorLabel": "Sector",
+    "notFound": "Institution not found",
+    "notFoundDesc": "Institution with ID {{id}} could not be located.",
+    "loadError": "Error loading institution: {{message}}",
+    "backToInstitutions": "Back to Institutions",
+    "networkButton": "Vendor Network",
+    "allContractsButton": "All Contracts",
+    "compareButton": "Compare",
+    "editorialSection": "INSTITUTIONAL PROFILE",
+    "partOf": "Part of",
+    "documentedCase": "Documented case: {{caseName}}",
+    "tabs": {
+      "overview": "Overview",
+      "risk": "Risk",
+      "vendors": "Vendors",
+      "officials": "Officials",
+      "history": "History",
+      "external": "External"
+    },
+    "overview": {
+      "intelligenceBrief": "INTELLIGENCE SUMMARY",
+      "riskDistribution": "RISK DISTRIBUTION",
+      "institutionDetails": "INSTITUTION DETAILS",
+      "detailType": "Type",
+      "detailSize": "Size",
+      "detailAutonomy": "Autonomy",
+      "detailScope": "Scope",
+      "detailDataQuality": "Data quality",
+      "detailAvgContract": "Average contract",
+      "detailBaseRisk": "Base risk",
+      "detailSizeAdjustment": "Size adjustment",
+      "detailAutonomyRisk": "Autonomy risk",
+      "topVendors": "TOP VENDORS BY SPENDING",
+      "mostSuspiciousContract": "MOST SUSPICIOUS CONTRACT",
+      "clickForDetails": "Click to view full details",
+      "directAward": "Direct Award",
+      "singleBidder": "Single award"
+    },
+    "risk": {
+      "trajectory": "RISK TRAJECTORY",
+      "trendUp": "Worsening",
+      "trendDown": "Improving",
+      "trendStable": "Stable"
+    },
+    "groundTruth": {
+      "bannerLabel": "DOCUMENTED CORRUPTION CASE",
+      "bannerText": "This institution has contracts from vendors identified in",
+      "contractsFlagged": "contract(s) flagged"
+    },
+    "riskLevels": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "unknown": "Unknown"
+    },
+    "integrityScoreLabel": "Integrity score",
+    "effectiveRiskLabel": "Effective risk",
+    "noRiskData": "No risk data",
+    "noVendorData": "No vendor data",
+    "noContractsFound": "No contracts found",
+    "noCategoryData": "No category data",
+    "noOfficialsData": "No official data for this institution",
+    "noAuditFindings": "No ASF audit findings recorded",
+    "noExternalEvents": "No external registry events",
+    "errorLoadingRisk": "Error loading risk data.",
+    "errorLoadingVendors": "Error loading vendors.",
+    "errorLoadingTimeline": "Error loading timeline.",
+    "errorLoadingPeers": "Error loading peer data.",
+    "errorLoadingLoyalty": "Error loading loyalty data.",
+    "errorLoadingOfficials": "Error loading official data.",
+    "errorLoadingContracts": "Error loading contracts.",
+    "errorLoadingAudit": "Error loading ASF findings.",
+    "errorLoadingScandals": "Error loading sector scandals.",
+    "errorLoadingConcentration": "Error loading concentration map.",
+    "noContractsTooltip": "No contracts",
+    "contractsRiskTooltip": "{{count}} contracts · risk {{risk}}%",
+    "untitled": "Untitled",
+    "institutionTypeLabels": {
+      "default": "Government Entity",
+      "secretaria": "Ministry",
+      "organoDesconcentrado": "Deconcentrated Body",
+      "entidadParaestatal": "State-Owned Entity",
+      "empresaProductiva": "Productive State Enterprise",
+      "organoAutonomo": "Autonomous Body",
+      "poderJudicial": "Judicial Branch",
+      "poderLegislativo": "Legislative Branch"
+    },
+    "editorialLedeCapture": "awarded {{daPct}}% of its contracts directly — bypassing competitive bidding. {{topVendor}} captures {{topVendorPct}}% of procurement value across {{totalContracts}} contracts. Average risk score: {{score}}%.",
+    "editorialLedeMedium": "registers an average risk score of {{score}}% across {{totalContracts}} contracts, with {{daPct}}% awarded directly. Procurement patterns warrant closer scrutiny.",
+    "editorialLedeLow": "shows an average risk score of {{score}}% across {{totalContracts}} contracts. Direct award rate: {{daPct}}%. No critical anomalies detected.",
+    "hallazgoLabels": {
+      "contractsAnalyzed": "Contracts Analyzed",
+      "totalAccumulatedSpend": "Total Accumulated Spend",
+      "avgRiskIndex": "Avg. Risk Index",
+      "directAward": "Direct Award %"
+    },
+    "longestTenuredVendors": "Long-tenured Vendors",
+    "supplierDiversity": "Supplier Diversity (HHI)"
+  },
+  "drawer": {
+    "vendor": "Vendor",
+    "aiRiskScore": "AI Risk Score",
+    "noTrajectory": "No trajectory data",
+    "noSignificantRisk": "No significant risk indicators detected",
+    "aiIntelligence": "AI Intelligence",
+    "relationshipNetwork": "Relationship Network",
+    "riskTrajectory": "Risk Trajectory",
+    "asfFindings": "ASF Findings"
+  },
+  "compare": {
+    "institutionA": "Institution A",
+    "institutionB": "Institution B",
+    "loadError": "Error loading institutions",
+    "loadErrorDesc": "Check institution IDs and try again.",
+    "hhi": {
+      "capture": "Capture",
+      "concentrated": "Concentrated",
+      "moderate": "Moderate",
+      "competitive": "Competitive"
+    }
+  }
+}

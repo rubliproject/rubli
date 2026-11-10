@@ -1,0 +1,175 @@
+import { useState } from 'react'
+import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
+import type { SanctionMatchBasis } from '@/api/types'
+import { formatRegistryDate, parseRegistryDate } from '@/components/vendor/buildFlags'
+
+interface SanctionRecord {
+  list_type: 'sfp' | 'efos' | 'efos_definitivo' | 'efos_presunto'
+  match_method: SanctionMatchBasis
+  sanction_type?: string
+  /** SFP only — ISO dates: start = notification, end = start + plazo (null = fine, no ban) */
+  sanction_start?: string | null
+  sanction_end?: string | null
+  plazo_months?: number | null
+}
+
+interface SanctionsAlertBannerProps {
+  sanctions: SanctionRecord[]
+  vendorName: string
+  className?: string
+}
+
+const LIST_LABELS: Record<string, string> = {
+  sfp: 'SFP',
+  efos: 'SAT EFOS',
+  efos_definitivo: 'SAT EFOS Definitivo (Confirmed)',
+  efos_presunto: 'SAT EFOS Presunto (Alleged)',
+}
+
+// Name matches are NOT identity-confirmed: RFC is missing at source for most records.
+const MATCH_LABEL: Record<SanctionMatchBasis, { en: string; es: string }> = {
+  rfc: { en: 'RFC match', es: 'Coincide el RFC' },
+  name: { en: 'Name match · RFC not provided', es: 'Coincide el nombre · sin RFC en la fuente' },
+  name_ambiguous: { en: 'Ambiguous name match', es: 'Nombre ambiguo' },
+}
+
+// Tooltip explanation for EFOS stages
+const EFOS_TOOLTIP =
+  'Definitivo: Tax authority has formally confirmed this is a ghost company. Presunto: Under investigation.'
+
+/**
+ * Factual SFP record line. Never «inhabilitado» as a present state: the registry
+ * (Jan 2021 snapshot) holds notification + plazo; a fine without plazo is no ban.
+ */
+function sfpRecordLabel(s: SanctionRecord, es: boolean): string {
+  const lang = es ? 'es' : 'en'
+  const from = parseRegistryDate(s.sanction_start)
+  const to = parseRegistryDate(s.sanction_end)
+  if (from && to) {
+    return es
+      ? `Sanción registrada por la SFP (inhabilitación del ${formatRegistryDate(from, lang)} al ${formatRegistryDate(to, lang)})`
+      : `SFP sanction on record (debarment ${formatRegistryDate(from, lang)} – ${formatRegistryDate(to, lang)})`
+  }
+  if (s.plazo_months) {
+    return es
+      ? `Sanción registrada por la SFP (inhabilitación de ${s.plazo_months} meses, sin fecha en el registro)`
+      : `SFP sanction on record (${s.plazo_months}-month debarment, undated in the registry)`
+  }
+  return es ? 'Multa registrada por la SFP (sin inhabilitación)' : 'SFP fine on record (no debarment)'
+}
+
+function getSanctionChipClass(listType: string) {
+  if (listType === 'efos_presunto') {
+    return 'bg-risk-high/20 text-risk-high border-risk-high/30'
+  }
+  return 'bg-risk-critical/20 text-risk-critical border-risk-critical/30'
+}
+
+export function SanctionsAlertBanner({
+  sanctions,
+  vendorName,
+  className,
+}: SanctionsAlertBannerProps) {
+  const [expanded, setExpanded] = useState(false)
+  const { i18n } = useTranslation()
+  const es = i18n.language?.startsWith('es') ?? false
+
+  if (!sanctions.length) return null
+
+  const listTypes = [...new Set(sanctions.map((s) => LIST_LABELS[s.list_type] || s.list_type))]
+  // Amber, not red, when nothing is a confirmed EFOS or an SFP debarment (presunto / fine only)
+  const allPresunto = sanctions.every(
+    (s) => s.list_type === 'efos_presunto' || (s.list_type === 'sfp' && !s.plazo_months),
+  )
+
+  return (
+    <div
+      className={cn(
+        'rounded-md border p-3',
+        allPresunto
+          ? 'border-risk-high/40 bg-risk-high/10'
+          : 'border-risk-critical/40 bg-risk-critical/10',
+        className
+      )}
+      role="alert"
+    >
+      <div className="flex items-start gap-2">
+        <AlertTriangle
+          className={cn('h-4 w-4 mt-0.5 shrink-0', allPresunto ? 'text-risk-high' : 'text-risk-critical')}
+        />
+        <div className="flex-1 min-w-0">
+          <p className={cn('text-sm font-medium', allPresunto ? 'text-accent' : 'text-risk-critical')}>
+            {es
+              ? `${sanctions.length} registro${sanctions.length > 1 ? 's' : ''} en listas oficiales:`
+              : `${sanctions.length} official-registry record${sanctions.length > 1 ? 's' : ''}:`}{' '}
+            <span className={allPresunto ? 'text-risk-high' : 'text-risk-critical'}>{listTypes.join(' | ')}</span>
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {sanctions.map((s, i) => (
+              <span
+                key={i}
+                className={cn(
+                  'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] border',
+                  getSanctionChipClass(s.list_type)
+                )}
+                title={s.list_type.startsWith('efos') ? EFOS_TOOLTIP : undefined}
+              >
+                {MATCH_LABEL[s.match_method][es ? 'es' : 'en']}
+              </span>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className={cn(
+            'shrink-0 rounded p-1',
+            allPresunto
+              ? 'hover:bg-risk-high/20 text-risk-high'
+              : 'hover:bg-risk-critical/20 text-risk-critical'
+          )}
+          aria-label={expanded ? 'Collapse details' : 'Expand details'}
+        >
+          {expanded ? (
+            <ChevronUp className="h-4 w-4" aria-hidden="true" />
+          ) : (
+            <ChevronDown className="h-4 w-4" aria-hidden="true" />
+          )}
+        </button>
+      </div>
+
+      {expanded && (
+        <div
+          className={cn(
+            'mt-3 border-t pt-2 space-y-1.5',
+            allPresunto ? 'border-risk-high/20' : 'border-risk-critical/20'
+          )}
+        >
+          <p className="text-xs text-text-muted">
+            {es ? 'Proveedor' : 'Vendor'}: <span className="text-text-secondary">{vendorName}</span>
+          </p>
+          {sanctions.map((s, i) => (
+            <div
+              key={i}
+              className={cn(
+                'flex items-center justify-between text-xs',
+                s.list_type === 'efos_presunto' ? 'text-accent/80' : 'text-risk-critical/80'
+              )}
+            >
+              <span title={s.list_type.startsWith('efos') ? EFOS_TOOLTIP : undefined}>
+                {s.list_type === 'sfp' ? sfpRecordLabel(s, es) : LIST_LABELS[s.list_type] || s.list_type}
+              </span>
+              <span>
+                {s.sanction_type && <span className="mr-2">{s.sanction_type}</span>}
+                {MATCH_LABEL[s.match_method][es ? 'es' : 'en']}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default SanctionsAlertBanner

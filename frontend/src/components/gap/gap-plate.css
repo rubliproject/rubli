@@ -1,0 +1,142 @@
+/* /gap «La placa» — DESIGN.md §2–§7 tokens only. Bucket hues arrive as --hue / --hue-t
+   (categorical C2 · C8 · C1 · C5 from lib/gap/plate.ts); red/amber stay with severity. */
+
+.gp { margin-top: 4px; }
+.gp-h1 { font: 600 28px/1.2 var(--font-serif); letter-spacing: -.015em; text-wrap: balance; color: var(--color-text-primary); }
+
+/* aligned label–value figures under the headline (one line at desktop) */
+.gp-figs { display: flex; flex-wrap: wrap; gap: 4px 28px; margin-top: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.gp-figs div { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; }
+.gp-figs dt { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.gp-figs .gp-num { font: 600 12px/1 var(--font-mono); letter-spacing: 0; }
+.gp-figs dd { color: var(--color-text-primary); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* level bar: crumbs · lens · cite */
+.gp-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 12px; padding: 4px 0; border-top: 1px solid var(--color-text-primary); border-bottom: 1px solid var(--color-border); }
+.gp-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-right: auto; font: 600 14px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.gp-crumbs button { min-height: 40px; color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 3px; transition: color var(--dur-press) ease-out; }
+.gp-crumbs button:hover { color: var(--color-text-primary); }
+.gp-crumbs span { color: var(--color-text-muted); }
+.gp-lens { display: inline-flex; border: 1px solid var(--color-text-primary); }
+.gp-lens button { min-height: 40px; padding: 0 12px; font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); transition: background-color var(--dur-press) ease-out, color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.gp-lens button + button { border-left: 1px solid var(--color-text-primary); }
+.gp-lens button[aria-pressed='true'] { background: var(--color-text-primary); color: var(--color-background); }
+.gp-lens button:active, .gp-cite:active, .gp-chipb:active { transform: scale(.97); }
+.gp-cite { min-height: 40px; padding: 0 12px; border: 1px solid var(--color-border); font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); transition: border-color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.gp-cite:hover { border-color: var(--color-text-primary); }
+
+/* legend: the four buckets (linked to the cells) + the mark key */
+.gp-key { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 16px; margin-top: 8px; font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.gp-key > span { display: inline-flex; align-items: center; gap: 6px; }
+.gp-chipb { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 4px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); box-shadow: inset 0 -2px 0 transparent; transition: color var(--dur-press) ease-out, box-shadow var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.gp-chipb i { width: 10px; height: 10px; flex: none; }
+.gp-chipb:hover, .gp-chipb.is-on { color: var(--color-text-primary); box-shadow: inset 0 -2px 0 var(--color-text-primary); }
+.gp-sep { width: 1px; height: 18px; background: var(--color-border); }
+.gp-sw { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.gp-sw.is-solid { background: var(--color-text-primary); }
+.gp-sw.is-ring { border: 1px solid var(--color-text-primary); }
+.gp-sw.is-none { background: var(--color-ramp-ink-3); }
+.gp-sw.is-floor { width: 18px; height: 8px; border-radius: 0; border: 1px solid var(--color-text-primary); background: linear-gradient(90deg, var(--color-text-primary) 50%, transparent 50%); }
+
+/* the plate: canvas geometry, HTML glyphs positioned by transform */
+.gp-plate { position: relative; margin-top: 12px; touch-action: manipulation; }
+.gp-plate canvas { display: block; }
+.gp-lab { position: absolute; left: 0; top: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; color: var(--color-text-primary);
+  transition: transform var(--dur-settle) var(--ease-out), opacity var(--dur-state) var(--ease-out); animation: gp-in var(--dur-state) var(--ease-out) both; will-change: transform; }
+@keyframes gp-in { from { opacity: 0; } }
+.gp-lab.is-dim { opacity: .35; }
+.gp-nm { font: 600 17px/1.15 var(--font-sc); letter-spacing: var(--track-sc); color: var(--hue-t, var(--color-text-primary)); }
+.gp-big { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 8px; font: 600 28px/1.1 var(--font-serif); letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+.gp-big i { font: 400 13px/1.3 var(--font-mono); font-style: normal; letter-spacing: 0; color: var(--color-text-muted); }
+.gp-kn { font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.gp-say { font: 400 14px/1.4 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; max-width: 60ch; }
+.gp-cell { cursor: pointer; }
+.gp-cell.is-small .gp-big { font-size: 24px; }
+.gp-cell:focus-visible, .gp-lane:focus-visible, .gp-strip:focus-visible, .gp-dchip:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.gp-open .gp-nm { font-size: 19px; }
+.gp-open .gp-big { font-size: 30px; }
+.gp-strip { cursor: pointer; }
+.gp-strip .gp-nm { font-size: 14px; }
+.gp-lane { align-items: flex-end; text-align: right; cursor: pointer; padding: 2px 0; }
+.gp-lane .gp-nm { font: 400 15px/1.2 var(--font-serif); letter-spacing: 0; color: var(--color-text-primary); text-wrap: balance; }
+.gp-lane.is-on .gp-nm, .gp-lane:hover .gp-nm { font-weight: 600; }
+.gp-lane.is-small { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 0 8px; }
+.gp-ftitle .gp-nm { font: 600 20px/1.2 var(--font-serif); letter-spacing: -.01em; color: var(--color-text-primary); }
+.gp-ftitle .gp-nm small { font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); margin-left: 6px; }
+
+/* L3 door chips (every door of the bucket; the open one pressed) */
+.gp-dchip { position: absolute; left: 0; top: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; height: 34px; padding: 0 10px 0 12px; border: 1px solid var(--color-border); box-shadow: inset 3px 0 0 var(--hue);
+  font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); white-space: nowrap; animation: gp-in var(--dur-state) var(--ease-out) both;
+  transition: border-color var(--dur-press) ease-out, background-color var(--dur-press) ease-out, transform var(--dur-settle) var(--ease-out); }
+.gp-dchip span { align-self: center; }
+.gp-dchip small { font: 400 12px/1 var(--font-mono); letter-spacing: 0; color: var(--color-text-muted); align-self: center; }
+.gp-dchip:hover { border-color: var(--color-text-primary); }
+.gp-dchip.is-on { border-color: var(--color-text-primary); background: var(--color-text-primary); color: var(--color-background); box-shadow: inset 3px 0 0 var(--hue); }
+.gp-dchip.is-on small { color: var(--color-background); }
+.gp-loading { position: absolute; left: 0; top: 0; font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+
+/* L3 side panel + the award card */
+.gp-side { position: absolute; left: 0; top: 0; animation: gp-in var(--dur-state) var(--ease-out) both; }
+.gp-card { position: absolute; left: 0; top: 0; z-index: 4; padding: 12px 16px 16px; background: var(--color-background); border: 1px solid var(--color-text-primary); box-shadow: inset 3px 0 0 var(--hue);
+  animation: gp-card 220ms var(--ease-out) both; }
+@keyframes gp-card { from { opacity: 0; transform-origin: top; } }
+.gp > .gp-card { position: relative; margin-top: 12px; }
+.gp-card-x { float: right; min-height: 32px; padding: 0 8px; font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); border: 1px solid var(--color-border); }
+.gp-card-x:hover { color: var(--color-text-primary); border-color: var(--color-text-primary); }
+.gp-card-k { font: 600 14px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.gp-card-amt { margin-top: 4px; font: 600 26px/1.1 var(--font-serif); letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+.gp-card-src { font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.gp-card-kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; margin-top: 12px; font: 400 14px/1.35 var(--font-serif); }
+.gp-card-kv dt { font: 600 13px/1.35 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.gp-card-kv dd { min-width: 0; overflow-wrap: anywhere; }
+.gp-card-mute { color: var(--color-text-muted); }
+.gp-mono { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.gp-card-t { margin-top: 10px; font: 400 14px/1.45 var(--font-serif); text-wrap: pretty; }
+.gp-card-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 12px; }
+.gp-card-act a { display: inline-flex; align-items: center; gap: 6px; }
+
+/* the buyer ledger (below the plate at L0/L2, in the side panel at L3) */
+.gp-ledger { margin-top: 16px; columns: 2; column-gap: 32px; }
+.gp-ledger.is-compact { margin-top: 0; columns: 1; }
+.gp-lg-h { column-span: all; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; padding-bottom: 6px; border-bottom: 1px solid var(--color-text-primary); }
+.gp-lg-h b { font: 600 15px/1.2 var(--font-sc); letter-spacing: var(--track-sc); }
+.gp-lg-h span { font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.gp-lg-row { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; padding: 4px 0 8px; border-bottom: 1px solid var(--color-border); break-inside: avoid; transition: background-color 80ms ease-out, opacity var(--dur-press) ease-out; }
+.gp-lg-row.is-on { background: var(--color-ramp-ink-1); }
+.gp-lg-row.is-dim { opacity: .55; }
+.gp-lg-name { min-width: 0; font: 400 14px/1.3 var(--font-serif); }
+.gp-lg-v { font: 400 13px/1.3 var(--font-mono); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.gp-lg-v i { margin-left: 8px; font-style: normal; font-size: 12px; color: var(--color-text-muted); }
+.gp-lg-bar { position: absolute; left: 0; right: 0; bottom: 3px; display: flex; height: 3px; }
+.gp-lg-bar i { display: block; height: 3px; transition: opacity var(--dur-press) ease-out; }
+.gp-lg-bar i.is-dim { opacity: .2; }
+
+.gp-note { margin-top: 12px; font: 400 13px/1.5 var(--font-serif); color: var(--color-text-muted); text-wrap: pretty; }
+
+.gp-tip { position: absolute; left: 0; top: 0; z-index: 6; width: 300px; padding: 8px 12px; background: var(--color-background); border: 1px solid var(--color-text-primary); pointer-events: none; font: 400 12px/1.45 var(--font-mono); color: var(--color-text-primary); }
+.gp-tip b { display: block; font: 600 15px/1.25 var(--font-serif); }
+.gp-tip span { display: block; }
+.gp-tip-m { font-weight: 700; font-size: 13px; }
+.gp-tip-a, .gp-tip-h { color: var(--color-text-muted); }
+
+@media (max-width: 760px) {
+  .gp-ledger { columns: 1; }
+  .gp-lg-v i { display: block; margin-left: 0; }
+}
+@media (max-width: 640px) {
+  .gp-h1 { font-size: 24px; }
+  .gp-figs { gap: 2px 16px; }
+  .gp-big { font-size: 24px; }
+  .gp-bar { gap: 4px 12px; }
+  .gp-fig-x, .gp-key-floor, .gp-sep { display: none !important; }
+  .gp-figs div { flex-wrap: nowrap; }
+  .gp-crumbs { width: 100%; }
+  .gp-lens { flex: 1; }
+  .gp-lens button { flex: 1; padding: 0 8px; font-size: 13px; }
+  .gp-key { gap: 2px 12px; }
+  .gp-chipb { min-height: 28px; font-size: 12px; }
+  .gp-lane { align-items: flex-start; text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gp-lab, .gp-dchip, .gp-side, .gp-card { animation: none; transition: opacity var(--dur-state) ease-out; }
+}

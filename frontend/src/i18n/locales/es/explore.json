@@ -1,0 +1,197 @@
+{
+  "page": {
+    "title": "Explorar contratos",
+    "subtitle": "Filtro cruzado de todos los registros de contratación",
+    "crossfilterHint": "Haga clic en cualquier panel para filtrar los demás — sector, rango de años y nivel de riesgo están interconectados",
+    "clearAllFilters": "Limpiar todos los filtros",
+    "searchPlaceholder": "Buscar…",
+    "entityToggle": {
+      "vendors": "Proveedores",
+      "institutions": "Instituciones"
+    },
+    "sectorIntel": {
+      "label": "datos del sector",
+      "contracts": "Contratos",
+      "totalValue": "Valor total",
+      "highPlusRisk": "Riesgo alto+",
+      "directAward": "Adj. directa",
+      "avgRiskScore": "Riesgo promedio"
+    },
+    "filterChip": {
+      "sector": "Sector: {{value}}",
+      "years": "Años: {{start}}–{{end}}",
+      "yearsFrom": "Años: Desde {{start}}",
+      "yearsUntil": "Años: Hasta {{end}}",
+      "risk": "Riesgo: {{levels}}",
+      "removeFilter": "Quitar filtro {{label}}"
+    },
+    "suggestions": {
+      "criticalHigh": "Crítico + Alto riesgo",
+      "criticalOnly": "Solo Crítico",
+      "saludSector": "Sector Salud",
+      "energiaSector": "Sector Energía",
+      "infraestructura": "Infraestructura",
+      "imssIssste": "IMSS / ISSSTE",
+      "highRiskOnly": "Solo alto riesgo"
+    }
+  },
+  "vendors": {
+    "searchPlaceholder": "Buscar por nombre o RFC...",
+    "columns": {
+      "name": "Nombre",
+      "contracts": "Contratos",
+      "totalValue": "Valor Total (MXN)",
+      "avgRisk": "Riesgo promedio",
+      "highRiskPct": "% alto riesgo",
+      "directAwardPct": "% adj. directa",
+      "singleBidPct": "% Procedimiento con un solo adjudicado",
+      "anomalyPct": "% Anomalías"
+    },
+    "presets": {
+      "topValue": "Mayor valor",
+      "highestRisk": "Mayor riesgo",
+      "mostDirect": "Más adj. directas",
+      "mostFlagged": "Más sospechosos",
+      "outliers": "Valores atípicos",
+      "bigPlayers": "Grandes proveedores (1,000+)"
+    }
+  },
+  "institutions": {
+    "searchPlaceholder": "Buscar por nombre o siglas...",
+    "count": "{{n}} instituciones",
+    "col": {
+      "name": "Institución",
+      "total_contracts": "Contratos",
+      "total_amount_mxn": "Gasto",
+      "avg_risk_score": "Puntuación de riesgo",
+      "direct_award_pct": "% adj. directa",
+      "single_bid_pct": "% Procedimiento con un solo adjudicado",
+      "high_risk_pct": "% Señalados",
+      "vendor_count": "Proveedores",
+      "nameShort": "Inst.",
+      "total_contractsShort": "#",
+      "total_amount_mxnShort": "Valor",
+      "avg_risk_scoreShort": "Riesgo",
+      "direct_award_pctShort": "AD%",
+      "single_bid_pctShort": "LU%",
+      "high_risk_pctShort": "Señal%",
+      "vendor_countShort": "Prov."
+    },
+    "presets": {
+      "top-spending": "Mayor gasto",
+      "highest-risk": "Mayor riesgo",
+      "most-direct": "Más adj. directas",
+      "most-flagged": "Más señalados",
+      "many-vendors": "Más proveedores",
+      "biggest": "Más contratos",
+      "mega-large": "Grandes+",
+      "concentrated": "Pocos proveedores"
+    },
+    "types": {
+      "federal_secretariat": "Secretaría federal",
+      "federal_agency": "Organismo federal",
+      "state_agency": "Organismo estatal",
+      "state_government": "Gobierno estatal",
+      "municipal": "Municipal",
+      "health_institution": "Institución de Salud",
+      "educational": "Educativa",
+      "research_education": "Investigación y Educación",
+      "state_enterprise_infra": "Empresa estatal (infra)",
+      "state_enterprise_energy": "Empresa estatal (Energía)",
+      "state_enterprise_finance": "Empresa estatal (finanzas)",
+      "judicial": "Judicial",
+      "social_program": "Programa social",
+      "social_security": "Seguridad social",
+      "regulatory_agency": "Organismo regulador",
+      "autonomous_constitutional": "Autónomo constitucional",
+      "legislative": "Legislativo",
+      "military": "Militar",
+      "other": "Otro"
+    },
+    "sizes": {
+      "mega": "Mega (las 4 mayores)",
+      "large": "Grande",
+      "medium": "Mediano",
+      "small": "Pequeño",
+      "micro": "Micro"
+    }
+  },
+  "trends": {
+    "radarPresets": {
+      "risk": "Perfil de riesgo",
+      "transparency": "Transparencia",
+      "market": "Estructura de mercado"
+    }
+  },
+  "timeSeries": {
+    "title": "Contratos en el tiempo",
+    "contractsLegend": "Contratos",
+    "avgRiskLegend": "Riesgo prom. %",
+    "dragHint": "Arrastre para filtrar rango de años",
+    "clear": "Limpiar",
+    "noData": "No hay datos de tendencia disponibles"
+  },
+  "riskStrip": {
+    "filterByRisk": "Filtrar por nivel de riesgo",
+    "clickToToggle": "Clic para activar/desactivar · se permiten múltiples"
+  },
+  "riskLevels": {
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo",
+    "criticalHint": "Lo más parecido a proveedores vinculados a casos documentados",
+    "highHint": "Muy parecido a proveedores vinculados a casos documentados",
+    "mediumHint": "Similitud moderada — lista de vigilancia",
+    "lowHint": "Baja similitud — monitoreo estándar"
+  },
+  "resultTable": {
+    "contracts": "Contratos",
+    "totalValue": "Valor total",
+    "risk": "Riesgo",
+    "daPercent": "% Adj."
+  },
+  "treemap": {
+    "sectorsByValue": "Sectores por valor",
+    "value": "Valor",
+    "risk": "Riesgo"
+  },
+  "filters": {
+    "allSectors": "Todos los sectores",
+    "allRiskLevels": "Todos los niveles",
+    "allTypes": "Todos los tipos",
+    "allSizes": "Todos los tamaños",
+    "clearAll": "Limpiar todo",
+    "minContracts": "Mín. contratos",
+    "minValue": "Valor mínimo",
+    "hasRfc": "Con RFC",
+    "noRfc": "Sin RFC",
+    "rfcStatus": "Estado RFC",
+    "clearFilter": "Quitar filtro"
+  },
+  "stats": {
+    "pageValue": "Gasto en página",
+    "pageContracts": "Contratos en página",
+    "avgRisk": "Riesgo promedio",
+    "highPlus": "Alto+",
+    "critical": "Crítico",
+    "pageSpending": "Gasto en página",
+    "highPlusRisk": "Alto+ riesgo",
+    "totalVendors": "Proveedores totales"
+  },
+  "empty": {
+    "failedToLoadInstitutions": "Error al cargar instituciones",
+    "noInstitutionsMatch": "Ninguna institución coincide con los filtros"
+  },
+  "concentration": {
+    "title": "Alertas de concentración de valor",
+    "description": "Proveedores con participación desproporcionada en el gasto total de una institución. Ámbar = +50%. Rojo = +75%.",
+    "institution": "Institución",
+    "vendor": "Proveedor",
+    "totalValue": "Valor total",
+    "share": "Participación",
+    "failed": "Error al cargar datos de concentración",
+    "noAlerts": "Sin alertas de concentración",
+    "alertCount": "{{count}} alertas"
+  }
+}

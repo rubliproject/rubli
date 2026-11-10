@@ -1,0 +1,251 @@
+{
+  "dossier": {
+    "sectionLabel": "Administration Summary",
+    "politicalContext": "Political Context",
+    "procurementFingerprint": "Procurement Fingerprint",
+    "knownScandals": "Known Corruption Cases",
+    "topSectors": "Top Spending Sectors",
+    "noScandals": "No cases for this period in RUBLI's labelled case set.",
+    "linkToCases": "View in Cases",
+    "fingerprint": {
+      "totalSpend": "Total Spend",
+      "directAward": "Direct Award",
+      "singleBid": "Single award",
+      "avgRisk": "Avg Risk",
+      "highRisk": "High-Risk Rate",
+      "valueAtRisk": "Value at Risk",
+      "vendors": "Vendors"
+    },
+    "severityLabels": {
+      "critical": "CRIT",
+      "high": "HIGH",
+      "medium": "MED"
+    },
+    "keyFigures": "Key Figures",
+    "keyFiguresLabels": {
+      "highestRiskSector": "Risk Sector",
+      "singleBidRate": "Single award",
+      "directAwardRate": "Dir. Award",
+      "aboveAvg": "Above average",
+      "typical": "Typical range",
+      "critical": "Critical level",
+      "elevated": "Elevated",
+      "moderate": "Moderate"
+    },
+    "scandals": {
+      "casa_blanca": "Casa Blanca — Conflict of interest: presidential family linked to contractor Grupo Higa (EPN, 2014)",
+      "estafa_maestra": "La Estafa Maestra — MXN 7.6B diverted through public universities using ghost companies (EPN, 2017)",
+      "odebrecht": "Odebrecht-PEMEX — Brazilian engineering firm paid bribes for infrastructure contracts (Calderón/EPN, 2010–2016)",
+      "pemexgate": "PEMEXGATE — PEMEX funds routed through the oil workers' union to the PRI's 2000 presidential campaign; the IFE fined the PRI in 2003 (Fox term)",
+      "segalmex": "Segalmex — the SFP reports MXN 2.7B diverted; the ASF observed MXN 8.6B in the 2020 accounts (audit observations, not final determinations) (AMLO, 2021)",
+      "tren_maya": "Tren Maya — FONATUR awarded MXN 180M in direct contracts to Army without civilian bidding (AMLO, 2023)",
+      "efos_sat": "SAT EFOS Definitivo — 38 COMPRANET vendors confirmed as ghost companies by Mexico's tax authority (AMLO, 2022)",
+      "grupo_higa": "Grupo Higa / Casa Blanca — infrastructure contractor with direct presidential family conflict of interest (EPN, 2014)"
+    },
+    "contexts": {
+      "fox": "Vicente Fox's 2000 victory broke 71 years of PRI rule. As the first PAN president, his administration prioritized economic transparency and launched COMPRANET as a digital procurement platform — but inherited deeply entrenched patronage networks.",
+      "calderon": "Felipe Calderón won a disputed 2006 election by a margin of 0.56%. His administration launched a militarized 'war on drugs' that reshaped federal spending, driving large emergency-exempt contracts in defense and security sectors.",
+      "pena_nieto": "Enrique Peña Nieto's PRI returned to power in 2012 promising modernization. His six years saw some of Mexico's most high-profile corruption investigations — Casa Blanca, La Estafa Maestra, and Odebrecht-PEMEX — which exposed significant gaps in procurement oversight.",
+      "amlo": "Andrés Manuel López Obrador won the 2018 election by the largest margin in modern Mexican history (53%). His self-described 'Fourth Transformation' centralized procurement power, reaching a record 79.4% direct award rate while bypassing competitive bidding, citing austerity and anti-corruption goals.",
+      "sheinbaum": "Claudia Sheinbaum, elected June 2024 with 59% of the vote, is Mexico's first female president. A climate scientist by training, she took office October 1, 2024, inheriting AMLO's institutional structures. Her first months show a directional decline in direct awards, though continuity risks remain high."
+    }
+  },
+  "comparisonTable": "Administration Comparison",
+  "narrative": "Context",
+  "groundTruthNote": "Cases in this period from RUBLI's labelled case set (press reports, official records and analyst write-ups; most are not adjudicated) are tracked in the Ground Truth section, with vendor matches and contract counts.",
+  "yearlyTrends": "Yearly Trends — {{admin}} ({{start}}–{{end}})",
+  "sectorProfile": "Sector Risk Profile — {{admin}}",
+  "transitionImpact": "Transition Impact",
+  "keyEvents": "Key Events — {{admin}} ({{start}}–{{end}})",
+  "documentedCases": "Documented Corruption Cases",
+  "documentedCasesNote": "Cases from RUBLI's labelled set — press reports, official records and analyst write-ups. Most are not adjudicated findings.",
+  "noData": "No yearly data available for this administration",
+  "insufficientData": "Insufficient data for transition analysis",
+  "table": {
+    "metric": "Metric"
+  },
+  "statCards": {
+    "contracts": "Contracts",
+    "totalValue": "Total Value",
+    "directAward": "Direct Award %",
+    "singleBid": "Single award %",
+    "highRisk": "High Risk %",
+    "activeVendors": "Active Vendors",
+    "vsAvg": "vs avg"
+  },
+  "tabs": {
+    "profile": "Administration Profile",
+    "patterns": "Systemic Patterns",
+    "compare": "Period Comparison"
+  },
+  "contracts": "contracts",
+  "incompleteDataset": "Incomplete Dataset",
+  "incompleteDatasetDescription": "Sheinbaum took office on 1 October 2024. These figures count her term from 2025 (October to December 2024 stay with López Obrador): CompraNet to 28 September 2025 and ComprasMX to {{cut}}. The term is still running: comparisons with completed terms are preliminary.",
+  "aiDetectedAnomalies": "AI-Detected Anomalies",
+  "anomaliesNote": "years deviating >1.8σ from the 2002–2026 baseline",
+  "sectorCorrelations": "Sector Risk Correlations",
+  "sectorCorrelationsNote": "Sector pairs with correlated risk trajectories (|r| ≥ 0.70) during this administration",
+  "heatmapSubtitle": "Risk metrics by sector for the selected administration — sorted by high-risk contract percentage.",
+  "transitionSubtitle": "Changes in key indicators between consecutive administrations. Values marked ! or !! are statistically unusual (≥1.8σ from historical average).",
+  "keyEventsSubtitle": "Legislative reforms, documented scandals, and crises that affected public procurement patterns during this administration.",
+  "heatmap": {
+    "sector": "Sector",
+    "directAward": "Direct Award",
+    "singleBid": "Single award",
+    "highRisk": "High Risk",
+    "avgRisk": "Avg Risk"
+  },
+  "comparisonTableDesc": "Average metrics across five administrations — based on actual COMPRANET data. Selected administration highlighted in blue.",
+  "matrixTitle": "Risk Matrix by Administration and Sector",
+  "matrixSubtitle": "Volume-weighted averages — toggle metric on the right; sort by any column",
+  "matrixSubtitleLoading": "Illustrative estimates (loading live data…)",
+  "matrixOverall": "Overall",
+  "matrixOverallHint": "Sort by overall standing",
+  "matrixChrono": "Chrono",
+  "matrixChronoHint": "Toggle chronological / ranked order",
+  "matrixLess": "lower",
+  "matrixMore": "higher",
+  "fingerprints": {
+    "title": "Presidential Procurement Fingerprints",
+    "subtitle": "How each administration's procurement patterns compare across risk dimensions",
+    "insight_lowest_risk": "Lowest Risk Era",
+    "insight_highest_da": "Highest Direct Awards",
+    "insight_biggest_spender": "Biggest Spender"
+  },
+  "vendorSection": {
+    "title": "Top Vendors by Administration",
+    "subtitle": "Largest recipients of federal contracts, by presidential term",
+    "noData": "Insufficient data for this period",
+    "contracts": "contracts",
+    "riskScore": "avg. risk"
+  },
+  "classifiedHeader": {
+    "eyebrow": "Comparative Analysis · RUBLI",
+    "title": "Administrations in Comparative Profile",
+    "subtitle": "Comparative risk analysis of federal public procurement · 2001–2025 · {{contracts}} contracts · ${{value}} MXN audited",
+    "highestRiskNote": "AMLO recorded the highest high-risk rate:",
+    "lowestRiskNote": "EPN recorded the lowest:"
+  },
+  "evidenceSection": {
+    "label": "Evidence",
+    "registryTitle": "The Record — High-Risk Rate by Administration",
+    "registryNote": "Note: greater RFC coverage in post-2018 data may contribute to higher risk detection rates in recent administrations.",
+    "inflationNote": "All amounts in nominal MXN. Cumulative inflation 2002–2026 exceeds 150%. Cross-administration spending comparisons should account for purchasing power changes.",
+    "amloMultiplier": "+1.7 pts vs EPN"
+  },
+  "matrixLegend": {
+    "low": "Low",
+    "high": "High",
+    "administration": "Administration",
+    "sourceNote": "Source: COMPRANET contracts weighted by volume"
+  },
+  "patternsView": {
+    "directAwardCard": "Direct Award Rate",
+    "directAwardDesc": "23-year average. EU scoreboard: ≥10% direct award = unsatisfactory.",
+    "directAwardAboveBenchmark": "+{{val}}pp above benchmark.",
+    "directAwardPeak": "Peak: {{val}}% ({{year}})",
+    "singleBidCard": "Single-award Rate",
+    "singleBidDesc": "Competitive tenders with only one winner — a primary collusion indicator.",
+    "singleBidPeak": "Peak: {{maxSB}}% · All-time high-risk: {{maxHR}}%",
+    "highRiskCard": "High Risk Rate",
+    "highRiskDesc": "Contracts scored critical or high risk by the v0.9.2 risk model. Thresholds were set so the high-risk rate falls inside RUBLI's own 2–15% calibration target.",
+    "highRiskAvg": "Avg risk score: {{val}}% across every contract in the register",
+    "chartTitle": "Systemic Patterns — 23-Year Timeline (2002–2026)",
+    "nationalAvgLabel": "National avg 78%",
+    "regimeShiftNote": "Amber lines = statistically detected regime shifts (PELT algorithm)",
+    "chartFootnote": "Vertical dashed lines indicate presidential administration transitions. Three systemic patterns — direct awards bypassing competition, single-award procedures, and AI-flagged high-risk contracts — persist across all administrations regardless of political party.",
+    "politicalCycleTitle": "Political Budget Cycle — Risk by Sexenio Year",
+    "politicalCycleDesc": "Mexico's 6-year presidential cycle creates predictable budget rhythms. Year 1 = new administration (election year). Year 3 = midterm elections. Year 6 = lame-duck spending surge.",
+    "electionYearAvgNote": "Election year avg risk: {{election}}% vs {{nonElection}}% non-election",
+    "noData": "No data available",
+    "loadingData": "Loading sector data…"
+  },
+  "politicalView": {
+    "insufficientData": "Insufficient data",
+    "higherInElection": "Higher risk in election years",
+    "lowerInElection": "Lower risk in election years",
+    "noSignificantDiff": "No significant difference"
+  },
+  "trajectoryChart": {
+    "title": "Risk Trajectory by Term Year — All Administrations",
+    "subtitle": "Each line traces one administration's metric across term years 1–6. Dashed = partial term data.",
+    "metricRisk": "Risk",
+    "metricDA": "Direct Award",
+    "metricHR": "High Risk"
+  },
+  "sunburstCard": {
+    "title": "Spending Fingerprint by Administration",
+    "subtitle": "Inner ring = administration · Outer ring = sector spending · Click to expand"
+  },
+  "intensityHeatmap": {
+    "title": "Procurement Intensity Heatmap",
+    "subtitle": "% of each administration's total spend allocated per sector. Darker cells = higher concentration of procurement spend in that sector."
+  },
+  "expedientes": "Administration Profiles",
+  "cardLabels": {
+    "expediente": "Dossier",
+    "contratos": "Contracts",
+    "gastoTotal": "Total Spend",
+    "altoRiesgo": "High-Risk Rate"
+  },
+  "keyRisk": "Key Risk",
+  "legacy": "Legacy",
+  "transitionMetrics": {
+    "directAward": "Direct Award",
+    "singleBid": "Single award",
+    "highRisk": "High Risk",
+    "contracts": "Contracts",
+    "vendors": "Vendors"
+  },
+  "evidenceLabel": "Evidence · Sector Profile",
+  "cronologiaLabel": "Timeline · Documented Facts",
+  "eventsNoData": "No events recorded for this period.",
+  "eventTypes": {
+    "reform": "Reform",
+    "scandal": "Scandal",
+    "audit": "Audit",
+    "crisis": "Crisis"
+  },
+  "compareView": {
+    "signalWorse": "Worse",
+    "signalBetter": "Better"
+  },
+  "grade": {
+    "title": "PROCUREMENT GRADE",
+    "procurement": "Direct-award rate against the EU Single Market Scoreboard line; single-award rate of contracts in competitive procedures, with no external line (CompraNet records winners, not bidders); high-risk rate against RUBLI's calibration target."
+  },
+  "radar": {
+    "title": "All Administrations: Procurement Fingerprint",
+    "subtitle": "Comparative radar of 5 key procurement metrics across all presidencies (higher = better performance)",
+    "axisRiskScore": "Risk",
+    "axisHighRisk": "HR%",
+    "axisDirectAward": "DA%",
+    "axisTotalValue": "Spend",
+    "axisVolume": "Volume",
+    "miniHighRisk": "High-Risk",
+    "miniDirectAward": "Direct Award",
+    "insightLowestNote": "Lowest high-risk contract rate across all administrations",
+    "insightHighestDaNote": "Highest share of contracts awarded without competition",
+    "insightBiggestNote": "Largest total procurement value across a single administration"
+  },
+  "actCard": {
+    "contracts": "Contracts",
+    "totalValue": "Total Value",
+    "directAward": "Direct Award",
+    "avgRisk": "Avg Risk",
+    "daVsOecd": "Direct Award vs EU line ({{pct}}%)",
+    "oecdBenchmark": "EU {{pct}}%",
+    "notableCase": "Notable case:"
+  },
+  "share": "Share",
+  "lede": {
+    "rose": "rose",
+    "fell": "fell",
+    "contracts": "contracts",
+    "kicker": "Sexenio finding · Direct award {{direction}} {{absDelta}} pp",
+    "deck": "The handover from {{prevName}} to {{currName}} brought the sharpest swing in non-competitive contracting of the analyzed period: direct awards {{direction}} from {{prevPct}}% to {{currPct}}% — a signal of how competition changes when administrations change.",
+    "viewDossier": "View dossier for {{name}}"
+  },
+  "loadError": "Data unavailable",
+  "loadErrorDetail": "The server may be temporarily unavailable. Administration data will appear once the connection is restored."
+}

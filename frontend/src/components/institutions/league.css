@@ -1,0 +1,174 @@
+/* /institutions «Quién reprueba» on «El Contrato» (DESIGN.md §2–§8). Ledger = Operate mode.
+   Reuses aria.css chips / rail / pager; only the register's own cells live here. */
+.lg-hold { min-height: 640px; margin-top: 24px; }
+/* the Tamiz plate's measured height with the 2026-10 data (1440: 711, 768: 1114, 390: 1043, minus the hold's 24 px
+   margin): it mounts once its data is in, so this is its only swap (launch re-audit S3). Re-measure if the plate changes. */
+.lg-hold-tm { min-height: 687px; }
+@media (max-width: 1099px) { .lg-hold-tm { min-height: 1090px; } }
+@media (max-width: 639px) { .lg-hold-tm { min-height: 1019px; } }
+.lg-hold-tiers { min-height: 220px; }
+.lg-hold-lede { display: block; min-height: 5em; }
+.lg-reg-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
+@media (min-width: 761px) { .lg-table th:last-child, .lg-table td:last-child { padding-left: 24px; } } /* «Gasto» gets its own gutter from «Contratos»; the row baseline is the shared .ct-table standard (§ G4) */
+.lg-inst { display: flex; align-items: baseline; gap: 4px; min-width: 0; }
+.lg-table a.lg-name { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--color-text-primary); white-space: normal; overflow-wrap: anywhere; }
+.lg-table a.lg-name > span { font-weight: 600; white-space: normal; }
+.lg-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 0; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.lg-x { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 32px; color: var(--color-text-muted); transition: color var(--dur-press) ease-out; }
+.lg-x:hover { color: var(--color-text-primary); }
+.lg-sq-prov { background: transparent; outline: 1px dashed var(--c); outline-offset: -1px; }
+.lg-open td { padding: 16px 0 24px 24px; box-shadow: inset 3px 0 0 var(--color-text-primary); }
+.lg-boleta { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 8px 48px; }
+.lg-boleta > p { grid-column: 1 / -1; }
+.lg-empty { padding: 24px 0 !important; color: var(--color-text-secondary); }
+.lg-foot-lede { margin: 0; font-size: 15px; line-height: 1.6; text-wrap: pretty; }
+.lg-count { font: 600 15px/1.4 var(--font-serif); color: var(--color-text-primary); }
+.lg-reg-h { margin-top: 16px; }
+.lg-levels { display: contents; }
+@media (max-width: 640px) {
+  /* chips scroll sideways on a phone so the ledger reaches the first screen */
+  .lg-rail { gap: 8px; }
+  .lg-levels, .lg-rail .aria-rail-row[role='group'] { display: flex; flex-wrap: nowrap; gap: 8px; flex-basis: 100%; overflow-x: auto; scrollbar-width: none; }
+  .lg-rail .ct-chip { flex: none; }
+  .lg-rail .aria-rail-label { display: none; }
+}
+
+/* ── «El Tamiz en el tiempo» (TamizTiempo + InstCard). One line-height per block, aligned to the plot.
+   --tier-* are set inline from lib/tiers on .tm (no hex here). ── */
+.tm { position: relative; }
+.tm-head { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.tm-h1 { font: 600 22px/1.25 var(--font-serif); letter-spacing: -.01em; color: var(--color-text-primary); text-wrap: pretty; min-height: 1.2em; }
+.tm-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; }
+.tm-lede { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; line-height: 1.45; color: var(--color-text-muted); }
+.tm-lede b { color: var(--color-text-primary); font-weight: 600; }
+.tm-def { color: var(--color-risk-critical); font-weight: 600; }
+.tm-lens { display: flex; border: 1px solid var(--color-text-primary); flex: none; }
+.tm-lens button { min-height: 36px; padding: 0 14px; font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-secondary); transition: background-color var(--dur-press) ease-out, color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.tm-lens button:active { transform: scale(.97); }
+.tm-lens button + button { border-left: 1px solid var(--color-text-primary); }
+.tm-lens button[aria-pressed='true'] { background: var(--color-text-primary); color: var(--color-background); }
+.tm-lens button:focus-visible, .tm-stop:focus-visible, .tm-play:focus-visible, .tm-act:focus-visible, .tm-open:focus-visible, .tm-x:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.tm-caveat { display: flex; align-items: center; gap: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-secondary); }
+.tm-caveat i { flex: none; width: 24px; height: 12px; border: 1px solid var(--color-text-muted); background: repeating-linear-gradient(135deg, var(--color-text-muted) 0 1px, transparent 1px 4px); }
+
+.tm-body { display: flex; gap: 24px; align-items: flex-start; margin-top: 8px; }
+.tm-body.is-stacked { flex-direction: column; }
+.tm-field { min-width: 0; flex: none; }
+.tm-axis { position: relative; }
+.tm-letter { position: absolute; top: 0; transform: translateX(-50%); font: 600 12px/1 var(--font-mono); white-space: nowrap; color: var(--color-text-secondary); }
+.tm-tick { position: absolute; bottom: 2px; transform: translateX(-50%); font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); }
+.tm-tick.is-def { color: var(--color-risk-critical); }
+.tm-plot { position: relative; }
+.tm-skel { height: 540px; background: var(--color-surface-2, rgb(0 0 0 / .03)); }
+.tm-band { position: absolute; left: 0; width: 168px; display: flex; flex-direction: column; justify-content: center; gap: 2px; pointer-events: none; font-size: 13px; line-height: 1.3; color: var(--color-text-muted); }
+.tm-band > b { font: 600 15px/1.25 var(--font-serif); color: var(--color-text-primary); }
+.tm-band.is-rail { flex-direction: row; align-items: center; white-space: nowrap; font: 400 12px/1 var(--font-mono); }
+.tm-mover { position: absolute; transform: translate(8px, -50%); padding: 0; text-shadow: 0 0 2px var(--color-background), 0 0 2px var(--color-background), 0 0 1px var(--color-background); /* owner 10-27: a box hid the dots under it — a halo keeps them visible */ font: 600 12px/1.2 var(--font-mono); color: var(--color-text-primary); white-space: nowrap; pointer-events: none; animation: tm-in 260ms ease-out both; }
+.tm-mover b { font-weight: 700; }
+@keyframes tm-in { from { opacity: 0; transform: translate(4px, -50%); } }
+.tm-tip { position: absolute; z-index: 3; width: 250px; display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; background: var(--color-background); border: 1px solid var(--color-text-primary); pointer-events: none; font-size: 13px; line-height: 1.35; }
+.tm-tip > b { font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.tm-tip-seals, .tm-mini { display: inline-flex; gap: 3px; }
+.tm-tip-seals i, .tm-mini i { display: inline-grid; place-items: center; min-width: 28px; height: 18px; font: 700 12px/1 var(--font-mono); font-style: normal; border: 1px solid var(--color-border); color: var(--color-text-muted); }
+.tm-tip-seals i.is-on, .tm-mini i.is-on { border-color: var(--color-text-primary); }
+.tm-mini { margin-left: 8px; vertical-align: middle; }
+.tm-mini i { min-width: 24px; height: 16px; font-size: 12px; }
+
+.tm-scrub { display: flex; align-items: stretch; gap: 8px; margin-top: 8px; }
+.tm-play { flex: none; display: grid; place-items: center; width: 52px; border: 2px solid var(--color-text-primary); color: var(--color-text-primary); transition: transform var(--dur-press) ease-out; }
+.tm-play:active { transform: scale(.96); }
+.tm-play svg { width: 20px; height: 20px; }
+.tm-stops { flex: 1; display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; touch-action: none; user-select: none; }
+.tm-stop { width: 100%; min-height: 48px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; padding: 6px 8px 4px; text-align: left; border-top: 4px solid var(--w, var(--color-text-muted)); color: var(--color-text-muted); transition: color 160ms ease-out, background-color 160ms ease-out; }
+.tm-stop b { font: 600 15px/1.1 var(--font-sc); letter-spacing: var(--track-sc); }
+.tm-stop small { font: 400 12px/1.2 var(--font-serif); font-variant-numeric: tabular-nums; }
+.tm-stop.is-weak { background-image: repeating-linear-gradient(135deg, rgb(0 0 0 / .05) 0 1px, transparent 1px 6px); }
+.tm-stop.is-past, .tm-stop:hover { color: var(--color-text-secondary); }
+.tm-stop[aria-pressed='true'] { color: var(--color-text-primary); background-color: color-mix(in srgb, var(--w, var(--color-text-primary)) 10%, transparent); }
+
+.tm-dock { flex: none; min-width: 0; }
+.tm-body.is-stacked .tm-dock { width: 100%; }
+.tm-reg-h { font: 600 15px/1.3 var(--font-serif); color: var(--color-text-primary); padding-bottom: 6px; border-bottom: 1px solid var(--color-text-primary); }
+.tm-reg { display: flex; flex-direction: column; }
+.tm-reg > li { display: grid; grid-template-columns: 24px 1fr 32px; gap: 8px; align-items: start; padding: 6px 0; border-bottom: 1px solid var(--color-border); transition: background-color 120ms ease-out; }
+.tm-reg > li.is-hot { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.tm-rank { padding-top: 2px; font-size: 13px; color: var(--color-text-muted); text-align: right; }
+.tm-reg-main { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.tm .tm-reg-name { font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); white-space: normal; overflow-wrap: anywhere; }
+.tm .tm-reg-name > span { white-space: normal; }
+.tm-reg-line { font-size: 13px; line-height: 1.4; color: var(--color-text-muted); }
+.tm-open { width: 32px; height: 32px; color: var(--color-text-muted); font: 600 16px/1 var(--font-mono); }
+.tm-open:hover { color: var(--color-text-primary); }
+.tm-hint { margin-top: 8px; font-size: 12px; line-height: 1.4; color: var(--color-text-muted); }
+.tm-pickrow { text-align: left; padding: 6px 0; font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.tm-pickrow:hover { text-decoration: underline; }
+
+.tm-cards { display: grid; gap: 16px; }
+.tm-cards.is-two { grid-template-columns: 1fr 1fr; }
+.tm-card:focus:not(:focus-visible), .tm-reg-h:focus:not(:focus-visible) { outline: none; }
+.tm-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--color-text-primary); background: var(--color-background); }
+/* the docked card animates from the clicked dot in TamizTiempo (WAAPI); only the «elige la segunda» prompt uses this */
+.tm-card.is-pick { animation: tm-dock 200ms var(--ease-out) both; }
+@keyframes tm-dock { from { opacity: 0; transform: translateY(6px); } }
+.tm-card-h { display: flex; align-items: flex-start; gap: 8px; }
+.tm .tm-card-name { flex: 1; min-width: 0; font: 600 17px/1.25 var(--font-serif); color: var(--color-text-primary); white-space: normal; }
+.tm .tm-card-name > span { white-space: normal; }
+.tm-x { flex: none; width: 32px; height: 32px; display: grid; place-items: center; color: var(--color-text-muted); }
+.tm-x svg { width: 18px; height: 18px; }
+.tm-card-meta { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.tm-card-grade { display: flex; align-items: center; gap: 12px; }
+.tm-big { font: 700 24px/1 var(--font-serif); min-width: 36px; flex-shrink: 0; }
+.tm-card-gl { display: flex; flex-direction: column; gap: 2px; font: 400 13px/1.35 var(--font-mono); color: var(--color-text-muted); }
+.tm-card-gl b { font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.tm-seals { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.tm-seals li { display: flex; flex-direction: column; align-items: center; gap: 2px; font: 400 12px/1.15 var(--font-mono); color: var(--color-text-muted); text-align: center; }
+.tm-seals i { display: grid; place-items: center; width: 100%; height: 26px; font: 700 15px/1 var(--font-mono); font-style: normal; border-top: 3px solid var(--color-border); background: var(--color-surface-2, rgb(0 0 0 / .03)); }
+.tm-seals li.is-weak i { background-image: repeating-linear-gradient(135deg, rgb(0 0 0 / .06) 0 1px, transparent 1px 5px); }
+.tm-seals li.is-on { color: var(--color-text-primary); }
+.tm-seals li.is-on i { outline: 1px solid var(--color-text-primary); }
+.tm-card-k { font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); margin-top: 4px; }
+.tm-hundred { display: grid; grid-template-columns: repeat(50, 1fr); gap: 1px; }
+.tm-hundred i { aspect-ratio: 1; background: var(--tier-ok); opacity: .45; }
+.tm-hundred i.is-nc { background: var(--tier-def); opacity: 1; }
+.tm-plain { display: flex; flex-direction: column; gap: 6px; }
+.tm-plain dt { font: 400 14px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.tm-plain dt b { font: 700 18px/1 var(--font-mono); margin-right: 2px; }
+.tm-plain dt b.tm-nc { color: var(--tier-def-ink); }
+.tm-plain dd { font: 400 12.5px/1.35 var(--font-mono); color: var(--color-text-muted); }
+.tm-card-acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.tm-act { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid var(--color-text-primary); font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); text-decoration: none; transition: background-color var(--dur-press) ease-out, color var(--dur-press) ease-out; }
+.tm-act.is-main, .tm-act:hover { background: var(--color-text-primary); color: var(--color-background); }
+.tm-card-cat { display: flex; flex-direction: column; gap: 2px; padding-top: 6px; border-top: 1px solid var(--color-border); font: 400 12.5px/1.35 var(--font-mono); color: var(--color-text-muted); }
+.tm .tm-cat-name { font: 600 14px/1.3 var(--font-serif); color: var(--color-text-primary); white-space: normal; }
+.tm-card.is-pick { border-style: dashed; }
+@media (max-width: 639px) {
+  .tm-h1 { font-size: 20px; min-height: 0; }
+  .tm-x-note, .tm-letter { display: none; } /* «6 = aprobada» collided with the 4.4 · 6.0 ticks at 390; the red 6.0 tick carries it */
+  .tm-band { width: auto; flex-direction: row; align-items: baseline; gap: 8px; height: 18px; }
+  .tm-band > b { font-size: 14px; }
+  .tm-band.is-rail { height: auto; padding-right: 6px; background: var(--color-background); }
+  .tm-stops { grid-template-columns: repeat(3, 1fr); }
+  .tm-stop { min-height: 40px; }
+  .tm-cards.is-two { grid-template-columns: 1fr; }
+  .tm-lens button { padding: 0 10px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { .tm-card.is-pick, .tm-mover { animation: none; } }
+
+/* «Gasto federal por calificación» — board rows, no bars (owner 11-07) */
+.lg-tier-find { margin: 0 0 8px; font: 400 15px/1.5 var(--font-serif); color: var(--ct-ink); }
+.lg-tiers .ls-name .ct-sq { margin-right: 8px; }
+.lg-tiers .ls-rd { text-align: right; font: 400 var(--text-data)/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.lg-tiers .lg-tier-head > * { font: 400 12px/1.4 var(--font-mono); color: var(--ct-gray); }
+
+/* ── El panorama (owner 2026-11-08): the sky is the first screen's object, not the whole screen (as /aria, concept.css) ── */
+.ip .pf { height: auto; min-height: 0; margin-top: 8px; }
+.ip .pf-sky { flex: none; height: clamp(440px, 62svh, 640px); min-height: 440px; }
+.ip .pf-labels { overflow: hidden; }
+.ip .pf-sec.is-dim, .ip .pf-lm.is-dim { visibility: hidden; }
+.ip-levels { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.ip-levels .ct-chip small { margin-left: 6px; font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); }
+.ip-foot { margin-top: 8px; }
+@media (max-width: 760px) {
+  .ip .pf-sky { height: clamp(360px, 52svh, 480px); min-height: 360px; }
+  .ip-levels .ct-chip small { display: none; }
+}

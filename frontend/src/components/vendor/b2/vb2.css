@@ -1,0 +1,41 @@
+/* /vendors/:id B2 (VendorB2.tsx) — on top of the institution's b2.css; same 8/16/24/40 scale, one column. */
+/* § 1 ficha: the orbit's disc on the left; the ledger and the orbit's caption share the right column (figure = contents) */
+.vb2-ficha { display: grid; grid-template-columns: 148px minmax(0, 1fr); grid-template-rows: auto auto; gap: var(--ib2-1) var(--ib2-3); align-items: center; margin-top: var(--ib2-3); }
+.vb2-ficha > .vb2-ledger:only-child { grid-column: 1 / -1; }
+.vb2 .vb2-ledger { grid-column: 2; grid-row: 1; align-self: end; margin: 0; }
+.vb2 .vb2-orbit { display: contents; }
+.vb2 .vb2-orbit svg { grid-column: 1; grid-row: 1 / span 2; width: 148px; height: 148px; }
+.vb2 .vb2-orbit figcaption { grid-column: 2; grid-row: 2; align-self: start; margin: 0; }
+@media (max-width: 900px) {
+  .vb2-ficha { grid-template-columns: 1fr; justify-items: center; }
+  .vb2 .vb2-ledger, .vb2 .vb2-orbit figcaption { grid-column: 1; grid-row: auto; width: 100%; }
+  .vb2 .vb2-orbit svg { grid-column: 1; grid-row: auto; }
+}
+.vb2 button.ib2-chip { border: 1px solid var(--color-border); padding: 0 var(--ib2-1); font: 600 12px/1 var(--font-sc); }
+.vb2-exp { margin-top: var(--ib2-2); }
+.vb2-door { margin: 8px 0 0; font: 400 15px/1.4 var(--font-serif); }
+
+/* § 4 the risk in one cell: one line of counts, each a button that filters § 5 */
+.vb2-cell { margin-top: var(--ib2-2); padding: 12px var(--ib2-2); border: 1px solid var(--color-text-primary); }
+.vb2-counts { margin: 0; font: 400 16px/1.8 var(--font-serif); }
+.vb2 .vb2-n { min-height: 32px; text-decoration: underline; text-decoration-color: var(--color-text-muted); text-underline-offset: 4px; }
+.vb2 .vb2-n b { font: 600 16px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.vb2 .vb2-n.is-critical b { color: var(--color-risk-critical); }
+.vb2 .vb2-n.is-low { color: var(--color-text-muted); }
+.vb2 .vb2-n[aria-pressed='true'] { text-decoration: underline solid 2px; text-decoration-color: var(--color-text-primary); }
+.vb2 .vb2-n[disabled], .vb2 .vb2-n[disabled] b { cursor: default; text-decoration: none; color: var(--color-text-muted); }
+.vb2-why { margin: var(--ib2-1) 0 0; font: 400 15px/1.5 var(--font-serif); }
+.vb2-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: var(--ib2-1) 0 0; }
+.vb2-tags a { text-decoration: none; }
+
+/* § 5 filters + pager */
+.vb2-filters { display: flex; flex-wrap: wrap; gap: 0 var(--ib2-3); margin-top: var(--ib2-2); }
+.vb2 .vb2-gob[aria-pressed='true'] { box-shadow: inset 0 -3px 0 var(--gob); }
+.vb2-pager { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ib2-1) 12px; margin-top: var(--ib2-1); }
+.vb2-pager .ib2-chip[disabled] { opacity: .45; cursor: default; }
+.vb2 .vb2-csv { margin-left: auto; }
+.vb2 .ib2-list.is-stale { opacity: .55; }
+@media (max-width: 900px) { .vb2 .vb2-csv { margin-left: 0; } }
+.vb2-hold { min-height: 1400px; }
+/* each §'s one finding, bold (replaces the see/read/means triple under every §; AUDIT 11-07 #4) */
+.vb2-means { margin: var(--ib2-2) 0 0; font: 600 16px/1.45 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }

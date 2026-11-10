@@ -1,0 +1,3499 @@
+"""
+API router for vendor endpoints.
+
+Provides vendor listing, details, contracts, institutions, risk profiles,
+related vendors, and top vendors analysis.
+
+Thin router — business logic lives in VendorService.
+"""
+import csv
+import io
+import json
+import math
+import logging
+import sqlite3
+import threading
+from array import array
+from bisect import bisect_left, bisect_right
+from datetime import datetime, timedelta
+from typing import Optional, List, Any, Dict
+from fastapi import APIRouter, HTTPException, Query, Path, Request
+from fastapi.responses import StreamingResponse
+from collections import Counter
+from pydantic import BaseModel
+
+from ..dependencies import get_db, require_write_key
+from ..config.constants import MAX_CONTRACT_VALUE
+
+
+# Whitelist: only a well-formed company RFC is ever returned (see api/pii.py).
+from ..pii import public_rfc
+from ..sector_pct import pct_rank
+from .export import sanitize_csv_cell
+from ..public_labels import DOCUMENTED_LINK_SQL, PUBLIC_LINK_SQL, is_named_persona, pf_sql
+from ..helpers.analysis_helpers import single_award_of_competitive
+from ..sanctions import match_asf, match_sfp, summarize_basis
+_mask_personal_rfc = public_rfc
+from ..models.vendor import (
+    VendorClassificationResponse,
+    VerifiedVendorResponse,
+    VerifiedVendorListResponse,
+    VendorListItem,
+    VendorListResponse,
+    VendorDetailResponse,
+    VendorRiskProfile,
+    VendorInstitutionItem,
+    VendorInstitutionListResponse,
+    VendorCategoryItem,
+    VendorCategoriesResponse,
+    VendorRelatedItem,
+    VendorRelatedListResponse,
+    VendorTopItem,
+    VendorTopListResponse,
+    YearAmount,
+    VendorTopAllResponse,
+    VendorComparisonItem,
+    VendorComparisonResponse,
+    VendorTenureInstitution,
+)
+from ..models.asf import ASFCase
+from ..models.common import PaginationMeta
+from ..models.contract import ContractListItem, ContractListResponse, PaginationMeta as ContractPaginationMeta
+from ..services.vendor_service import vendor_service
+from ..services import vendor_canonical as vcanon
+from ..services import institution_canonical as icanon
+from ..services import vendor_history
+from ..services.vendor_panorama import build_vendor_panorama
+from ..services.active_model import (
+    V9_SELECT, V10_MODELS, load_active_feature_transforms, load_active_global_coefficients,
+    load_active_global_model, v9_terms, v10_centred_means, v10_display_name,
+)
+from ..config.constants import proc_known  # DQ1 § 2
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/vendors", tags=["vendors"])
+
+# Optional rate limiting - gracefully degrade if slowapi not installed
+try:
+    from slowapi import Limiter
+    from ..dependencies import client_ip
+    _vendors_limiter = Limiter(key_func=client_ip)
+    _VENDORS_RATE_LIMITING = True
+except ImportError:
+    _vendors_limiter = None
+    _VENDORS_RATE_LIMITING = False
+
+
+def _rate_limit(limit_string: str):
+    """Rate limit decorator that degrades gracefully if slowapi is missing."""
+    if _VENDORS_RATE_LIMITING and _vendors_limiter:
+        return _vendors_limiter.limit(limit_string)
+    return lambda f: f
+
+# Simple TTL cache for expensive aggregate endpoints
+_vendor_cache: Dict[str, Dict[str, Any]] = {}
+_vendor_cache_lock = threading.Lock()
+_VENDOR_CACHE_TTL = 3600  # 1 hour
+
+
+def _get_vendor_cache(key: str) -> Any:
+    with _vendor_cache_lock:
+        entry = _vendor_cache.get(key)
+        if entry and datetime.now() < entry["expires_at"]:
+            return entry["value"]
+        return None
+
+
+def _set_vendor_cache(key: str, value: Any) -> None:
+    with _vendor_cache_lock:
+        _vendor_cache[key] = {"value": value, "expires_at": datetime.now() + timedelta(seconds=_VENDOR_CACHE_TTL)}
+
+
+def _years(pairs) -> list[YearAmount]:
+    return [YearAmount(year=y, amount_mxn=a) for y, a in pairs or ()]
+
+
+def _with_years(conn: sqlite3.Connection, items: list, sector_id: Optional[int] = None) -> list:
+    """Attach the by-year series to a page of VendorTopItem rows (one indexed query),
+    scoped to the sector the rows' amounts are scoped to."""
+    yearly = vcanon.yearly_amounts(conn, [v.vendor_id for v in items], sector_id)
+    return [v.model_copy(update={"yearly_amounts": _years(yearly.get(v.vendor_id))}) for v in items]
+
+
+def _high_risk_count(conn: sqlite3.Connection, vendor_id: int) -> int:
+    ids = vcanon.group_ids(conn, vendor_id)
+    return conn.execute(
+        f"SELECT COUNT(*) FROM contracts WHERE vendor_id IN ({','.join('?' * len(ids))}) "
+        "AND risk_level IN ('high', 'critical')", ids).fetchone()[0]
+
+
+_PEER_COLS = ("avg_risk_score", "total_contracts", "total_value_mxn", "direct_award_pct", "single_bid_pct")
+_PPC_EXPR = "(total_value_mxn * 1.0 / NULLIF(total_contracts, 0))"
+_SBC_EXPR = "MIN(100.0, ROUND(single_bid_pct * 100.0 / NULLIF(100.0 - direct_award_pct, 0), 4))"
+
+
+def _peer_distribution(cursor, sector_id: Optional[int]):
+    """(row count, {metric: sorted non-NULL values}) over vendor_stats for one
+    sector (falsy = all vendors). One plain scan (~0.1 s) replaces per-request
+    COUNT / ORDER BY ... OFFSET subqueries, which SQLite plans through the
+    single-column metric indexes — ~3 s per vendor on prod."""
+    key = f"peerdist:{sector_id or 0}"
+    cached = _get_vendor_cache(key)
+    if cached is not None:
+        return cached
+    where, args = ("WHERE primary_sector_id = ?", (sector_id,)) if sector_id else ("", ())
+    rows = cursor.execute(
+        f"SELECT {', '.join(_PEER_COLS)}, {_PPC_EXPR}, {_SBC_EXPR} FROM vendor_stats {where}", args
+    ).fetchall()
+    names = _PEER_COLS + ("price_per_contract", "single_bid_competitive_pct")
+    dist = {n: array("d", sorted(r[i] for r in rows if r[i] is not None)) for i, n in enumerate(names)}
+    result = (len(rows), dist)
+    _set_vendor_cache(key, result)
+    return result
+
+
+class ExternalFlagsResponse(BaseModel):
+    vendor_id: int
+    sfp_sanctions: List[Dict[str, Any]]
+    rupc: Optional[Dict[str, Any]]
+    asf_cases: List[Dict[str, Any]]
+    sat_efos: Optional[Dict[str, Any]]
+    match_method: Optional[str] = None  # strongest SFP basis: 'rfc' | 'name' | 'name_ambiguous'
+    match_confidence: Optional[int] = None  # 0-100
+
+
+class RiskTimelineEntry(BaseModel):
+    year: int
+    avg_risk_score: Optional[float]
+    contract_count: int
+    total_value: float
+
+
+class VendorRiskTimelineResponse(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    timeline: List[RiskTimelineEntry]
+
+
+class VendorAISummaryResponse(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    summary: str
+    insights: List[str]
+    total_contracts: int
+    avg_risk_score: Optional[float]
+    generated_by: str
+
+
+class VendorSHAPResponse(BaseModel):
+    """SHAP explanation from the v5.2 analytical engine for a vendor."""
+    vendor_id: int
+    sector_id: Optional[int]
+    n_contracts: int
+    shap_values: Dict[str, float]
+    top_risk_factors: List[Dict[str, Any]]
+    top_protect_factors: List[Dict[str, Any]]
+    base_value: float
+    risk_score: float
+    mean_z_vector: Dict[str, float]
+    updated_at: Optional[str]
+
+
+# =============================================================================
+# VENDOR LIST AND DETAIL ENDPOINTS
+# =============================================================================
+
+@router.get("", response_model=VendorListResponse)
+@_rate_limit("60/minute")
+def list_vendors(
+    request: Request,
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page (max 100)"),
+    search: Optional[str] = Query(None, min_length=2, description="Search vendor name or RFC"),
+    sector_id: Optional[int] = Query(None, ge=1, le=12, description="Filter by primary sector"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level: critical, high, medium, low"),
+    min_contracts: Optional[int] = Query(None, ge=0, description="Minimum contract count"),
+    min_value: Optional[float] = Query(None, ge=0, description="Minimum total contract value"),
+    has_rfc: Optional[bool] = Query(None, description="Filter vendors with RFC"),
+    sort_by: str = Query("total_contracts", pattern="^(total_contracts|total_value|total_value_mxn|avg_risk|avg_risk_score|name|direct_award_pct|high_risk_pct|single_bid_pct|single_award_pct|pct_anomalous)$", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+):
+    """
+    List vendors with pagination and filters.
+
+    Returns vendors with aggregate statistics from their contracts.
+    Supports filtering by search term, sector, contract count, and RFC presence.
+    """
+    # Validate risk_level before database operations (supports comma-separated: "critical,high")
+    VALID_RISK_LEVELS = {"low", "medium", "high", "critical"}
+    if risk_level is not None:
+        requested = {l.strip().lower() for l in risk_level.split(",") if l.strip()}
+        invalid = requested - VALID_RISK_LEVELS
+        if invalid:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid risk_level(s) {invalid}. Must be one of: {', '.join(sorted(VALID_RISK_LEVELS))}"
+            )
+
+    with get_db() as conn:
+        result = vendor_service.list_vendors(
+            conn,
+            page=page,
+            per_page=per_page,
+            search=search,
+            sector_id=sector_id,
+            risk_level=risk_level,
+            min_contracts=min_contracts,
+            min_value=min_value,
+            has_rfc=has_rfc,
+            sort_by=sort_by,
+            sort_order=sort_order,
+        )
+
+        yearly = vcanon.yearly_amounts(conn, [row["id"] for row in result.data])
+        vendors = [VendorListItem(**row, yearly_amounts=_years(yearly.get(row["id"]))) for row in result.data]
+
+        # Track applied filters
+        filters_applied = {}
+        if search:
+            filters_applied["search"] = search
+        if sector_id is not None:
+            filters_applied["sector_id"] = sector_id
+        if risk_level is not None:
+            filters_applied["risk_level"] = risk_level
+        if min_contracts is not None:
+            filters_applied["min_contracts"] = min_contracts
+        if min_value is not None:
+            filters_applied["min_value"] = min_value
+        if has_rfc is not None:
+            filters_applied["has_rfc"] = has_rfc
+
+        return VendorListResponse(
+            data=vendors,
+            pagination=PaginationMeta(**result.pagination),
+            filters_applied=filters_applied,
+        )
+
+
+@router.get("/compare", response_model=VendorComparisonResponse)
+def compare_vendors(
+    ids: str = Query(..., description="Comma-separated list of vendor IDs to compare"),
+):
+    """
+    Compare multiple vendors side-by-side.
+
+    Returns comprehensive metrics for each vendor including:
+    - avg_risk_score: Average risk score of all contracts
+    - direct_award_rate: Percentage of direct award contracts
+    - high_risk_count: Number of high/critical risk contracts
+    - single_bid_rate: Percentage of single-bid contracts
+
+    Accepts up to 10 vendors for comparison.
+    """
+    # Parse vendor IDs
+    try:
+        vendor_ids = [int(id.strip()) for id in ids.split(",") if id.strip()]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid vendor IDs. Must be comma-separated integers.")
+
+    if not vendor_ids:
+        raise HTTPException(status_code=400, detail="At least one vendor ID is required")
+    if len(vendor_ids) > 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 vendors can be compared at once")
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        placeholders = ",".join("?" * len(vendor_ids))
+
+        query = f"""
+            SELECT
+                v.id, v.name, v.rfc,
+                COALESCE(metrics.total_contracts, 0) as total_contracts,
+                COALESCE(metrics.total_value, 0) as total_value,
+                metrics.avg_risk_score,
+                COALESCE(metrics.direct_award_count, 0) as direct_award_count,
+                COALESCE(metrics.high_risk_count, 0) as high_risk_count,
+                COALESCE(metrics.scored_count, 0) as scored_count,
+                COALESCE(metrics.single_bid_count, 0) as single_bid_count,
+                metrics.first_year, metrics.last_year,
+                COALESCE(metrics.institution_count, 0) as institution_count
+            FROM vendors v
+            LEFT JOIN (
+                SELECT
+                    vendor_id,
+                    COUNT(*) as total_contracts,
+                    SUM(amount_mxn) as total_value,
+                    AVG(risk_score) as avg_risk_score,
+                    SUM(CASE WHEN is_direct_award = 1 THEN 1 ELSE 0 END) as direct_award_count,
+                    SUM(CASE WHEN risk_level IN ('high', 'critical') THEN 1 ELSE 0 END) as high_risk_count,
+                    COUNT(risk_score) as scored_count,
+                    SUM(CASE WHEN is_single_bid = 1 THEN 1 ELSE 0 END) as single_bid_count,
+                    MIN(contract_year) as first_year,
+                    MAX(contract_year) as last_year,
+                    COUNT(DISTINCT institution_id) as institution_count
+                FROM contracts
+                WHERE vendor_id IN ({placeholders})
+                AND COALESCE(amount_mxn, 0) <= ?
+                GROUP BY vendor_id
+            ) metrics ON v.id = metrics.vendor_id
+            WHERE v.id IN ({placeholders})
+        """
+        cursor.execute(query, vendor_ids + [MAX_CONTRACT_VALUE] + vendor_ids)
+
+        items = []
+        for row in cursor.fetchall():
+            total_contracts = row["total_contracts"] or 0
+            total_value = row["total_value"] or 0
+            direct_award_rate = (row["direct_award_count"] / total_contracts * 100) if total_contracts > 0 else 0.0
+            high_risk_pct = (row["high_risk_count"] / row["scored_count"] * 100) if row["scored_count"] > 0 else 0.0
+            single_bid_rate = (row["single_bid_count"] / total_contracts * 100) if total_contracts > 0 else 0.0
+            avg_contract_value = (total_value / total_contracts) if total_contracts > 0 else None
+
+            items.append(VendorComparisonItem(
+                id=row["id"],
+                name=row["name"],
+                rfc=_mask_personal_rfc(row["rfc"]),
+                total_contracts=total_contracts,
+                total_value_mxn=total_value,
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+                direct_award_rate=round(direct_award_rate, 2),
+                direct_award_count=row["direct_award_count"],
+                high_risk_count=row["high_risk_count"],
+                high_risk_percentage=round(high_risk_pct, 2),
+                single_bid_rate=round(single_bid_rate, 2),
+                avg_contract_value=round(avg_contract_value, 2) if avg_contract_value else None,
+                first_year=row["first_year"],
+                last_year=row["last_year"],
+                institution_count=row["institution_count"],
+            ))
+
+        # Sort to match input order
+        id_order = {vid: i for i, vid in enumerate(vendor_ids)}
+        items.sort(key=lambda x: id_order.get(x.id, 999))
+
+        return VendorComparisonResponse(data=items, total=len(items))
+
+
+@router.get("/top-all", response_model=VendorTopAllResponse)
+def get_top_vendors_all(
+    limit: int = Query(5, ge=1, le=20, description="Number per category"),
+):
+    """
+    Get top vendors by all metrics in a single request.
+    Returns top by value, count, and risk in one call (3x fewer requests).
+    """
+    cache_key = f"top-all:{limit}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        result: dict[str, list] = {}
+        # safe: sort_field values are hardcoded in the loop, not from user input
+        for metric, sort_field in [("value", "total_amount_mxn"), ("count", "total_contracts")]:
+            cursor.execute(f"""
+                SELECT id, name, rfc, {sort_field} as metric_value,
+                       total_contracts, COALESCE(total_amount_mxn, 0) as total_value_mxn
+                FROM vendors
+                WHERE {vcanon.not_absorbed(conn, "id")}
+                ORDER BY {sort_field} DESC LIMIT ?
+            """, (limit,))
+            result[metric] = [
+                VendorTopItem(
+                    rank=i + 1,
+                    vendor_id=row["id"],
+                    vendor_name=row["name"],
+                    rfc=_mask_personal_rfc(row["rfc"]),
+                    metric_value=row["metric_value"] or 0,
+                    total_contracts=row["total_contracts"],
+                    total_value_mxn=row["total_value_mxn"],
+                    avg_risk_score=None,
+                )
+                for i, row in enumerate(cursor.fetchall())
+            ]
+
+        # Risk: use pre-computed avg_risk_score on vendors table
+        cursor.execute(f"""
+            SELECT id, name, rfc,
+                   avg_risk_score as metric_value,
+                   total_contracts,
+                   COALESCE(total_amount_mxn, 0) as total_value_mxn,
+                   avg_risk_score
+            FROM vendors
+            WHERE total_contracts >= 5 AND avg_risk_score IS NOT NULL AND {vcanon.not_absorbed(conn, "id")}
+            ORDER BY avg_risk_score DESC
+            LIMIT ?
+        """, (limit,))
+        result["risk"] = [
+            VendorTopItem(
+                rank=i + 1,
+                vendor_id=row["id"],
+                vendor_name=row["name"],
+                rfc=_mask_personal_rfc(row["rfc"]),
+                metric_value=row["metric_value"] or 0,
+                total_contracts=row["total_contracts"],
+                total_value_mxn=row["total_value_mxn"],
+                avg_risk_score=row["avg_risk_score"],
+            )
+            for i, row in enumerate(cursor.fetchall())
+        ]
+
+        response = VendorTopAllResponse(**result)
+        _set_vendor_cache(cache_key, response)
+        return response
+
+
+@router.get("/top", response_model=VendorTopListResponse)
+def get_top_vendors(
+    by: str = Query("value", description="Ranking metric: value, count, risk"),
+    limit: int = Query(20, ge=1, le=100, description="Number of results"),
+    sector_id: Optional[int] = Query(None, ge=1, le=12, description="Filter by sector"),
+    year: Optional[int] = Query(None, ge=2002, le=2026, description="Filter by year"),
+):
+    """
+    Get top vendors by value, contract count, or risk score.
+
+    Returns vendors ranked by the specified metric with aggregate statistics.
+    Uses precomputed aggregates when no filters applied for better performance.
+    """
+    valid_metrics = {"value", "count", "risk"}
+    if by not in valid_metrics:
+        raise HTTPException(status_code=400, detail=f"Invalid metric '{by}'. Use: value, count, risk")
+
+    cache_key = f"top:{by}:{limit}:{sector_id}:{year}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        valid_metrics = {"value", "count", "risk"}
+
+        # Per-sector fast path: use precomputed sector_top_vendors when only sector_id filter
+        if sector_id is not None and year is None and by == "value":
+            cursor.execute(
+                "SELECT stat_value FROM precomputed_stats WHERE stat_key = 'sector_top_vendors'"
+            )
+            stv_row = cursor.fetchone()
+            if stv_row:
+                import json as _json
+                stv = _json.loads(stv_row[0])
+                sector_vendors = stv.get(str(sector_id), [])[:limit]
+                if sector_vendors:
+                    vendors = [
+                        VendorTopItem(
+                            rank=i + 1,
+                            vendor_id=v["vendor_id"],
+                            vendor_name=v["vendor_name"],
+                            rfc=_mask_personal_rfc(v.get("rfc")),
+                            metric_value=v.get("total_value_mxn", 0),
+                            total_contracts=v.get("total_contracts", 0),
+                            total_value_mxn=v.get("total_value_mxn", 0),
+                            avg_risk_score=v.get("avg_risk_score"),
+                        )
+                        for i, v in enumerate(sector_vendors)
+                    ]
+                    response = VendorTopListResponse(data=_with_years(conn, vendors, sector_id), metric=by, total=len(vendors))
+                    _set_vendor_cache(cache_key, response)
+                    return response
+
+        # Global fast path: use precomputed aggregates when no filters
+        if sector_id is None and year is None:
+            canon = vcanon.not_absorbed(conn, "id")  # absorbed ids live on their canonical row
+            if by == "risk":
+                sort_field = "avg_risk_score"
+                where_clause = f"WHERE total_contracts >= 5 AND avg_risk_score IS NOT NULL AND {canon}"
+            elif by == "value":
+                sort_field = "total_amount_mxn"
+                where_clause = f"WHERE {canon}"
+            else:
+                sort_field = "total_contracts"
+                where_clause = f"WHERE {canon}"
+
+            cursor.execute(f"""
+                SELECT id, name, rfc, {sort_field} as metric_value,
+                       total_contracts, COALESCE(total_amount_mxn, 0) as total_value_mxn,
+                       avg_risk_score
+                FROM vendors {where_clause}
+                ORDER BY {sort_field} DESC LIMIT ?
+            """, (limit,))
+
+            vendors = [
+                VendorTopItem(
+                    rank=i + 1, vendor_id=row["id"], vendor_name=row["name"],
+                    rfc=_mask_personal_rfc(row["rfc"]), metric_value=row["metric_value"] or 0,
+                    total_contracts=row["total_contracts"],
+                    total_value_mxn=row["total_value_mxn"],
+                    avg_risk_score=row["avg_risk_score"],
+                )
+                for i, row in enumerate(cursor.fetchall())
+            ]
+            response = VendorTopListResponse(data=_with_years(conn, vendors, sector_id), metric=by, total=len(vendors))
+            _set_vendor_cache(cache_key, response)
+            return response
+
+        # Slow path: compute aggregates with filters
+        # IMPORTANT: do NOT add any condition that wraps indexed columns in functions.
+        # COALESCE / IS NULL OR ... prevents the planner from using idx_c_sector_vendor.
+        # Amount guard is intentionally omitted from the sector-filtered path: data was
+        # validated at ETL time; the OR-condition would force a full table scan.
+        conditions: list = []
+        params: list = []
+        if sector_id is not None:
+            conditions.append("c.sector_id = ?")
+            params.append(sector_id)
+        if year is not None:
+            conditions.append("c.contract_year = ?")
+            params.append(year)
+        # Only add amount guard when no indexed column filters are present (global scan)
+        if sector_id is None and year is None:
+            conditions.append("(c.amount_mxn IS NULL OR c.amount_mxn <= ?)")
+            params.append(MAX_CONTRACT_VALUE)
+
+        where_clause = " AND ".join(conditions)
+        metric_mapping = {
+            "value": ("SUM(c.amount_mxn)", "DESC"),
+            "count": ("COUNT(c.id)", "DESC"),
+            "risk": ("AVG(c.risk_score)", "DESC"),
+        }
+        sort_expr, sort_dir = metric_mapping[by]
+        _VALID_VENDOR_METRIC_EXPRS = {"SUM(c.amount_mxn)", "COUNT(c.id)", "AVG(c.risk_score)"}
+        assert sort_expr in _VALID_VENDOR_METRIC_EXPRS, f"Invalid sort expression: {sort_expr}"
+
+        # Absorbed vendor ids (scripts/migrate_vendors.py) count toward their canonical id
+        if vcanon.has_canonical(conn):
+            vendor_key = "COALESCE(vc.canonical_id, c.vendor_id)"
+            vendor_join = "LEFT JOIN vendor_canonical vc ON vc.vendor_id = c.vendor_id"
+        else:
+            vendor_key, vendor_join = "c.vendor_id", ""
+
+        # Two-step CTE: aggregate contracts first (uses idx_c_sector_vendor), then join for names
+        cursor.execute(f"""
+            WITH ranked AS (
+                SELECT {vendor_key} AS vendor_id,
+                       {sort_expr} as metric_value,
+                       COUNT(c.id) as total_contracts,
+                       COALESCE(SUM(c.amount_mxn), 0) as total_value_mxn,
+                       COALESCE(AVG(c.risk_score), 0) as avg_risk_score
+                FROM contracts c {vendor_join}
+                WHERE {where_clause}
+                GROUP BY 1
+                ORDER BY metric_value {sort_dir} NULLS LAST
+                LIMIT ?
+            )
+            SELECT v.id, v.name, v.rfc,
+                   r.metric_value, r.total_contracts, r.total_value_mxn, r.avg_risk_score
+            FROM ranked r
+            JOIN vendors v ON r.vendor_id = v.id
+            ORDER BY r.metric_value {sort_dir} NULLS LAST
+        """, params + [limit])
+
+        vendors = [
+            VendorTopItem(
+                rank=i + 1, vendor_id=row["id"], vendor_name=row["name"],
+                rfc=_mask_personal_rfc(row["rfc"]), metric_value=row["metric_value"] or 0,
+                total_contracts=row["total_contracts"],
+                total_value_mxn=row["total_value_mxn"],
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+            )
+            for i, row in enumerate(cursor.fetchall())
+        ]
+        response = VendorTopListResponse(data=_with_years(conn, vendors, sector_id), metric=by, total=len(vendors))
+        _set_vendor_cache(cache_key, response)
+        return response
+
+
+# =============================================================================
+# VENDOR CSV EXPORT (risk-filtered)
+# =============================================================================
+
+
+class VendorTrajectoryResponse(BaseModel):
+    """Risk score trajectory across model versions."""
+    vendor_id: int
+    vendor_name: str
+    scores: Dict[str, Optional[float]]
+    model_versions: List[str] = ["v3.3", "v4.0", "v5.1", "v0.6.5"]
+    trajectory: List[Optional[float]] = []
+
+
+@router.get("/export")
+def export_vendors_risk_csv(
+    sector_id: Optional[int] = Query(None, ge=1, le=12, description="Filter by primary sector"),
+    min_risk: float = Query(0.30, ge=0.0, le=1.0, description="Minimum avg risk score"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level: critical, high, medium, low"),
+    limit: int = Query(1000, ge=1, le=5000, description="Maximum rows (max 5000)"),
+):
+    """
+    Export high-risk vendors as CSV.
+
+    Returns vendors filtered by minimum risk score with aggregate statistics.
+    Designed for investigation triage and journalist data downloads.
+    """
+    VALID_RISK_LEVELS = {"low", "medium", "high", "critical"}
+    if risk_level is not None:
+        rl = risk_level.strip().lower()
+        if rl not in VALID_RISK_LEVELS:
+            raise HTTPException(status_code=422, detail=f"Invalid risk_level: {risk_level}")
+
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            conditions = ["vs.avg_risk_score >= ?"]
+            params: list = [min_risk]
+
+            if sector_id is not None:
+                conditions.append("vs.primary_sector_id = ?")
+                params.append(sector_id)
+
+            if risk_level is not None:
+                # vendor_stats stores avg_risk_score (numeric), not a level — map
+                # the requested level to its score band (thresholds 0.60/0.40/0.25).
+                _lvl = risk_level.strip().lower()
+                _bands = {"critical": (0.60, 1.01), "high": (0.40, 0.60),
+                          "medium": (0.25, 0.40), "low": (0.0, 0.25)}
+                if _lvl in _bands:
+                    _lo, _hi = _bands[_lvl]
+                    conditions.append("vs.avg_risk_score >= ? AND vs.avg_risk_score < ?")
+                    params.extend([_lo, _hi])
+
+            where_clause = " AND ".join(conditions)
+
+            query = f"""
+                SELECT
+                    vs.vendor_id,
+                    v.name AS vendor_name,
+                    CASE WHEN {pf_sql('v.')} THEN NULL ELSE v.rfc END AS rfc,
+                    s.name_es AS sector_name,
+                    vs.total_contracts,
+                    vs.total_value_mxn,
+                    ROUND(vs.avg_risk_score, 4) AS avg_risk_score,
+                    CASE WHEN vs.avg_risk_score >= 0.60 THEN 'critical'
+                         WHEN vs.avg_risk_score >= 0.40 THEN 'high'
+                         WHEN vs.avg_risk_score >= 0.25 THEN 'medium'
+                         ELSE 'low' END AS risk_level,
+                    ROUND(vs.direct_award_pct, 2) AS direct_award_pct,
+                    (vs.last_contract_year - vs.first_contract_year + 1) AS years_active
+                FROM vendor_stats vs
+                JOIN vendors v ON v.id = vs.vendor_id
+                LEFT JOIN sectors s ON s.id = vs.primary_sector_id
+                WHERE {where_clause}
+                ORDER BY vs.avg_risk_score DESC
+                LIMIT ?
+            """
+            params.append(limit)
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+
+            columns = [
+                "vendor_id", "vendor_name", "rfc", "sector_name",
+                "total_contracts", "total_value_mxn", "avg_risk_score",
+                "risk_level", "direct_award_pct", "years_active",
+            ]
+
+            output = io.StringIO()
+            writer = csv.writer(output)
+            writer.writerow(columns)
+            # CSV skips RfcRedactionMiddleware (JSON only) — guard at the call site
+            for row in rows:
+                r = list(row)
+                r[2] = public_rfc(r[2])
+                writer.writerow([sanitize_csv_cell(c) for c in r])
+            output.seek(0)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"rubli_vendors_{timestamp}.csv"
+
+            return StreamingResponse(
+                iter([output.getvalue()]),
+                media_type="text/csv",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
+
+    except sqlite3.Error as e:
+        logger.error(f"Database error in export_vendors_risk_csv: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
+
+
+@router.get("/{vendor_id:int}", response_model=VendorDetailResponse)
+def get_vendor(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get detailed information for a specific vendor.
+
+    Returns vendor details, classification, statistics, and metrics.
+    Uses pre-computed vendor_stats for performance.
+
+    2026-05-08: wrapped in the existing vendor TTL cache (1h). The handler
+    runs ~74 serialised queries — for heavy T1 vendors (e.g. id 29277,
+    6,303 contracts) this measured 2.2s cold. The /thread page fires 6
+    concurrent queries and the slowest dominates wall time. With cache
+    on, the second visit drops to <50ms; cold first visit unchanged.
+    Cache key includes the vendor_id only — no per-user state.
+    """
+    cache_key = f"vendor:detail:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        # An absorbed id (name variant / older CompraNet record) serves its canonical
+        # dossier; `canonical_id` tells the frontend to move to that URL.
+        vendor_id = vcanon.canonical_id(conn, vendor_id)
+        detail = vendor_service.get_vendor_detail(conn, vendor_id)
+        if not detail:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        cursor = conn.cursor()
+
+        # Supplement with classification, group, mahalanobis, and primary sector from precomputed stats
+        try:
+            cursor.execute("""
+                SELECT
+                    v.phonetic_code, v.group_id,
+                    v.cobid_clustering_coeff, v.cobid_triangle_count,
+                    vc.industry_id, vc.industry_code, vc.industry_confidence,
+                    vi.name_es as industry_name, vi.sector_affinity,
+                    -- vendor_groups/vendor_aliases retired from display: 19% precision
+                    -- on RFC gold (docs/PREPUB_AUDIT_2026-09-24.md § Entity resolution).
+                    NULL as group_name,
+                    COALESCE(vs.institution_count, 0) as total_institutions,
+                    vs.avg_mahalanobis, vs.max_mahalanobis,
+                    vs.primary_sector_id,
+                    s.name_es as primary_sector_name
+                FROM vendors v
+                LEFT JOIN vendor_classifications vc ON v.id = vc.vendor_id
+                LEFT JOIN vendor_industries vi ON vc.industry_id = vi.id
+                LEFT JOIN vendor_stats vs ON v.id = vs.vendor_id
+                LEFT JOIN sectors s ON vs.primary_sector_id = s.id
+                WHERE v.id = ?
+            """, (vendor_id,))
+            extra = cursor.fetchone()
+        except Exception as e:
+            logger.debug("Vendor extra detail query failed for vendor %s: %s", vendor_id, e)
+            extra = None
+
+        total_contracts = detail.get("total_contracts", 0) or 0
+        total_value = detail.get("total_value_mxn", 0) or 0
+        high_risk_pct = detail.get("high_risk_pct")  # over scored contracts; None = none scored yet
+        direct_award_pct = detail.get("direct_award_pct")
+        single_bid_pct = detail.get("single_bid_pct")
+        first_year = detail.get("first_contract_year")
+        last_year = detail.get("last_contract_year")
+
+        # Fetch name variants (QQW + other sources), excluding internal sentinel rows
+        try:
+            name_variants_rows = cursor.execute(
+                """SELECT variant_name, source FROM vendor_name_variants
+                   WHERE vendor_id = ? AND source NOT IN ('qqw_miss', 'qqw_empty')
+                   ORDER BY source, variant_name""",
+                (vendor_id,),
+            ).fetchall()
+            name_variants = [{"variant_name": r["variant_name"], "source": r["source"]}
+                             for r in name_variants_rows]
+        except Exception as e:
+            logger.debug("Name variants query failed for vendor %s: %s", vendor_id, e)
+            name_variants = []
+
+        # Fetch top institution tenures (Coviello & Gagliarducci 2017)
+        try:
+            tenure_rows = cursor.execute("""
+                SELECT vit.institution_id, i.name AS institution_name,
+                       vit.first_contract_year, vit.last_contract_year,
+                       vit.total_contracts, COALESCE(vit.total_amount_mxn, 0) AS total_amount_mxn
+                FROM vendor_institution_tenure vit
+                JOIN institutions i ON vit.institution_id = i.id
+                WHERE vit.vendor_id = ?
+                ORDER BY (vit.last_contract_year - vit.first_contract_year) DESC, vit.total_contracts DESC
+                LIMIT 10
+            """, (vendor_id,)).fetchall()
+            top_institutions = [
+                VendorTenureInstitution(
+                    institution_id=r["institution_id"],
+                    institution_name=r["institution_name"],
+                    first_contract_year=r["first_contract_year"],
+                    last_contract_year=r["last_contract_year"],
+                    tenure_years=(r["last_contract_year"] - r["first_contract_year"] + 1),
+                    total_contracts=r["total_contracts"],
+                    total_amount_mxn=r["total_amount_mxn"],
+                )
+                for r in tenure_rows
+            ]
+        except Exception as e:
+            logger.debug("Institution tenure query failed for vendor %s: %s", vendor_id, e)
+            top_institutions = []
+
+        # Check EFOS ghost company and SFP sanctions flags via RFC match (use raw rfc for DB lookups)
+        vendor_rfc = detail.get("rfc")
+        is_efos_ghost = False
+        is_sfp_sanctioned = False
+        if vendor_rfc:
+            try:
+                efos_row = cursor.execute("""
+                    SELECT 1 FROM ground_truth_vendors gtv
+                    JOIN ground_truth_cases gtc ON gtv.case_id = gtc.id
+                    WHERE gtv.rfc_source = ?
+                      AND COALESCE(gtv.is_false_positive, 0) = 0
+                      AND (gtc.case_name LIKE '%EFOS%' OR gtc.id = 22)
+                    LIMIT 1
+                """, (vendor_rfc,)).fetchone()
+                is_efos_ghost = efos_row is not None
+            except Exception as e:
+                logger.debug("EFOS check failed for rfc %s: %s", vendor_rfc, e)
+                is_efos_ghost = False
+            try:
+                sfp_row = cursor.execute(
+                    "SELECT 1 FROM sfp_sanctions WHERE rfc = ? LIMIT 1",
+                    (vendor_rfc,),
+                ).fetchone()
+                is_sfp_sanctioned = sfp_row is not None
+            except Exception as e:
+                logger.debug("SFP sanctions check failed for rfc %s: %s", vendor_rfc, e)
+                is_sfp_sanctioned = False
+
+        # Fetch SHAP top risk factors from v5.2 engine (best-effort, non-blocking)
+        shap_top_risk_factors = None
+        try:
+            shap_row = cursor.execute(
+                # one row per (vendor, sector): take the vendor's main sector, not an arbitrary one
+                "SELECT top_risk_factors FROM vendor_shap_v52 WHERE vendor_id = ? ORDER BY n_contracts DESC LIMIT 1",
+                (vendor_id,),
+            ).fetchone()
+            if shap_row and shap_row["top_risk_factors"]:
+                raw_shap = shap_row["top_risk_factors"]
+                shap_top_risk_factors = json.loads(raw_shap) if isinstance(raw_shap, str) else raw_shap
+        except Exception as e:
+            logger.debug("SHAP factors unavailable for vendor %s: %s", vendor_id, e)
+
+        # P1 enrichment fields
+        direct_award_rate_corrected: Optional[float] = None
+        avg_z_price_volatility: Optional[float] = None
+        new_vendor_risk_score: Optional[float] = None
+        new_vendor_risk_triggers: Optional[str] = None
+        year_end_pct: Optional[float] = None
+        year_end_sector_avg: Optional[float] = None
+        avg_confidence_lower: Optional[float] = None
+        avg_confidence_upper: Optional[float] = None
+        sector_risk_percentile: Optional[int] = None
+        sector_pct: Optional[float] = None
+
+        try:
+            # #22: corrected direct award rate from aria_queue (0-1 fraction → %)
+            aq_row = cursor.execute(
+                "SELECT direct_award_rate FROM aria_queue WHERE vendor_id = ? LIMIT 1",
+                (vendor_id,),
+            ).fetchone()
+            if aq_row and aq_row["direct_award_rate"] is not None:
+                direct_award_rate_corrected = round(float(aq_row["direct_award_rate"]) * 100, 2)
+        except Exception as e:
+            logger.debug("aria_queue direct_award_rate unavailable for vendor %s: %s", vendor_id, e)
+
+        try:
+            # #24: average z_price_volatility across contracts
+            pv_row = cursor.execute(
+                """
+                SELECT AVG(czf.z_price_volatility) AS avg_pv
+                FROM contract_z_features czf
+                JOIN contracts c ON czf.contract_id = c.id
+                WHERE c.vendor_id = ?
+                """,
+                (vendor_id,),
+            ).fetchone()
+            if pv_row and pv_row["avg_pv"] is not None:
+                avg_z_price_volatility = round(float(pv_row["avg_pv"]), 3)
+        except Exception as e:
+            logger.debug("avg_z_price_volatility unavailable for vendor %s: %s", vendor_id, e)
+
+        try:
+            # #27: ghost company risk from vendor_stats
+            vs_row = cursor.execute(
+                "SELECT new_vendor_risk_score, new_vendor_risk_triggers FROM vendor_stats WHERE vendor_id = ? LIMIT 1",
+                (vendor_id,),
+            ).fetchone()
+            if vs_row:
+                if vs_row["new_vendor_risk_score"] is not None:
+                    new_vendor_risk_score = round(float(vs_row["new_vendor_risk_score"]), 4)
+                if vs_row["new_vendor_risk_triggers"] is not None:
+                    new_vendor_risk_triggers = str(vs_row["new_vendor_risk_triggers"])
+        except Exception as e:
+            logger.debug("new_vendor_risk unavailable for vendor %s: %s", vendor_id, e)
+
+        try:
+            # #28: year-end concentration
+            ye_row = cursor.execute(
+                """
+                SELECT
+                    100.0 * SUM(CASE WHEN is_year_end = 1 THEN 1 ELSE 0 END) / COUNT(*) AS pct
+                FROM contracts
+                WHERE vendor_id = ?
+                """,
+                (vendor_id,),
+            ).fetchone()
+            if ye_row and ye_row["pct"] is not None:
+                year_end_pct = round(float(ye_row["pct"]), 1)
+
+            # Sector baseline for year_end (raw fraction → %)
+            primary_sector = extra["primary_sector_id"] if extra else None
+            if primary_sector:
+                fb_row = cursor.execute(
+                    """
+                    SELECT mean FROM factor_baselines
+                    WHERE factor_name = 'year_end' AND sector_id = ? AND scope = 'sector'
+                    LIMIT 1
+                    """,
+                    (primary_sector,),
+                ).fetchone()
+                if not fb_row:
+                    fb_row = cursor.execute(
+                        "SELECT mean FROM factor_baselines WHERE factor_name = 'year_end' AND scope = 'global' LIMIT 1",
+                    ).fetchone()
+                if fb_row and fb_row["mean"] is not None:
+                    year_end_sector_avg = round(float(fb_row["mean"]) * 100, 1)
+        except Exception as e:
+            logger.debug("year_end_pct unavailable for vendor %s: %s", vendor_id, e)
+
+        try:
+            # #33: average CI bounds across contracts
+            ci_row = cursor.execute(
+                """
+                SELECT AVG(risk_confidence_lower) AS avg_lo, AVG(risk_confidence_upper) AS avg_hi
+                FROM contracts
+                WHERE vendor_id = ? AND risk_confidence_lower IS NOT NULL
+                """,
+                (vendor_id,),
+            ).fetchone()
+            if ci_row and ci_row["avg_lo"] is not None:
+                avg_confidence_lower = round(float(ci_row["avg_lo"]), 4)
+                avg_confidence_upper = round(float(ci_row["avg_hi"]), 4)
+        except Exception as e:
+            logger.debug("avg CI unavailable for vendor %s: %s", vendor_id, e)
+
+        try:
+            # #34: sector risk percentile
+            primary_sector = extra["primary_sector_id"] if extra else None
+            vendor_avg_risk = detail.get("avg_risk_score")
+            if primary_sector and vendor_avg_risk is not None:
+                risks = _peer_distribution(cursor, primary_sector)[1]["avg_risk_score"]
+                if risks:
+                    raw_pct = int(round((bisect_left(risks, vendor_avg_risk) / len(risks)) * 100))
+                    sector_risk_percentile = min(99, max(1, raw_pct))
+                    sector_pct = pct_rank(risks, vendor_avg_risk)
+        except Exception as e:
+            logger.debug("sector_risk_percentile unavailable for vendor %s: %s", vendor_id, e)
+
+        response = VendorDetailResponse(
+            id=detail["id"],
+            name=detail["name"],
+            rfc=_mask_personal_rfc(detail.get("rfc")),
+            rfc_recovered_source=vcanon.rfc_recovery_source(conn, vendor_id) if _mask_personal_rfc(detail.get("rfc")) else None,
+            canonical_id=vendor_id,
+            merged_record_count=len(vcanon.group_ids(conn, vendor_id)),
+            name_normalized=detail.get("name_normalized"),
+            phonetic_code=extra["phonetic_code"] if extra else None,
+            industry_id=extra["industry_id"] if extra else None,
+            industry_code=extra["industry_code"] if extra else None,
+            industry_name=extra["industry_name"] if extra else None,
+            industry_confidence=extra["industry_confidence"] if extra else None,
+            sector_affinity=extra["sector_affinity"] if extra else None,
+            vendor_group_id=None,
+            group_name=extra["group_name"] if extra else None,
+            total_contracts=total_contracts,
+            total_value_mxn=total_value,
+            avg_contract_value=(total_value / total_contracts) if total_contracts > 0 else None,
+            avg_risk_score=round(detail["avg_risk_score"], 4) if detail.get("avg_risk_score") else None,
+            # counted, not pct × total: the pct's denominator is scored contracts only (ComprasMX unscored)
+            high_risk_count=_high_risk_count(conn, vendor_id) if high_risk_pct else 0,
+            high_risk_pct=round(high_risk_pct, 2) if high_risk_pct is not None else None,
+            # unknown before 2011 (DQ1 § 2): no count, no share — never a fake 0
+            direct_award_count=round(direct_award_pct * total_contracts / 100) if direct_award_pct is not None and total_contracts > 0 else None,
+            direct_award_pct=round(direct_award_pct, 2) if direct_award_pct is not None else None,
+            single_bid_count=round(single_bid_pct * total_contracts / 100) if single_bid_pct is not None and total_contracts > 0 else None,
+            single_bid_pct=round(single_bid_pct, 2) if single_bid_pct is not None else None,
+            single_award_pct=single_award_of_competitive(single_bid_pct, direct_award_pct),
+            first_contract_year=first_year,
+            last_contract_year=last_year,
+            years_active=(last_year - first_year + 1) if first_year and last_year else 0,
+            primary_sector_id=extra["primary_sector_id"] if extra else None,
+            primary_sector_name=extra["primary_sector_name"] if extra else None,
+            sectors_count=detail.get("sector_count", 0) or 0,
+            total_institutions=extra["total_institutions"] if extra else 0,
+            avg_mahalanobis=round(extra["avg_mahalanobis"], 4) if extra and extra["avg_mahalanobis"] else None,
+            max_mahalanobis=round(extra["max_mahalanobis"], 4) if extra and extra["max_mahalanobis"] else None,
+            pct_anomalous=round(detail["anomalous_pct"], 2) if detail.get("anomalous_pct") else None,
+            name_variants=name_variants,
+            top_institutions=top_institutions,
+            cobid_clustering_coeff=round(extra["cobid_clustering_coeff"], 6) if extra and extra["cobid_clustering_coeff"] else None,
+            cobid_triangle_count=extra["cobid_triangle_count"] if extra else None,
+            is_efos_ghost=is_efos_ghost,
+            is_sfp_sanctioned=is_sfp_sanctioned,
+            shap_top_risk_factors=shap_top_risk_factors,
+            direct_award_rate_corrected=direct_award_rate_corrected,
+            avg_z_price_volatility=avg_z_price_volatility,
+            new_vendor_risk_score=new_vendor_risk_score,
+            new_vendor_risk_triggers=new_vendor_risk_triggers,
+            year_end_pct=year_end_pct,
+            year_end_sector_avg=year_end_sector_avg,
+            avg_confidence_lower=avg_confidence_lower,
+            avg_confidence_upper=avg_confidence_upper,
+            sector_risk_percentile=sector_risk_percentile,
+            sector_pct=sector_pct,
+            thin_history=vendor_history.vendor_thin_history(conn, vendor_id),
+            persona_fisica=is_named_persona(detail.get("is_individual"), detail.get("rfc"), detail["name"]),
+        )
+        _set_vendor_cache(cache_key, response)
+        return response
+
+
+class ContractHistogramBucket(BaseModel):
+    bucket: str
+    count: int
+    min_amount: float
+    max_amount: float
+
+
+class ContractHistogramResponse(BaseModel):
+    vendor_id: int
+    total_contracts: int
+    buckets: List[ContractHistogramBucket]
+    threshold_mxn: float
+
+
+@router.get("/{vendor_id:int}/contract-histogram", response_model=ContractHistogramResponse)
+def get_contract_histogram(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Return contract size distribution for a vendor, bucketed for a BarChart.
+    The threshold_mxn field marks the 3M MXN single-tender threshold.
+    """
+    THRESHOLD = 3_000_000.0
+    BUCKETS = [
+        ("<100K",    0.0,          100_000.0),
+        ("100K–1M",  100_000.0,    1_000_000.0),
+        ("1M–3M",    1_000_000.0,  3_000_000.0),
+        ("3M–5M",    3_000_000.0,  5_000_000.0),
+        ("5M–10M",   5_000_000.0,  10_000_000.0),
+        ("10M–100M", 10_000_000.0, 100_000_000.0),
+        (">100M",    100_000_000.0, float("inf")),
+    ]
+    with get_db() as conn:
+        cursor = conn.cursor()
+        rows = cursor.execute(
+            "SELECT amount_mxn FROM contracts WHERE vendor_id = ? AND amount_mxn > 0 AND amount_mxn <= ?",
+            (vendor_id, MAX_CONTRACT_VALUE),
+        ).fetchall()
+
+    counts = [0] * len(BUCKETS)
+    for row in rows:
+        amt = row["amount_mxn"]
+        for i, (_, lo, hi) in enumerate(BUCKETS):
+            if lo <= amt < hi:
+                counts[i] += 1
+                break
+
+    buckets = [
+        ContractHistogramBucket(
+            bucket=BUCKETS[i][0],
+            count=counts[i],
+            min_amount=BUCKETS[i][1],
+            max_amount=BUCKETS[i][2] if BUCKETS[i][2] != float("inf") else MAX_CONTRACT_VALUE,
+        )
+        for i in range(len(BUCKETS))
+    ]
+    return ContractHistogramResponse(
+        vendor_id=vendor_id,
+        total_contracts=len(rows),
+        buckets=buckets,
+        threshold_mxn=THRESHOLD,
+    )
+
+
+@router.get("/{vendor_id:int}/shap", response_model=VendorSHAPResponse)
+def get_vendor_shap(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get SHAP explanation from the v5.2 analytical engine for a vendor.
+
+    Returns the decomposed SHAP values for all 16 risk features, the top risk-driving
+    factors, the top protective factors, the base value (intercept), the v5.2 risk score,
+    and the mean z-score vector averaged across all of the vendor's contracts.
+
+    Returns 404 if the vendor has no row in the v5.2 SHAP table.
+    Cached for 1 hour.
+    """
+    cache_key = f"shap:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT vendor_id, sector_id, n_contracts, shap_values,
+                   top_risk_factors, top_protect_factors, base_value,
+                   risk_score, mean_z_vector, updated_at
+            FROM vendor_shap_v52
+            WHERE vendor_id = ?
+            ORDER BY n_contracts DESC  -- one row per (vendor, sector): the main sector's
+            LIMIT 1
+            """,
+            (vendor_id,),
+        )
+        row = cursor.fetchone()
+
+    if row is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No SHAP data found for vendor {vendor_id} in v5.2 engine",
+        )
+
+    def _parse_json_field(raw: Any) -> Any:
+        if raw is None:
+            return {}
+        if isinstance(raw, str):
+            try:
+                return json.loads(raw)
+            except (json.JSONDecodeError, ValueError):
+                return {}
+        return raw
+
+    result = VendorSHAPResponse(
+        vendor_id=row["vendor_id"],
+        sector_id=row["sector_id"],
+        n_contracts=row["n_contracts"] or 0,
+        shap_values=_parse_json_field(row["shap_values"]),
+        top_risk_factors=_parse_json_field(row["top_risk_factors"]) or [],
+        top_protect_factors=_parse_json_field(row["top_protect_factors"]) or [],
+        base_value=row["base_value"] or 0.0,
+        risk_score=row["risk_score"] or 0.0,
+        mean_z_vector=_parse_json_field(row["mean_z_vector"]),
+        updated_at=row["updated_at"],
+    )
+    _set_vendor_cache(cache_key, result)
+    return result
+
+
+class VendorPercentileResponse(BaseModel):
+    vendor_id: int
+    sector_id: Optional[int]
+    sector_name: Optional[str]
+    avg_risk_score: Optional[float]
+    percentile: int
+    total_vendors_in_sector: int
+    vendors_above: int
+
+
+@router.get("/{vendor_id:int}/percentile", response_model=VendorPercentileResponse)
+def get_vendor_percentile(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get this vendor's risk score percentile within its primary sector.
+
+    Returns where this vendor's average risk score ranks among all vendors
+    in the same sector. Percentile 87 means the vendor scores higher than
+    87% of vendors in the sector.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Get vendor's avg_risk_score and primary sector
+        cursor.execute("""
+            SELECT v.avg_risk_score, vs.primary_sector_id, s.name_es as sector_name
+            FROM vendors v
+            LEFT JOIN vendor_stats vs ON v.id = vs.vendor_id
+            LEFT JOIN sectors s ON vs.primary_sector_id = s.id
+            WHERE v.id = ?
+        """, (vendor_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        avg_risk_score = row["avg_risk_score"]
+        sector_id = row["primary_sector_id"]
+        sector_name = row["sector_name"]
+
+        if sector_id is None or avg_risk_score is None:
+            return VendorPercentileResponse(
+                vendor_id=vendor_id,
+                sector_id=sector_id,
+                sector_name=sector_name,
+                avg_risk_score=avg_risk_score,
+                percentile=0,
+                total_vendors_in_sector=0,
+                vendors_above=0,
+            )
+
+        # Count vendors in sector with lower avg_risk_score (vendors this one beats)
+        cursor.execute("""
+            SELECT
+                COUNT(*) as total_vendors,
+                SUM(CASE WHEN v2.avg_risk_score < ? THEN 1 ELSE 0 END) as vendors_below
+            FROM vendors v2
+            JOIN vendor_stats vs2 ON v2.id = vs2.vendor_id
+            WHERE vs2.primary_sector_id = ? AND v2.avg_risk_score IS NOT NULL
+        """, (avg_risk_score, sector_id))
+        stats = cursor.fetchone()
+        total = stats["total_vendors"] or 0
+        vendors_below = stats["vendors_below"] or 0
+        vendors_above = total - vendors_below - 1  # exclude self
+        vendors_above = max(0, vendors_above)
+        percentile = int(vendors_below / total * 100) if total > 0 else 0
+
+        return VendorPercentileResponse(
+            vendor_id=vendor_id,
+            sector_id=sector_id,
+            sector_name=sector_name,
+            avg_risk_score=round(avg_risk_score, 4),
+            percentile=percentile,
+            total_vendors_in_sector=total,
+            vendors_above=vendors_above,
+        )
+
+
+@router.get("/{vendor_id:int}/contracts", response_model=ContractListResponse)
+def get_vendor_contracts(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    year: Optional[int] = Query(None, ge=2002, le=2026, description="Filter by year"),
+    sector_id: Optional[int] = Query(None, ge=1, le=12, description="Filter by sector"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level"),
+    institution_id: Optional[int] = Query(None, ge=1, description="Only this institution (every spelling folded into it)"),
+    since: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/after (ISO)"),
+    until: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/before (ISO)"),
+    sort_by: str = Query("contract_date", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+):
+    """
+    Get contracts for a specific vendor with pagination.
+
+    Note: VendorService.get_vendor_contracts provides basic pagination.
+    This endpoint extends it with year/sector/risk_level filters and
+    JOINed entity names needed by ContractListItem.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Verify vendor exists
+        cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # The canonical dossier lists the contracts of every id folded into it
+        ids = vcanon.group_ids(conn, vcanon.canonical_id(conn, vendor_id))
+        # safe: conditions list contains only hardcoded column names, values are parameterized
+        conditions = [f"c.vendor_id IN ({','.join('?' * len(ids))})", "COALESCE(c.amount_mxn, 0) <= ?"]
+        params = [*ids, MAX_CONTRACT_VALUE]
+
+        if year is not None:
+            conditions.append("c.contract_year = ?")
+            params.append(year)
+        if sector_id is not None:
+            conditions.append("c.sector_id = ?")
+            params.append(sector_id)
+        if risk_level is not None:
+            conditions.append("c.risk_level = ?")
+            params.append(risk_level.lower())
+        if institution_id is not None:
+            iids = icanon.group_ids(conn, icanon.canonical_id(conn, institution_id))
+            conditions.append(f"c.institution_id IN ({','.join('?' * len(iids))})")
+            params.extend(iids)
+        if since is not None:
+            conditions.append("c.contract_date >= ?")
+            params.append(since)
+        if until is not None:
+            conditions.append("c.contract_date <= ?")
+            params.append(until)
+
+        where_clause = " AND ".join(conditions)
+
+        # safe: sort_by is mapped through whitelist, never used as raw user input
+        sort_map = {
+            "contract_date": "c.contract_date",
+            "amount_mxn": "c.amount_mxn",
+            "risk_score": "c.risk_score",
+        }
+        sort_expr = sort_map.get(sort_by, "c.contract_date")
+        assert sort_expr in sort_map.values(), f"Invalid sort: {sort_expr}"
+        order_direction = "DESC" if sort_order.lower() == "desc" else "ASC"
+
+        # Count
+        cursor.execute(f"SELECT COUNT(*) FROM contracts c WHERE {where_clause}", params)
+        total = cursor.fetchone()[0]
+
+        # Paginated results with JOINed entity names
+        offset = (page - 1) * per_page
+        query = f"""
+            SELECT
+                c.id, c.contract_number, c.title, c.amount_mxn,
+                c.contract_date, c.contract_year, c.sector_id,
+                s.name_es as sector_name, c.risk_score, c.risk_level,
+                c.is_direct_award, c.is_single_bid,
+                v.name as vendor_name, i.name as institution_name,
+                c.institution_id,
+                c.procedure_type, c.mahalanobis_distance, c.source_structure
+            FROM contracts c
+            LEFT JOIN sectors s ON c.sector_id = s.id
+            LEFT JOIN vendors v ON c.vendor_id = v.id
+            LEFT JOIN institutions i ON c.institution_id = i.id
+            WHERE {where_clause}
+            ORDER BY {sort_expr} {order_direction} NULLS LAST
+            LIMIT ? OFFSET ?
+        """
+        cursor.execute(query, params + [per_page, offset])
+
+        contracts = [
+            ContractListItem(
+                id=row["id"],
+                contract_number=row["contract_number"],
+                title=row["title"],
+                amount_mxn=row["amount_mxn"] or 0,
+                contract_date=row["contract_date"],
+                contract_year=row["contract_year"],
+                sector_id=row["sector_id"],
+                sector_name=row["sector_name"],
+                risk_score=row["risk_score"],
+                risk_level=row["risk_level"],
+                is_direct_award=bool(row["is_direct_award"]),
+                is_single_bid=bool(row["is_single_bid"]),
+                vendor_name=row["vendor_name"],
+                institution_id=row["institution_id"],
+                institution_name=row["institution_name"],
+                procedure_type=row["procedure_type"],
+                mahalanobis_distance=row["mahalanobis_distance"],
+                source_structure=row["source_structure"],
+                thin_history=vendor_history.contract_thin_history(conn, vendor_id, row["contract_year"]),
+            )
+            for row in cursor.fetchall()
+        ]
+
+        return ContractListResponse(
+            data=contracts,
+            pagination=ContractPaginationMeta(
+                page=page,
+                per_page=per_page,
+                total=total,
+                total_pages=math.ceil(total / per_page) if total > 0 else 1,
+            ),
+        )
+
+
+def build_institutions_timeline(conn: sqlite3.Connection, vendor_id: int, top: int) -> Dict[str, Any]:
+    """Buyer × year cells for the dossier's «expediente por sexenios» (owner 2026-10-27).
+
+    One GROUP BY on contracts (idx_c_vendor_year_amount), amounts > MAX_CONTRACT_VALUE
+    excluded. The `top` largest buyers by value keep their own cells; the rest fold into
+    one per-year «otros» row (institution_id null). `institutions` lists every buyer
+    (first/last year, value) for the orbit.
+    """
+    # Buyers on canonical ids (institution_canonical folds an agency's renamed / duplicate rows),
+    # the same basis as vendor_stats.institution_count and the tenure table, so the head and this block agree.
+    canon = conn.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'institution_canonical'").fetchone()
+    inst, join = (("COALESCE(ic.canonical_id, c.institution_id)", "LEFT JOIN institution_canonical ic ON ic.institution_id = c.institution_id")
+                  if canon else ("c.institution_id", ""))
+    rows = conn.execute(
+        f"""
+        SELECT {inst} AS institution_id, c.contract_year AS year, COUNT(*) AS n,
+               COALESCE(SUM(c.amount_mxn), 0) AS v, COALESCE(SUM(c.is_direct_award), 0) AS da,
+               SUM(c.risk_score) AS rs, COUNT(c.risk_score) AS rn
+        FROM contracts c {join}
+        WHERE c.vendor_id = ? AND c.contract_year IS NOT NULL
+          AND COALESCE(c.amount_mxn, 0) <= ?
+        GROUP BY 1, 2
+        """,
+        (vendor_id, MAX_CONTRACT_VALUE),
+    ).fetchall()
+
+    def cell(acc: Dict[str, float]) -> Dict[str, Any]:
+        return {
+            "amount_mxn": acc["v"], "n_contracts": int(acc["n"]), "n_direct_award": int(acc["da"]),
+            "avg_risk_score": round(acc["rs"] / acc["rn"], 4) if acc["rn"] else None,
+        }
+
+    def add(acc: Dict[str, float], r: Any) -> None:
+        acc["n"] += r["n"]; acc["v"] += r["v"]; acc["da"] += r["da"]
+        acc["rs"] += r["rs"] or 0; acc["rn"] += r["rn"]
+
+    zero = lambda: {"n": 0, "v": 0.0, "da": 0, "rs": 0.0, "rn": 0}  # noqa: E731
+    per_inst: Dict[Any, Dict[str, Any]] = {}
+    for r in rows:
+        p = per_inst.setdefault(r["institution_id"], {"tot": zero(), "first": r["year"], "last": r["year"]})
+        add(p["tot"], r)
+        p["first"] = min(p["first"], r["year"]); p["last"] = max(p["last"], r["year"])
+    ranked = sorted(per_inst, key=lambda i: (-per_inst[i]["tot"]["v"], -per_inst[i]["tot"]["n"], i or 0))
+    top_ids = set(ranked[:top])
+
+    names: Dict[int, Any] = {}
+    ids = [i for i in ranked if i is not None]
+    for k in range(0, len(ids), 500):
+        chunk = ids[k:k + 500]
+        for r in conn.execute(
+            f"SELECT id, name, siglas FROM institutions WHERE id IN ({','.join('?' * len(chunk))})", chunk
+        ):
+            names[r["id"]] = r
+
+    cells: List[Dict[str, Any]] = []
+    others: Dict[int, Dict[str, float]] = {}
+    years: Dict[int, Dict[str, float]] = {}
+    for r in rows:
+        add(years.setdefault(r["year"], zero()), r)
+        if r["institution_id"] in top_ids:
+            acc = zero(); add(acc, r)
+            cells.append({"institution_id": r["institution_id"], "year": r["year"], **cell(acc)})
+        else:
+            add(others.setdefault(r["year"], zero()), r)
+    cells += [{"institution_id": None, "year": y, **cell(a)} for y, a in others.items()]
+    cells.sort(key=lambda c: (c["year"], c["institution_id"] or 0))
+
+    return {
+        "vendor_id": vendor_id,
+        "top": len(top_ids),
+        "n_institutions": len(ranked),
+        # ponytail: the orbit reads the 200 largest buyers; the long tail is stated as a count
+        "institutions": [
+            {
+                "institution_id": i,
+                "name": names[i]["name"] if i in names else None,
+                "siglas": names[i]["siglas"] if i in names else None,
+                "first_year": per_inst[i]["first"], "last_year": per_inst[i]["last"],
+                "is_top": i in top_ids,
+                **cell(per_inst[i]["tot"]),
+            }
+            for i in ranked[:200]
+        ],
+        "years": [{"year": y, **cell(years[y])} for y in sorted(years)],
+        "cells": cells,
+    }
+
+
+@router.get("/{vendor_id:int}/institutions/timeline")
+def get_vendor_institutions_timeline(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    top: int = Query(8, ge=1, le=20, description="Buyers with their own cells; the rest fold into «otros»"),
+):
+    """Per buyer × year: amount, contracts, direct awards, mean risk indicator (top N buyers + «otros»)."""
+    cache_key = f"inst_timeline:{vendor_id}:{top}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+    with get_db() as conn:
+        if not conn.execute("SELECT 1 FROM vendors WHERE id = ?", (vendor_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+        result = build_institutions_timeline(conn, vendor_id, top)
+    _set_vendor_cache(cache_key, result)
+    return result
+
+
+@router.get("/{vendor_id:int}/panorama")
+def get_vendor_panorama(
+    vendor_id: int = Path(..., description="Vendor ID (an absorbed id serves its canonical one)"),
+    since: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/after (ISO), e.g. 2024-10-01 = «Hoy»"),
+    until: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/before (ISO): with since, one government"),
+):
+    """Vendor profile (docs/PROFILE_CONTENT_VENDOR_2026-11-05.md § 1–4): ficha + contracts per risk level + 50 largest
+    buyers (money per year / government) + categories › subcategories, CompraNet + ComprasMX (api/services/vendor_panorama.py)."""
+    with get_db() as conn:
+        if not conn.execute("SELECT 1 FROM vendors WHERE id = ?", (vendor_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+        cid = vcanon.canonical_id(conn, vendor_id)
+        key = f"panorama:{cid}:{since}:{until}"
+        cached = _get_vendor_cache(key)
+        if cached is not None:
+            return cached
+        result = build_vendor_panorama(conn, cid, since=since, until=until)
+    _set_vendor_cache(key, result)
+    return result
+
+
+@router.get("/{vendor_id:int}/institutions", response_model=VendorInstitutionListResponse)
+def get_vendor_institutions(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+):
+    """
+    Get institutions that a vendor has contracted with.
+
+    Returns institutions ranked by the value they paid this vendor (contract
+    count kept in the payload) — a count ranking printed value shares in the
+    wrong order and dropped the biggest buyers (PARALLAX D13b § Change 3).
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # Count total
+        cursor.execute("""
+            SELECT COUNT(DISTINCT i.id)
+            FROM contracts c
+            JOIN institutions i ON c.institution_id = i.id
+            WHERE c.vendor_id = ? AND COALESCE(c.amount_mxn, 0) <= ?
+        """, (vendor_id, MAX_CONTRACT_VALUE))
+        total = cursor.fetchone()[0]
+
+        offset = (page - 1) * per_page
+        cursor.execute("""
+            SELECT
+                i.id as institution_id, i.name as institution_name,
+                i.institution_type,
+                COUNT(c.id) as contract_count,
+                COALESCE(SUM(c.amount_mxn), 0) as total_value_mxn,
+                COALESCE(AVG(c.risk_score), 0) as avg_risk_score,
+                MIN(c.contract_year) as first_year,
+                MAX(c.contract_year) as last_year
+            FROM contracts c
+            JOIN institutions i ON c.institution_id = i.id
+            WHERE c.vendor_id = ? AND COALESCE(c.amount_mxn, 0) <= ?
+            GROUP BY i.id, i.name, i.institution_type
+            ORDER BY total_value_mxn DESC, contract_count DESC, i.id
+            LIMIT ? OFFSET ?
+        """, (vendor_id, MAX_CONTRACT_VALUE, per_page, offset))
+
+        institutions = [
+            VendorInstitutionItem(
+                institution_id=row["institution_id"],
+                institution_name=row["institution_name"],
+                institution_type=row["institution_type"],
+                contract_count=row["contract_count"],
+                total_value_mxn=row["total_value_mxn"],
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+                first_year=row["first_year"],
+                last_year=row["last_year"],
+            )
+            for row in cursor.fetchall()
+        ]
+
+        return VendorInstitutionListResponse(
+            vendor_id=vendor_id,
+            vendor_name=vendor["name"],
+            data=institutions,
+            total=total,
+        )
+
+
+@router.get("/{vendor_id:int}/categories", response_model=VendorCategoriesResponse)
+def get_vendor_categories(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get procurement categories a vendor sells into.
+
+    Returns categories ranked by contract value, with each category's share
+    of the vendor's total contract value.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM vendors WHERE id = ?", (vendor_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        cursor.execute("""
+            SELECT
+                cat.id as category_id, cat.code, cat.name_es, cat.name_en,
+                COUNT(c.id) as contracts,
+                COALESCE(SUM(c.amount_mxn), 0) as total_amount_mxn
+            FROM contracts c
+            JOIN categories cat ON c.category_id = cat.id
+            WHERE c.vendor_id = ? AND COALESCE(c.amount_mxn, 0) <= ?
+            GROUP BY cat.id, cat.code, cat.name_es, cat.name_en
+            ORDER BY total_amount_mxn DESC
+        """, (vendor_id, MAX_CONTRACT_VALUE))
+        rows = cursor.fetchall()
+
+        total_contracts = sum(row["contracts"] for row in rows)
+        vendor_total_value = sum(row["total_amount_mxn"] for row in rows) or 0.0
+
+        categories = [
+            VendorCategoryItem(
+                category_id=row["category_id"],
+                code=row["code"],
+                name_es=row["name_es"],
+                name_en=row["name_en"],
+                contracts=row["contracts"],
+                total_amount_mxn=row["total_amount_mxn"],
+                share_of_vendor_value=round(row["total_amount_mxn"] / vendor_total_value, 4) if vendor_total_value > 0 else 0.0,
+            )
+            for row in rows
+        ]
+
+        return VendorCategoriesResponse(
+            vendor_id=vendor_id,
+            total_contracts=total_contracts,
+            categories=categories,
+        )
+
+
+@router.get("/{vendor_id:int}/risk-profile", response_model=VendorRiskProfile)
+def get_vendor_risk_profile(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get detailed risk profile for a vendor.
+
+    Returns risk distribution, common risk factors, and comparison to sector average.
+    Optimized: uses vendor_stats for avg_risk/percentile, consolidates contract queries.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Q1: Vendor info + pre-computed stats
+        cursor.execute("""
+            SELECT v.name, vs.avg_risk_score, vs.total_contracts,
+                   vs.primary_sector_id
+            FROM vendors v
+            LEFT JOIN vendor_stats vs ON v.id = vs.vendor_id
+            WHERE v.id = ?
+        """, (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        avg_risk = vendor["avg_risk_score"]
+        total_contracts = vendor["total_contracts"] or 0
+
+        # Q2: Risk distribution + trend + factors in one pass
+        cursor.execute("""
+            SELECT risk_level, risk_score, risk_factors, contract_date
+            FROM contracts WHERE vendor_id = ?
+        """, (vendor_id,))
+
+        contracts_by_level = {}
+        factor_counts = Counter()
+        scores_with_dates = []
+
+        for row in cursor.fetchall():
+            level = row["risk_level"] or "unknown"
+            contracts_by_level[level] = contracts_by_level.get(level, 0) + 1
+            rf = row["risk_factors"]
+            if rf:
+                for f in rf.split(","):
+                    f = f.strip()
+                    if f:
+                        factor_counts[f] += 1
+            if row["risk_score"] is not None and row["contract_date"]:
+                scores_with_dates.append((row["contract_date"], row["risk_score"]))
+
+        # Q3: Value by risk level
+        cursor.execute("""
+            SELECT risk_level, COALESCE(SUM(amount_mxn), 0) as value
+            FROM contracts WHERE vendor_id = ?
+            GROUP BY risk_level
+        """, (vendor_id,))
+        value_by_level = {
+            (row["risk_level"] or "unknown"): row["value"]
+            for row in cursor.fetchall()
+        }
+
+        # Compute risk trend
+        risk_trend = None
+        if scores_with_dates:
+            scores_with_dates.sort(key=lambda x: x[0])
+            mid = len(scores_with_dates) // 2
+            if mid > 0:
+                early_avg = sum(s for _, s in scores_with_dates[:mid]) / mid
+                late_avg = sum(s for _, s in scores_with_dates[mid:]) / len(scores_with_dates[mid:])
+                diff = late_avg - early_avg
+                risk_trend = "worsening" if diff > 0.05 else ("improving" if diff < -0.05 else "stable")
+
+        top_factors = [
+            {"factor": f, "count": c, "percentage": round(c / max(total_contracts, 1) * 100, 1)}
+            for f, c in factor_counts.most_common(5)
+        ]
+
+        # Q4: Sector comparison + percentile
+        risk_vs_sector = None
+        risk_percentile = None
+        primary_sector_id = vendor["primary_sector_id"]
+
+        if avg_risk is not None:
+            if primary_sector_id:
+                cursor.execute("SELECT avg_risk_score FROM sectors WHERE id = ?", (primary_sector_id,))
+                sector_row = cursor.fetchone()
+                if sector_row and sector_row["avg_risk_score"]:
+                    risk_vs_sector = round(avg_risk - sector_row["avg_risk_score"], 4)
+
+            cursor.execute("""
+                SELECT COUNT(*) as total_vendors,
+                       SUM(CASE WHEN avg_risk_score < ? THEN 1 ELSE 0 END) as lower_count
+                FROM vendor_stats WHERE total_contracts > 0
+            """, (avg_risk,))
+            pct_row = cursor.fetchone()
+            if pct_row["total_vendors"] > 0:
+                risk_percentile = round(pct_row["lower_count"] / pct_row["total_vendors"] * 100, 1)
+
+        return VendorRiskProfile(
+            vendor_id=vendor_id,
+            vendor_name=vendor["name"],
+            avg_risk_score=round(avg_risk, 4) if avg_risk else None,
+            risk_trend=risk_trend,
+            contracts_by_risk_level=contracts_by_level,
+            value_by_risk_level=value_by_level,
+            top_risk_factors=top_factors,
+            risk_vs_sector_avg=risk_vs_sector,
+            risk_percentile=risk_percentile,
+        )
+
+
+@router.get("/{vendor_id:int}/related", response_model=VendorRelatedListResponse)
+def get_vendor_related(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    limit: int = Query(20, ge=1, le=50, description="Maximum results"),
+):
+    """
+    Get vendors related to this vendor.
+
+    Returns vendors in the same group, with similar names, or shared RFC roots.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT id, name, rfc, group_id, name_normalized
+            FROM vendors WHERE id = ?
+        """, (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        related = []
+
+        # 2. Shared RFC root (first 10 chars)
+        # Company RFCs only (a persona física root = initials + birth date).
+        # Name-prefix "similar name" matching was removed (≤22% precision on RFC gold).
+        if _mask_personal_rfc(vendor["rfc"]):
+            rfc_root = vendor["rfc"][:10]
+            cursor.execute(f"""
+                SELECT v.id, v.name, v.rfc,
+                       COUNT(c.id) as total_contracts,
+                       COALESCE(SUM(c.amount_mxn), 0) as total_value_mxn
+                FROM vendors v
+                LEFT JOIN contracts c ON v.id = c.vendor_id
+                    AND COALESCE(c.amount_mxn, 0) <= ?
+                WHERE v.rfc LIKE ? AND v.id != ? AND {vcanon.not_absorbed(conn, 'v.id')}
+                GROUP BY v.id, v.name, v.rfc
+                LIMIT ?
+            """, (MAX_CONTRACT_VALUE, f"{rfc_root}%", vendor_id, limit - len(related)))
+
+            for row in cursor.fetchall():
+                if not any(r.vendor_id == row["id"] for r in related):
+                    related.append(VendorRelatedItem(
+                        vendor_id=row["id"], vendor_name=row["name"], rfc=_mask_personal_rfc(row["rfc"]),
+                        relationship_type="shared_rfc_root", similarity_score=0.9,
+                        total_contracts=row["total_contracts"],
+                        total_value_mxn=row["total_value_mxn"],
+                    ))
+
+        # Link-only matcher candidates (never merged; never personas físicas)
+        for cand in vcanon.possible_same_entities(conn, vcanon.canonical_id(conn, vendor_id), limit):
+            if len(related) >= limit or any(r.vendor_id == cand["vendor_id"] for r in related):
+                continue
+            row = cursor.execute("""
+                SELECT v.name, v.rfc, COALESCE(s.total_contracts, 0) AS tc, COALESCE(s.total_value_mxn, 0) AS tv
+                FROM vendors v LEFT JOIN vendor_stats s ON s.vendor_id = v.id WHERE v.id = ?
+            """, (cand["vendor_id"],)).fetchone()
+            if row:
+                related.append(VendorRelatedItem(
+                    vendor_id=cand["vendor_id"], vendor_name=row["name"], rfc=_mask_personal_rfc(row["rfc"]),
+                    relationship_type="possible_same_entity", match_tier=cand["tier"],
+                    note_en=vcanon.link_note(cand["tier"], "en", row["name"]),
+                    note_es=vcanon.link_note(cand["tier"], "es", row["name"]),
+                    similarity_score=cand["score"], total_contracts=row["tc"], total_value_mxn=row["tv"],
+                ))
+
+        return VendorRelatedListResponse(
+            vendor_id=vendor_id,
+            vendor_name=vendor["name"],
+            data=related[:limit],
+            total=len(related[:limit]),
+        )
+
+
+# =============================================================================
+# ASF AUDIT CASES
+# =============================================================================
+
+@router.get("/{vendor_id:int}/asf-cases", response_model=list[ASFCase])
+def get_vendor_asf_cases(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Get ASF audit cases matching this vendor by RFC or name."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Get vendor RFC and name
+        cursor.execute("SELECT name, rfc FROM vendors WHERE id = ?", (vendor_id,))
+        vendor_row = cursor.fetchone()
+        if not vendor_row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # Strict full-name / RFC match (api/sanctions.py) — never a name prefix.
+        rows = match_asf(conn, vendor_row["name"], vendor_row["rfc"])
+        return [ASFCase(**{k: v for k, v in row.items() if k != "match_basis"}) for row in rows]
+
+
+# =============================================================================
+# EXTERNAL FLAGS (SFP Sanctions + RUPC + ASF)
+# =============================================================================
+
+@router.get("/{vendor_id:int}/external-flags", response_model=ExternalFlagsResponse)
+def get_vendor_external_flags(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Get external registry flags: SFP sanctions, RUPC grade, ASF cases."""
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name, rfc FROM vendors WHERE id = ?", (vendor_id,))
+        vendor_row = cursor.fetchone()
+        if not vendor_row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        vendor_name = vendor_row["name"]
+        vendor_rfc = vendor_row["rfc"]
+
+        result = {
+            "vendor_id": vendor_id,
+            "sfp_sanctions": [],
+            "rupc": None,
+            "asf_cases": [],
+            "sat_efos": None,
+            "match_method": None,
+            "match_confidence": None,
+        }
+
+        # --- SFP Sanctions ---
+        # Strict match (api/sanctions.py): same RFC, or identical full normalized
+        # name. RFC is absent at source for most records, so each hit carries
+        # match_basis ('rfc' | 'name' | 'name_ambiguous') and the UI says which.
+        try:
+            result["sfp_sanctions"] = match_sfp(conn, vendor_name, vendor_rfc)
+            basis = summarize_basis(result["sfp_sanctions"])
+            result["match_method"] = basis
+            result["match_confidence"] = {"rfc": 99, "name": 75, "name_ambiguous": 40}.get(basis)
+        except Exception as e:
+            logger.debug("SFP sanctions table unavailable: %s", e)
+
+        # --- RUPC grade ---
+        if vendor_rfc:
+            try:
+                row = cursor.execute(
+                    "SELECT rfc, company_name, compliance_grade, status, registered_date, expiry_date FROM rupc_vendors WHERE rfc = ?",
+                    (vendor_rfc,),
+                ).fetchone()
+                if row:
+                    result["rupc"] = dict(row)
+            except Exception as e:
+                logger.debug("RUPC table unavailable: %s", e)
+
+        # --- SAT EFOS ghost company list ---
+        if vendor_rfc:
+            try:
+                row = cursor.execute(
+                    "SELECT rfc, company_name, stage, dof_date FROM sat_efos_vendors WHERE rfc = ? AND stage IN ('definitivo','presunto') "
+                    "ORDER BY CASE stage WHEN 'definitivo' THEN 0 ELSE 1 END",  # desvirtuado = cleared; favorecido = invoice recipient, not EFOS
+                    (vendor_rfc,),
+                ).fetchone()
+                if row:
+                    result["sat_efos"] = {**dict(row), "rfc": public_rfc(row["rfc"])}
+            except Exception as e:
+                logger.debug("SAT EFOS table unavailable: %s", e)
+
+        # --- ASF cases (existing table) ---
+        try:
+            keep = ("id", "asf_report_id", "entity_name", "finding_type", "amount_mxn",
+                    "report_year", "report_url", "summary", "match_basis")
+            result["asf_cases"] = [
+                {k: r.get(k) for k in keep} for r in match_asf(conn, vendor_name, vendor_rfc, limit=20)
+            ]
+        except Exception as e:
+            logger.debug("ASF cases table unavailable: %s", e)
+
+        return result
+
+
+# =============================================================================
+# GROUND TRUTH STATUS
+# =============================================================================
+
+class GroundTruthCaseInfo(BaseModel):
+    case_id: int
+    case_name: str
+    case_type: str
+    role: Optional[str] = None
+    evidence_strength: Optional[str] = None
+    # Slug of the linked procurement_scandal (for /cases/:slug dossier link)
+    scandal_slug: Optional[str] = None
+    # The case's own years (the ARIA case view marks year_start on its facts row)
+    year_start: Optional[int] = None
+    year_end: Optional[int] = None
+
+
+class GroundTruthStatusResponse(BaseModel):
+    # True only for a documented link (api/public_labels.py § B3)
+    is_known_bad: bool
+    # Non-FP links that are unsourced or below high confidence — neutral copy only
+    has_unverified_lead: bool = False
+    cases: List[GroundTruthCaseInfo] = []
+
+
+@router.get("/{vendor_id:int}/ground-truth-status", response_model=GroundTruthStatusResponse)
+def get_vendor_ground_truth_status(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Returns whether a vendor appears in documented corruption cases."""
+    cache_key = f"gt_status:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM vendors WHERE id = ?", (vendor_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # FP and scandal_actor links are never shown; the rest split into
+        # documented vs unverified lead (docs/PREPUB_AUDIT_2026-09-24.md § B3).
+        rows = cursor.execute(f"""
+            SELECT gtc.id as case_id, gtc.case_name, gtc.case_type,
+                   gtc.year_start, gtc.year_end,
+                   gtv.role, gtv.evidence_strength,
+                   ps.slug as scandal_slug,
+                   {DOCUMENTED_LINK_SQL} AS documented
+            FROM ground_truth_vendors gtv
+            JOIN ground_truth_cases gtc ON gtv.case_id = gtc.id
+            LEFT JOIN procurement_scandals ps ON ps.ground_truth_case_id = gtc.id
+                AND ps.is_verified = 1
+            WHERE gtv.vendor_id = ? AND {PUBLIC_LINK_SQL}
+        """, (vendor_id,)).fetchall()
+
+        # Unverified leads are reported only as a boolean: the case is
+        # unsourced and case names can embed people.
+        cases = [
+            GroundTruthCaseInfo(
+                case_id=r["case_id"],
+                case_name=r["case_name"],
+                case_type=r["case_type"],
+                role=r["role"],
+                evidence_strength=r["evidence_strength"],
+                scandal_slug=r["scandal_slug"],
+                year_start=r["year_start"],
+                year_end=r["year_end"],
+            )
+            for r in rows
+            if r["documented"]
+        ]
+
+        result = GroundTruthStatusResponse(
+            is_known_bad=len(cases) > 0,
+            has_unverified_lead=len(cases) < len(rows),
+            cases=cases,
+        )
+        _set_vendor_cache(cache_key, result)
+        return result
+
+
+# =============================================================================
+# RISK WATERFALL
+# =============================================================================
+
+class RiskWaterfallItem(BaseModel):
+    feature: str
+    z_score: float
+    coefficient: float
+    contribution: float
+    label_en: str
+    label_es: str = ""
+
+
+class RiskWaterfallResponse(BaseModel):
+    vendor_id: int
+    items: List[RiskWaterfallItem]
+    total_contracts: int
+    # Which numbers these are: "z_features" = contract_z_features × the active
+    # model's coefficients; "v52" = the precomputed v5.2 SHAP fallback (DBs
+    # without contract_z_features, e.g. the deploy DB). None = no data.
+    source: Optional[str] = None
+
+
+_FEATURE_LABELS = {
+    "single_bid": "Single Award",
+    "direct_award": "Direct Award",
+    "price_ratio": "Amount vs similar contracts",
+    "vendor_concentration": "Vendor Concentration",
+    "ad_period_days": "Ad Period Length",
+    "year_end": "Year-End Timing",
+    "same_day_count": "Same-Day Contracts",
+    "network_member_count": "Network Membership",
+    "co_bid_rate": "Co-Bidding Rate",
+    "price_hyp_confidence": "Amount-outlier confidence",
+    "industry_mismatch": "Industry Mismatch",
+    "institution_risk": "Institution Risk",
+    "price_volatility": "Very uneven contract sizes",
+    "sector_spread": "Sector Spread",
+    "win_rate": "Win Rate",
+    "institution_diversity": "Institution Diversity",
+    # CAL-v8 terms stored in contract_z_features_v2 (PARALLAX D13b § Change 6)
+    "amount_residual_z": "Amount Residual",
+    "recency_z": "Recency",
+    "cobid_herfindahl": "Co-bid Herfindahl",
+    "pub_delay_z": "Publication Delay",
+    "amendment_flag": "Amendment",
+    "partida_price_residual_z_loo": "Amount vs. Budget Line",
+    "partida_single_bid_z_loo": "Single Award vs. Budget Line",
+    "partida_direct_award_z_loo": "Direct Award vs. Budget Line",
+    "has_partida": "Has Budget Line",
+    "rt4_log": "Institutions Served Before (Breadth)",
+    "inst_hhi_prior": "Buyer Concentration Before (HHI)",
+}
+
+_FEATURE_LABELS_ES = {
+    "single_bid": "Un solo adjudicado",
+    "direct_award": "Adjudicación directa",
+    "price_ratio": "Monto frente a contratos parecidos",
+    "vendor_concentration": "Concentración del proveedor",
+    "ad_period_days": "Plazo de convocatoria",
+    "year_end": "Fin de año",
+    "same_day_count": "Contratos del mismo día",
+    "network_member_count": "Pertenencia a red",
+    "co_bid_rate": "Tasa de co-licitación",
+    "price_hyp_confidence": "Confianza de monto atípico",
+    "industry_mismatch": "Desajuste industria-sector",
+    "institution_risk": "Riesgo institucional",
+    "price_volatility": "Montos muy dispares entre sus contratos",
+    "sector_spread": "Dispersión sectorial",
+    "win_rate": "Tasa de éxito",
+    "institution_diversity": "Diversidad institucional",
+    "amount_residual_z": "Residuo del monto",
+    "recency_z": "Recencia",
+    "cobid_herfindahl": "Herfindahl de co-licitación",
+    "pub_delay_z": "Retraso de publicación",
+    "amendment_flag": "Convenio modificatorio",
+    "partida_price_residual_z_loo": "Monto frente a su partida",
+    "partida_single_bid_z_loo": "Un solo adjudicado frente a su partida",
+    "partida_direct_award_z_loo": "Adjudicación directa frente a su partida",
+    "has_partida": "Con partida presupuestal",
+    "rt4_log": "Instituciones atendidas antes (amplitud)",
+    "inst_hhi_prior": "Concentración de compradores previa (HHI)",
+}
+
+_Z_FEATURE_COLS = [
+    "z_single_bid", "z_direct_award", "z_price_ratio", "z_vendor_concentration",
+    "z_ad_period_days", "z_year_end", "z_same_day_count", "z_network_member_count",
+    "z_co_bid_rate", "z_price_hyp_confidence", "z_industry_mismatch", "z_institution_risk",
+    "z_price_volatility", "z_sector_spread", "z_win_rate", "z_institution_diversity",
+]
+
+# The five CAL-v8 terms with no z_ column: contract_z_features_v2 stores them
+# under the coefficient's own name. Without them the decomposition listed 13 of
+# the 18 active terms (48's true 4th reason, cobid_herfindahl, was missing).
+_V2_FEATURE_COLS = ["amount_residual_z", "recency_z", "cobid_herfindahl", "pub_delay_z", "amendment_flag"]
+
+
+def _load_global_coefficients(conn) -> Dict[str, float]:
+    """Active-model (v0.8.5) global coefficients, normalized to a flat {name: value} dict.
+
+    Was `WHERE sector_id IS NULL` (→ superseded v6.0 betas, and v0.8.5's
+    {names,values} array format would parse to nothing). See active_model.py.
+    """
+    return load_active_global_coefficients(conn)
+
+
+def _build_waterfall_from_shap(conn, vendor_id: int) -> tuple:
+    """Fallback: build waterfall from precomputed vendor_shap_v52 when contract_z_features is unavailable."""
+    row = conn.execute(
+        "SELECT shap_values, mean_z_vector, n_contracts FROM vendor_shap_v52 WHERE vendor_id = ? ORDER BY n_contracts DESC LIMIT 1",
+        (vendor_id,)
+    ).fetchone()
+    if not row:
+        return [], 0, None
+    shap_values = json.loads(row["shap_values"]) if row["shap_values"] else {}
+    z_vector = json.loads(row["mean_z_vector"]) if row["mean_z_vector"] else {}
+    coefficients = _load_global_coefficients(conn)
+    items = []
+    for feature, contribution in shap_values.items():
+        z_val = z_vector.get(feature, 0.0) or 0.0
+        coeff = coefficients.get(feature, 0.0)
+        items.append(RiskWaterfallItem(
+            feature=feature,
+            z_score=round(float(z_val), 4),
+            coefficient=round(float(coeff), 4),
+            contribution=round(float(contribution), 4),
+            label_en=_FEATURE_LABELS.get(feature, feature),
+            label_es=_FEATURE_LABELS_ES.get(feature, _FEATURE_LABELS.get(feature, feature)),
+        ))
+    items.sort(key=lambda x: abs(x.contribution), reverse=True)
+    return items, row["n_contracts"] or 0, "v52"
+
+
+def _build_waterfall(conn, filter_col: str, filter_id: int) -> tuple:
+    """Build risk waterfall items for a vendor or institution. Returns (items, total_contracts, source)."""
+    model = load_active_global_model(conn)
+    if model["model_version"] in V10_MODELS:
+        # v0.9.2: (entity mean - population mean) of each as-of input x its raw-unit beta
+        means, n = v10_centred_means(conn, filter_col, filter_id, model["coefficients"])
+        if means is None:
+            return [], 0, None
+        items = [RiskWaterfallItem(
+            feature=v10_display_name(f), z_score=round(means[f], 4), coefficient=round(b, 4),
+            contribution=round(b * means[f], 4),
+            label_en=_FEATURE_LABELS.get(v10_display_name(f), v10_display_name(f)),
+            label_es=_FEATURE_LABELS_ES.get(v10_display_name(f), _FEATURE_LABELS.get(v10_display_name(f), v10_display_name(f))),
+        ) for f, b in model["coefficients"].items() if b and f in means]
+        items.sort(key=lambda x: abs(x.contribution), reverse=True)
+        return items, n, "features_v10"
+    avg_cols = ", ".join(f"AVG(czf.{col}) as {col}" for col in _Z_FEATURE_COLS)
+    # A contract with no _v2 row contributes 0 to those means (COALESCE), so every
+    # term averages over the same contracts.
+    v2_cols = ", ".join(f"AVG(COALESCE(v2.{col}, 0)) as {col}" for col in _V2_FEATURE_COLS)
+    v2_names: list = []
+    try:
+        try:
+            row = conn.execute(f"""
+                SELECT {avg_cols}, {v2_cols}, COUNT(*) as cnt
+                FROM contract_z_features czf
+                JOIN contracts c ON czf.contract_id = c.id
+                LEFT JOIN contract_z_features_v2 v2 ON v2.contract_id = czf.contract_id
+                WHERE c.{filter_col} = ?
+            """, (filter_id,)).fetchone()
+            v2_names = _V2_FEATURE_COLS
+        except sqlite3.OperationalError:
+            # no contract_z_features_v2 in this DB — the 16 z_ columns only
+            row = conn.execute(f"""
+                SELECT {avg_cols}, COUNT(*) as cnt
+                FROM contract_z_features czf
+                JOIN contracts c ON czf.contract_id = c.id
+                WHERE c.{filter_col} = ?
+            """, (filter_id,)).fetchone()
+    except sqlite3.OperationalError:
+        # contract_z_features not in this DB — fall back to vendor_shap_v52 for vendor queries
+        if filter_col == "vendor_id":
+            return _build_waterfall_from_shap(conn, filter_id)
+        return [], 0, None
+
+    if not row or row["cnt"] == 0:
+        return [], 0, None
+
+    coefficients = _load_global_coefficients(conn)
+    if not coefficients:
+        return [], row["cnt"], None
+
+    means = {(c[2:] if c.startswith("z_") else c): (row[c] or 0.0) for c in [*_Z_FEATURE_COLS, *v2_names]}
+    # v0.9.1 terms (contract_features_v9): mean of the per-contract transformed values, so the
+    # breakdown covers every active term. Absent table (deploy DB) -> those terms are left out.
+    tf = load_active_feature_transforms(conn)
+    if tf.get("rt4"):
+        try:
+            v9 = conn.execute(
+                V9_SELECT.replace("FROM contract_features_v9",
+                                  "FROM contract_features_v9 f JOIN contracts c ON c.id = f.contract_id")
+                + f" WHERE c.{filter_col} = ?", (filter_id,)).fetchall()
+        except sqlite3.OperationalError:
+            v9 = []
+        for r in v9:
+            for k, v in v9_terms(tf, r).items():
+                means[k] = means.get(k, 0.0) + v / row["cnt"]
+
+    items = []
+    for feature_name, z_val in means.items():
+        coeff = coefficients.get(feature_name, 0.0)
+        if coeff == 0.0:
+            continue  # not an active term of the active model
+        contribution = z_val * coeff
+        items.append(RiskWaterfallItem(
+            feature=feature_name,
+            z_score=round(z_val, 4),
+            coefficient=round(coeff, 4),
+            contribution=round(contribution, 4),
+            label_en=_FEATURE_LABELS.get(feature_name, feature_name),
+            label_es=_FEATURE_LABELS_ES.get(feature_name, _FEATURE_LABELS.get(feature_name, feature_name)),
+        ))
+
+    items.sort(key=lambda x: abs(x.contribution), reverse=True)
+    return items, row["cnt"], "z_features"
+
+
+@router.get("/{vendor_id:int}/risk-waterfall", response_model=RiskWaterfallResponse)
+def get_vendor_risk_waterfall(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Returns per-feature risk contributions for a vendor (average across contracts)."""
+    cache_key = f"waterfall:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        if not conn.execute("SELECT id FROM vendors WHERE id = ?", (vendor_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        items, total, source = _build_waterfall(conn, "vendor_id", vendor_id)
+
+        result = RiskWaterfallResponse(vendor_id=vendor_id, items=items, total_contracts=total, source=source)
+        _set_vendor_cache(cache_key, result)
+        return result
+
+
+# =============================================================================
+# PEER COMPARISON
+# =============================================================================
+
+class PeerComparisonMetric(BaseModel):
+    metric: str
+    value: Optional[float]
+    peer_median: Optional[float]
+    percentile: Optional[float]
+    label_en: str
+
+
+class PeerComparisonResponse(BaseModel):
+    vendor_id: int
+    sector_id: Optional[int]
+    metrics: List[PeerComparisonMetric]
+
+
+@router.get("/{vendor_id:int}/peer-comparison", response_model=PeerComparisonResponse)
+def get_vendor_peer_comparison(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Returns vendor metrics vs sector median and percentile."""
+    cache_key = f"peer:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        vs = cursor.execute("""
+            SELECT vendor_id, total_contracts, total_value_mxn, avg_risk_score,
+                   direct_award_pct, single_bid_pct, primary_sector_id
+            FROM vendor_stats WHERE vendor_id = ?
+        """, (vendor_id,)).fetchone()
+        if not vs:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found or has no stats")
+
+        sector_id = vs["primary_sector_id"]
+        n_rows, dist = _peer_distribution(cursor, sector_id)
+
+        def pct_and_median(vals, value, n_all):
+            # Mirrors the SQL it replaced: COUNT(col <= value) / COUNT(scope rows),
+            # and the median is ORDER BY col (NULLs first) OFFSET n_all / 2.
+            if not n_all:
+                return None, None
+            off = n_all // 2 - (n_all - len(vals))
+            median = vals[off] if 0 <= off < len(vals) else None
+            return bisect_right(vals, value) * 100.0 / n_all, median
+
+        metric_defs = [
+            ("avg_risk_score", "Average Risk Score"),
+            ("total_contracts", "Total Contracts"),
+            ("total_value_mxn", "Total Contract Value (MXN)"),
+            ("direct_award_pct", "Direct Award Rate"),
+            ("single_bid_pct", "Single Bid Rate"),
+        ]
+
+        metrics = []
+        for col, label in metric_defs:
+            vendor_val = vs[col]
+            pctile, median_val = pct_and_median(dist[col], vendor_val or 0, n_rows)
+            metrics.append(PeerComparisonMetric(
+                metric=col,
+                value=round(vendor_val, 4) if vendor_val is not None else None,
+                peer_median=round(median_val, 4) if median_val is not None else None,
+                percentile=round(pctile, 1) if pctile is not None else None,
+                label_en=label,
+            ))
+
+        # price_per_contract — computed metric (total value / contract count) for
+        # the Z3 deviation ledger. NULL rows (zero contracts) are excluded from
+        # both the count and the median.
+        tv = vs["total_value_mxn"] or 0
+        tc = vs["total_contracts"] or 0
+        ppc_val = (tv / tc) if tc else None
+        ppc_vals = dist["price_per_contract"]
+        pctile, median_val = pct_and_median(ppc_vals, ppc_val or 0, len(ppc_vals))
+        metrics.append(PeerComparisonMetric(
+            metric="price_per_contract",
+            value=round(ppc_val, 2) if ppc_val is not None else None,
+            peer_median=round(median_val, 2) if median_val is not None else None,
+            percentile=round(pctile, 1) if pctile is not None else None,
+            label_en="Price per Contract (MXN)",
+        ))
+
+        # single_bid_competitive_pct — single bids ÷ competitive procedures (the
+        # base the "in competitive procedures" label and the EU 20 % line are
+        # defined on). single_bid_pct and direct_award_pct share the all-contracts
+        # denominator, so the ratio below is exact up to their 2-dp rounding;
+        # NULL (excluded) when a vendor has no competitive procedure
+        # (PARALLAX D13b § Change 4). Rounded and capped: the 2-dp inputs
+        # otherwise land at 100.0000001 and rank above a true 100 %.
+        da_v, sb_v = vs["direct_award_pct"], vs["single_bid_pct"]
+        sbc_val = min(100.0, round(sb_v * 100.0 / (100.0 - da_v), 4)) if (sb_v is not None and da_v is not None and da_v < 100.0) else None
+        sbc_vals = dist["single_bid_competitive_pct"]
+        pctile, median_val = pct_and_median(sbc_vals, sbc_val or 0, len(sbc_vals))
+        metrics.append(PeerComparisonMetric(
+            metric="single_bid_competitive_pct",
+            value=round(sbc_val, 4) if sbc_val is not None else None,
+            peer_median=round(median_val, 4) if median_val is not None else None,
+            percentile=round(pctile, 1) if pctile is not None and sbc_val is not None else None,
+            label_en="Single-award Rate (competitive procedures)",
+        ))
+
+        result = PeerComparisonResponse(vendor_id=vendor_id, sector_id=sector_id, metrics=metrics)
+        _set_vendor_cache(cache_key, result)
+        return result
+
+
+# =============================================================================
+# CONTRACT AGGREGATE — full-population counts + per-year histogram
+# =============================================================================
+# The Z3 register/census/activity render a ≤100-row SAMPLE for large vendors.
+# This endpoint returns POPULATION-level counts (over all the vendor's contracts)
+# so the census can say "84 of 6,303 repeated" instead of "84 of 100 sampled",
+# and the activity timeline can show the real distribution. Amounts are guarded
+# by MAX_CONTRACT_VALUE (data-quality rule). Cached per vendor.
+
+class VendorYearBucket(BaseModel):
+    year: int
+    count: int
+    amount: float
+    avg_risk: float
+
+
+class VendorAggregateResponse(BaseModel):
+    vendor_id: int
+    total_contracts: int
+    total_value_mxn: float
+    no_competition: int      # direct-award OR single-bid
+    direct_award: int
+    single_bid: int
+    year_min: Optional[int]
+    year_max: Optional[int]
+    by_year: List[VendorYearBucket]
+    repeat_rows: int         # contracts whose (rounded) amount repeats >= 3x
+    repeat_distinct: int     # distinct repeated amount values
+    peak_amount: Optional[float]
+    peak_mult: int
+
+
+@router.get("/{vendor_id:int}/contract-aggregate", response_model=VendorAggregateResponse)
+def get_vendor_contract_aggregate(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Population-level contract counts + per-year histogram for one vendor."""
+    cache_key = f"agg:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+        # Same population as the dossier header and /contracts: every id folded into the canonical one
+        ids = vcanon.group_ids(conn, vcanon.canonical_id(conn, vendor_id))
+        in_ids = f"vendor_id IN ({','.join('?' * len(ids))})"
+
+        overall = cursor.execute(f"""
+            SELECT
+                COUNT(*) AS n,
+                COALESCE(SUM(CASE WHEN amount_mxn <= ? THEN amount_mxn ELSE 0 END), 0) AS val,
+                SUM(CASE WHEN is_direct_award = 1 THEN 1 ELSE 0 END) AS da,
+                SUM(CASE WHEN is_single_bid = 1 THEN 1 ELSE 0 END) AS sb,
+                SUM(CASE WHEN is_direct_award = 1 OR is_single_bid = 1 THEN 1 ELSE 0 END) AS noc,
+                MIN(contract_year) AS ymin,
+                MAX(contract_year) AS ymax
+            FROM contracts WHERE {in_ids}
+        """, (MAX_CONTRACT_VALUE, *ids)).fetchone()
+        if not overall or (overall["n"] or 0) == 0:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} has no contracts")
+
+        years = cursor.execute(f"""
+            SELECT contract_year AS y, COUNT(*) AS c,
+                   COALESCE(SUM(CASE WHEN amount_mxn <= ? THEN amount_mxn ELSE 0 END), 0) AS a,
+                   AVG(risk_score) AS r
+            FROM contracts WHERE {in_ids} AND contract_year IS NOT NULL
+            GROUP BY contract_year ORDER BY contract_year
+        """, (MAX_CONTRACT_VALUE, *ids)).fetchall()
+        by_year = [
+            VendorYearBucket(year=int(y["y"]), count=y["c"], amount=round(y["a"] or 0, 2), avg_risk=round(y["r"] or 0, 4))
+            for y in years
+        ]
+
+        # Repeated amounts across the FULL population (round to nearest 100 MXN).
+        reps = cursor.execute(f"""
+            SELECT CAST(ROUND(amount_mxn / 100.0) * 100 AS INTEGER) AS k, COUNT(*) AS c
+            FROM contracts WHERE {in_ids} AND amount_mxn > 0
+            GROUP BY k HAVING COUNT(*) >= 3
+        """, (*ids,)).fetchall()
+        repeat_rows = sum(r["c"] for r in reps)
+        repeat_distinct = len(reps)
+        peak = max(reps, key=lambda r: r["c"], default=None)
+
+        result = VendorAggregateResponse(
+            vendor_id=vendor_id,
+            total_contracts=overall["n"],
+            total_value_mxn=round(overall["val"] or 0, 2),
+            no_competition=overall["noc"] or 0,
+            direct_award=overall["da"] or 0,
+            single_bid=overall["sb"] or 0,
+            year_min=overall["ymin"],
+            year_max=overall["ymax"],
+            by_year=by_year,
+            repeat_rows=repeat_rows,
+            repeat_distinct=repeat_distinct,
+            peak_amount=float(peak["k"]) if peak else None,
+            peak_mult=peak["c"] if peak else 0,
+        )
+        _set_vendor_cache(cache_key, result)
+        return result
+
+
+# =============================================================================
+# LINKED SCANDALS
+# =============================================================================
+
+class LinkedScandalItem(BaseModel):
+    case_id: int
+    case_name: str
+    case_type: str
+    role: Optional[str] = None
+    evidence_strength: Optional[str] = None
+    contract_count: int = 0
+    avg_risk_score: Optional[float] = None
+
+
+class LinkedScandalsResponse(BaseModel):
+    vendor_id: int
+    scandals: List[LinkedScandalItem]
+
+
+@router.get("/{vendor_id:int}/linked-scandals", response_model=LinkedScandalsResponse)
+def get_vendor_linked_scandals(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """Returns documented scandals connected to this vendor with contract details."""
+    cache_key = f"scandals:{vendor_id}"
+    cached = _get_vendor_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT id FROM vendors WHERE id = ?", (vendor_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        rows = cursor.execute(f"""
+            SELECT gtc.id as case_id, gtc.case_name, gtc.case_type,
+                   gtv.role, gtv.evidence_strength
+            FROM ground_truth_vendors gtv
+            JOIN ground_truth_cases gtc ON gtv.case_id = gtc.id
+            WHERE gtv.vendor_id = ? AND {DOCUMENTED_LINK_SQL}
+        """, (vendor_id,)).fetchall()
+
+        # Get contract counts and avg risk for this vendor
+        stats_row = cursor.execute("""
+            SELECT COUNT(*) as cnt, AVG(risk_score) as avg_rs
+            FROM contracts WHERE vendor_id = ?
+        """, (vendor_id,)).fetchone()
+
+        scandals = [
+            LinkedScandalItem(
+                case_id=r["case_id"],
+                case_name=r["case_name"],
+                case_type=r["case_type"],
+                role=r["role"],
+                evidence_strength=r["evidence_strength"],
+                contract_count=stats_row["cnt"] if stats_row else 0,
+                avg_risk_score=round(stats_row["avg_rs"], 4) if stats_row and stats_row["avg_rs"] else None,
+            )
+            for r in rows
+        ]
+
+        result = LinkedScandalsResponse(vendor_id=vendor_id, scandals=scandals)
+        _set_vendor_cache(cache_key, result)
+        return result
+
+
+# =============================================================================
+# EXISTING CLASSIFICATION ENDPOINTS (preserved)
+# =============================================================================
+
+@router.get("/{vendor_id:int}/risk-timeline", response_model=VendorRiskTimelineResponse)
+def get_vendor_risk_timeline(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get year-by-year average risk score for a vendor.
+
+    Returns a timeline of average risk scores and contract counts per year.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Verify vendor exists
+        cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        cursor.execute("""
+            SELECT
+                contract_year as year,
+                AVG(risk_score) as avg_risk_score,
+                COUNT(*) as contract_count,
+                SUM(amount_mxn) as total_value
+            FROM contracts
+            WHERE vendor_id = ?
+              AND risk_score IS NOT NULL
+              AND contract_year IS NOT NULL
+            GROUP BY contract_year
+            ORDER BY contract_year
+        """, (vendor_id,))
+
+        timeline = [
+            {
+                "year": row["year"],
+                "avg_risk_score": round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+                "contract_count": row["contract_count"],
+                "total_value": row["total_value"] or 0,
+            }
+            for row in cursor.fetchall()
+        ]
+
+        return {
+            "vendor_id": vendor_id,
+            "vendor_name": vendor["name"],
+            "timeline": timeline,
+        }
+
+
+@router.get("/{vendor_id:int}/footprint")
+def get_vendor_footprint(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    limit: int = Query(30, ge=5, le=50),
+):
+    """
+    Vendor footprint: (sector, institution) pairs with contract stats.
+    Used for bubble scatter showing geographic/sectoral spread vs concentration.
+    """
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        cur.execute("SELECT id FROM vendors WHERE id = ?", (vendor_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        cur.execute("""
+            SELECT
+                c.sector_id,
+                COALESCE(sec.name_es, 'otros') as sector_name,
+                c.institution_id,
+                COALESCE(i.name, 'Unknown') as institution_name,
+                COUNT(*) as contract_count,
+                SUM(c.amount_mxn) as total_value,
+                AVG(c.risk_score) as avg_risk_score
+            FROM contracts c
+            LEFT JOIN sectors sec ON c.sector_id = sec.id
+            LEFT JOIN institutions i ON c.institution_id = i.id
+            WHERE c.vendor_id = ?
+              AND c.amount_mxn > 0
+            GROUP BY c.sector_id, c.institution_id
+            ORDER BY total_value DESC
+            LIMIT ?
+        """, (vendor_id, limit))
+        rows = cur.fetchall()
+
+    if not rows:
+        raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found or has no contracts")
+
+    footprint = [
+        {
+            "sector_id": r["sector_id"],
+            "sector_name": r["sector_name"],
+            "institution_id": r["institution_id"],
+            "institution_name": r["institution_name"],
+            "contract_count": r["contract_count"],
+            "total_value": r["total_value"],
+            "avg_risk_score": r["avg_risk_score"],
+        }
+        for r in rows
+    ]
+    return {"vendor_id": vendor_id, "footprint": footprint}
+
+
+@router.get("/{vendor_id:int}/top-factors")
+def get_vendor_top_factors(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    limit: int = Query(5, ge=1, le=15),
+):
+    """
+    Top risk factors (by frequency) across this vendor's contracts.
+    Used by the Watchlist for delta attribution context.
+    """
+    from collections import Counter
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        cursor.execute("""
+            SELECT risk_factors, COUNT(*) AS cnt
+            FROM contracts
+            WHERE vendor_id = ?
+              AND risk_factors IS NOT NULL AND risk_factors != ''
+            GROUP BY risk_factors
+            ORDER BY cnt DESC
+            LIMIT 2000
+        """, (vendor_id,))
+
+        factor_counter: Counter = Counter()
+        total_contracts = 0
+        for row in cursor.fetchall():
+            for token in row["risk_factors"].split(","):
+                token = token.strip()
+                if not token:
+                    continue
+                base = token.split(":")[0]
+                factor_counter[base] += row["cnt"]
+            total_contracts += row["cnt"]
+
+        factors = [
+            {"factor": f, "count": c, "pct": round(c / total_contracts * 100, 1) if total_contracts > 0 else 0}
+            for f, c in factor_counter.most_common(limit)
+        ]
+        return {"vendor_id": vendor_id, "total_contracts": total_contracts, "factors": factors}
+
+
+@router.get("/{vendor_id:int}/ai-summary", response_model=VendorAISummaryResponse)
+def get_vendor_ai_summary(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get AI-generated pattern analysis summary for a vendor.
+
+    Returns template-generated insights based on the vendor's z-score features
+    from the v5.0 risk model.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Get vendor name and basic stats
+        cursor.execute("""
+            SELECT name, total_contracts, COALESCE(total_amount_mxn, 0) as total_value,
+                   avg_risk_score
+            FROM vendors WHERE id = ?
+        """, (vendor_id,))
+        vendor = cursor.fetchone()
+        if not vendor:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # Get avg z-features for this vendor's contracts
+        try:
+            cursor.execute("""
+                SELECT
+                    AVG(czf.z_price_volatility) as price_volatility,
+                    AVG(czf.z_win_rate) as win_rate,
+                    AVG(czf.z_institution_diversity) as institution_diversity,
+                    AVG(czf.z_vendor_concentration) as vendor_concentration,
+                    AVG(czf.z_industry_mismatch) as industry_mismatch,
+                    AVG(czf.z_same_day_count) as same_day_count,
+                    AVG(czf.z_direct_award) as direct_award,
+                    AVG(czf.z_single_bid) as single_bid,
+                    AVG(czf.z_sector_spread) as sector_spread
+                FROM contract_z_features czf
+                JOIN contracts c ON czf.contract_id = c.id
+                WHERE c.vendor_id = ?
+            """, (vendor_id,))
+            z_features = cursor.fetchone()
+        except sqlite3.OperationalError:
+            z_features = None
+
+        insights = []
+        if z_features:
+            pv = z_features["price_volatility"]
+            if pv is not None and pv > 1.0:
+                insights.append(f"Very uneven contract sizes ({pv:.2f}\u03c3 above sector average) \u2014 one of the strongest risk indicators in the model.")
+            wr = z_features["win_rate"]
+            if wr is not None and wr > 1.0:
+                insights.append(f"Win rate {wr:.1f}\u03c3 above sector norm \u2014 abnormally high success rate in competitive procedures.")
+            id_val = z_features["institution_diversity"]
+            if id_val is not None and id_val < -0.5:
+                insights.append("Serves few institutions \u2014 concentrated relationships increase risk per the v5.0 model.")
+            vc = z_features["vendor_concentration"]
+            if vc is not None and vc > 1.0:
+                insights.append(f"Vendor concentration {vc:.2f}\u03c3 above sector norm \u2014 high market dominance in awarded contracts.")
+            im = z_features["industry_mismatch"]
+            if im is not None and im > 1.0:
+                insights.append(f"Industry mismatch {im:.2f}\u03c3 above average \u2014 this vendor wins contracts outside its classified industry.")
+            sdc = z_features["same_day_count"]
+            if sdc is not None and sdc > 1.5:
+                insights.append(f"Same-day contract count {sdc:.2f}\u03c3 above average \u2014 potential threshold splitting pattern.")
+            ss = z_features["sector_spread"]
+            if ss is not None and ss < -1.0:
+                insights.append("Operates in very few sectors \u2014 low diversification increases risk concentration.")
+
+        total_contracts = vendor["total_contracts"] or 0
+        avg_risk = vendor["avg_risk_score"]
+
+        summary_parts = []
+        if insights:
+            summary_parts.append(f"AI pattern analysis identified {len(insights)} risk indicator{'s' if len(insights) != 1 else ''}.")
+        else:
+            summary_parts.append("No significant risk indicators detected in the v5.0 feature analysis.")
+
+        if avg_risk is not None:
+            summary_parts.append(f"Average risk score: {avg_risk:.3f} across {total_contracts} contracts.")
+
+        return {
+            "vendor_id": vendor_id,
+            "vendor_name": vendor["name"],
+            "summary": " ".join(summary_parts),
+            "insights": insights,
+            "total_contracts": total_contracts,
+            "avg_risk_score": round(avg_risk, 4) if avg_risk else None,
+            "generated_by": "v5.0 feature analysis",
+        }
+
+
+@router.get("/{vendor_id:int}/classification", response_model=VendorClassificationResponse)
+def get_vendor_classification(vendor_id: int):
+    """
+    Get classification for a specific vendor.
+
+    Returns industry classification if the vendor has been verified,
+    or null fields if unclassified.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                v.id as vendor_id,
+                v.name as vendor_name,
+                vc.industry_id,
+                vc.industry_code,
+                vi.name_es as industry_name,
+                vc.industry_confidence,
+                vc.industry_source,
+                vi.sector_affinity
+            FROM vendors v
+            LEFT JOIN vendor_classifications vc ON v.id = vc.vendor_id
+            LEFT JOIN vendor_industries vi ON vc.industry_id = vi.id
+            WHERE v.id = ?
+        """, (vendor_id,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Vendor {vendor_id} not found"
+            )
+
+        return VendorClassificationResponse(
+            vendor_id=row["vendor_id"],
+            vendor_name=row["vendor_name"],
+            industry_id=row["industry_id"],
+            industry_code=row["industry_code"],
+            industry_name=row["industry_name"],
+            industry_confidence=row["industry_confidence"],
+            industry_source=row["industry_source"],
+            sector_affinity=row["sector_affinity"]
+        )
+
+
+@router.get("/verified", response_model=VerifiedVendorListResponse)
+def list_verified_vendors(
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    industry_id: Optional[int] = Query(None, description="Filter by industry ID"),
+    industry_code: Optional[str] = Query(None, description="Filter by industry code"),
+    search: Optional[str] = Query(None, min_length=3, description="Search vendor name"),
+    min_confidence: Optional[float] = Query(None, ge=0.0, le=1.0, description="Minimum confidence")
+):
+    """
+    List verified vendors with pagination and filters.
+
+    Only returns vendors with industry_source='verified_online'.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Build WHERE clause
+        conditions = ["vc.industry_source = 'verified_online'"]
+        params = []
+
+        if industry_id:
+            conditions.append("vc.industry_id = ?")
+            params.append(industry_id)
+
+        if industry_code:
+            conditions.append("vc.industry_code = ?")
+            params.append(industry_code)
+
+        if search:
+            search_escaped = search.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+            conditions.append("v.name LIKE ? ESCAPE '\\'")
+            params.append(f"%{search_escaped}%")
+
+        if min_confidence:
+            conditions.append("vc.industry_confidence >= ?")
+            params.append(min_confidence)
+
+        where_clause = " AND ".join(conditions)
+
+        # Count total matching records
+        count_sql = f"""
+            SELECT COUNT(*) as count
+            FROM vendor_classifications vc
+            JOIN vendors v ON vc.vendor_id = v.id
+            WHERE {where_clause}
+        """
+        cursor.execute(count_sql, params)
+        total = cursor.fetchone()["count"]
+
+        # Get paginated results
+        offset = (page - 1) * per_page
+        query_sql = f"""
+            SELECT
+                v.id as vendor_id,
+                v.name as vendor_name,
+                v.rfc,
+                vc.industry_id,
+                vc.industry_code,
+                vi.name_es as industry_name,
+                vc.industry_confidence,
+                vi.sector_affinity,
+                COALESCE(cs.total_contracts, 0) as total_contracts,
+                COALESCE(cs.total_value, 0) as total_value
+            FROM vendor_classifications vc
+            JOIN vendors v ON vc.vendor_id = v.id
+            JOIN vendor_industries vi ON vc.industry_id = vi.id
+            LEFT JOIN (
+                SELECT vendor_id, COUNT(*) as total_contracts, SUM(amount_mxn) as total_value
+                FROM contracts
+                GROUP BY vendor_id
+            ) cs ON v.id = cs.vendor_id
+            WHERE {where_clause}
+            ORDER BY vc.industry_confidence DESC, v.name
+            LIMIT ? OFFSET ?
+        """
+        cursor.execute(query_sql, params + [per_page, offset])
+        rows = cursor.fetchall()
+
+        vendors = [
+            VerifiedVendorResponse(
+                vendor_id=row["vendor_id"],
+                vendor_name=row["vendor_name"],
+                rfc=_mask_personal_rfc(row["rfc"]),
+                industry_id=row["industry_id"],
+                industry_code=row["industry_code"],
+                industry_name=row["industry_name"],
+                industry_confidence=row["industry_confidence"],
+                sector_affinity=row["sector_affinity"],
+                total_contracts=row["total_contracts"],
+                total_value=row["total_value"]
+            )
+            for row in rows
+        ]
+
+        # Track applied filters
+        filters_applied = {}
+        if industry_id:
+            filters_applied["industry_id"] = industry_id
+        if industry_code:
+            filters_applied["industry_code"] = industry_code
+        if search:
+            filters_applied["search"] = search
+        if min_confidence:
+            filters_applied["min_confidence"] = min_confidence
+
+        return VerifiedVendorListResponse(
+            data=vendors,
+            pagination=PaginationMeta.create(page, per_page, total),
+            filters_applied=filters_applied
+        )
+
+
+# ── QQW (QuiénesQuién.wiki) cross-reference ──────────────────────────────────
+
+class QQWContract(BaseModel):
+    qqw_ocid: Optional[str] = None
+    qqw_contract_id: Optional[str] = None
+    qqw_supplier_id: Optional[str] = None
+    qqw_supplier_name: Optional[str] = None
+    supplier_rfc: Optional[str] = None
+    buyer_name: Optional[str] = None
+    buyer_institution: Optional[str] = None
+    contact_person_id: Optional[str] = None
+    contact_person_name: Optional[str] = None
+    contract_value: Optional[float] = None
+    contract_currency: Optional[str] = None
+    contract_date: Optional[str] = None
+
+
+class QQWProcurementOfficial(BaseModel):
+    contact_person_id: str
+    contact_person_name: str
+    contract_count: int
+    buyer_institutions: list[str]
+
+
+class QQWResponse(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    qqw_contract_count: int
+    has_data: bool
+    contracts: list[QQWContract]
+    procurement_officials: list[QQWProcurementOfficial]
+    note: str
+
+
+@router.get("/{vendor_id:int}/qqw", response_model=QQWResponse)
+def get_vendor_qqw(
+    vendor_id: int = Path(..., description="Vendor ID"),
+    limit: int = Query(20, ge=1, le=100, description="Max contracts to return"),
+):
+    """
+    Get QuiénesQuién.wiki cross-reference data for a vendor.
+
+    Returns contracts found in QQW's dataset plus a rolled-up list of
+    procurement officials (buyer contactPoint persons) who dealt with
+    this vendor across all institutions.
+
+    Requires vendor_qqw_data to be populated via:
+        python -m scripts.fetch_qqw_data
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+        vendor_row = cursor.fetchone()
+        if not vendor_row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        vendor_name = vendor_row["name"]
+
+        # Check if QQW data has been fetched for this vendor
+        cursor.execute(
+            "SELECT COUNT(*) as cnt FROM vendor_qqw_data WHERE vendor_id = ?",
+            (vendor_id,),
+        )
+        total_rows = cursor.fetchone()["cnt"]
+
+        # Fetch contracts (excluding sentinel rows with no ocid)
+        cursor.execute(
+            """
+            SELECT qqw_ocid, qqw_contract_id, qqw_supplier_id, qqw_supplier_name,
+                   supplier_rfc, buyer_name, buyer_institution,
+                   contact_person_id, contact_person_name,
+                   contract_value, contract_currency, contract_date
+            FROM vendor_qqw_data
+            WHERE vendor_id = ?
+              AND qqw_ocid IS NOT NULL
+              AND qqw_ocid != ''
+            ORDER BY contract_date DESC
+            LIMIT ?
+            """,
+            (vendor_id, limit),
+        )
+        rows = cursor.fetchall()
+
+        contracts = [
+            QQWContract(
+                qqw_ocid=r["qqw_ocid"],
+                qqw_contract_id=r["qqw_contract_id"],
+                qqw_supplier_id=r["qqw_supplier_id"],
+                qqw_supplier_name=r["qqw_supplier_name"],
+                supplier_rfc=public_rfc(r["supplier_rfc"]),
+                buyer_name=r["buyer_name"],
+                buyer_institution=r["buyer_institution"],
+                contact_person_id=r["contact_person_id"],
+                contact_person_name=r["contact_person_name"],
+                contract_value=r["contract_value"],
+                contract_currency=r["contract_currency"],
+                contract_date=r["contract_date"],
+            )
+            for r in rows
+        ]
+
+        # Roll up procurement officials
+        cursor.execute(
+            """
+            SELECT contact_person_id, contact_person_name,
+                   COUNT(*) as contract_count,
+                   GROUP_CONCAT(DISTINCT buyer_institution) as institutions
+            FROM vendor_qqw_data
+            WHERE vendor_id = ?
+              AND contact_person_id IS NOT NULL
+              AND contact_person_id != ''
+            GROUP BY contact_person_id, contact_person_name
+            ORDER BY contract_count DESC
+            LIMIT 20
+            """,
+            (vendor_id,),
+        )
+        officials_rows = cursor.fetchall()
+
+        officials = [
+            QQWProcurementOfficial(
+                contact_person_id=r["contact_person_id"],
+                contact_person_name=r["contact_person_name"],
+                contract_count=r["contract_count"],
+                buyer_institutions=[
+                    inst.strip()
+                    for inst in (r["institutions"] or "").split(",")
+                    if inst.strip()
+                ],
+            )
+            for r in officials_rows
+        ]
+
+        has_data = len(contracts) > 0
+        note = (
+            "No QQW data yet — run: python -m scripts.fetch_qqw_data"
+            if total_rows == 0
+            else (
+                "No matching contracts found in QQW's dataset for this vendor."
+                if not has_data
+                else f"Sourced from QuiénesQuién.wiki — {total_rows} records fetched."
+            )
+        )
+
+        return QQWResponse(
+            vendor_id=vendor_id,
+            vendor_name=vendor_name,
+            qqw_contract_count=len(contracts),
+            has_data=has_data,
+            contracts=contracts,
+            procurement_officials=officials,
+            note=note,
+        )
+
+
+# =============================================================================
+# VENDOR RISK TRAJECTORY (across model versions)
+# =============================================================================
+
+@router.get("/{vendor_id:int}/trajectory", response_model=VendorTrajectoryResponse)
+def get_vendor_trajectory(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Get a vendor's average risk score across model versions (v3, v4, v5, v6).
+
+    Returns the average risk score from each model version for this vendor,
+    enabling comparison of how the vendor's risk profile evolved across
+    successive model iterations.
+    """
+    try:
+        with get_db() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT name FROM vendors WHERE id = ?", (vendor_id,))
+            vendor_row = cursor.fetchone()
+            if not vendor_row:
+                raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+            # Check which preserved score columns actually exist in this DB
+            pragma = cursor.execute("PRAGMA table_info(contracts)").fetchall()
+            existing_cols = {r["name"] for r in pragma}
+
+            select_parts = [
+                "AVG(risk_score_v3) AS avg_v3" if "risk_score_v3" in existing_cols else "NULL AS avg_v3",
+                "AVG(risk_score_v4) AS avg_v4" if "risk_score_v4" in existing_cols else "NULL AS avg_v4",
+                "AVG(risk_score_v5) AS avg_v5" if "risk_score_v5" in existing_cols else "NULL AS avg_v5",
+                "AVG(risk_score) AS avg_v6",
+            ]
+            cursor.execute(
+                f"SELECT {', '.join(select_parts)} FROM contracts WHERE vendor_id = ?",
+                (vendor_id,),
+            )
+            row = cursor.fetchone()
+
+            scores = {
+                "v3": round(row["avg_v3"], 4) if row["avg_v3"] is not None else None,
+                "v4": round(row["avg_v4"], 4) if row["avg_v4"] is not None else None,
+                "v5": round(row["avg_v5"], 4) if row["avg_v5"] is not None else None,
+                "v6": round(row["avg_v6"], 4) if row["avg_v6"] is not None else None,
+            }
+
+            trajectory = [scores["v3"], scores["v4"], scores["v5"], scores["v6"]]
+
+            return VendorTrajectoryResponse(
+                vendor_id=vendor_id,
+                vendor_name=vendor_row["name"],
+                scores=scores,
+                model_versions=["v3.3", "v4.0", "v5.1", "v0.6.5"],
+                trajectory=trajectory,
+            )
+
+    except sqlite3.Error as e:
+        logger.error(f"Database error in get_vendor_trajectory: {e}")
+        raise HTTPException(status_code=500, detail="Database error occurred")
+
+
+# ---------------------------------------------------------------------------
+# Vendor Similar Cases (cosine similarity to GT case centroids)
+# ---------------------------------------------------------------------------
+
+_Z_FEATURES = [
+    "z_price_volatility", "z_vendor_concentration", "z_price_ratio",
+    "z_direct_award", "z_single_bid", "z_ad_period_days", "z_same_day_count",
+    "z_network_member_count", "z_year_end", "z_industry_mismatch",
+    "z_institution_risk", "z_institution_diversity", "z_win_rate", "z_sector_spread",
+]
+
+_FEATURE_DISPLAY = [f.replace("z_", "") for f in _Z_FEATURES]
+
+
+def _cosine_sim(a: list, b: list) -> float:
+    """Cosine similarity between two vectors. Returns 0 if either has zero norm."""
+    dot = sum(x * y for x, y in zip(a, b))
+    norm_a = sum(x * x for x in a) ** 0.5
+    norm_b = sum(x * x for x in b) ** 0.5
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return dot / (norm_a * norm_b)
+
+
+@router.get("/{vendor_id}/similar-cases")
+def get_vendor_similar_cases(vendor_id: int = Path(..., ge=1)):
+    """
+    Find ground truth corruption cases most similar to this vendor
+    based on cosine similarity of z-score feature centroids.
+    """
+    z_cols_sql = ", ".join(f"AVG(czf.{z}) AS {z}" for z in _Z_FEATURES)
+
+    no_features_response = {
+        "vendor_id": vendor_id,
+        "similar_cases": [],
+        "message": "No z-score features found for this vendor.",
+    }
+
+    with get_db() as conn:
+        # 1. Compute vendor centroid from its contracts' z-features
+        try:
+            vendor_row = conn.execute(f"""
+                SELECT {z_cols_sql}, COUNT(*) AS n
+                FROM contract_z_features czf
+                JOIN contracts c ON czf.contract_id = c.id
+                WHERE c.vendor_id = ?
+            """, (vendor_id,)).fetchone()
+        except sqlite3.OperationalError:
+            return no_features_response
+
+        if vendor_row is None or vendor_row["n"] == 0:
+            return no_features_response
+
+        vendor_vec = [vendor_row[z] or 0.0 for z in _Z_FEATURES]
+
+        # 2. Compute GT case centroids
+        try:
+            gt_rows = conn.execute(f"""
+                SELECT gtc.id AS case_id, gtc.case_name, gtc.case_type,
+                       {z_cols_sql}, COUNT(czf.contract_id) AS n_contracts
+                FROM ground_truth_cases gtc
+                JOIN ground_truth_vendors gtv ON gtc.id = gtv.case_id
+                JOIN contracts c ON c.vendor_id = gtv.vendor_id
+                JOIN contract_z_features czf ON czf.contract_id = c.id
+                WHERE gtv.vendor_id IS NOT NULL
+                GROUP BY gtc.id, gtc.case_name, gtc.case_type
+                HAVING COUNT(czf.contract_id) >= 10
+                LIMIT 50
+            """).fetchall()
+        except sqlite3.OperationalError:
+            gt_rows = []
+
+    # 3. Compute cosine similarity
+    results = []
+    for row in gt_rows:
+        case_vec = [row[z] or 0.0 for z in _Z_FEATURES]
+        sim = _cosine_sim(vendor_vec, case_vec)
+
+        # Find shared features (|diff| < 0.5) and divergent features
+        diffs = []
+        for i, fname in enumerate(_FEATURE_DISPLAY):
+            diff = abs((vendor_vec[i] or 0) - (case_vec[i] or 0))
+            diffs.append((fname, diff, vendor_vec[i], case_vec[i]))
+
+        diffs_sorted = sorted(diffs, key=lambda x: x[1])
+        shared = [d[0] for d in diffs_sorted if d[1] < 0.5][:3]
+        divergent = [d[0] for d in sorted(diffs, key=lambda x: -x[1])][:2]
+
+        results.append({
+            "case_id": row["case_id"],
+            "case_name": row["case_name"],
+            "case_type": row["case_type"],
+            "similarity_score": round(sim, 4),
+            "n_contracts": row["n_contracts"],
+            "shared_features": shared,
+            "divergent_features": divergent,
+        })
+
+    results.sort(key=lambda x: -x["similarity_score"])
+    top_results = results[:3]
+
+    return {
+        "vendor_id": vendor_id,
+        "similar_cases": top_results,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Vendor Narrative (year-by-year arc detection)
+# ---------------------------------------------------------------------------
+
+_ARC_LABELS = {
+    "explosive_entry": "Entrada explosiva: alto valor en sus primeros contratos",
+    "capture_pattern": "Captura institucional: crecimiento en una sola dependencia",
+    "single_burst": "Contratacion puntual: un ano de alto valor",
+    "steady_growth": "Crecimiento sostenido: expansion constante de contratos",
+    "disappeared": "Proveedor desaparecido: actividad interrumpida",
+    "irregular": "Patron irregular",
+}
+
+
+def _detect_arc(years_data: list) -> str:
+    """Detect the narrative arc shape from year-by-year data."""
+    if not years_data or len(years_data) < 1:
+        return "irregular"
+
+    total_value = sum(y.get("total_value_mxn") or 0 for y in years_data)
+    if total_value == 0:
+        return "irregular"
+
+    n_years = len(years_data)
+
+    # Single burst: 1 year has >60% of total value
+    for y in years_data:
+        yr_val = y.get("total_value_mxn") or 0
+        if yr_val / total_value > 0.60:
+            # Check if surrounded by low years
+            idx = years_data.index(y)
+            others = [yy.get("total_value_mxn") or 0 for yy in years_data if yy != y]
+            if not others or max(others) < yr_val * 0.3:
+                return "single_burst"
+
+    # Explosive entry: first 2 years have >50% of total value
+    if n_years >= 3:
+        first_two = sum((years_data[i].get("total_value_mxn") or 0) for i in range(min(2, n_years)))
+        if first_two / total_value > 0.50:
+            return "explosive_entry"
+
+    # Capture pattern: institution_count stays 1-2, value grows
+    if n_years >= 3:
+        all_low_inst = all((y.get("institution_count") or 0) <= 2 for y in years_data)
+        values = [y.get("total_value_mxn") or 0 for y in years_data]
+        growing = sum(1 for i in range(1, len(values)) if values[i] > values[i - 1])
+        if all_low_inst and growing >= n_years * 0.5:
+            return "capture_pattern"
+
+    # Steady growth: >10% YoY increase for 3+ consecutive years
+    if n_years >= 4:
+        values = [y.get("total_value_mxn") or 0 for y in years_data]
+        growth_streak = 0
+        max_streak = 0
+        for i in range(1, len(values)):
+            if values[i - 1] > 0 and values[i] > values[i - 1] * 1.10:
+                growth_streak += 1
+                max_streak = max(max_streak, growth_streak)
+            else:
+                growth_streak = 0
+        if max_streak >= 3:
+            return "steady_growth"
+
+    # Disappeared: active then no contracts for 3+ years
+    if n_years >= 2:
+        last_yr = years_data[-1].get("year") or 0
+        # If the last year of activity is 3+ years ago
+        if last_yr and last_yr <= 2022:
+            return "disappeared"
+
+    return "irregular"
+
+
+@router.get("/{vendor_id}/narrative")
+def get_vendor_narrative(vendor_id: int = Path(..., ge=1)):
+    """
+    Return year-by-year contract data with arc shape detection.
+    Identifies patterns like explosive entry, capture, single burst, etc.
+    """
+    with get_db() as conn:
+        # Check vendor exists
+        vendor_row = conn.execute(
+            "SELECT id, name FROM vendors WHERE id = ?", (vendor_id,)
+        ).fetchone()
+        if not vendor_row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        rows = conn.execute(f"""
+            SELECT
+                contract_year AS year,
+                COUNT(*) AS contract_count,
+                SUM(amount_mxn) AS total_value_mxn,
+                ROUND(AVG(risk_score), 4) AS avg_risk_score,
+                ROUND(AVG(CASE WHEN {proc_known('is_direct_award')}=1 THEN 100.0 WHEN {proc_known('is_direct_award')} = 0 THEN 0.0 END), 1) AS direct_award_pct,
+                ROUND(AVG(CASE WHEN {proc_known('is_single_bid')}=1 THEN 100.0 WHEN {proc_known('is_single_bid')} = 0 THEN 0.0 END), 1) AS single_bid_pct,
+                COUNT(DISTINCT institution_id) AS institution_count
+            FROM contracts
+            WHERE vendor_id = ? AND amount_mxn > 0 AND contract_year IS NOT NULL
+            GROUP BY contract_year
+            ORDER BY contract_year
+        """, (vendor_id,)).fetchall()
+
+    cols = ["year", "contract_count", "total_value_mxn", "avg_risk_score",
+            "direct_award_pct", "single_bid_pct", "institution_count"]
+    years_data = [dict(zip(cols, r)) for r in rows]
+
+    if not years_data:
+        return {
+            "vendor_id": vendor_id,
+            "arc_shape": "irregular",
+            "arc_label": _ARC_LABELS["irregular"],
+            "peak_year": None,
+            "peak_value_mxn": 0,
+            "active_years": 0,
+            "first_year": None,
+            "last_year": None,
+            "total_value_mxn": 0,
+            "years": [],
+        }
+
+    arc_shape = _detect_arc(years_data)
+    total_value = sum(y.get("total_value_mxn") or 0 for y in years_data)
+    peak = max(years_data, key=lambda y: y.get("total_value_mxn") or 0)
+
+    return {
+        "vendor_id": vendor_id,
+        "arc_shape": arc_shape,
+        "arc_label": _ARC_LABELS.get(arc_shape, _ARC_LABELS["irregular"]),
+        "peak_year": peak.get("year"),
+        "peak_value_mxn": peak.get("total_value_mxn") or 0,
+        "active_years": len(years_data),
+        "first_year": years_data[0].get("year"),
+        "last_year": years_data[-1].get("year"),
+        "total_value_mxn": total_value,
+        "years": years_data,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# vendor_rolling_stats timeline
+# ─────────────────────────────────────────────────────────────────────────────
+
+class VendorRollingStatsItem(BaseModel):
+    vendor_id: int
+    sector_id: int
+    as_of_year: int
+    total_value: float
+    total_count: int
+    comp_wins: int
+    comp_total: int
+    n_institutions: int
+    n_sectors: int
+    win_rate: Optional[float] = None
+
+
+class VendorRollingStatsResponse(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    rows: List[VendorRollingStatsItem]
+
+
+@router.get("/{vendor_id:int}/timeline", response_model=VendorRollingStatsResponse)
+def get_vendor_rolling_timeline(
+    vendor_id: int = Path(..., description="Vendor ID"),
+):
+    """
+    Return year-by-year cumulative stats for a vendor from vendor_rolling_stats.
+
+    Each row covers one (vendor_id, sector_id, as_of_year) combination.
+    Rows are ordered by as_of_year ASC.  Derived win_rate = comp_wins / comp_total
+    when comp_total > 0, otherwise null.
+
+    This table is precomputed by scripts/compute_vendor_rolling_stats.py and
+    provides point-in-time feature values used by the v6.x scoring pipeline.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        vendor_row = cursor.execute(
+            "SELECT name FROM vendors WHERE id = ?", (vendor_id,)
+        ).fetchone()
+        if not vendor_row:
+            raise HTTPException(status_code=404, detail=f"Vendor {vendor_id} not found")
+
+        # Confirm table exists (may not exist on older deploys)
+        table_check = cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='vendor_rolling_stats'"
+        ).fetchone()
+        if not table_check:
+            raise HTTPException(
+                status_code=404,
+                detail="vendor_rolling_stats table not found — run compute_vendor_rolling_stats.py first"
+            )
+
+        rows = cursor.execute(
+            """
+            SELECT
+                vendor_id,
+                sector_id,
+                as_of_year,
+                COALESCE(total_value, 0.0)  AS total_value,
+                COALESCE(total_count, 0)    AS total_count,
+                COALESCE(comp_wins, 0)      AS comp_wins,
+                COALESCE(comp_total, 0)     AS comp_total,
+                COALESCE(n_institutions, 0) AS n_institutions,
+                COALESCE(n_sectors, 0)      AS n_sectors
+            FROM vendor_rolling_stats
+            WHERE vendor_id = ?
+            ORDER BY as_of_year ASC, sector_id ASC
+            """,
+            (vendor_id,),
+        ).fetchall()
+
+        result = []
+        for r in rows:
+            comp_total = r["comp_total"]
+            comp_wins = r["comp_wins"]
+            win_rate = round(comp_wins / comp_total, 4) if comp_total > 0 else None
+            result.append({
+                "vendor_id": r["vendor_id"],
+                "sector_id": r["sector_id"],
+                "as_of_year": r["as_of_year"],
+                "total_value": r["total_value"],
+                "total_count": r["total_count"],
+                "comp_wins": comp_wins,
+                "comp_total": comp_total,
+                "n_institutions": r["n_institutions"],
+                "n_sectors": r["n_sectors"],
+                "win_rate": win_rate,
+            })
+
+        return {
+            "vendor_id": vendor_id,
+            "vendor_name": vendor_row["name"],
+            "rows": result,
+        }

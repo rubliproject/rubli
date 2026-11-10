@@ -1,0 +1,180 @@
+/* /aria «La fila de investigación» on «El Contrato» (DESIGN.md §2–§8). Local to the ARIA surface;
+   tokens only. Ledger = Operate mode: hairline grids, mono numerals, no reveals in the table. */
+@layer components {
+
+/* ── Cláusulas: five figures, 24px fig in the 5-up (DESIGN.md §2 fig) ── */
+
+/* ── El embudo: log-width tiers, hairline grid of paper cells ── */
+.aria-funnel { margin-top: 24px; }
+.aria-funnel-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-bottom: 8px; border-bottom: 1px solid var(--color-text-primary); font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.aria-funnel-h small { font: 400 13px/1.45 var(--font-mono); letter-spacing: 0; color: var(--color-text-muted); }
+.aria-funnel-row { display: flex; gap: 1px; margin-top: 12px; background: var(--color-border); border: 1px solid var(--color-border); }
+.aria-seg { position: relative; min-width: 0; min-height: 56px; padding: 8px 12px; text-align: left; background: var(--color-background); color: var(--color-text-primary); transition: background-color 80ms ease-out; overflow: hidden; }
+.aria-seg:hover { background: var(--color-background-elevated); }
+.aria-seg b { display: block; font: 600 17px/1.2 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+.aria-seg span { display: block; margin-top: 4px; font: 600 13px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); white-space: nowrap; }
+.aria-seg[aria-pressed='true'] span { color: var(--color-text-primary); }
+/* active tier: an ink rule, never a tier color (tiers are not colors) */
+.aria-seg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--color-text-primary); transform: scaleX(0); transform-origin: 0 50%; transition: transform var(--dur-state) var(--ease-out); }
+.aria-seg[aria-pressed='true']::after { transform: scaleX(1); }
+/* T2's model discoveries: a gray hatch on the share they hold (en calibración) */
+.aria-hatch { position: absolute; inset: 0 0 0 auto; border-left: 1px solid var(--color-border); background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--color-text-muted) 28%, transparent) 0 2px, transparent 2px 6px); }
+.aria-seg > b, .aria-seg > span { position: relative; }
+.aria-swatch { display: inline-block; width: 10px; height: 10px; margin-right: 8px; vertical-align: -1px; border: 1px solid var(--color-border); }
+/* the one reveal on the cover: the log widths draw in once (DESIGN.md §7) */
+.aria-funnel:not([data-in]) .aria-seg { clip-path: inset(0 100% 0 0); }
+.aria-funnel[data-in] .aria-seg { animation: aria-wipe var(--dur-reveal) var(--ease-draw) both; animation-delay: calc(var(--i, 0) * var(--stagger)); }
+@keyframes aria-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.aria-funnel-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin-top: 8px; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.aria-funnel-foot button { min-height: 40px; color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-text-muted); }
+.aria-funnel-hold { min-height: 162px; margin-top: 24px; }
+
+/* ── Filter rail: outlined inline chips (.ct-chip, contrato.css), 40px targets ── */
+.aria-rail { display: grid; gap: 12px; }
+.aria-rail-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.aria-rail-label { flex: none; margin-right: 4px; font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.aria-search { position: relative; flex: 1; min-width: 200px; }
+.aria-search input { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--color-border); background: var(--color-background); font: 400 15px/1 var(--font-serif); color: var(--color-text-primary); border-radius: var(--radius); transition: border-color var(--dur-press) ease-out; }
+.aria-search input:hover, .aria-search input:focus { border-color: var(--color-text-primary); outline: none; }
+.aria-search input::placeholder { color: var(--color-text-muted); }
+.aria-seg:focus-visible, .aria-reg button:focus-visible, .aria-reg a:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.aria-select { height: 40px; padding: 0 8px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--color-background); font: 400 14px/1 var(--font-serif); color: var(--color-text-primary); }
+
+/* ── Register header strip ── */
+.aria-reg-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.aria-dispo { margin-top: 12px; }
+.aria-dispo-bar { display: flex; height: 8px; gap: 1px; background: var(--color-border); }
+.aria-dispo-bar > span { display: block; }
+.aria-dispo p { margin-top: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.aria-dispo p b { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); margin-right: 8px; }
+
+/* ── The register: Anexo table, ledger density (DESIGN.md §8 Table) ── */
+.aria-reg-scroll { position: relative; margin-top: 16px; overflow-x: auto; }
+.aria-reg { width: 100%; min-width: 980px; border-collapse: collapse; font-size: 15px; line-height: 1.4; }
+.aria-reg th { padding: 12px 12px 8px; border-bottom: 1px solid var(--color-text-primary); font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); text-align: left; vertical-align: bottom; white-space: nowrap; }
+.aria-reg th.r, .aria-reg td.r { text-align: right; }
+.aria-reg td { padding: 8px 12px; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.aria-reg .num { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-primary); white-space: nowrap; }
+.aria-reg tbody tr.aria-tr { cursor: pointer; transition: background-color 80ms ease-out; }
+.aria-reg tbody tr.aria-tr:hover { background: var(--color-background-elevated); }
+.aria-reg td:first-child { box-shadow: inset 3px 0 0 var(--rail, transparent); }
+.aria-rank { display: inline-flex; align-items: baseline; gap: 8px; min-height: 24px; white-space: nowrap; color: var(--color-text-primary); }
+.aria-rank b { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; }
+.aria-rank small { font: 600 12px/1 var(--font-sc); letter-spacing: var(--track-sc); }
+.aria-name { font-weight: 600; color: var(--color-text-primary); }
+.aria-sig { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; font: 400 13px/1 var(--font-mono); }
+.aria-ticks { display: inline-flex; gap: 4px; }
+.aria-tick { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--color-border); }
+.aria-dispo-cell { display: inline-flex; align-items: center; min-height: 32px; font: 600 13px/1.2 var(--font-sc); letter-spacing: var(--track-sc); white-space: nowrap; text-decoration: underline transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+.aria-dispo-cell:hover { text-decoration-color: currentColor; }
+/* the selected row is the pulled record: 12px out, 3px seal-red rule, dashed ghost (DESIGN.md §7) */
+.aria-reg tr.is-pulled td:first-child { box-shadow: inset 3px 0 0 var(--color-accent); }
+.aria-reg tr.is-pulled > td > * { transform: translateX(12px); transition: transform var(--dur-pull) var(--ease-pull); }
+.aria-reg tr.aria-tr:not(.is-pulled) > td > * { transition: transform var(--dur-state) var(--ease-exit); }
+.aria-reg tr.is-pulled { background: var(--color-background-elevated); }
+.aria-reg tr.aria-open td { padding: 16px 12px 16px 27px; border-bottom: 1px solid var(--color-text-primary); box-shadow: inset 3px 0 0 var(--color-accent); }
+.aria-skel td > i { display: block; height: 24px; background: var(--color-background-elevated); }
+.aria-empty td { padding: 24px 12px; text-align: left; font-size: 15px; color: var(--color-text-secondary); }
+
+
+/* ── El desglose (in-row case file) ── */
+.aria-x h3 { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.aria-x-line { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); font-size: 15px; line-height: 1.6; color: var(--color-text-secondary); text-wrap: pretty; }
+.aria-x-k { font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.aria-x-act { display: inline-flex; align-items: center; min-height: 32px; font: 600 14px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-border); white-space: nowrap; transition: text-decoration-color var(--dur-press) ease-out; }
+.aria-x-act:hover { text-decoration-color: currentColor; }
+.aria-verdict { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; padding: 0 12px; border: 1px solid var(--color-border); border-radius: var(--radius); font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-secondary); transition: border-color var(--dur-press) ease-out, transform var(--dur-press) ease-out; }
+.aria-verdict:hover { border-color: var(--color-text-primary); }
+.aria-verdict:active { transform: scale(.97); }
+.aria-verdict[aria-pressed='true'] { border-color: var(--color-text-primary); color: var(--color-text-primary); background: var(--color-background-elevated); }
+
+@media (max-width: 640px) {
+  .aria-seg { padding: 8px 4px 8px 8px; }
+  .aria-seg span { font-size: 12px; letter-spacing: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aria-funnel .aria-seg { clip-path: none !important; animation: none !important; }
+  .aria-reg tr > td > * { transform: none !important; }
+}
+}
+
+.aria-reg td .ct-gw { grid-template-columns: 200px 96px; align-items: center; }
+/* vendor name in the ledger: 15/600 ink (DESIGN.md §8), chip padding aligned to the th;
+   unlayered so it beats the chip's own text-sm / font-medium utilities */
+.aria-reg a.aria-name { font-size: 15px; margin-left: -6px; }
+.aria-reg a.aria-name > span { font-weight: 600; }
+/* the reading after the object: prose track + declarations/pattern links beside it, both end together */
+.aria-foot-lede { font-size: 15px; line-height: 1.6; text-wrap: pretty; margin: 8px 0 0; }
+.aria-foot-doors .ct-link { display: inline-flex; align-items: center; min-height: 24px; }
+.aria-foot .ct-notes-foot { margin-top: 8px; }
+
+/* ── IpsLedger: «Cómo se suma la prioridad» — the IPS as a ruled decomposition (IpsLedger.tsx) ── */
+.ipl { margin: 0; min-width: 0; }
+.ipl-cap { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-bottom: 4px; border-bottom: 1px solid var(--color-text-primary); font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.ipl-cap b { font: 600 13px/1.3 var(--font-mono); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.ipl-rule { position: relative; margin-top: 20px; }
+.ipl-track { position: relative; height: 12px; background: var(--color-background-elevated); }
+.ipl-seg { position: absolute; top: 0; bottom: 0; box-shadow: inset -2px 0 0 var(--color-background); }
+.ipl-seg:hover { outline: 1px solid var(--color-text-primary); outline-offset: 1px; z-index: 1; }
+.ipl-fp { position: absolute; top: -2px; bottom: -2px; border: 1px dashed var(--color-text-primary); background: repeating-linear-gradient(45deg, var(--color-background) 0 2px, transparent 2px 5px); }
+.ipl-total { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--color-text-primary); }
+.ipl-th { position: absolute; top: -16px; bottom: 0; width: 0; border-left: 1px dashed var(--color-text-muted); z-index: 2; pointer-events: none; }
+.ipl-th small { position: absolute; top: -2px; left: 3px; font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); white-space: nowrap; }
+.ipl-axis { display: flex; justify-content: space-between; margin-top: 4px; font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); }
+.ipl-tab { width: 100%; margin-top: 8px; border-collapse: collapse; font: 400 13px/1.4 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+.ipl-tab th, .ipl-tab td { padding: 4px 0 4px 12px; border-bottom: 1px solid var(--color-border); text-align: right; white-space: nowrap; vertical-align: baseline; }
+.ipl-tab th[scope='row'] { padding-left: 0; text-align: left; white-space: normal; font: 400 14px/1.4 var(--font-serif); }
+.ipl-tab thead th { padding-top: 0; font: 600 12px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.ipl-tab thead th:first-child { padding-left: 0; text-align: left; }
+.ipl-tab tr.is-off { color: var(--color-text-muted); }
+.ipl-tab tr.is-off th[scope='row'] { color: var(--color-text-muted); }
+.ipl-tab tfoot th[scope='row'], .ipl-tab tfoot td { border-bottom: 0; border-top: 1px solid var(--color-text-primary); font-weight: 600; }
+.ipl-note { font: 400 12px/1.4 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--color-text-muted); white-space: nowrap; }
+@media (max-width: 640px) { .ipl-tab th, .ipl-tab td { padding-left: 8px; } }
+.ipl-sw { display: inline-block; width: 10px; height: 10px; margin-right: 8px; vertical-align: -1px; border: 1px solid var(--color-border); }
+.ipl-tw { position: relative; }
+.ipl-term { font-style: normal; cursor: help; text-decoration: underline dotted var(--color-text-muted); text-underline-offset: 3px; outline: none; }
+.ipl-term:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.ipl-tip { position: absolute; left: 0; bottom: calc(100% + 6px); z-index: 5; width: max-content; max-width: min(320px, 80vw); padding: 8px 12px; background: var(--color-text-primary); color: var(--color-background); font: 400 13px/1.45 var(--font-sans, var(--font-serif)); letter-spacing: 0; white-space: normal; text-align: left; display: none; }
+.ipl-tw:hover .ipl-tip, .ipl-tw:focus-within .ipl-tip, .ipl-seg:hover .ipl-tip { display: block; animation: ipl-in 120ms ease-out; }
+.ipl-tw.is-hid .ipl-tip { display: none; }
+@keyframes ipl-in { from { opacity: 0; transform: translateY(2px); } }
+.ipl-seg .ipl-tip { bottom: calc(100% + 8px); font-family: var(--font-mono); white-space: nowrap; pointer-events: none; }
+.ipl-seg.is-r .ipl-tip { left: auto; right: 0; }
+.ipl-say { margin-top: 8px; font-size: 14px; line-height: 1.5; color: var(--color-text-secondary); text-wrap: pretty; }
+.ipl-say span { color: var(--color-text-muted); }
+.ipl-pats { margin-top: 12px; font: 400 13px/1.6 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+.ipl-pats > b { display: block; padding-bottom: 4px; margin-bottom: 4px; border-bottom: 1px solid var(--color-text-primary); font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); }
+.ipl-pats ul { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.ipl-pats li { display: inline-flex; align-items: baseline; gap: 6px; }
+.ipl-pats .ct-sq { margin-right: 0; }
+.ipl-pats small { display: block; margin-top: 4px; font: 400 13px/1.4 var(--font-serif); color: var(--color-text-muted); }
+@media (prefers-reduced-motion: reduce) { .ipl-tw .ipl-tip, .ipl-seg .ipl-tip { animation: none; } }
+/* ledger, then the patterns under it: one column, so nothing hangs ragged beside it (proof:ui) */
+.aria-x-why { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; margin-top: 8px; max-width: 760px; }
+/* La fila en una línea (AriaQueue): replaces the five «En cifras» clauses */
+.aria-strip { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin: 12px 0 0; padding: 8px 0; border-top: 1px solid var(--color-text-primary); border-bottom: 1px solid var(--color-border); font: 400 13px/1.45 var(--font-mono); color: var(--color-text-muted); }
+.aria-strip b { font-weight: 600; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.aria-strip small { font-size: 12px; }
+.aria-strip-t { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; color: var(--color-text-muted); text-decoration: underline; text-decoration-color: var(--color-border); text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+.aria-strip-t:hover { text-decoration-color: currentColor; }
+.aria-strip-t[aria-pressed='true'] { color: var(--color-text-primary); text-decoration-color: var(--color-text-primary); }
+.aria-strip-t:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.aria-rail-note { font: 400 12px/1.4 var(--font-serif); color: var(--color-text-muted); }
+.ipl-tw .ipl-tip::before { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 8px; } /* hover bridge across the 6px gap */
+/* the ledger nested in the register's open row: shed the row's td rules (rail, padding, rule) */
+.aria-reg tr.aria-open .ipl-tab th, .aria-reg tr.aria-open .ipl-tab td { padding: 4px 0 4px 12px; box-shadow: none; border-bottom: 1px solid var(--color-border); vertical-align: baseline; }
+.aria-reg tr.aria-open .ipl-tab th[scope='row'], .aria-reg tr.aria-open .ipl-tab thead th:first-child { padding-left: 0; }
+.aria-reg tr.aria-open .ipl-tab tfoot th, .aria-reg tr.aria-open .ipl-tab tfoot td { border-bottom: 0; border-top: 1px solid var(--color-text-primary); font-weight: 600; }
+/* phone: the register is a .ct-stack ledger (DESIGN.md §8 «Tablas», owner phone review 2026-10-29) —
+   № · vendor · value · reading on the lead line, IPS · signals · disposition under it; no sideways scroll */
+@media (max-width: 760px) {
+  .aria-reg.ct-stack { min-width: 0; display: block; }
+  .aria-reg-scroll { overflow-x: visible; }
+  .aria-reg.ct-stack tr.aria-open td { padding: 12px 0 12px 12px; }
+  .aria-reg.ct-stack .aria-dispo-cell { min-height: 24px; }
+  .aria-reg.ct-stack a.aria-name { margin-left: 0; }
+  /* the № carries its provenance mark (gt · lead · disc): a wider hanging gutter than the 28px standard */
+  .aria-reg.ct-stack tr:has(> td.ct-rank) { padding-left: 76px; }
+  .aria-reg.ct-stack td.ct-rank { width: 64px; margin-left: -76px; }
+}

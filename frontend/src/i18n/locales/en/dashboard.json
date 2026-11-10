@@ -1,0 +1,16 @@
+{
+  "patterns": {
+    "typology": {
+      "ofContracts": "of contracts",
+      "footnote": "1 ● ≈ 2% of classified contracts · severity = structural risk level"
+    }
+  },
+  "competition.mexicoLabel": "Mexico",
+  "competition.oecdMin": "EU scoreboard line",
+  "competition.gapLabel": "Gap",
+  "storyCarouselTitle": "The Story in Data",
+  "pauseCarousel": "Pause",
+  "playCarousel": "Play",
+  "prevSlide": "Previous",
+  "nextSlide": "Next"
+}

@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use RUBLI, please cite it as below."
+title: "RUBLI: open procurement intelligence for Mexican federal contracting"
+type: software
+authors:
+  - name: "RUBLI Project"
+    email: "rubli-project@proton.me"
+    website: "https://rubli.xyz"
+repository-code: "https://github.com/rubliproject/rubli"
+url: "https://rubli.xyz"
+license: Apache-2.0
+date-released: "2026-11-10"
+keywords:
+  - procurement
+  - Mexico
+  - CompraNet
+  - ComprasMX
+  - risk indicator
+  - open data
+references:
+  - type: dataset
+    title: "RUBLI public dataset"
+    authors:
+      - name: "RUBLI Project"
+    doi: "10.5281/zenodo.23694198"
+    license: CC-BY-4.0

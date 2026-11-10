@@ -1,0 +1,212 @@
+/* Category + sector dossiers on «El Contrato» — surface-local rules (DESIGN.md §2–§7).
+   Shared primitives live in components/contrato/contrato.css; nothing here overrides them. */
+.cd-meta { font: 400 13px/1.45 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
+/* five figures in one row (size from the shared .ct-fig scale) */
+.ct-cl-grid.cd-cl5 { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 24px; }
+/* the cover's lead: the key list beside the verdict, two tracks that end together */
+.cd-lead { margin-top: 16px; }
+.cd-lead :is(h2, h3), aside.cd-verdict :is(h2, h3) { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); padding-bottom: 8px; border-bottom: 1px solid var(--color-text-primary); margin-bottom: 4px; }
+.cd-verdict { display: flex; flex-direction: column; flex: 1; }
+.cd-verdict .cd-v-label { margin-top: 8px; font: 600 17px/1.4 var(--font-serif); text-wrap: balance; color: var(--color-text-primary); }
+.cd-verdict .cd-v-why { margin-top: 8px; text-wrap: pretty; }
+.cd-verdict dl { margin-top: 12px; padding-top: 8px; display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.cd-verdict dt, .cd-verdict dd { padding: 5px 0; border-top: 1px solid var(--color-border); }
+.cd-verdict dt { font: 400 15px/1.4 var(--font-serif); }
+.cd-verdict dd { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; padding-left: 12px; }
+.cd-gauge { margin-top: 16px; }
+.cd-gauge .cd-verdict dd.cd-wide { grid-column: 1 / -1; text-align: left; padding: 0 0 8px; border-top: 0; }
+.cd-gauge .ct-hs { width: 200px; }
+.cd-verdict dd.cd-wide { grid-column: 1 / -1; text-align: left; padding: 0 0 8px; border-top: 0; }
+.cd-stack { display: grid; gap: 16px; }
+.cd-sub { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); margin-bottom: 8px; display: block; }
+.cd-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+.cd-pair > * { min-width: 0; }
+.cd-tri { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.cd-tri > * { min-width: 0; }
+/* «La cifra» rows (owner 2026-10-21): one line per row — name · hairline bar · numbers.
+   The bar is a 1px rule with a 2px fill (no tape, no pills); phone drops it — the numbers carry the row. */
+.cd-rows { border-top: 1px solid var(--color-text-primary); }
+.cd-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(48px, 1fr) max-content; align-items: center; gap: 0 12px; padding: 4px 0; border-bottom: 1px solid var(--color-border); font-size: 14px; line-height: 1.35; transition: background-color 80ms ease-out; }
+.cd-row.is-wide { grid-template-columns: max-content minmax(48px, 1fr) max-content; }
+.cd-row > :first-child { min-width: 0; }
+.cd-row .cd-v { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; color: var(--color-text-muted); }
+.cd-row .cd-v b { font-weight: 600; color: var(--color-text-primary); }
+.cd-row .cd-lbl { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-secondary); }
+.cd-row small { display: block; font: 400 12px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
+.cd-hb { display: block; position: relative; height: 12px; background: linear-gradient(var(--color-border), var(--color-border)) left 50% / 100% 1px no-repeat; }
+.cd-hb i { position: absolute; left: var(--l, 0); top: 5px; height: 2px; width: max(2px, var(--v)); background: var(--c, var(--color-text-primary)); }
+.cd-hb.is-signed::before { content: ''; position: absolute; left: 50%; top: 2px; bottom: 2px; border-left: 1px solid var(--color-text-muted); }
+.cd-rows.cd-cols { border-top: 0; }
+.cd-rows.cd-cols > .cd-row:first-child { border-top: 1px solid var(--color-text-primary); }
+@media (min-width: 1280px) {
+  .cd-rows.cd-cols { columns: 2; column-gap: 32px; border-top: 1px solid var(--color-text-primary); }
+  .cd-rows.cd-cols > .cd-row { break-inside: avoid; }
+  .cd-rows.cd-cols > .cd-row:first-child { border-top: 0; }
+}
+/* four short panels in one row at ≥1280 (two at ≥901, one on phone) */
+.cd-quad { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 32px; align-items: start; }
+.cd-quad > * { min-width: 0; }
+@media (max-width: 1279px) { .cd-quad { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* phone: a cell shown only on phone, a column hidden on phone (its value moves into the name cell) */
+.cd-sm { display: none; }
+@media (max-width: 640px) {
+  .cd-row, .cd-row.is-wide { grid-template-columns: minmax(0, 1fr) max-content; }
+  .cd-row .cd-hb { display: none; }
+  .cd-sm { display: block; font: 400 12px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-muted); }
+  .cd-hide-sm { display: none; }
+  .cd-quad { grid-template-columns: 1fr; }
+}
+/* the procedure split: bars · the gap · the drift chart in one row ≥1280 */
+.cd-proc { display: grid; grid-template-columns: 1fr; gap: 16px; }
+.cd-proc > * { min-width: 0; }
+@media (min-width: 1280px) { .cd-proc { grid-template-columns: minmax(0, 5fr) minmax(0, 3fr) minmax(0, 5fr); gap: 0 32px; align-items: start; } }
+.cd-error { display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 32px 0; }
+.cd-hold { min-height: 100svh; }
+@media (max-width: 900px) {
+  .ct-cl-grid.cd-cl5 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cd-pair, .cd-tri { grid-template-columns: 1fr; gap: 24px; }
+}
+@media (max-width: 640px) {
+  .ct-cl-grid.cd-cl5 > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  /* a table whose secondary columns fold into the name cell fits the phone: no 720px scroll floor */
+  .ct-table.cd-fit { min-width: 0; }
+  /* short rows (a year and a figure) flow two columns on phone too */
+  .cd-rows.cd-cols-sm { columns: 2; column-gap: 24px; border-top: 1px solid var(--color-text-primary); }
+  .cd-rows.cd-cols-sm > .cd-row { break-inside: avoid; }
+}
+/* a ranked list inside one column of a pair reads down one column */
+.cd-duo-1 .ct-cols2 { display: block; }
+
+/* ── CategoryDrill «Tablero del anaquel» (Sector › Categoría › Subcategoría › Proveedores), 2026-11-03 ──
+   The Portada «Salidas» board's language at dossier scale (DESIGN.md §7, the board exception to §0.1/§9 uppercase):
+   mono caps rows, a lit station, a symbol legend; --sb-* roles (index.css) = ink on tint by day, the dark board at
+   night. Motion: the strip zooms (WAAPI, CategoryDrill) and the cells flip once per level (CSS, ≤ 600 ms). */
+.sb { padding: 10px 16px 12px; background: var(--sb-bg); color: var(--sb-ink); font-variant-numeric: tabular-nums; }
+.sb :focus-visible { outline: 2px solid var(--sb-hi); outline-offset: 2px; }
+.sb-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding-bottom: 8px; border-bottom: 1px solid var(--sb-rule); }
+.sb-trail ol { display: flex; flex-wrap: wrap; margin: 0; padding: 0; list-style: none; perspective: 600px; }
+.sb-trail li { display: flex; align-items: center; }
+.sb-trail li + li::before { content: '›'; padding: 0 6px; color: var(--sb-dim); font: 400 14px/1 var(--font-mono); }
+.sb-stn { display: inline-flex; align-items: center; min-height: 32px; padding: 0 8px; font: 600 13px/1.2 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--sb-ink); text-align: left; }
+button.sb-stn { text-decoration: underline; text-decoration-color: var(--sb-rule); text-underline-offset: 4px; transition: transform var(--dur-press) ease-out, text-decoration-color var(--dur-press) ease-out; }
+button.sb-stn:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { button.sb-stn:hover { text-decoration-color: currentColor; } }
+.sb-trail li.is-lit .sb-stn { background: var(--sb-hi); color: var(--sb-hi-ink); }
+.sb-trail li.is-off .sb-stn { color: var(--sb-dim); font-weight: 400; }
+.sb.is-moving .sb-trail li.is-lit .sb-stn { transform-origin: 50% 0; animation: sb-flap 420ms linear both; }
+.sb-readout { margin: 0; font: 400 13px/1.45 var(--font-mono); color: var(--sb-dim); text-align: right; }
+.sb-readout b { color: var(--sb-ink); font-weight: 600; }
+.sb-read { color: var(--sb-ink); }
+.sb-guide:focus { outline: none; }
+/* the drill's one live caption (the page's explanation is the strip at the top, kit/PageQuestion) */
+.sb-guide { margin: 0 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--sb-rule); font: 400 15px/1.45 var(--font-serif); color: var(--sb-dim); text-wrap: pretty; }
+.sb-guide .sb-read { color: var(--sb-ink); }
+@media (max-width: 760px) {
+  .sb-guide { font-size: 14px; }
+}
+.sb-read:focus { outline: none; }
+.sb-body { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
+@media (min-width: 761px) { .sb-body { grid-template-columns: 48px minmax(0, 1fr); gap: 16px; } }
+/* the strip: one segment per row, ∝ value; the box clips the zoom */
+.sb-strip-box { overflow: hidden; }
+.sb-strip { display: flex; flex-direction: row; gap: 2px; height: 28px; transform-origin: 0 0; }
+@media (min-width: 761px) { .sb-strip { flex-direction: column; height: 100%; min-height: 200px; } }
+.sb-seg { flex-basis: 0; flex-shrink: 1; min-width: 2px; min-height: 2px; background-color: var(--c); transition: opacity var(--dur-press) ease-out; }
+/* «sin tipo» = kit pattern sin-dato (class pat-sin-dato, DESIGN.md § Patrones), tinted with the row hue */
+.sb-seg.is-catch, .sb-key.is-catch, .sb-bar i.is-catch { --pat-ink: var(--c); --pat-w: 2px; --pat-step: 6px; background-color: transparent; }
+.sb-seg.is-catch, .sb-key.is-catch { box-shadow: inset 0 0 0 1px var(--c); }
+.sb-seg.is-rest, .sb-key.is-rest { background: transparent; box-shadow: inset 0 0 0 1px var(--sb-dim); }
+/* a light sector hue (energía yellow, 1.7:1 on the day tint) keeps a darker edge so the segment never melts into the ground */
+.sb-seg.is-item { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 70%, var(--sb-ink)); }
+.sb-seg.is-pick { cursor: zoom-in; }
+/* the fold sits where the hidden rows are: between the named kinds and the hatched remainders */
+.sb-row.sb-fold-row { display: block; padding: 2px 4px 2px 60px; }
+.sb-fold { min-height: 32px; font: 600 13px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--sb-ink); text-decoration: underline; text-decoration-color: var(--sb-rule); text-underline-offset: 4px; }
+.sb-fold:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .sb-fold:hover { text-decoration-color: currentColor; } }
+.sb-seg.is-dim { opacity: .3; }
+.sb-seg.is-current { box-shadow: inset 0 0 0 2px var(--sb-ink); }
+/* the board */
+.sb-board { min-width: 0; perspective: 800px; }
+.sb-list { margin: 0; padding: 0; list-style: none; }
+.sb-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 104px 64px 128px; align-items: baseline; gap: 0 16px; padding: 7px 4px; border-bottom: 1px solid var(--sb-rule); font: 500 15px/1.35 var(--font-mono); text-transform: uppercase; transition: background-color 80ms ease-out; }
+.sb-row.has-cons { grid-template-columns: 40px minmax(0, 1fr) 104px 64px 64px 128px; }
+.sb-row .sb-bar, .sb-row .sb-bar-h { display: none; }
+@media (min-width: 1100px) {
+  .sb-row { grid-template-columns: 40px minmax(0, 1fr) minmax(64px, 140px) 104px 64px 128px; }
+  .sb-row.has-cons { grid-template-columns: 40px minmax(0, 1fr) minmax(64px, 140px) 104px 64px 64px 128px; }
+  .sb-row .sb-bar, .sb-row .sb-bar-h { display: block; }
+}
+.sb-cols { padding: 4px 4px 6px; font: 400 12px/1.4 var(--font-mono); letter-spacing: .06em; color: var(--sb-dim); border-bottom-color: var(--sb-ink); }
+.sb-row .r { text-align: right; }
+.sb-c { min-width: 0; }
+.sb-no { color: var(--sb-dim); font-size: 13px; }
+.sb-name { overflow-wrap: anywhere; font-weight: 600; }
+.sb-name small { display: block; margin-top: 2px; font: 400 13px/1.4 var(--font-serif); text-transform: none; color: var(--sb-dim); }
+.sb-key { display: inline-block; width: 10px; height: 10px; margin-right: 8px; vertical-align: 0; background-color: var(--c); }
+/* the key hangs in the name cell's gutter: a button is an atomic inline box, so an inline key was left alone on
+   the first line whenever the name wrapped (phone) */
+.sb-name { position: relative; padding-left: 18px; }
+.sb-name > .sb-key { position: absolute; left: 0; top: .35em; margin: 0; }
+.sb-row.is-current .sb-name > .sb-key { left: 8px; }
+.sb-cols > :nth-child(2) { padding-left: 18px; }
+.sb-pick, .sb .sb-chip { font: inherit; text-transform: inherit; color: inherit; text-align: left; letter-spacing: inherit; }
+.sb-pick { display: inline; cursor: zoom-in;text-decoration: underline; text-decoration-color: var(--sb-rule); text-underline-offset: 4px; }
+.sb .sb-chip { text-decoration: none; }
+@media (hover: hover) and (pointer: fine) {
+  .sb-pick:hover, .sb .sb-chip:hover { text-decoration: underline; text-decoration-color: currentColor; text-underline-offset: 4px; }
+  .sb-list .sb-row:hover, .sb-row.is-on { background: var(--sb-row); }
+}
+.sb-row.is-current .sb-name { box-shadow: inset 3px 0 0 var(--sb-ink); padding-left: 26px; }
+.sb-bar { position: relative; height: 10px; align-self: center; background: linear-gradient(var(--sb-rule), var(--sb-rule)) left 50% / 100% 1px no-repeat; }
+.sb-bar i { position: absolute; inset: 2px 0; background-color: var(--c); transform-origin: 0 50%; }
+.sb-bar i.is-rest { background: transparent; box-shadow: inset 0 0 0 1px var(--sb-dim); } /* = the strip and the legend: outline */
+.sb-amt { font-weight: 700; white-space: nowrap; }
+.sb-pct, .sb-cons { color: var(--sb-dim); white-space: nowrap; font-size: 14px; }
+.sb-ind { white-space: nowrap; }
+.sb-st { display: inline-block; padding: 1px 6px; font: 700 12px/1.4 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--sb-st-ink); background: var(--color-risk-low); }
+.sb-st.is-critical { background: var(--color-risk-critical); }
+.sb-st.is-high { background: var(--color-risk-high); color: var(--sb-st-high-ink); }
+.sb-st.is-medium { background: var(--color-risk-medium); }
+.sb-dimtxt { color: var(--sb-dim); }
+.sb-row.is-rest { color: var(--sb-dim); }
+/* split-flap, once per level: each cell drops from its hinge. The Portada board's heavy flap (kit.css bd-flap,
+   owner 2026-11-03 «too fast»: a slow start that gathers speed and brakes to −4°, then settles), transform only —
+   bd-flap also paints --board-bg, which is not this panel's ground by day. 420 ms per cell (§7 ≤ 600). */
+@keyframes sb-flap {
+  0% { transform: rotateX(-90deg); animation-timing-function: var(--ease-swap); }
+  80% { transform: rotateX(-4deg); animation-timing-function: var(--ease-out); }
+  100% { transform: rotateX(0deg); }
+}
+.sb.is-moving .sb-list .sb-c { transform-origin: 50% 0; animation: sb-flap 420ms linear both; backface-visibility: hidden; }
+@media (prefers-reduced-motion: reduce) { .sb.is-moving .sb-list .sb-c, .sb.is-moving .sb-trail li.is-lit .sb-stn { animation: none; } }
+.sb-legend { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 10px 0 0; padding-top: 8px; border-top: 1px solid var(--sb-rule); }
+.sb-legend > div { display: flex; align-items: baseline; gap: 6px; }
+.sb-legend dt { flex: none; }
+.sb-legend dt .sb-key { margin-right: 0; }
+.sb-lg-t { font: 600 12px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; }
+.sb-legend dd { margin: 0; font: 400 13px/1.45 var(--font-serif); color: var(--sb-dim); }
+/* phone: one record on two lines — Nº hangs; name · amount / share · indicator */
+@media (max-width: 760px) {
+  .sb-row.sb-fold-row { padding-left: 46px; }
+  .sb { margin-left: calc(var(--ct-pad, 16px) * -1); margin-right: calc(var(--ct-pad, 16px) * -1); padding: 8px var(--ct-pad, 16px) 10px; }
+  .sb-readout { text-align: left; }
+  .sb-cols { display: none; }
+  .sb-row, .sb-row.has-cons { grid-template-columns: 32px minmax(0, 1fr) auto; grid-template-areas: 'no name amt' 'no pct ind'; gap: 2px 10px; font-size: 14px; }
+  .sb-no { grid-area: no; }
+  .sb-name { grid-area: name; }
+  .sb-amt { grid-area: amt; }
+  .sb-pct { grid-area: pct; text-align: left !important; font-size: 13px; }
+  .sb-cons { display: none; }
+  .sb-ind { grid-area: ind; text-align: right; }
+  .sb-ex { display: none !important; }
+  .sb-lg-cons { display: none !important; } /* the Consol. column is not on the phone */
+}
+/* touch: DESIGN §8 controls 44 on touch; the row name's tap area is the whole line, not the text */
+@media (pointer: coarse) {
+  .sb-stn, .sb-fold { min-height: 44px; }
+  .sb-pick { display: inline-block; min-height: 44px; margin-block: -12px; padding-block: 12px; }
+  .sb-esc { display: none; } /* a keyboard hint */
+}

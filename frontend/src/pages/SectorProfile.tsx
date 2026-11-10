@@ -1,0 +1,2024 @@
+/**
+ * SectorProfile — Individual sector detail page
+ *
+ * Four-tab layout:
+ *   Overview      — spend trend (area chart) + top institutions
+ *   Top Vendors   — ranked table by value with risk badges
+ *   Risk Analysis — risk distribution + top risk factors + § 7 ARIA patterns
+ *   Sexenios      — § 6 Comparación Sexenal (Fox → Sheinbaum)
+ *
+ * Hero: sector name + color + total spend + contract count + risk level
+ * Navigation: prev/next sector + back to all sectors
+ */
+
+import { cieloHref } from '@/lib/vista'
+import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { RiskBadge } from '@/components/ui/badge'
+import { DotBar } from '@/components/ui/DotBar'
+import { Act } from '@/components/layout/Act'
+import {
+  cn,
+  formatCompactMXN,
+  formatNumber,
+  pctOrDash,
+} from '@/lib/utils'
+import {
+  api,
+  sectorApi,
+  vendorApi,
+  analysisApi,
+  institutionApi,
+  phiApi,
+  caseLibraryApi,
+  categoriesApi,
+  ariaApi,
+} from '@/api/client'
+import { sectorDetailQuery } from '@/api/entityQueries'
+import { ADMINISTRATIONS } from '@/lib/administrations'
+import {
+  SECTOR_COLORS,
+  SECTOR_TEXT_COLORS,
+  RISK_COLORS,
+  SECTORS,
+  getRiskLevelFromScore,
+  singleAwardOfCompetitive,
+} from '@/lib/constants'
+import {
+  Building2,
+  Users,
+  AlertTriangle,
+  ArrowLeft,
+  ArrowRight,
+  ExternalLink,
+  ChevronLeft,
+  TrendingUp,
+  ShieldAlert,
+  Info,
+  Tag,
+} from 'lucide-react'
+import {
+  EditorialAreaChart,
+  EditorialLineChart,
+  type ChartAnnotation,
+  type ColorToken,
+  type LineSeries,
+} from '@/components/charts/editorial'
+import { RiskRingField, type RiskRingRow } from '@/components/charts/RiskRingField'
+import { EntityIdentityChip } from '@/components/ui/EntityIdentityChip'
+import { ListHead, COL, NameCell, NumCell, IndicatorCell } from '@/components/kit/ListCells'
+import { RankCell } from '@/components/kit/ListRow'
+import { gradeToTierKey, TIER_STYLES } from '@/lib/tiers'
+import { BenchmarkRow, type BenchmarkRowProps } from '@/components/editorial/BenchmarkRow'
+
+// ── constants ────────────────────────────────────────────────────────────────
+
+const VENDOR_LIST_PER_PAGE = 20
+const INSTITUTION_LIST_PER_PAGE = 15
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function hex(color: string, alpha: number) {
+  const r = parseInt(color.slice(1, 3), 16)
+  const g = parseInt(color.slice(3, 5), 16)
+  const b = parseInt(color.slice(5, 7), 16)
+  return `rgba(${r},${g},${b},${alpha})`
+}
+
+// ── administration color palette ─────────────────────────────────────────────
+
+const ADMIN_COLORS: Record<string, string> = {
+  fox:       '#3b82f6',
+  calderon:  '#22c55e',
+  epn:       '#ef4444',
+  amlo:      '#a16207',
+  sheinbaum: '#14b8a6',
+}
+
+function getAdminColor(key: string, fallback: string): string {
+  return ADMIN_COLORS[key] ?? fallback
+}
+
+// ── procurement flag labels ───────────────────────────────────────────────────
+
+const FACTOR_LABELS: Record<string, string> = {
+  direct_award: 'Direct Award',
+  single_bid: 'Single award',
+  price_anomaly: 'Amount Anomaly',
+  short_ad_period: 'Short Ad Period',
+  'short_ad_<5d': 'Rushed Ad (<5 days)',
+  'short_ad_<15d': 'Short Ad (<15 days)',
+  'short_ad_<30d': 'Brief Ad (<30 days)',
+  year_end: 'Year-End Rush',
+  vendor_concentration: 'Vendor Concentration',
+  threshold_splitting: 'Contract Splitting',
+  network_risk: 'Network Connection',
+  industry_mismatch: 'Industry Mismatch',
+  co_bid_high: 'High Co-Bid Rate',
+  co_bid_med: 'Medium Co-Bid Rate',
+  price_hyp: 'Amount Outlier',
+  co_sid_high: 'High Co-Bid Rate',
+  co_sid_med: 'Medium Co-Bid Rate',
+}
+
+const FACTOR_DESC: Record<string, string> = {
+  direct_award: 'Contract awarded without competitive bidding',
+  single_bid: 'Competitive procedure received only one offer',
+  price_anomaly: 'Contract value is 3x above sector median',
+  short_ad_period: 'Advertisement window too short for real competition',
+  'short_ad_<5d': 'Under 5 days between publication and award',
+  'short_ad_<15d': 'Under 15 days between publication and award',
+  'short_ad_<30d': 'Under 30 days between publication and award',
+  year_end: 'Awarded in December — budget-dump pattern',
+  vendor_concentration: 'One vendor controls >30% of sector contracts',
+  threshold_splitting: 'Multiple same-day contracts to avoid oversight thresholds',
+  network_risk: 'Vendor belongs to a connected group of related companies',
+  industry_mismatch: "Vendor's primary industry doesn't match contract scope",
+  co_bid_high: 'Vendor co-bids in >80% of procedures with a partner',
+  co_bid_med: 'Vendor co-bids in 50–80% of procedures with a partner',
+  price_hyp: 'Statistical outlier flagged by the IQR amount model',
+}
+
+// ── Tab type ──────────────────────────────────────────────────────────────────
+
+type TabId = 'overview' | 'vendors' | 'risk' | 'sexenios'
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function TrendArea({
+  data,
+  colorToken = 'accent-data',
+}: {
+  data: Array<{ year: number; total_value_mxn: number; total_contracts: number }>
+  /** Token-locked color. Optional override; default is accent-data. */
+  colorToken?: ColorToken
+}) {
+  const chartData = data
+    .filter((d) => d.year >= 2010)
+    .map((d) => ({ year: d.year, value: d.total_value_mxn / 1e9, contracts: d.total_contracts }))
+
+  return (
+    <div
+      className="h-64"
+      role="img"
+      aria-label="Area chart showing contract value trend by year"
+    >
+      <span className="sr-only">Area chart showing annual contract value in billions MXN.</span>
+      <EditorialAreaChart
+        data={chartData}
+        xKey="year"
+        yKey="value"
+        colorToken={colorToken}
+        yFormat="mxn-compact"
+        height={256}
+      />
+    </div>
+  )
+}
+
+interface InstitutionFlow {
+  source_id: number
+  source_name: string
+  value: number
+  contracts: number
+  avg_risk: number | null
+  high_risk_pct: number | null
+}
+
+function InstitutionList({
+  flows,
+  color,
+}: {
+  flows: InstitutionFlow[]
+  color: string
+}) {
+  const maxVal = Math.max(...flows.map((f) => f.value), 1)
+
+  return (
+    <div className="space-y-1">
+      {flows.map((f, i) => {
+        const barPct = (f.value / maxVal) * 100
+        const riskColor = RISK_COLORS[getRiskLevelFromScore(f.avg_risk ?? 0)]
+
+        return (
+          <div
+            key={i}
+            className="px-3 py-1.5 border-b border-border/10 hover:bg-background-elevated/60 transition-colors"
+          >
+            {/* Two-row layout: name on its own row (full width, no truncation
+                competing with the money pill) + KPIs on row 2. Previous
+                single-row flex squeezed institution names down to "Institu..."
+                because the money + risk pill claimed the right column. */}
+            <div className="flex items-baseline gap-2 min-w-0 mb-1">
+              <span className="text-[12px] font-mono text-text-muted w-4 flex-shrink-0">
+                #{i + 1}
+              </span>
+              <div className="min-w-0 flex-1">
+                <EntityIdentityChip
+                  type="institution"
+                  id={f.source_id}
+                  name={f.source_name}
+                  size="md"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 ml-6">
+              <span className="text-xs font-mono font-bold tabular-nums text-text-primary">
+                {formatCompactMXN(f.value)}
+              </span>
+              {f.avg_risk != null && (
+                <span
+                  className="rounded px-1.5 py-0.5 text-[12px] font-bold font-mono"
+                  style={{ color: riskColor, backgroundColor: `${riskColor}18` }}
+                >
+                  {Math.round(f.avg_risk * 100)}%
+                </span>
+              )}
+              <span className="text-[12px] font-mono text-text-muted ml-auto tabular-nums">
+                {formatNumber(f.contracts)} {f.contracts === 1 ? 'contrato' : 'contratos'}
+              </span>
+            </div>
+            <div className="ml-6">
+              <DotBar
+                value={barPct}
+                max={100}
+                color={color}
+                emptyColor="var(--color-background-elevated)"
+                emptyStroke="var(--color-border-hover)"
+                dots={24}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+type VendorRow = {
+  vendor_id: number
+  vendor_name: string
+  total_value_mxn: number
+  total_contracts: number
+  avg_risk_score?: number
+  contract_count?: number
+  name?: string
+}
+
+function VendorTable({
+  vendors,
+  sectorId,
+  color,
+}: {
+  vendors: VendorRow[]
+  sectorId: number
+  color: string
+}) {
+  const { t, i18n } = useTranslation('sectors')
+  const lang = i18n.language.startsWith('es') ? 'es' : 'en'
+  const top = vendors.slice(0, VENDOR_LIST_PER_PAGE)
+  const maxVal = Math.max(...top.map((v) => v.total_value_mxn), 1)
+
+  return (
+    <div>
+      <div className="ct-table-wrap">
+        <table className="ct-table ct-stack" role="table" aria-label={t('profile.topVendors')}>
+          <ListHead lang={lang} ranked role="rowgroup" cols={[COL.vendor, COL.amount, COL.contracts, COL.indicator]} />
+          <tbody role="rowgroup">
+            {top.map((vendor, index) => (
+              <tr role="row" key={vendor.vendor_id} className="ct-row">
+                <RankCell n={index + 1} role="cell" />
+                <NameCell
+                  role="cell"
+                  type="vendor"
+                  id={vendor.vendor_id}
+                  name={vendor.vendor_name ?? vendor.name ?? ''}
+                  sub={
+                    <DotBar
+                      value={(vendor.total_value_mxn / maxVal) * 100}
+                      max={100}
+                      color={color}
+                      emptyColor="var(--color-background-elevated)"
+                      emptyStroke="var(--color-border-hover)"
+                      dots={16}
+                      dotR={2}
+                      dotGap={4}
+                      className="mt-1"
+                    />
+                  }
+                />
+                <NumCell role="cell" amt>{formatCompactMXN(vendor.total_value_mxn)}</NumCell>
+                <NumCell role="cell" label={lang === 'es' ? 'contratos' : 'contracts'}>{formatNumber(vendor.total_contracts ?? vendor.contract_count ?? 0)}</NumCell>
+                <IndicatorCell role="cell" value={vendor.avg_risk_score} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-4 flex justify-end">
+        <Link to={`/vendors?sector_id=${sectorId}`}>
+          <Button variant="ghost" size="sm" className="text-xs text-text-secondary hover:text-text-primary">
+            {t('profile.viewAll')}
+            <ExternalLink className="ml-1.5 h-3 w-3" aria-hidden="true" />
+          </Button>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+function RiskDonut({
+  data,
+}: {
+  data: Array<{ risk_level: string; count: number; percentage: number }>
+  color: string
+}) {
+  const order = ['critical', 'high', 'medium', 'low'] as const
+  const sorted = order.map((level) => {
+    const found = data.find((d) => d.risk_level === level)
+    return { level, count: found?.count ?? 0, pct: found?.percentage ?? 0 }
+  })
+  const total = sorted.reduce((a, b) => a + b.count, 0)
+  const highPlus = sorted[0].count + sorted[1].count
+  const highPlusPct = total > 0 ? ((highPlus / total) * 100).toFixed(1) : '0'
+
+  const ringRows: RiskRingRow[] = sorted.map((d) => ({
+    level: d.level as RiskRingRow['level'],
+    pct:   d.pct,
+    count: d.count,
+  }))
+
+  return (
+    <div className="flex items-center gap-6">
+      <div className="relative flex-shrink-0" aria-label="Risk distribution ring field">
+        <RiskRingField
+          rows={ringRows}
+          size={176}
+          n={120}
+          centerLabel={`${highPlusPct}%`}
+          centerSublabel="high+"
+          seed={sorted[0]?.count ?? 42}
+          animate
+        />
+      </div>
+
+      <div className="flex-1 space-y-3">
+        {sorted.map((d) => (
+          <div key={d.level} className="space-y-0.5">
+            <div className="flex justify-between items-center text-xs">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: RISK_COLORS[d.level as keyof typeof RISK_COLORS] }}
+                />
+                <span className="capitalize text-text-secondary">{d.level}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="tabular-nums font-mono text-text-secondary">{d.pct.toFixed(1)}%</span>
+                <span className="tabular-nums font-mono text-text-muted text-[12px]">
+                  {formatNumber(d.count)}
+                </span>
+              </div>
+            </div>
+            <DotBar
+              value={d.pct}
+              max={100}
+              color={RISK_COLORS[d.level as keyof typeof RISK_COLORS]}
+              emptyColor="var(--color-background-elevated)"
+              emptyStroke="var(--color-border-hover)"
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FactorRankList({
+  data,
+  color,
+}: {
+  data: Array<{ factor: string; count: number; percentage: number; avg_risk_score: number }>
+  color: string
+}) {
+  const top7 = data.slice(0, 7)
+  const maxPct = Math.max(...top7.map((d) => d.percentage), 1)
+
+  return (
+    <div className="space-y-3">
+      {top7.map((d, i) => {
+        const label = FACTOR_LABELS[d.factor] ?? d.factor
+        const desc = FACTOR_DESC[d.factor]
+        const barWidth = (d.percentage / maxPct) * 100
+        const riskColor = RISK_COLORS[getRiskLevelFromScore(d.avg_risk_score)]
+
+        return (
+          <div key={d.factor}>
+            <div className="flex items-center justify-between mb-0.5 gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[12px] font-mono text-text-muted w-4 flex-shrink-0">
+                  #{i + 1}
+                </span>
+                <span className="text-xs font-semibold text-text-primary truncate" title={label}>{label}</span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-[12px] font-mono text-text-secondary tabular-nums">
+                  {d.percentage.toFixed(1)}%
+                </span>
+                <span
+                  className="rounded px-1.5 py-0.5 text-[12px] font-bold font-mono tabular-nums"
+                  style={{ color: riskColor, backgroundColor: `${riskColor}18` }}
+                >
+                  {Math.round(d.avg_risk_score * 100)}% risk
+                </span>
+              </div>
+            </div>
+            {desc && (
+              <p className="text-[12px] text-text-muted ml-6 mb-1 leading-tight">{desc}</p>
+            )}
+            <div className="ml-6">
+              <DotBar
+                value={barWidth}
+                max={100}
+                color={color}
+                emptyColor="var(--color-background-elevated)"
+                emptyStroke="var(--color-border-hover)"
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function InsightCard({
+  type,
+  title,
+  body,
+  icon: Icon,
+}: {
+  type: 'warning' | 'info' | 'critical' | 'positive'
+  title: string
+  body: string
+  icon: React.ComponentType<{ className?: string }>
+}) {
+  const styles = {
+    critical: { border: 'border-risk-critical/30 bg-risk-critical/5', text: 'text-risk-critical' },
+    warning:  { border: 'border-risk-high/30 bg-risk-high/5', text: 'text-risk-high' },
+    positive: { border: 'border-border-hover bg-background-elevated', text: 'text-text-muted' },
+    info:     { border: 'border-oecd/30 bg-oecd/5', text: 'text-oecd' },
+  }[type]
+
+  return (
+    <div className={cn('rounded-sm border p-4', styles.border)}>
+      <div className={cn('flex items-center gap-1.5 text-sm font-semibold mb-1', styles.text)}>
+        <Icon className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
+        {title}
+      </div>
+      <p className="text-xs text-text-secondary leading-relaxed">{body}</p>
+    </div>
+  )
+}
+
+// ── Enhancement 1: PHI Governance Grade panel ─────────────────────────────────
+
+interface PhiIndicator {
+  value: number
+  light: string
+  benchmark?: number | null
+  description?: string
+}
+
+interface PhiDetailData {
+  grade?: string
+  phi_composite_score?: number
+  indicators?: {
+    competition_rate?: PhiIndicator
+    avg_bidders?: PhiIndicator
+    single_bid_rate?: PhiIndicator
+  }
+}
+
+function PhiGradePanel({ data }: { data: PhiDetailData }) {
+  const { t } = useTranslation('sectors')
+  const grade = data.grade ?? '—'
+  const score = data.phi_composite_score ?? null
+  const compRate = data.indicators?.competition_rate?.value ?? null
+  const avgBidders = data.indicators?.avg_bidders?.value ?? null
+  const singleBidRate = data.indicators?.single_bid_rate?.value ?? null
+
+  // Map backend letter grade to canonical 5-tier label (CLAUDE.md hard rule §7)
+  const tierKey = grade !== '—' ? gradeToTierKey(grade) : null
+  const tierStyle = tierKey ? TIER_STYLES[tierKey] : null
+  const tierColor = tierStyle?.color ?? 'var(--color-text-muted)'
+
+  const indicators: Array<{ label: string; value: string | null; benchmark: string; highlight: boolean }> = [
+    {
+      label: t('phi.competitionRate'),
+      value: compRate != null ? `${compRate.toFixed(1)}%` : null,
+      benchmark: t('phi.oecdCompetition'),
+      highlight: compRate != null && compRate < 50,
+    },
+    {
+      label: t('phi.avgBidders'),
+      value: avgBidders != null ? avgBidders.toFixed(2) : null,
+      benchmark: t('phi.oecdBidders'),
+      highlight: avgBidders != null && avgBidders < 2,
+    },
+    {
+      label: t('phi.singleBidRate'),
+      value: singleBidRate != null ? `${singleBidRate.toFixed(1)}%` : null,
+      benchmark: t('phi.oecdSingleBid'),
+      highlight: singleBidRate != null && singleBidRate > 30,
+    },
+  ]
+
+  return (
+    <div
+      className="rounded-sm border border-border bg-background/40 p-4"
+      aria-label="Procurement Health Index governance grade"
+    >
+      <div className="flex flex-col sm:flex-row items-start gap-5">
+        {/* Tier label + score — 5-tier canonical (CLAUDE.md §7: Excelente/Satisfactorio/Regular/Deficiente/Crítico) */}
+        <div className="flex flex-col items-start flex-shrink-0 min-w-[96px]">
+          {tierKey ? (
+            <span
+              className="text-[13px] font-bold uppercase tracking-[0.08em] leading-none px-2 py-1"
+              style={{
+                color: tierColor,
+                background: tierStyle?.bg,
+                border: `1px solid ${tierStyle?.border}`,
+                fontFamily: 'var(--font-family-mono)',
+              }}
+              aria-label={`Governance tier: ${t(`tiers.${tierKey}`, { defaultValue: tierKey })}`}
+            >
+              {t(`tiers.${tierKey}`, { defaultValue: tierKey })}
+            </span>
+          ) : (
+            <span className="text-[13px] font-mono text-text-muted">—</span>
+          )}
+          {score != null && (
+            <span className="text-[13px] font-mono text-text-muted mt-1.5 tabular-nums">
+              {score.toFixed(1)}/100
+            </span>
+          )}
+          <span className="text-[13px] uppercase tracking-widest text-text-muted mt-1 font-semibold"
+            style={{ fontFamily: 'var(--font-family-mono)' }}>
+            PHI
+          </span>
+        </div>
+
+        {/* Divider */}
+        <div className="hidden sm:block w-px self-stretch bg-background-elevated" aria-hidden="true" />
+
+        {/* Indicator trio */}
+        <div className="flex flex-1 gap-4 flex-wrap">
+          {indicators.map((ind) => (
+            <div key={ind.label} className="flex flex-col min-w-[80px]">
+              <span
+                className={cn(
+                  'text-xl font-black tabular-nums leading-none',
+                  ind.highlight ? 'text-risk-high' : 'text-text-primary'
+                )}
+              >
+                {ind.value ?? '—'}
+              </span>
+              <span className="text-[13px] text-text-secondary mt-0.5 font-semibold">{ind.label}</span>
+              <span className="text-[12px] text-text-muted mt-0.5">{ind.benchmark}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Enhancement 2: Risk Trend chart ───────────────────────────────────────────
+
+interface TimelineYear {
+  year: number
+  contracts: number
+  total_value: number
+  high_risk_count: number
+  avg_risk: number
+}
+
+function RiskTrendChart({ years }: { years: TimelineYear[] }) {
+  const { i18n } = useTranslation('sectors')
+  const lang = i18n.language.startsWith('es') ? 'es' : 'en'
+
+  const data = years
+    .filter((d) => d.year >= 2010)
+    .map((d) => ({
+      year: d.year,
+      avg_risk: Math.round(d.avg_risk * 1000) / 10, // → 0–100 scale
+      high_risk_pct:
+        d.contracts > 0
+          ? Math.round((d.high_risk_count / d.contracts) * 1000) / 10
+          : 0,
+    }))
+
+  if (!data.length) {
+    return (
+      <div className="py-8 text-center">
+        <p className="text-sm text-text-muted">
+          {lang === 'en' ? 'No risk trend data for this sector.' : 'Sin datos de evolución de riesgo para este sector.'}
+        </p>
+        <p className="text-[13px] text-text-muted mt-1">
+          {lang === 'en'
+            ? 'Requires at least two years with scored contracts.'
+            : 'Requiere al menos dos años con contratos calificados.'}
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="h-[180px]"
+      role="img"
+      aria-label="Line chart showing average risk score and high-risk percentage per year"
+    >
+      <span className="sr-only">
+        Dual-line chart: amber line shows average risk score × 100, red line shows percentage of
+        high-risk contracts, from 2010 to present.
+      </span>
+      {(() => {
+        type RiskRow = (typeof data)[number]
+        const series: LineSeries<RiskRow>[] = [
+          { key: 'avg_risk', label: 'Avg Risk Score ×100', colorToken: 'risk-high' },
+          { key: 'high_risk_pct', label: 'High-Risk %', colorToken: 'risk-critical' },
+        ]
+        return (
+          <EditorialLineChart
+            data={data}
+            xKey="year"
+            series={series}
+            yFormat="pct"
+            height={180}
+          />
+        )
+      })()}
+    </div>
+  )
+}
+
+// ── Enhancement 3: Concentration Gini chart ───────────────────────────────────
+
+interface ConcentrationYear {
+  year: number
+  gini: number
+  top_vendor_share: number
+  total_value: number
+  vendor_count: number
+}
+
+function ConcentrationGiniChart({ history, isEs }: { history: ConcentrationYear[]; isEs: boolean }) {
+  const data = history.filter((d) => d.year >= 2010)
+
+  if (!data.length) {
+    return (
+      <p className="text-sm text-text-muted py-6 text-center">
+        No concentration history data available.
+      </p>
+    )
+  }
+
+  // Find peak year for annotation
+  const peakEntry = data.reduce(
+    (prev, curr) => (curr.gini > prev.gini ? curr : prev),
+    data[0],
+  )
+  const lastEntry = data[data.length - 1]
+
+  return (
+    <div>
+      <div
+        className="h-[180px]"
+        role="img"
+        aria-label="Line chart showing market concentration Gini coefficient over time"
+      >
+        <span className="sr-only">
+          Gini coefficient from 0 (perfectly equal) to 1 (full monopoly).
+          Reference line at 0.5 marks competitive market threshold.
+          Reference line at 0.25 marks low-concentration threshold.
+        </span>
+        {(() => {
+          const series: LineSeries<ConcentrationYear>[] = [
+            { key: 'gini', label: 'Gini', colorToken: 'risk-high' },
+          ]
+          const annotations: ChartAnnotation[] = [
+            {
+              kind: 'hrule',
+              y: 0.5,
+              label: isEs ? 'umbral competitivo' : 'competitive threshold',
+              tone: 'info',
+            },
+            {
+              kind: 'hrule',
+              y: 0.25,
+              label: isEs ? 'baja concentración' : 'low concentration',
+              tone: 'neutral' as 'info',
+            },
+          ]
+          return (
+            <EditorialLineChart
+              data={data}
+              xKey="year"
+              series={series}
+              yFormat="decimal"
+              yDomain={[0, 1]}
+              annotations={annotations}
+              height={180}
+            />
+          )
+        })()}
+      </div>
+      {/* FT-style annotations below chart */}
+      <div className="flex items-start justify-between gap-4 mt-2 text-[12px] font-mono text-text-muted">
+        {/* Peak callout */}
+        <span>
+          {isEs
+            ? `Pico: ${peakEntry.year} (Gini ${peakEntry.gini.toFixed(2)})`
+            : `Peak: ${peakEntry.year} (Gini ${peakEntry.gini.toFixed(2)})`}
+        </span>
+        {/* Right-edge direct label */}
+        <span style={{ color: 'var(--color-risk-high)' }}>
+          {isEs
+            ? `${lastEntry.year} · Gini ${lastEntry.gini.toFixed(2)}`
+            : `${lastEntry.year} · Gini ${lastEntry.gini.toFixed(2)}`}
+        </span>
+      </div>
+      <p className="text-[13px] text-text-muted mt-1 opacity-70">
+        {isEs
+          ? 'Umbral de mercado competitivo = 0.5 (línea punteada)'
+          : 'Competitive market threshold = 0.5 (dashed line)'}
+      </p>
+    </div>
+  )
+}
+
+// ── Enhancement 4: Investigation Cases callout ────────────────────────────────
+
+interface ScandalCaseSummary {
+  id: number
+  name_en: string
+  name_es: string
+  slug: string
+  severity: number
+  amount_mxn_low?: number
+  amount_mxn_high?: number
+}
+
+function InvestigationCallout({
+  cases,
+  sectorId,
+}: {
+  cases: ScandalCaseSummary[]
+  sectorId: number
+}) {
+  if (!cases.length) return null
+
+  const totalLoss = cases.reduce(
+    (sum, c) => sum + (c.amount_mxn_low ?? 0),
+    0
+  )
+
+  const top3 = cases.slice(0, 3)
+
+  return (
+    <div
+      className="rounded-sm border border-risk-critical/25 bg-risk-critical/5 p-4"
+      role="region"
+      aria-label={`${cases.length} investigation cases in this sector`}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4 text-risk-critical flex-shrink-0" aria-hidden="true" />
+          <span className="text-sm font-bold text-risk-critical">
+            {cases.length} Investigation {cases.length === 1 ? 'Case' : 'Cases'}
+          </span>
+        </div>
+        {totalLoss > 0 && (
+          <span className="text-xs font-mono font-bold text-risk-critical tabular-nums flex-shrink-0">
+            est. loss: {formatCompactMXN(totalLoss)}+
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-1.5 mb-3">
+        {top3.map((c) => (
+          <div
+            key={c.id}
+            className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 hover:bg-background-elevated transition-colors"
+          >
+            <EntityIdentityChip
+              type="case"
+              id={c.slug}
+              name={c.name_en}
+              size="xs"
+            />
+            <span
+              className="text-[12px] font-bold font-mono px-1.5 py-0.5 rounded flex-shrink-0"
+              style={{
+                color:
+                  c.severity >= 4 ? '#f87171' :
+                  c.severity >= 3 ? '#fb923c' :
+                  '#fbbf24',
+                backgroundColor:
+                  c.severity >= 4 ? '#f8717118' :
+                  c.severity >= 3 ? '#fb923c18' :
+                  '#fbbf2418',
+              }}
+            >
+              severity {c.severity}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <Link
+        to={`/cases?sector=${sectorId}`}
+        className="inline-flex items-center gap-1 text-xs text-risk-critical hover:text-risk-critical/80 transition-colors font-semibold"
+      >
+        View all cases
+        <ExternalLink className="h-3 w-3" aria-hidden="true" />
+      </Link>
+    </div>
+  )
+}
+
+function SectorProfileSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto space-y-6 pb-12 px-4 sm:px-6">
+      <Skeleton className="h-4 w-32 mt-4" />
+      <div className="rounded-sm border border-border bg-background/60 p-6 sm:p-8 space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <div className="flex gap-6">
+          <Skeleton className="h-16 w-32" />
+          <Skeleton className="h-16 w-32" />
+          <Skeleton className="h-16 w-32" />
+        </div>
+      </div>
+      <div className="flex gap-2">
+        {[0,1,2].map((i) => <Skeleton key={i} className="h-9 w-32 rounded-sm" />)}
+      </div>
+      <Skeleton className="h-64 w-full rounded-sm" />
+    </div>
+  )
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+export function SectorProfile() {
+  const { id } = useParams<{ id: string }>()
+  // 2026-05-11 (Audit F091): /sectors/salud was 404'ing because we did
+  // Number('salud') → NaN. Both numeric ids (/sectors/1) and slug codes
+  // (/sectors/salud) are legitimate inbound URLs — the slug form is what
+  // pre-2026 internal links use, and what journalists are most likely
+  // to type. Resolve either form to the canonical numeric sector id.
+  const sectorId = (() => {
+    if (id == null) return 0
+    const asNum = Number(id)
+    if (Number.isFinite(asNum) && asNum > 0) return asNum
+    const bySlug = SECTORS.find((s) => s.code === id.toLowerCase())
+    return bySlug?.id ?? 0
+  })()
+  const navigate = useNavigate()
+  const { t, i18n } = useTranslation('sectors')
+  const currentYear = useMemo(() => new Date().getFullYear() - 1, [])
+  const [activeTab, setActiveTab] = useState<TabId>('overview')
+
+  // prev/next navigation
+  const sectorIndex = SECTORS.findIndex((s) => s.id === sectorId)
+  const prevSector = sectorIndex > 0 ? SECTORS[sectorIndex - 1] : null
+  const nextSector = sectorIndex < SECTORS.length - 1 ? SECTORS[sectorIndex + 1] : null
+
+  // ── queries ────────────────────────────────────────────────────────────────
+
+  const { data: sector, isLoading: sectorLoading, error: sectorError } = useQuery({
+    ...sectorDetailQuery(sectorId),
+    enabled: !!sectorId,
+  })
+
+  const { data: riskDist, isLoading: riskLoading } = useQuery({
+    queryKey: ['sector', sectorId, 'risk-distribution'],
+    queryFn: () => sectorApi.getRiskDistribution(sectorId),
+    enabled: !!sectorId && activeTab === 'risk',
+  })
+
+  const { data: topVendors, isLoading: vendorsLoading } = useQuery({
+    queryKey: ['vendors', 'top', 'value', { sector_id: sectorId, per_page: VENDOR_LIST_PER_PAGE }],
+    queryFn: () => vendorApi.getTop('value', VENDOR_LIST_PER_PAGE, { sector_id: sectorId }),
+    enabled: !!sectorId && activeTab === 'vendors',
+  })
+
+  const { data: riskFactors, isLoading: riskFactorsLoading } = useQuery({
+    queryKey: ['analysis', 'risk-factors', sectorId],
+    queryFn: () => analysisApi.getRiskFactorAnalysis(sectorId),
+    enabled: !!sectorId && activeTab === 'risk',
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const { data: moneyFlow, isLoading: moneyFlowLoading } = useQuery({
+    queryKey: ['analysis', 'money-flow', sectorId],
+    queryFn: () => analysisApi.getMoneyFlow(undefined, sectorId),
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 10 * 60 * 1000,
+  })
+
+  const { data: sectorInstitutions, isLoading: institutionsLoading } = useQuery({
+    queryKey: ['institutions', 'by-sector', sectorId],
+    queryFn: () =>
+      institutionApi.getAll({
+        sector_id: sectorId,
+        per_page: INSTITUTION_LIST_PER_PAGE,
+        sort_by: 'total_amount_mxn',
+        sort_order: 'desc',
+      }),
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 10 * 60 * 1000,
+  })
+
+  // Enhancement 1: PHI governance grade
+  const { data: phiDetail } = useQuery({
+    queryKey: ['phi', 'sector-detail', sectorId],
+    queryFn: () => phiApi.getSectorDetail(sectorId) as Promise<PhiDetailData>,
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 60 * 60 * 1000,
+  })
+
+  // Enhancement 2: Risk timeline
+  const { data: timelineData } = useQuery({
+    queryKey: ['sector', sectorId, 'risk-timeline'],
+    queryFn: async (): Promise<{ sector_id: number; years: TimelineYear[] }> => {
+      const { data } = await api.get<{ sector_id: number; years: TimelineYear[] }>(
+        `/sectors/${sectorId}/timeline`
+      )
+      return data
+    },
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 30 * 60 * 1000,
+  })
+
+  // Enhancement 3: Concentration Gini history (Risk tab)
+  const { data: concentrationHistory } = useQuery({
+    queryKey: ['sector', sectorId, 'concentration-history'],
+    queryFn: async (): Promise<{ sector_id: number; sector_name: string; history: ConcentrationYear[] }> => {
+      const { data } = await api.get<{
+        sector_id: number
+        sector_name: string
+        history: ConcentrationYear[]
+      }>(`/sectors/${sectorId}/concentration-history`)
+      return data
+    },
+    enabled: !!sectorId && activeTab === 'risk',
+    staleTime: 60 * 60 * 1000,
+  })
+
+  // Enhancement 4: Investigation cases (Overview tab)
+  const { data: sectorCases } = useQuery({
+    queryKey: ['cases', 'by-sector', sectorId],
+    queryFn: () => caseLibraryApi.getBySector(sectorId),
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 60 * 60 * 1000,
+  })
+
+  // § 2 Las Categorías: fetch summary (shared cache key with Sectors page)
+  const { data: categorySummary } = useQuery({
+    queryKey: ['categories', 'summary'],
+    queryFn: () => categoriesApi.getSummary(),
+    enabled: !!sectorId && activeTab === 'overview',
+    staleTime: 10 * 60 * 1000,
+  })
+
+  // § 7 Los Patrones ARIA: T1+T2 vendors in this sector grouped by primary_pattern
+  const { data: ariaPatternVendors, isLoading: ariaPatternLoading } = useQuery({
+    queryKey: ['aria', 'patterns-by-sector', sectorId],
+    queryFn: () => ariaApi.getQueue({ sector_id: sectorId, tier: 2, per_page: 300 }),
+    enabled: !!sectorId && activeTab === 'risk',
+    staleTime: 10 * 60 * 1000,
+  })
+
+  // ── derived values ─────────────────────────────────────────────────────────
+
+  const insights = useMemo(() => {
+    type InsightEntry = {
+      type: 'warning' | 'info' | 'critical' | 'positive'
+      title: string
+      body: string
+      icon: React.ComponentType<{ className?: string }>
+    }
+    const result: InsightEntry[] = []
+    const stats = sector?.statistics
+    if (!stats) return result
+
+    const highRiskRate =
+      stats.total_contracts > 0
+        ? (stats.high_risk_count + stats.critical_risk_count) / stats.total_contracts
+        : 0
+    const platformBaseline = 0.099 // v0.9.1 HR (9.9%)
+
+    if (highRiskRate > platformBaseline * 1.3) {
+      result.push({
+        type: 'critical',
+        title: 'Elevated High-Risk Rate',
+        body: `${(highRiskRate * 100).toFixed(1)}% high-risk rate is significantly above the platform average of ${(platformBaseline * 100).toFixed(0)}%.`,
+        icon: AlertTriangle,
+      })
+    } else if (highRiskRate < 0.02 && stats.total_contracts > 1000) {
+      result.push({
+        type: 'positive',
+        title: 'Low Model Risk Signal',
+        body: `${(highRiskRate * 100).toFixed(1)}% high-risk rate is unusually low — may reflect data quality gaps or structural sector characteristics.`,
+        icon: Info,
+      })
+    }
+
+    if (stats.direct_award_pct != null && stats.direct_award_pct > 70) {
+      result.push({
+        type: 'warning',
+        title: 'High Direct Award Rate',
+        body: `${pctOrDash(stats.direct_award_pct, 0)} of contracts are direct awards, limiting competitive transparency.`,
+        icon: ShieldAlert,
+      })
+    }
+
+    if (stats.single_bid_pct != null && stats.single_bid_pct > 25) {
+      result.push({
+        type: 'warning',
+        title: 'Single-award Procedures',
+        body: `${pctOrDash(singleAwardOfCompetitive(stats.single_bid_pct, stats.direct_award_pct), 0)} of contracts in competitive procedures came from a procedure with only one winner.`,
+        icon: Users,
+      })
+    }
+
+    return result
+  }, [sector?.statistics])
+
+  // ── loading / error states ─────────────────────────────────────────────────
+
+  if (sectorLoading) return <SectorProfileSkeleton />
+
+  if (sectorError || !sector) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <h2 className="text-lg font-semibold mb-2">{t('profile.sectorNotFound')}</h2>
+        <p className="text-text-muted mb-4">{t('profile.sectorNotFoundMsg')}</p>
+        <Link to="/sectors">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+            {t('profile.backToSectors')}
+          </Button>
+        </Link>
+      </div>
+    )
+  }
+
+  const sectorColor = SECTOR_COLORS[sector.code] ?? sector.color ?? '#64748b'
+  // Token-locked sector color for primitive charts (bible §2)
+  const sectorColorToken: ColorToken =
+    (sector.code && (`sector-${sector.code}` as ColorToken)) || 'neutral'
+  const stats = sector.statistics
+  const riskLevel = getRiskLevelFromScore(stats?.avg_risk_score ?? 0)
+  const highRiskPct =
+    stats && stats.total_contracts > 0
+      ? (
+          ((stats.high_risk_count + stats.critical_risk_count) / stats.total_contracts) *
+          100
+        ).toFixed(1)
+      : '0'
+
+  const isEs = i18n.language.startsWith('es')
+
+  const tabs: Array<{ id: TabId; label: string }> = [
+    { id: 'overview', label: t('profile.overviewTab') },
+    { id: 'vendors', label: t('profile.vendorsTab') },
+    { id: 'risk', label: t('profile.riskTab') },
+    { id: 'sexenios', label: isEs ? 'Sexenios' : 'By Administration' },
+  ]
+
+  // Editorial shell severity from sector risk level (kept for legacy refs)
+  const _shellSeverity: 'critical' | 'high' | 'medium' | 'low' =
+    riskLevel === 'critical' ? 'critical' :
+    riskLevel === 'high' ? 'high' :
+    riskLevel === 'medium' ? 'medium' : 'low'
+  void _shellSeverity
+
+  return (
+    <article className="max-w-6xl mx-auto pb-4 px-4 sm:px-6 pt-4">
+
+      {/* ── BREADCRUMB NAV ──────────────────────────────────────────────────── */}
+      <nav
+        className="flex items-center justify-between pb-4"
+        aria-label="Sector navigation"
+      >
+        <Link
+          to="/sectors"
+          className="inline-flex items-center gap-1.5 text-[12px] font-medium uppercase tracking-widest text-text-muted hover:text-text-primary transition-colors"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" aria-hidden="true" />
+          {t('profile.backToSectors')}
+        </Link>
+        <div className="flex items-center gap-3 text-xs text-text-muted">
+          {prevSector && (
+            <button
+              onClick={() => navigate(`/sectors/${prevSector.id}`)}
+              className="inline-flex items-center gap-1 hover:text-text-primary transition-colors"
+              aria-label={`${t('profile.prev')}: ${t(prevSector.code)}`}
+            >
+              <ArrowLeft className="h-3 w-3" aria-hidden="true" />
+              {t(prevSector.code)}
+            </button>
+          )}
+          {prevSector && nextSector && (
+            <span className="text-text-primary" aria-hidden="true">|</span>
+          )}
+          {nextSector && (
+            <button
+              onClick={() => navigate(`/sectors/${nextSector.id}`)}
+              className="inline-flex items-center gap-1 hover:text-text-primary transition-colors"
+              aria-label={`${t('profile.next')}: ${t(nextSector.code)}`}
+            >
+              {t(nextSector.code)}
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </nav>
+
+      <header className="mb-2 pb-5 border-b border-border">
+        {/* folio-v1-P2: archival eyebrow */}
+        <div
+          className="mb-3 flex items-center gap-3"
+          style={{
+            fontFamily: 'var(--font-family-archival)',
+            fontSize: '12px',
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: 'var(--color-text-muted)',
+            fontWeight: 400,
+          }}
+        >
+          <span style={{ color: sectorColor, fontStyle: 'normal', fontWeight: 500 }}>Folio·{sector.code?.toUpperCase()}</span>
+          <span style={{ width: 22, height: 1, background: 'rgba(160, 104, 32, 0.45)' }} />
+          <span style={{ fontStyle: 'normal', fontWeight: 300 }}>
+            Sector profile
+            <span style={{ margin: '0 8px', opacity: 0.5 }}>·</span>
+            v0.9.2
+          </span>
+        </div>
+        <div className="flex items-baseline justify-between gap-4 flex-wrap mb-2">
+          <div>
+            <h1
+              className="text-text-primary capitalize"
+              style={{
+                fontFamily: 'var(--font-family-editorial)',
+                fontStyle: 'normal',
+                fontWeight: 500,
+                fontSize: 'clamp(28px, 4vw, 40px)',
+                lineHeight: 0.98,
+                letterSpacing: '-0.012em',
+              }}
+            >
+              {sector.name} <span style={{ fontStyle: 'normal', fontWeight: 400, color: 'var(--color-text-muted)', fontSize: '0.7em' }}>sector</span>
+            </h1>
+          </div>
+          <div className="flex flex-col items-end gap-2">
+            <RiskBadge level={riskLevel} />
+            {stats && (
+              <div className="flex items-baseline gap-5">
+                <div className="text-right">
+                  <div className="text-xl sm:text-2xl font-bold tabular-nums leading-none" style={{ color: sectorColor }}>
+                    {formatCompactMXN(stats.total_value_mxn)}
+                  </div>
+                  <div className="text-[13px] uppercase tracking-[0.12em] text-text-muted mt-1">{t('profile.totalSpend')}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl sm:text-2xl font-bold text-text-primary tabular-nums leading-none">
+                    {formatNumber(stats.total_contracts)}
+                  </div>
+                  <div className="text-[13px] uppercase tracking-[0.12em] text-text-muted mt-1">{t('profile.contracts')}</div>
+                </div>
+                <div className="text-right">
+                  <div className={`text-xl sm:text-2xl font-bold tabular-nums leading-none ${parseFloat(highRiskPct) > 15 ? 'text-risk-high' : 'text-text-primary'}`}>
+                    {highRiskPct}%
+                  </div>
+                  <div className="text-[13px] uppercase tracking-[0.12em] text-text-muted mt-1">{t('profile.highPlusCritical')}</div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* M3 — compact DA stat row: replaces SectorSledgehammer full-viewport block */}
+        {stats && (
+          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-3 mb-1 py-2 border-t border-border/30">
+            <span
+              className="tabular-nums"
+              style={{
+                fontFamily: 'var(--font-family-serif)',
+                fontStyle: 'normal',
+                fontWeight: 800,
+                fontSize: 'clamp(20px, 3vw, 28px)',
+                color: sectorColor,
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {pctOrDash(stats.direct_award_pct, 1)}
+            </span>
+            <span className="text-sm text-text-secondary">
+              {isEs ? 'sin competencia' : 'direct award'}
+            </span>
+            <span className="text-text-muted mx-1">·</span>
+            <span className="font-mono text-xs text-text-muted">vs EU ≤10%</span>
+            {stats.direct_award_pct != null && stats.direct_award_pct > 25 && (
+              <span
+                className="font-mono text-xs font-bold"
+                style={{ color: RISK_COLORS.critical }}
+              >
+                {(stats.direct_award_pct / 25).toFixed(1)}×{' '}
+                {isEs ? 'ese techo' : 'that ceiling'}
+              </span>
+            )}
+          </div>
+        )}
+      </header>
+
+      {/* ── TABS ────────────────────────────────────────────────────────────── */}
+      <Act number="I" label="EVIDENCIA · ANÁLISIS DEL SECTOR">
+      <div>
+        <div
+          className="flex gap-1 rounded-sm bg-background/60 border border-border p-1 mb-6"
+          role="tablist"
+          aria-label="Sector detail tabs"
+        >
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`tabpanel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'flex-1 rounded-sm px-4 py-2 text-sm font-semibold transition-all duration-150',
+                activeTab === tab.id
+                  ? 'text-text-primary shadow-sm'
+                  : 'text-text-secondary hover:text-text-secondary'
+              )}
+              style={
+                activeTab === tab.id
+                  ? { backgroundColor: hex(sectorColor, 0.2), color: sectorColor }
+                  : undefined
+              }
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── OVERVIEW TAB ──────────────────────────────────────────────────── */}
+        <div
+          id="tabpanel-overview"
+          role="tabpanel"
+          aria-labelledby="tab-overview"
+          hidden={activeTab !== 'overview'}
+          className="space-y-4"
+        >
+          {/* Enhancement 1: PHI Governance Grade panel */}
+          {phiDetail && (
+            <section aria-labelledby="phi-grade-heading">
+              <div className="flex items-center gap-2 mb-2">
+                <h2
+                  id="phi-grade-heading"
+                  className="text-sm font-bold text-text-secondary uppercase tracking-[0.15em]"
+                >
+                  {t('profile.phiHeading')}
+                </h2>
+              </div>
+              <PhiGradePanel data={phiDetail} />
+            </section>
+          )}
+
+          {/* Insights */}
+          {insights.length > 0 && (
+            <section aria-label="Sector intelligence">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {insights.map((insight, i) => (
+                  <InsightCard key={i} {...insight} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Spend trend */}
+          <section aria-labelledby="spending-trend-heading">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2
+                  id="spending-trend-heading"
+                  className="text-base font-bold text-text-primary"
+                >
+                  {t('profile.spendTrend')}
+                </h2>
+                <p className="text-xs text-text-secondary mt-0.5">
+                  {t('profile.spendTrendSubtitle', { year: currentYear })}
+                </p>
+              </div>
+            </div>
+            <div className="rounded-sm border border-border bg-background/40 p-4">
+              {sector.trends?.length ? (
+                <TrendArea data={sector.trends} colorToken={sectorColorToken} />
+              ) : (
+                <p className="text-sm text-text-muted py-8 text-center">
+                  {t('profile.noTrendData')}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Enhancement 2: Risk Profile Over Time */}
+          {timelineData?.years?.length ? (
+            <section aria-labelledby="risk-trend-heading">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h2
+                    id="risk-trend-heading"
+                    className="text-base font-bold text-text-primary"
+                  >
+                    {t('profile.riskTrendOverTime')}
+                  </h2>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    {t('profile.riskTrendOverTimeSubtitle')}
+                  </p>
+                </div>
+              </div>
+              <div className="rounded-sm border border-border bg-background/40 p-4">
+                <RiskTrendChart years={timelineData.years} />
+                {/* Editorial spec: direct labels at the right edge of the
+                    chart instead of a bottom legend (FT/JBM rule). The chart
+                    component itself owns its right-edge series labels; this
+                    block describes the dual-line encoding once. */}
+                <p className="text-[13px] text-text-muted mt-2 ml-1">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-risk-high align-middle mr-1" aria-hidden /> {t('profile.avgRiskLegend')}
+                  <span className="mx-2 text-text-muted/40">·</span>
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-risk-critical align-middle mr-1" aria-hidden /> {t('profile.highRiskLegend')}
+                </p>
+              </div>
+            </section>
+          ) : null}
+
+          {/* Enhancement 4: Investigation Cases callout */}
+          {sectorCases && sectorCases.length > 0 && (
+            <section aria-labelledby="investigation-callout-heading">
+              <span id="investigation-callout-heading" className="sr-only">
+                Investigation cases for this sector
+              </span>
+              <InvestigationCallout cases={sectorCases} sectorId={sectorId} />
+            </section>
+          )}
+
+          {/* Top institutions */}
+          <section aria-labelledby="institutions-heading">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2
+                  id="institutions-heading"
+                  className="text-base font-bold text-text-primary flex items-center gap-2"
+                >
+                  <Building2 className="h-4 w-4" style={{ color: sectorColor }} aria-hidden="true" />
+                  {t('profile.topInstitutions')}
+                </h2>
+                <p className="text-xs text-text-secondary mt-0.5">{t('profile.topInstitutionsSubtitle')}</p>
+              </div>
+              <Link to={`/institutions?sector_id=${sectorId}`}>
+                <Button variant="ghost" size="sm" className="text-xs text-text-secondary hover:text-text-primary">
+                  {t('profile.viewAll')}
+                  <ExternalLink className="ml-1.5 h-3 w-3" aria-hidden="true" />
+                </Button>
+              </Link>
+            </div>
+            <div className="rounded-sm border border-border bg-background/40">
+              {moneyFlowLoading || institutionsLoading ? (
+                <div className="p-4 space-y-2">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : moneyFlow?.flows?.length ? (
+                <div className="p-2">
+                  <InstitutionList
+                    flows={moneyFlow.flows.slice(0, 8)}
+                    color={sectorColor}
+                  />
+                </div>
+              ) : sectorInstitutions?.data?.length ? (
+                <div className="p-2">
+                  <InstitutionList
+                    flows={sectorInstitutions.data.slice(0, 8).map((inst) => ({
+                      source_id: inst.id,
+                      source_name: inst.name,
+                      value: inst.total_amount_mxn ?? 0,
+                      contracts: inst.total_contracts ?? 0,
+                      avg_risk: inst.avg_risk_score ?? null,
+                      high_risk_pct: null,
+                    }))}
+                    color={sectorColor}
+                  />
+                </div>
+              ) : (
+                <p className="py-8 text-center text-sm text-text-muted">
+                  {t('profile.noInstitutionData')}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* § 2 Las Categorías — top categories within sector → Category Dossier */}
+          {categorySummary?.data && (() => {
+            const sectorCategories = (categorySummary.data as Array<{
+              category_id: number; name_es: string; name_en: string;
+              sector_id: number | null; total_contracts: number;
+              total_value: number; avg_risk: number; direct_award_pct: number;
+            }>)
+              .filter(c => c.sector_id === sectorId && c.total_contracts > 0)
+              .sort((a, b) => b.total_value - a.total_value)
+              .slice(0, 8)
+
+            if (sectorCategories.length === 0) return null
+            const isEs = i18n.language.startsWith('es')
+
+            return (
+              <section aria-labelledby="categories-heading">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2
+                      id="categories-heading"
+                      className="text-base font-bold text-text-primary flex items-center gap-2"
+                    >
+                      <Tag className="h-4 w-4" style={{ color: sectorColor }} aria-hidden="true" />
+                      {isEs ? 'Categorías de Gasto' : 'Spending Categories'}
+                    </h2>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      {isEs ? 'Principales mercados dentro del sector' : 'Top markets within this sector'}
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-sm border border-border bg-background/40 divide-y divide-border/10">
+                  {sectorCategories.map((cat, idx) => {
+                    const catRisk = cat.avg_risk
+                    const catColor = RISK_COLORS[getRiskLevelFromScore(catRisk)]
+                    return (
+                      <div
+                        key={cat.category_id}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-background-elevated/40 transition-colors"
+                      >
+                        <span className="text-[12px] font-mono text-text-muted/40 w-4 shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <EntityIdentityChip
+                            type="category"
+                            id={cat.category_id}
+                            name={isEs ? cat.name_es : cat.name_en}
+                            size="xs"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <DotBar
+                            value={catRisk}
+                            max={1}
+                            color={catColor}
+                            emptyColor="var(--color-background-elevated)"
+                            emptyStroke="var(--color-border-hover)"
+                            dots={16}
+                            dotR={1.75}
+                            dotGap={4}
+                            thresholds={[0.25, 0.40, 0.60]}
+                          />
+                          <span className="text-xs font-mono tabular-nums w-8 text-right" style={{ color: catColor }}>
+                            {(catRisk * 100).toFixed(0)}%
+                          </span>
+                        </div>
+                        <span className="text-xs font-mono text-text-muted tabular-nums w-20 text-right hidden sm:block">
+                          {formatCompactMXN(cat.total_value)}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })()}
+        </div>
+
+        {/* ── VENDORS TAB ───────────────────────────────────────────────────── */}
+        <div
+          id="tabpanel-vendors"
+          role="tabpanel"
+          aria-labelledby="tab-vendors"
+          hidden={activeTab !== 'vendors'}
+          className="space-y-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" style={{ color: sectorColor }} aria-hidden="true" />
+                {t('profile.topVendors')}
+              </h2>
+              <p className="text-xs text-text-secondary mt-0.5">{t('profile.topVendorsSubtitle')}</p>
+            </div>
+          </div>
+
+          {/* M3 — vendor concentration hook: replaces sparse beeswarm */}
+          {!vendorsLoading && topVendors?.data?.length && stats ? (() => {
+            const top3Vendors = (topVendors.data as VendorRow[]).slice(0, 3)
+            const top3Sum = top3Vendors.reduce((s, v) => s + (v.total_value_mxn ?? 0), 0)
+            const top3Share = stats.total_value_mxn > 0 ? top3Sum / stats.total_value_mxn : 0
+            return (
+              <div className="flex items-center gap-3 px-3 py-2 mb-2 rounded-sm border border-border bg-background/40">
+                <span className="font-mono text-[12px] uppercase tracking-[0.12em] text-text-muted flex-shrink-0">
+                  {isEs ? 'Concentración' : 'Concentration'}
+                </span>
+                <span className="text-sm font-bold text-text-primary tabular-nums">
+                  {(top3Share * 100).toFixed(0)}%
+                </span>
+                <span className="text-xs text-text-secondary">
+                  {isEs
+                    ? `top ${top3Vendors.length} proveedores del gasto sectorial`
+                    : `top ${top3Vendors.length} vendors of sector spend`}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <DotBar
+                    value={top3Share}
+                    max={1}
+                    color={RISK_COLORS.high}
+                    emptyColor="var(--color-background-elevated)"
+                    emptyStroke="var(--color-border-hover)"
+                  />
+                </div>
+              </div>
+            )
+          })() : null}
+
+          <div className="rounded-sm border border-border bg-background/40 overflow-hidden">
+            {vendorsLoading ? (
+              <div className="p-4 space-y-3">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            ) : topVendors?.data?.length ? (
+              <div className="p-2">
+                <VendorTable
+                  vendors={topVendors.data as VendorRow[]}
+                  sectorId={sectorId}
+                  color={sectorColor}
+                />
+              </div>
+            ) : (
+              <p className="py-8 text-center text-sm text-text-muted">
+                {t('profile.noVendorData')}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* ── RISK ANALYSIS TAB ─────────────────────────────────────────────── */}
+        <div
+          id="tabpanel-risk"
+          role="tabpanel"
+          aria-labelledby="tab-risk"
+          hidden={activeTab !== 'risk'}
+          className="space-y-6"
+        >
+          {/* sp-P3 — Risk distribution — § kicker added above constellation */}
+          <section aria-labelledby="risk-distribution-heading">
+            <p
+              className="font-mono text-[12px] uppercase tracking-[0.18em] mb-1"
+              style={{ color: SECTOR_TEXT_COLORS[sector.code ?? ''] ?? sectorColor }}
+            >
+              {isEs ? '§ 3 DISTRIBUCIÓN DE RIESGO' : '§ 3 RISK DISTRIBUTION'}
+            </p>
+            <h2
+              id="risk-distribution-heading"
+              className="text-base font-bold text-text-primary mb-1"
+            >
+              {t('profile.riskDistribution')}
+            </h2>
+            <p className="text-xs text-text-secondary mb-4">{t('profile.riskDistributionSubtitle')}</p>
+            <div className="rounded-sm border border-border bg-background/40 p-5">
+              {riskLoading ? (
+                <div className="flex items-center gap-6">
+                  <Skeleton className="h-44 w-44 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-3">
+                    {[0,1,2,3].map((i) => <Skeleton key={i} className="h-6 w-full" />)}
+                  </div>
+                </div>
+              ) : riskDist?.data ? (
+                <RiskDonut data={riskDist.data} color={sectorColor} />
+              ) : (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  {t('profile.noRiskData')}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Top risk factors */}
+          <section aria-labelledby="risk-factors-heading">
+            <h2
+              id="risk-factors-heading"
+              className="text-base font-bold text-text-primary mb-1"
+            >
+              {t('profile.topRiskFactors')}
+            </h2>
+            <p className="text-xs text-text-secondary mb-4">{t('profile.topRiskFactorsSubtitle')}</p>
+            <div className="rounded-sm border border-border bg-background/40 p-5">
+              {riskFactorsLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                  ))}
+                </div>
+              ) : riskFactors?.factor_frequencies?.length ? (
+                <FactorRankList
+                  data={riskFactors.factor_frequencies}
+                  color={sectorColor}
+                />
+              ) : (
+                <p className="py-6 text-center text-sm text-text-muted">
+                  {t('profile.noFactorData')}
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Enhancement 3: Concentration Gini history */}
+          {concentrationHistory?.history?.length ? (
+            <section aria-labelledby="gini-chart-heading">
+              <h2
+                id="gini-chart-heading"
+                className="text-base font-bold text-text-primary mb-1"
+              >
+                Market Concentration Over Time
+              </h2>
+              <p className="text-xs text-text-secondary mb-4">
+                Gini coefficient — 1.0 = full monopoly, 0 = perfect competition
+              </p>
+              <div className="rounded-sm border border-border bg-background/40 p-5">
+                <ConcentrationGiniChart history={concentrationHistory.history} isEs={isEs} />
+              </div>
+            </section>
+          ) : null}
+
+          {/* sp-P3 — Procurement Patterns → 4 BenchmarkRow FT bullet rows with OECD refs */}
+          {stats && (
+            <section aria-labelledby="procurement-patterns-heading">
+              <p
+                className="font-mono text-[12px] uppercase tracking-[0.18em] mb-1"
+                style={{ color: SECTOR_TEXT_COLORS[sector.code ?? ''] ?? sectorColor }}
+              >
+                {isEs ? '§ 3 LA PATOLOGÍA DEL SECTOR' : '§ 3 THE SECTOR PATHOLOGY'}
+              </p>
+              <h2
+                id="procurement-patterns-heading"
+                className="text-base font-bold text-text-primary mb-1"
+              >
+                {isEs ? 'Patrones de contratación vs. el Tablero UE' : 'Procurement patterns vs. the EU scoreboard'}
+              </h2>
+              <p className="text-xs text-text-secondary mb-4">
+                {isEs
+                  ? 'Barras a la derecha del centro = por encima del límite (peor).'
+                  : 'Bars right of center = above the limit (worse).'}
+              </p>
+              <div className="rounded-sm border border-border bg-background/40 p-4 space-y-0.5 overflow-x-auto">
+                {(() => {
+                  const MAX_DELTA = 0.75
+                  const rows: (BenchmarkRowProps & { key: string })[] = [
+                    {
+                      key: 'da',
+                      label: isEs ? 'Adjudicación directa' : 'Direct award',
+                      value: (stats.direct_award_pct ?? 0) / 100,
+                      benchmark: 0.25,
+                      benchmarkLabel: isEs ? 'línea UE' : 'EU line',
+                      maxDelta: MAX_DELTA,
+                    },
+                    {
+                      key: 'rs',
+                      label: isEs ? 'Riesgo promedio' : 'Avg risk indicator',
+                      value: stats.avg_risk_score ?? 0,
+                      benchmark: 0.11,
+                      benchmarkLabel: isEs ? 'prom. plataforma' : 'platform avg',
+                      maxDelta: MAX_DELTA,
+                    },
+                  ]
+                  return rows.map(({ key, ...rowProps }) => (
+                    <BenchmarkRow key={key} {...rowProps} />
+                  ))
+                })()}
+                <div className="pt-2 mt-2 border-t border-border/40">
+                  <span className="text-[13px] text-text-muted">
+                    {isEs
+                      ? `${formatNumber(stats.total_vendors ?? 0)} proveedores activos en este sector`
+                      : `${formatNumber(stats.total_vendors ?? 0)} active vendors in this sector`}
+                  </span>
+                </div>
+              </div>
+              <p className="text-[13px] text-text-muted mt-2 opacity-60">
+                {isEs
+                  ? 'Tablero UE: adj. directa ≤10% · Plataforma: riesgo prom. 9.9%'
+                  : 'EU scoreboard: direct award ≤10% · Platform: avg risk 9.9%'}
+              </p>
+            </section>
+          )}
+
+          {/* § 7 Los Patrones ARIA en este Sector ─────────────────────────── */}
+          {(() => {
+            const items = ariaPatternVendors?.data ?? []
+            if (ariaPatternLoading) {
+              return (
+                <section aria-labelledby="patterns-aria-heading">
+                  <h2 id="patterns-aria-heading" className="text-base font-bold text-text-primary mb-3">
+                    {isEs ? '§ 7 Patrones ARIA en este Sector' : '§ 7 ARIA Patterns in this Sector'}
+                  </h2>
+                  <div className="space-y-2">
+                    {[0,1,2].map(i => <Skeleton key={i} className="h-8 w-full" />)}
+                  </div>
+                </section>
+              )
+            }
+            if (!items.length) return null
+            const PATTERN_NAMES: Record<string, { code: string; label_es: string; label_en: string }> = {
+              // Public signal names — keep in sync with backend/api/public_labels.py.
+              p1_monopoly:     { code: 'P1', label_es: 'Peso en su sector',                  label_en: 'Large share of its sector' },
+              p2_ghost:        { code: 'P2', label_es: 'Proveedor de baja huella (sin RFC)', label_en: 'Low-footprint supplier (no RFC)' },
+              p3_intermediary: { code: 'P3', label_es: 'Intermediario',                      label_en: 'Intermediary' },
+              p4_kickback:     { code: 'P4', label_es: 'Patrón de coadjudicación',           label_en: 'Co-award pattern' },
+              p5_bid_rotation: { code: 'P5', label_es: 'Monto fuera de rango',               label_en: 'Amount out of range' },
+              p6_capture:      { code: 'P6', label_es: 'Dependencia de un solo comprador',   label_en: 'Single-buyer dependence' },
+              p7_budget_dump:  { code: 'P7', label_es: 'Vinculado a un caso documentado',    label_en: 'Linked to a documented case' },
+            }
+            const counts: Record<string, number> = {}
+            for (const item of items) {
+              const p = item.primary_pattern ?? 'unknown'
+              counts[p] = (counts[p] ?? 0) + 1
+            }
+            const sorted = Object.entries(counts)
+              .filter(([k]) => k !== 'unknown' && PATTERN_NAMES[k])
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 7)
+            if (!sorted.length) return null
+            const maxCount = sorted[0][1]
+            return (
+              <section aria-labelledby="patterns-aria-heading">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h2 id="patterns-aria-heading" className="text-base font-bold text-text-primary">
+                      {isEs ? '§ 7 Patrones ARIA en este Sector' : '§ 7 ARIA Patterns in this Sector'}
+                    </h2>
+                    <p className="text-xs text-text-secondary mt-0.5">
+                      {isEs
+                        ? `Distribución de ${items.length} proveedores T1–T2 ARIA por tipo de patrón`
+                        : `Distribution of ${items.length} T1–T2 ARIA vendors by fraud pattern`}
+                    </p>
+                  </div>
+                </div>
+                <div className="rounded-sm border border-border bg-background/40 divide-y divide-border/60">
+                  {sorted.map(([patternKey, count]) => {
+                    const meta = PATTERN_NAMES[patternKey]
+                    const code = patternKey.split('_')[0].toUpperCase()
+                    const pct = (count / maxCount) * 100
+                    return (
+                      <div key={patternKey} className="flex items-center gap-3 px-4 py-2.5">
+                        <Link
+                          to={`/patterns/${code.toLowerCase()}`}
+                          className="flex-shrink-0 inline-flex items-center justify-center w-8 h-6 rounded text-[12px] font-bold font-mono border border-border hover:border-border-hover transition-colors"
+                          style={{ color: sectorColor }}
+                        >
+                          {meta.code}
+                        </Link>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-medium text-text-primary">
+                            {isEs ? meta.label_es : meta.label_en}
+                          </div>
+                          <div className="mt-1 h-1.5 rounded-full bg-border/60 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-200"
+                              style={{ width: `${pct}%`, backgroundColor: sectorColor, opacity: 0.7 }}
+                            />
+                          </div>
+                        </div>
+                        <span className="text-xs font-mono tabular-nums text-text-secondary flex-shrink-0">
+                          {count}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+            )
+          })()}
+
+          {/* ── Editorial closing: investigation CTAs ──────────────────────── */}
+          {sector && stats && (
+            <section className="pt-2 border-t border-border/40 space-y-4">
+              {/* Synthesized risk signal */}
+              <p className="text-sm text-text-secondary leading-[1.65]" style={{ fontFamily: 'var(--font-family-serif)' }}>
+                {(() => {
+                  const da = stats.direct_award_pct ?? 0
+                  const sb = stats.single_bid_pct ?? 0
+                  const rs = stats.avg_risk_score ?? 0
+                  const name = sector.name ?? 'Este sector'
+                  if (da > 70 && rs >= 0.40) {
+                    return `${name} combina una tasa de adjudicación directa del ${da.toFixed(0)}% con un indicador de riesgo promedio de ${(rs * 100).toFixed(0)} — patrón consistente con captura institucional. La fila de investigación ARIA identifica ${formatNumber(stats.total_vendors ?? 0)} proveedores activos; los de mayor señal están disponibles para revisión inmediata.`
+                  }
+                  if (da > 60) {
+                    return `Con ${da.toFixed(0)}% de adjudicaciones directas en ${formatNumber(stats.total_vendors ?? 0)} proveedores registrados, ${name} presenta una concentración de procedimiento que merece seguimiento sistemático. Consulte la fila ARIA para los proveedores prioritarios del sector.`
+                  }
+                  if (sb > 25) {
+                    return `El ${sb.toFixed(0)}% de procedimientos con un solo adjudicado en ${name} supera los umbrales de alerta del modelo de riesgo. La ausencia de competencia efectiva en un cuarto de las licitaciones es señal de posible colusión o barrera de entrada.`
+                  }
+                  return `${name} registra ${formatCompactMXN(stats.total_value_mxn ?? 0)} en contratos federales. El modelo v0.9.2 no detecta señales sistémicas elevadas, aunque los proveedores individuales de alto riesgo siguen disponibles en la fila ARIA para análisis detallado.`
+                })()}
+              </p>
+
+              {/* CTA row */}
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  to={`/aria?sector_id=${sectorId}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-border text-xs font-semibold text-text-secondary hover:text-text-primary hover:border-border-hover transition-colors"
+                >
+                  <ShieldAlert className="h-3.5 w-3.5" aria-hidden="true" />
+                  Fila ARIA · {sector.code?.toUpperCase()}
+                  <ExternalLink className="h-3 w-3 opacity-50" aria-hidden="true" />
+                </Link>
+                <Link
+                  to={cieloHref({ lens: 'sectors', pin: sectorId })}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border border-border text-xs font-semibold text-text-secondary hover:text-text-primary hover:border-border-hover transition-colors"
+                >
+                  <TrendingUp className="h-3.5 w-3.5" aria-hidden="true" />
+                  Ver sus vínculos
+                  <ExternalLink className="h-3 w-3 opacity-50" aria-hidden="true" />
+                </Link>
+                <span className="text-[13px] text-text-muted ml-auto">
+                  Indicador estadístico · no prueba de irregularidades
+                </span>
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── SEXENIOS TAB ──────────────────���──────────────────────────────── */}
+        <div
+          id="tabpanel-sexenios"
+          role="tabpanel"
+          aria-labelledby="tab-sexenios"
+          hidden={activeTab !== 'sexenios'}
+          className="space-y-6"
+        >
+          <section aria-labelledby="sexenal-heading">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2
+                  id="sexenal-heading"
+                  className="text-base font-bold text-text-primary"
+                >
+                  {isEs ? '§ 6 Comparación Sexenal' : '§ 6 By Administration'}
+                </h2>
+                <p className="text-xs text-text-secondary mt-0.5">
+                  {isEs
+                    ? 'Gasto acumulado e indicador de riesgo por administración federal'
+                    : 'Total spend and risk indicator by federal administration'}
+                </p>
+              </div>
+            </div>
+            {(() => {
+              const trends = sector?.trends ?? []
+              if (!trends.length) {
+                return (
+                  <p className="text-sm text-text-muted py-8 text-center">
+                    {isEs ? 'Sin datos de tendencia disponibles.' : 'No trend data available.'}
+                  </p>
+                )
+              }
+              type AdminRow = {
+                key: string
+                long: string
+                yearStart: number
+                yearEnd: number
+                total_value: number
+                total_contracts: number
+                risk_sum: number
+                risk_weight: number
+                da_sum: number
+                da_count: number
+                years_with_data: number
+              }
+              const adminMap = new Map<string, AdminRow>()
+              for (const adm of ADMINISTRATIONS) {
+                adminMap.set(adm.key, {
+                  key: adm.key,
+                  long: adm.long,
+                  yearStart: adm.yearStart,
+                  yearEnd: adm.yearEnd,
+                  total_value: 0,
+                  total_contracts: 0,
+                  risk_sum: 0,
+                  risk_weight: 0,
+                  da_sum: 0,
+                  da_count: 0,
+                  years_with_data: 0,
+                })
+              }
+              for (const t of trends) {
+                const adm = ADMINISTRATIONS.find(a => t.year >= a.yearStart && t.year <= a.yearEnd)
+                if (!adm) continue
+                const row = adminMap.get(adm.key)!
+                row.total_value += t.total_value_mxn
+                row.total_contracts += t.total_contracts
+                if (t.avg_risk_score != null) {
+                  row.risk_sum += t.avg_risk_score * t.total_contracts
+                  row.risk_weight += t.total_contracts
+                }
+                if (t.direct_award_pct != null) {
+                  row.da_sum += t.direct_award_pct
+                  row.da_count += 1
+                }
+                row.years_with_data += 1
+              }
+              const rows = Array.from(adminMap.values()).filter(r => r.years_with_data > 0)
+              const maxValue = Math.max(...rows.map(r => r.total_value), 1)
+              return (
+                <div className="rounded-sm border border-border bg-background/40 divide-y divide-border/60">
+                  {rows.map(row => {
+                    const avgRisk = row.risk_weight > 0 ? row.risk_sum / row.risk_weight : 0
+                    const riskLevel = getRiskLevelFromScore(avgRisk)
+                    const riskColor = riskLevel === 'critical' ? 'var(--color-risk-critical)'
+                      : riskLevel === 'high' ? 'var(--color-risk-high)'
+                      : riskLevel === 'medium' ? 'var(--color-risk-medium)'
+                      : 'var(--color-text-muted)'
+                    const barPct = (row.total_value / maxValue) * 100
+                    const avgDa = row.da_count > 0 ? row.da_sum / row.da_count : null
+                    return (
+                      <div key={row.key} className="px-4 py-3">
+                        <div className="flex items-center justify-between gap-4 mb-2">
+                          <div className="min-w-0">
+                            <div className="text-xs font-semibold text-text-primary">{row.long}</div>
+                            <div className="text-[12px] text-text-muted font-mono">
+                              {row.yearStart}–{Math.min(row.yearEnd, new Date().getFullYear())}
+                              {' · '}{formatNumber(row.total_contracts)} contratos
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                            <div>
+                              <div
+                                className="text-sm font-bold tabular-nums"
+                                style={{ fontFamily: 'var(--font-family-serif)', color: sectorColor }}
+                              >
+                                {formatCompactMXN(row.total_value)}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xs font-mono tabular-nums" style={{ color: riskColor }}>
+                                {(avgRisk * 100).toFixed(0)}
+                              </div>
+                              <div className="text-[13px] text-text-muted uppercase tracking-wide">riesgo</div>
+                            </div>
+                            {avgDa !== null && (
+                              <div>
+                                <div className="text-xs font-mono tabular-nums text-text-secondary">
+                                  {avgDa.toFixed(0)}%
+                                </div>
+                                <div className="text-[13px] text-text-muted uppercase tracking-wide">adj. dir.</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-border/60 overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-200"
+                            style={{ width: `${barPct}%`, backgroundColor: getAdminColor(row.key, sectorColor), opacity: 0.65 }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+          </section>
+        </div>
+      </div>
+      </Act>
+    </article>
+  )
+}
+
+export default SectorProfile

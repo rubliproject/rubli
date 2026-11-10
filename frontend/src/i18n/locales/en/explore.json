@@ -1,0 +1,197 @@
+{
+  "page": {
+    "title": "Explore Contracts",
+    "subtitle": "Cross-filter every procurement record",
+    "crossfilterHint": "Click any panel to filter all others — sector, time range, and risk level are cross-connected",
+    "clearAllFilters": "Clear all filters",
+    "searchPlaceholder": "Search…",
+    "entityToggle": {
+      "vendors": "Vendors",
+      "institutions": "Institutions"
+    },
+    "sectorIntel": {
+      "label": "sector intel",
+      "contracts": "Contracts",
+      "totalValue": "Total value",
+      "highPlusRisk": "High+ risk",
+      "directAward": "Direct award",
+      "avgRiskScore": "Avg risk score"
+    },
+    "filterChip": {
+      "sector": "Sector: {{value}}",
+      "years": "Years: {{start}}–{{end}}",
+      "yearsFrom": "Years: From {{start}}",
+      "yearsUntil": "Years: Until {{end}}",
+      "risk": "Risk: {{levels}}",
+      "removeFilter": "Remove {{label}} filter"
+    },
+    "suggestions": {
+      "criticalHigh": "Critical + High risk",
+      "criticalOnly": "Critical only",
+      "saludSector": "Salud sector",
+      "energiaSector": "Energia sector",
+      "infraestructura": "Infraestructura",
+      "imssIssste": "IMSS / ISSSTE",
+      "highRiskOnly": "High risk only"
+    }
+  },
+  "vendors": {
+    "searchPlaceholder": "Search by name or RFC...",
+    "columns": {
+      "name": "Name",
+      "contracts": "Contracts",
+      "totalValue": "Total Value (MXN)",
+      "avgRisk": "Avg Risk",
+      "highRiskPct": "% High Risk",
+      "directAwardPct": "% Direct Award",
+      "singleBidPct": "% Single award",
+      "anomalyPct": "Anomaly %"
+    },
+    "presets": {
+      "topValue": "Top by Value",
+      "highestRisk": "Highest Risk",
+      "mostDirect": "Most Direct Awards",
+      "mostFlagged": "Most Flagged",
+      "outliers": "Statistical Outliers",
+      "bigPlayers": "Big Players (1K+)"
+    }
+  },
+  "institutions": {
+    "searchPlaceholder": "Search by name or acronym...",
+    "count": "{{n}} institutions",
+    "col": {
+      "name": "Institution",
+      "total_contracts": "Contracts",
+      "total_amount_mxn": "Spending",
+      "avg_risk_score": "Risk Score",
+      "direct_award_pct": "Direct %",
+      "single_bid_pct": "Single award %",
+      "high_risk_pct": "Flagged %",
+      "vendor_count": "Vendors",
+      "nameShort": "Inst.",
+      "total_contractsShort": "#",
+      "total_amount_mxnShort": "Value",
+      "avg_risk_scoreShort": "Risk",
+      "direct_award_pctShort": "DA%",
+      "single_bid_pctShort": "SB%",
+      "high_risk_pctShort": "Flag%",
+      "vendor_countShort": "Vndr"
+    },
+    "presets": {
+      "top-spending": "Top by Spending",
+      "highest-risk": "Highest Risk",
+      "most-direct": "Most Direct Awards",
+      "most-flagged": "Most Flagged",
+      "many-vendors": "Most Vendors",
+      "biggest": "Most Contracts",
+      "mega-large": "Large+",
+      "concentrated": "Few Vendors"
+    },
+    "types": {
+      "federal_secretariat": "Federal Secretariat",
+      "federal_agency": "Federal Agency",
+      "state_agency": "State Agency",
+      "state_government": "State Government",
+      "municipal": "Municipal",
+      "health_institution": "Health Institution",
+      "educational": "Educational",
+      "research_education": "Research & Education",
+      "state_enterprise_infra": "State Enterprise (Infra)",
+      "state_enterprise_energy": "State Enterprise (Energy)",
+      "state_enterprise_finance": "State Enterprise (Finance)",
+      "judicial": "Judicial",
+      "social_program": "Social Program",
+      "social_security": "Social Security",
+      "regulatory_agency": "Regulatory Agency",
+      "autonomous_constitutional": "Autonomous Constitutional",
+      "legislative": "Legislative",
+      "military": "Military",
+      "other": "Other"
+    },
+    "sizes": {
+      "mega": "Mega (top 4)",
+      "large": "Large",
+      "medium": "Medium",
+      "small": "Small",
+      "micro": "Micro"
+    }
+  },
+  "trends": {
+    "radarPresets": {
+      "risk": "Risk Profile",
+      "transparency": "Transparency",
+      "market": "Market Structure"
+    }
+  },
+  "timeSeries": {
+    "title": "Contracts Over Time",
+    "contractsLegend": "Contracts",
+    "avgRiskLegend": "Avg risk %",
+    "dragHint": "Drag to filter year range",
+    "clear": "Clear",
+    "noData": "No trend data available"
+  },
+  "riskStrip": {
+    "filterByRisk": "Filter by Risk Level",
+    "clickToToggle": "Click to toggle · multiple allowed"
+  },
+  "riskLevels": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "criticalHint": "Closest to vendors linked to documented cases",
+    "highHint": "Close to vendors linked to documented cases",
+    "mediumHint": "Moderate similarity — watch list",
+    "lowHint": "Low similarity — standard monitoring"
+  },
+  "resultTable": {
+    "contracts": "Contracts",
+    "totalValue": "Total Value",
+    "risk": "Risk",
+    "daPercent": "DA %"
+  },
+  "treemap": {
+    "sectorsByValue": "Sectors by value",
+    "value": "Value",
+    "risk": "Risk"
+  },
+  "filters": {
+    "allSectors": "All sectors",
+    "allRiskLevels": "All levels",
+    "allTypes": "All types",
+    "allSizes": "All sizes",
+    "clearAll": "Clear all",
+    "minContracts": "Min contracts",
+    "minValue": "Min value",
+    "hasRfc": "Has RFC",
+    "noRfc": "No RFC",
+    "rfcStatus": "RFC status",
+    "clearFilter": "Clear filter"
+  },
+  "stats": {
+    "pageValue": "Page value",
+    "pageContracts": "Page contracts",
+    "avgRisk": "Avg risk",
+    "highPlus": "High+",
+    "critical": "Critical",
+    "pageSpending": "Page spending",
+    "highPlusRisk": "High+ risk",
+    "totalVendors": "Total vendors"
+  },
+  "empty": {
+    "failedToLoadInstitutions": "Failed to load institutions",
+    "noInstitutionsMatch": "No institutions match your filters"
+  },
+  "concentration": {
+    "title": "Value Concentration Alerts",
+    "description": "Vendors holding a disproportionate share of a single institution's total spending. Amber = 50%+ share. Red = 75%+ share.",
+    "institution": "Institution",
+    "vendor": "Vendor",
+    "totalValue": "Total Value",
+    "share": "Share",
+    "failed": "Failed to load concentration data",
+    "noAlerts": "No concentration alerts found",
+    "alertCount": "{{count}} alerts"
+  }
+}

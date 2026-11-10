@@ -1,0 +1,374 @@
+{
+ "_doc": "El rastreo de un peso: the reviewed V2 trail (rastro_concepts_2026-10-28 REVIEW_V2 SHIP; money_paths_2026-10-29). IMSS, partida 25301 (medicines), 2024. Cuenta Publica (SHCP) + the RUBLI register, read 2026-10-29. No API serves the partida-level trail yet; the contract is read live from /contracts/{id}. mdp = millions of MXN.",
+ "read": "2026-10-29",
+ "ex24": 81891749073.0,
+ "cp": {
+  "2023": {
+   "med": 71801119289.0
+  },
+  "2024": {
+   "med": 81891749073.0
+  },
+  "2025": {
+   "med": 87829856863.0
+  }
+ },
+ "pp24": [
+  {
+   "name": "11 Atención a la Salud",
+   "v": 78075980513.0
+  }
+ ],
+ "reg": {
+  "2023": {
+   "mdp": 29569.0
+  },
+  "2024": {
+   "mdp": 38588.0
+  },
+  "2025": {
+   "mdp": 214385.2
+  }
+ },
+ "reg_cn": {
+  "2025": {
+   "mdp": 203417.0
+  }
+ },
+ "reg24": {
+  "n": 17132,
+  "mdp": 38588.0,
+  "da": 34320.0,
+  "nv": 940
+ },
+ "c": {
+  "ex": 100.0,
+  "reg": 47.120742244254494,
+  "da": 41.90898398006671,
+  "t12": 13.783195654959412,
+  "maypo": 2.223911469245265
+ },
+ "exc24": [
+  {
+   "s": "fr. III",
+   "s_en": "sec. III",
+   "lbl": "pérdidas o costos adicionales importantes",
+   "lbl_en": "significant losses or additional costs",
+   "n": 640,
+   "mdp": 16852.3,
+   "cent": 20.578752060818132
+  },
+  {
+   "s": "fr. I",
+   "s_en": "sec. I",
+   "lbl": "sin sustituto, un solo oferente o derechos exclusivos",
+   "lbl_en": "no substitute, a single bidder or exclusive rights",
+   "n": 55,
+   "mdp": 7796.7,
+   "cent": 9.520739376380714
+  },
+  {
+   "s": "fr. V",
+   "s_en": "sec. V",
+   "lbl": "caso fortuito o fuerza mayor: sin tiempo para licitar",
+   "lbl_en": "force majeure: no time to tender",
+   "n": 10573,
+   "mdp": 5222.7,
+   "cent": 6.377565577875711
+  },
+  {
+   "s": "fr. II",
+   "s_en": "sec. II",
+   "lbl": "emergencia: salubridad u orden social por caso fortuito",
+   "lbl_en": "emergency: public health or order after force majeure",
+   "n": 2882,
+   "mdp": 3976.6,
+   "cent": 4.855922660114606
+  },
+  {
+   "s": "sin artículo",
+   "s_en": "no article",
+   "lbl": "sin artículo registrado",
+   "lbl_en": "no article recorded",
+   "n": 593,
+   "mdp": 245.6,
+   "cent": 0.2999081137967478
+  },
+  {
+   "s": "art. 42",
+   "s_en": "art. 42",
+   "lbl": "por monto (art. 42)",
+   "lbl_en": "by amount (art. 42)",
+   "n": 1776,
+   "mdp": 156.9,
+   "cent": 0.19159439354523505
+  },
+  {
+   "s": "fr. VII",
+   "s_en": "sec. VII",
+   "lbl": "licitación desierta",
+   "lbl_en": "void tender",
+   "n": 115,
+   "mdp": 36.3,
+   "cent": 0.04432680997891671
+  },
+  {
+   "s": "fr. VIII",
+   "s_en": "sec. VIII",
+   "lbl": "fr. VIII",
+   "lbl_en": "sec. VIII",
+   "n": 1,
+   "mdp": 26.8,
+   "cent": 0.03272612968140408
+  },
+  {
+   "s": "art. 43",
+   "s_en": "art. 43",
+   "lbl": "art. 43",
+   "lbl_en": "art. 43",
+   "n": 2,
+   "mdp": 5.8,
+   "cent": 0.007082520602691927
+  },
+  {
+   "s": "art. 42 FR. V",
+   "s_en": "art. 42 sec. V",
+   "lbl": "art. 42 fr. V",
+   "lbl_en": "art. 42 sec. V",
+   "n": 1,
+   "mdp": 0.1,
+   "cent": 0.00012211242418434356
+  }
+ ],
+ "tiers24": {
+  "1": {
+   "nv": 6,
+   "mdp": 2079.1
+  },
+  "2": {
+   "nv": 32,
+   "mdp": 9208.2
+  }
+ },
+ "nonda": {
+  "n": 494,
+  "np": 111,
+  "sb_n": 65
+ },
+ "cmxp": {
+  "n": 160,
+  "mdp": 587.2283167200001,
+  "cite": 143
+ },
+ "maypo": {
+  "id": 2873,
+  "name": "FARMACEUTICOS MAYPO S.A DE C.V",
+  "tier": 1,
+  "imss24": {
+   "n": 648,
+   "mdp": 1823.9,
+   "da": 1821.2,
+   "exc": [
+    {
+     "s": "fr. V",
+     "n": 428,
+     "mdp": 233.0
+    },
+    {
+     "s": "fr. II",
+     "n": 108,
+     "mdp": 48.5
+    },
+    {
+     "s": "art. 42",
+     "n": 94,
+     "mdp": 17.7
+    },
+    {
+     "s": "fr. I",
+     "n": 11,
+     "mdp": 815.3
+    },
+    {
+     "s": "sin artículo",
+     "n": 8,
+     "mdp": 1.5
+    },
+    {
+     "s": "fr. III",
+     "n": 7,
+     "mdp": 712.1
+    }
+   ]
+  },
+  "buyers24": [
+   {
+    "sig": "IMSS",
+    "mdp": 1831.3
+   },
+   {
+    "sig": "ISSSTE",
+    "mdp": 345.9
+   },
+   {
+    "sig": "IMSSBIENESTAR",
+    "mdp": 256.7
+   },
+   {
+    "sig": "INER",
+    "mdp": 130.7
+   },
+   {
+    "sig": "SEDENA",
+    "mdp": 78.2
+   },
+   {
+    "sig": "FINANZASGTO",
+    "mdp": 53.4
+   },
+   {
+    "sig": "INSTITUTO NACIONAL DE CIENCIAS MÉDICAS Y NUTRICIÓN SALVADOR ZUBIRÁN",
+    "mdp": 48.5
+   },
+   {
+    "sig": "INSTITUTO NACIONAL DE PEDIATRÍA",
+    "mdp": 44.8
+   },
+   {
+    "sig": "HOSPITAL INFANTIL DE MÉXICO FEDERICO GÓMEZ",
+    "mdp": 20.1
+   },
+   {
+    "sig": "INSTITUTO NACIONAL DE CANCEROLOGÍA",
+    "mdp": 17.8
+   },
+   {
+    "sig": "SSA",
+    "mdp": 8.0
+   },
+   {
+    "sig": "SERVICIOS DE SALUD DEL ESTADO DE PUEBLA",
+    "mdp": 5.9
+   },
+   {
+    "sig": "SSN",
+    "mdp": 5.3
+   },
+   {
+    "sig": "HGM",
+    "mdp": 4.6
+   },
+   {
+    "sig": "SEMAR",
+    "mdp": 4.5
+   },
+   {
+    "sig": "INNN",
+    "mdp": 2.6
+   },
+   {
+    "sig": "PRS",
+    "mdp": 2.4
+   },
+   {
+    "sig": "INSTITUTO NACIONAL DE CARDIOLOGÍA IGNACIO CHÁVEZ",
+    "mdp": 1.1
+   },
+   {
+    "sig": "INPER",
+    "mdp": 1.0
+   },
+   {
+    "sig": "HOSPITAL JUÁREZ DE MÉXICO",
+    "mdp": 0.7
+   },
+   {
+    "sig": "INPSIQ",
+    "mdp": 0.3
+   },
+   {
+    "sig": "INR",
+    "mdp": 0.3
+   },
+   {
+    "sig": "SISTEMA NACIONAL PARA EL DESARROLLO INTEGRAL DE LA FAMILIA",
+    "mdp": 0.0
+   }
+  ],
+  "imss_life": {
+   "n": 13365,
+   "mdp": 43799.4,
+   "da_pct": 55.7,
+   "y0": 2002,
+   "y1": 2026
+  }
+ },
+ "close": {
+  "n": {
+   "2023": 2097,
+   "2024": 803,
+   "2025": 230,
+   "2026": 133
+  },
+  "last": "2026-10-24",
+  "last_sig": "IMSS",
+  "big_mdp": 70.3,
+  "big_date": "2026-08-07",
+  "big_sig": "IMSS",
+  "read": "2026-10-29",
+  "imss": {
+   "2023": 62021,
+   "2024": 42481,
+   "2025": 19856,
+   "2026": 12718
+  }
+ },
+ "asf": {
+  "mdp": 152.5,
+  "cp": 2023,
+  "audit": 234,
+  "service_contract": "048/2022",
+  "status_es": "por aclarar",
+  "status_en": "pending clarification",
+  "result": null
+ },
+ "contract": {
+  "id": 2926346,
+  "contract_number": "C-2024-00153495",
+  "title": "COMPRA CONSOLIDADA COMPLEMENTARIA 2024 FASE-3, (MEDICAMENTO Y MATERIAL DE CURACI",
+  "amount_mxn": 601252745.0600001,
+  "contract_date": "2024-12-31",
+  "procedure_type": "ADJUDICACIÓN DIRECTA POR ADJUDICACIÓN A PROVEEDOR CON CONTRATO VIGENTE, BAJO LAS MISMAS CONDICIONES",
+  "procedure_number": "AA-12-NEF-012NEF001-I-190-2024",
+  "start_date": "2024-12-23",
+  "end_date": "2024-12-31",
+  "award_date": "2024-12-23",
+  "publication_date": null,
+  "risk_score": 0.9492829721176473,
+  "risk_level": "critical",
+  "source_structure": "D",
+  "exception_article": "ART. 41 FR. III"
+ },
+ "top24": [
+  {
+   "id": 248385,
+   "mdp": 1862.9
+  },
+  {
+   "id": 1378,
+   "mdp": 1839.3
+  },
+  {
+   "id": 2873,
+   "mdp": 1823.9
+  },
+  {
+   "id": 136276,
+   "mdp": 1207.2
+  },
+  {
+   "id": 5231,
+   "mdp": 1167.7
+  }
+ ]
+}

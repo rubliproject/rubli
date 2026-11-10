@@ -1,0 +1,39 @@
+/* «El tablero» — the ARIA case's evidence board. Labels sit right of their pin heads with a halo, never a
+   plate over the head or the thread (Round 3e review). 12 px floor; tokens only. */
+.obj-board { max-width: 980px; }
+.tb-stage { position: relative; width: 100%; }
+.tb-gl { overflow: hidden; }
+.tb-lbls { position: absolute; inset: 0; pointer-events: none; --tb-max: 128px; }
+.tb-lbl { position: absolute; left: 0; top: 0; display: grid; gap: 0; font: 400 12px/1.3 var(--font-mono); color: var(--color-text-muted); text-shadow: 0 0 2px var(--color-background-elevated), 0 0 4px var(--color-background-elevated), 0 0 6px var(--color-background-elevated); will-change: transform; }
+.tb-lbl b { font: 600 13px/1.25 var(--font-serif); color: var(--color-text-primary); overflow-wrap: break-word; }
+.tb-lbl b a, .tb-lbl b span { pointer-events: auto; color: inherit; }
+.tb-lbl a:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 1px; }
+.tb-lbl.is-l { text-align: right; justify-items: end; }
+.tb-lbl.is-centre { text-align: center; justify-items: center; --tb-max: 360px; }
+.tb-lbl.is-centre.is-bl { text-align: left; justify-items: start; }
+.tb-lbl.is-red b { color: var(--color-risk-critical-text); }
+.tb-lbl .tb-k { font: 600 12px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.tb-lbl.is-head { font: 600 12px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); white-space: nowrap; }
+@media (max-width: 639px) { .tb-lbls { --tb-max: 220px; } }
+
+/* the list under the board on phones (pins over the caps) */
+.tb-rest { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.tb-rest .k { font: 600 12px/1.3 var(--font-sc); }
+.tb-rest li { display: flex; flex-wrap: wrap; gap: 0 8px; align-items: baseline; }
+.tb-rest b { font: 600 13px/1.3 var(--font-serif); color: var(--color-text-primary); }
+
+/* plano / no WebGL: the same pins as grouped lists; the dot's size = the thread's share */
+.tb-flat { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px 20px; padding: 8px 0; border-top: 1px solid var(--color-text-primary); }
+.tb-centre { grid-column: 1 / -1; margin: 0; font: 600 14px/1.3 var(--font-serif); }
+.tb-centre small { font: 400 12px/1.4 var(--font-mono); color: var(--color-text-muted); }
+.tb-col h4 { margin: 0 0 4px; font: 600 12px/1.3 var(--font-sc); color: var(--color-text-muted); }
+.tb-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.tb-col li { display: grid; grid-template-columns: 14px minmax(0, 1fr); gap: 0 6px; font: 400 12px/1.35 var(--font-mono); color: var(--color-text-muted); }
+.tb-col li b { grid-column: 2; font: 600 13px/1.3 var(--font-serif); color: var(--color-text-primary); }
+.tb-col li small { grid-column: 2; }
+.tb-col li i { grid-row: 1 / 3; align-self: start; margin-top: 4px; width: calc(4px + 8px * var(--w)); height: calc(4px + 8px * var(--w)); border-radius: 50%; background: var(--color-text-primary); }
+.tb-col li.is-red i { background: var(--color-risk-critical); }
+.tb-col li.is-red b { color: var(--color-risk-critical-text); }
+.tb-col li.is-neg i { background: var(--color-background); border: 1.5px solid var(--color-text-primary); }
+
+.tb-lbl small, .tb-rest small, .tb-col small, .tb-centre small { font-size: 12px; }

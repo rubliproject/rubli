@@ -1,0 +1,10 @@
+# L-S1-S3 progress (executor log)
+
+- S1 image — card.html + render-og.mjs + registry-bridge.mjs; rubli-card.png 1200×630 54 KB, rubli-square.png 600×600 36 KB; strip «28 sep 2025 · v0.8.5 · 3,055,817» (live analyzed_contracts). Evidence `_atlas_research/launch/rubli-*.png`.
+- S1 index.html — absolute og:image (card + square) with width/height/alt, twitter:image(+alt), canonical, og:url, ES-first honest copy (no typed count, «indicadores de riesgo»), <html lang="es">.
+- S1 route meta — src/lib/seo/routeMeta.ts (TOC+OFF_NAV+12 stories+legal → title/description ES/EN, useRouteMeta in Header reusing crumb names), routeMeta.test.ts 6/6; browser probe on dev :3017: /sectors, story, /institutions/1 (entity title), /vendors/29277 (page title wins), 404 (defaults) all correct. tsc 0, eslint 0 on touched files.
+- S2 generator — scripts/gen-sitemap.mjs as npm prebuild (registry via bridge; robots disallows applied; no hreflang: language is not URL-addressable); public/sitemap.xml 50 URLs (19 static, 12 stories, 12 sectors, 7 patterns), committed because the Dockerfile runs `npx vite build` (no prebuild). sitemap.test.ts 3/3.
+- S2 robots — real Sitemap: line, disallows kept.
+- S3 — Lighthouse 13.5 (npx, Edge headless) on prod, 6 pages × mobile/desktop × 2 runs → docs/launch/LIGHTHOUSE_2026-10-06.md; raw in `_atlas_research/launch/lighthouse/`. A11y/BP/SEO ≥ 89; Perf fails everywhere (mobile 31–40, desktop 60–77); vendor SEO 63 = intentional robots disallow. Trivial fixes: theme-color + manifest colors → paper (#faf9f6); lang=es was in S1; alt/noopener/public images checked clean. lighthouse.yml: PR-only, missing .lighthouserc.json → never could run; no budget change.
+- Gates (sequential, after all commits' code): tsc 0 · lint:tokens PASS · vitest 19 files / 159 tests green · eslint 0 errors (38 pre-existing warnings, none in touched files) · npm run build 0 (prebuild regenerated sitemap, 50 URLs, unchanged). dist meta block → `_atlas_research/launch/dist-index-meta.txt`.
+- BUILD_ID = '2026-10-06-launch-s1-s3'. DONE. Not pushed. Next (other session): backlog in LIGHTHOUSE report (fonts/recharts/cache first).

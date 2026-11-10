@@ -1,0 +1,47 @@
+/* «Las Parejas» dossier lens — DESIGN.md tokens only; year tone = RAMP_AMOUNT via inline style (never red). */
+.pj { margin-top: 24px; padding-top: 8px; border-top: 1px solid var(--color-text-primary); }
+.pj-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 20px; }
+.pj-k { flex: 1 1 100%; font: 600 13px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.pj-h { flex: 1 1 420px; font: 600 20px/1.3 var(--font-serif); color: var(--color-text-primary); text-wrap: balance; }
+.pj-skel { height: 160px; margin-top: 8px; background: var(--color-background-elevated); }
+.pj-lens { display: inline-flex; border: 1px solid var(--color-text-primary); }
+.pj-lens button { min-height: 40px; padding: 0 12px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); transition: background-color var(--dur-press) ease-out, color var(--dur-press) ease-out; }
+.pj-lens button + button { border-left: 1px solid var(--color-text-primary); }
+.pj-lens button[aria-pressed='true'] { background: var(--color-text-primary); color: var(--color-background); }
+.pj-scroll { margin-top: 8px; overflow-x: auto; }
+.pj-grid { min-width: 720px; }
+.pj-row { display: grid; grid-template-columns: minmax(220px, 2fr) minmax(360px, 3fr) 176px; gap: 12px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--color-border); transition: background-color 80ms ease-out; }
+.pj-row:hover { background: var(--color-background-elevated); }
+.pj-row.is-head { font: 600 12px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); padding: 2px 0 6px; }
+.pj-row.is-sx { border-bottom: 0; padding: 0; }
+.pj-row.is-sx:hover, .pj-row.is-head:hover { background: none; }
+.pj-years { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; /* one column per year, 2002 → DATA_LAST_YEAR */ gap: 2px; }
+.pj-row.is-sx .pj-years i { font: 400 11px/1.4 var(--font-mono); font-style: normal; color: var(--color-text-muted); border-top: 2px solid var(--color-border); padding-top: 1px; white-space: nowrap; overflow: hidden; }
+.pj-row.is-sx .pj-years i:last-child { overflow: visible; }
+.pj-row.is-head .pj-years b { font: 400 11px/1 var(--font-mono); text-align: left; white-space: nowrap; overflow: visible; }
+.pj-years > i { display: block; height: 16px; background: var(--color-background-elevated); }
+.pj-years > i.is-run { box-shadow: inset 0 -2px 0 var(--color-text-primary); }
+.pj-years > i:not(.is-on).is-run { box-shadow: none; }
+.pj-tip { position: absolute; bottom: calc(100% + 4px); transform: translateX(-50%); z-index: 5; padding: 2px 8px; background: var(--color-background); border: 1px solid var(--color-text-primary); font: 400 12px/1.4 var(--font-mono); font-style: normal; white-space: nowrap; pointer-events: none; }
+.pj-name { display: flex; align-items: center; gap: 6px; min-width: 0; font: 600 15px/1.35 var(--font-serif); } /* §8.1 row name */
+.pj-name > :last-child { min-width: 0; }
+.pj-open { flex: none; min-width: 32px; min-height: 32px; font: 600 16px/1 var(--font-mono); color: var(--color-text-muted); }
+.pj-open:hover { color: var(--color-text-primary); }
+.pj-muted { font: 600 15px/1.35 var(--font-serif); color: var(--color-text-muted); }
+.pj-num { display: flex; flex-direction: column; align-items: flex-end; font: 400 13px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; }
+.pj-num small { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; }
+.pj-row.is-frozen .pj-name::before { content: ''; flex: none; width: 3px; align-self: stretch; background: var(--color-cat-violet); }
+.pj-more { grid-column: 1 / -1; padding: 8px 0 8px 38px; font: 400 15px/1.55 var(--font-serif); color: var(--color-text-primary); animation: pj-in 220ms var(--ease-drawer); }
+@keyframes pj-in { from { opacity: 0; transform: translateY(-4px); } }
+.pj-more dl { display: grid; grid-template-columns: 240px 1fr; gap: 2px 12px; margin: 6px 0; font: 400 13px/1.45 var(--font-serif); }
+.pj-more dd { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.pj-more dt { color: var(--color-text-muted); }
+.pj-all { margin-top: 8px; }
+.pj-all + .pj-all { margin-left: 8px; }
+.pj-note { margin-top: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); max-width: 110ch; }
+@media (max-width: 640px) {
+  .pj-h { font-size: 17px; }
+  .pj-more { padding-left: 0; }
+  .pj-more dl { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .pj-more { animation: none; } }

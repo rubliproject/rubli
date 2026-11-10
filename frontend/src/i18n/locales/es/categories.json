@@ -1,0 +1,108 @@
+{
+  "index": {
+    "kicker": "72 CATEGORÍAS DE GASTO · CompraNet + ComprasMX 2002–2026",
+    "headline": "El qué",
+    "lede": "72 categorías activas clasifican cada contrato federal de COMPRANET — desde medicamentos hasta construcción de carreteras — y revelan adónde fluye el gasto público y dónde se concentra el riesgo.",
+    "statContracts": "Contratos totales",
+    "statSpend": "Gasto total",
+    "statCategories": "Categorías activas",
+    "sortBy": "Ordenar:",
+    "sortSpend": "Gasto",
+    "sortRisk": "Riesgo",
+    "sortContracts": "Contratos",
+    "sortDirectAward": "Adjudicación directa",
+    "sortAriaLabel": "Ordenar categorías por",
+    "allSectors": "Todos",
+    "sectorFilterAriaLabel": "Filtrar por sector",
+    "gridAriaLabel": "Cuadrícula de categorías",
+    "riskLabel": "Indicador de riesgo",
+    "contracts": "contratos",
+    "topVendor": "Principal proveedor",
+    "directAwardBadge": "{{pct}}% AD",
+    "errorMessage": "No se pudieron cargar las categorías. Vuelva a intentarlo.",
+    "noResults": "Ninguna categoría coincide con el filtro seleccionado.",
+    "treemapKicker": "Cartografía del gasto · 72 categorías",
+    "treemapMobileNote": "Las 20 mayores por gasto — usa los filtros para ver las 72"
+  },
+  "dumbbell": {
+    "kicker": "LA BRECHA · #1 VS #2",
+    "headline": "Donde un proveedor se traga el mercado",
+    "deck": "En las doce categorías más concentradas, el primer proveedor se queda con esta porción del mercado. Cuando el círculo lleno se aleja del círculo abierto, alguien capturó el contrato.",
+    "marketCaptured": "MERCADO CAPTURADO",
+    "vendor1": "#1 proveedor",
+    "vendor2": "#2 proveedor",
+    "contracts": "contratos",
+    "totalMarket": "Mercado total:",
+    "referenceLabel": "50% del mercado",
+    "noData": "No hay datos de concentración disponibles.",
+    "pullQuote": "Un solo proveedor controla el {{pct}}% de {{category}}"
+  },
+  "profile": {
+    "notFound": {
+      "title": "Categoría no encontrada",
+      "description": "No existe una categoría con ID {{id}} en la base de datos.",
+      "backLink": "Volver a Categorías"
+    },
+    "breadcrumb": "Categorías",
+    "concentration": {
+      "high": "Altamente concentrado",
+      "moderate": "Moderadamente concentrado",
+      "competitive": "Competitivo"
+    },
+    "kpi": {
+      "totalAmount": "Monto total",
+      "contracts": "Contratos",
+      "avgAmount": "~{{value}} promedio",
+      "avgRisk": "Riesgo promedio",
+      "directAward": "Adjudicación directa",
+      "oecd": "Tablero UE: máx. 10%"
+    },
+    "sections": {
+      "timeline": "Evolución histórica",
+      "timelineSubtitle": "Gasto anual y nivel de riesgo 2002-2026",
+      "byAdmin": "Por administración",
+      "byAdminSubtitle": "Evolución por administración presidencial",
+      "concentration": "Concentración de mercado",
+      "concentrationSubtitle": "Principales proveedores federales por gasto en esta categoría",
+      "relations": "Relaciones",
+      "relationsSubtitle": "Principales instituciones federales por gasto en esta categoría",
+      "contracts": "Contratos",
+      "contractsSubtitle": "Contratos más costosos",
+      "subcategories": "Minicategorías",
+      "subcategoriesSubtitle": "Desglose por minicategoría",
+      "eyebrow": "RUBLI · "
+    },
+    "table": {
+      "vendor": "Proveedor",
+      "institution": "Institución",
+      "share": "Participación",
+      "amount": "Monto",
+      "contracts": "Contratos",
+      "risk": "Riesgo",
+      "directAward": "AD%",
+      "description": "Descripción",
+      "year": "Año"
+    },
+    "tooltip": {
+      "spend": "Gasto",
+      "risk": "Riesgo"
+    },
+    "empty": {
+      "noTrend": "Sin datos de tendencia para esta categoría.",
+      "noAdmin": "Sin datos de sexenio para esta categoría.",
+      "noVendors": "No hay datos de proveedores para esta categoría.",
+      "noRelations": "Sin datos de relaciones proveedor-institución para esta categoría.",
+      "noContracts": "Sin contratos disponibles para esta categoría.",
+      "noSubcategories": "Sin minicategorías disponibles."
+    },
+    "actions": {
+      "viewAll": "Ver todos los contratos",
+      "noTitle": "Sin descripción"
+    },
+    "footnote": "Sheinbaum = 2025 parcial. Fox incluye parte del dato COMPRANET.",
+    "adminTooltip": {
+      "risk": "Riesgo:"
+    },
+    "concentrationMarket": "Los 3 principales concentran {{pct}}% del mercado"
+  }
+}

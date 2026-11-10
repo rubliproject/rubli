@@ -1,0 +1,102 @@
+/* ── HowToRead (kit/HowToRead.tsx): «cómo leer esto», three steps over one real record. Slow and mechanical: each
+   step's body rises 6px into place (700 ms --ease-out), its marks travel on --ease-swap; transform + opacity only;
+   CSS transitions, so a click mid-play retargets instead of restarting. Reduced motion (.is-still): static panels. */
+.htr { margin-top: var(--space-section); padding-top: 8px; border-top: 1px solid var(--color-text-primary); }
+.htr-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+.htr-h { margin: 0; font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.htr-sub { flex: 1 1 280px; margin: 0; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.htr-ctl { display: flex; flex-wrap: wrap; gap: 0 4px; margin-left: auto; }
+.htr-ctl button { position: relative; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 8px; font: 600 13px/1 var(--font-sc); color: var(--color-text-muted); border-bottom: 2px solid transparent; transition: color var(--dur-press) ease, transform var(--dur-press) var(--ease-out); }
+.htr-ctl button[aria-pressed="true"] { color: var(--color-text-primary); border-bottom-color: var(--color-text-primary); }
+.htr-ctl button:active { transform: scale(.97); }
+.htr-ctl button:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .htr-ctl button:hover { color: var(--color-text-primary); } }
+.htr-ctl .htr-skip { font-weight: 400; font-family: var(--font-serif); text-decoration: underline; text-decoration-color: var(--color-border); text-underline-offset: 3px; }
+.htr-cn { font: 400 12px/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.htr-prog { position: absolute; left: 8px; right: 8px; bottom: -2px; height: 2px; background: var(--color-text-primary); transform-origin: left; animation: htr-prog 3.3s linear both; }
+@keyframes htr-prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.htr-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin: 8px 0 0; padding: 0; list-style: none; }
+.htr-steps > li { min-width: 0; padding: 0 16px; border-left: 1px solid var(--color-border); display: flex; flex-direction: column; }
+.htr-steps > li > .htr-b { flex: 1; display: flex; flex-direction: column; justify-content: center; } /* re-audit 11-08: a short step sits mid-column, no ragged bottoms */
+.htr-steps > li:first-child { padding-left: 0; border-left: 0; }
+.htr-l { display: flex; align-items: baseline; gap: 6px; margin: 0 0 8px; font: 600 12px/1.4 var(--font-sc); color: var(--color-text-muted); }
+.htr-steps > li[aria-current="step"] .htr-l { color: var(--color-text-primary); }
+.htr-b { opacity: .35; transform: translateY(6px); transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out); }
+.htr-steps > li[data-on] .htr-b { opacity: 1; transform: none; }
+@media (max-width: 760px) {
+  .htr-ctl { margin-left: 0; width: 100%; }
+  .htr-ctl button { min-width: 44px; min-height: 44px; justify-content: center; padding: 0 12px; }
+  .htr-ctl .htr-cl { display: none; }
+  .htr-ctl .htr-skip { margin-left: auto; }
+  .htr-steps { grid-template-columns: 1fr; gap: 16px; }
+  .htr-steps > li { padding: 0; border-left: 0; }
+}
+.htr.is-still .htr-b { opacity: 1; transform: none; transition: none; }
+
+/* the risk explainer's three objects (portada/RiskHowTo.tsx) */
+.rh-dim { color: var(--color-text-muted); }
+.rh-note { margin: 8px 0 0; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+/* 1 · the record: an ink rule on top, its lines set one after another */
+.rh-rec { margin: 0; border-top: 2px solid var(--color-text-primary); }
+.rh-rec > div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--color-border);
+  transform: translateY(4px); transition: transform 500ms var(--ease-out); transition-delay: calc(300ms + var(--i, 0) * 240ms); }
+.rh-rec dt { font: 600 12px/1.4 var(--font-sc); color: var(--color-text-muted); }
+.rh-rec dd { margin: 0; min-width: 0; font: 600 14px/1.4 var(--font-serif); color: var(--color-text-primary); overflow-wrap: anywhere; }
+.rh-rec .rh-amt { font-size: 15px; font-variant-numeric: tabular-nums; }
+[data-on] .rh-rec > div { transform: none; }
+/* 2 · the comparison: one short sentence per reason (its number bold), then — only where the data has both numbers —
+   a directly labelled comparison: «Este contrato» (ink) over «Lo normal en <sector>» (muted), each with its amount and,
+   up to 50×, its dots on one scale (one dot = one normal contract); or «n de 100» as the 10 × 10 coins */
+.rh-drv { margin: 0; padding: 0; list-style: none; border-top: 2px solid var(--color-text-primary); container-type: inline-size; }
+.rh-drv li { display: grid; gap: 6px; padding: 8px 0 10px; border-bottom: 1px solid var(--color-border); }
+.rh-why { margin: 0; font: 400 15px/1.4 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }
+.rh-why b { font-weight: 600; }
+.rh-cmp { margin: 0; display: grid; gap: 4px; }
+.rh-cr { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "l v" "d d"; column-gap: 12px; row-gap: 2px; align-items: baseline; }
+.rh-cr dt { grid-area: l; font: 600 12px/1.3 var(--font-sc); color: var(--color-text-muted); }
+.rh-cr dd { grid-area: v; margin: 0; font: 400 13px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-muted); white-space: nowrap; }
+.rh-cr.is-this dt, .rh-cr.is-this dd { color: var(--color-text-primary); font-weight: 600; }
+.rh-cr .rh-dots { grid-area: d; }
+@container (min-width: 520px) {
+  .rh-cr { grid-template-columns: 11em 7.5em minmax(0, 1fr); grid-template-areas: "l v d"; align-items: center; }
+  .rh-cr dd { text-align: right; }
+}
+.rh-dots { display: grid; gap: 3px; justify-items: start; line-height: 0; }
+.rh-cmp .nsv-coins { display: inline-flex; flex-direction: column; gap: 3px; } /* nosv.css is lazy with /gasto-a-ciegas */
+.rh-cmp .nsv-coins svg { display: block; }
+.rh-cmp.is-100 { grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: end; }
+.rh-cv { font: 600 12px/1.3 var(--font-sc); color: var(--color-text-primary); }
+.rh-needle i { position: absolute; top: 0; bottom: 0; left: 0; background: var(--color-text-primary); }
+/* 3 · the scale 0 → 1, four zones; the needle travels from 0 to the score, then the level's word darkens */
+.rh-scale { position: relative; height: 40px; border-top: 2px solid var(--color-text-primary); }
+.rh-zone { position: absolute; top: 0; height: 20px; border-left: 1px solid var(--color-background); }
+.rh-zone.is-low { background: color-mix(in srgb, var(--color-risk-low) 14%, transparent); }
+.rh-zone.is-medium { background: color-mix(in srgb, var(--color-risk-medium) 14%, transparent); }
+.rh-zone.is-high { background: color-mix(in srgb, var(--color-risk-high) 14%, transparent); }
+.rh-zone.is-critical { background: color-mix(in srgb, var(--color-risk-critical) 14%, transparent); }
+.rh-zone > span { position: absolute; top: 22px; left: 0; right: 0; font: 600 12px/1.3 var(--font-sc); color: var(--color-text-muted); text-align: center; white-space: nowrap; }
+.rh-zone.is-on > span { color: var(--color-text-primary); }
+/* the landed level: a 2px ink rule under its word, faded in once the needle has arrived */
+.rh-zone.is-on > span::after { content: ''; display: block; width: 32px; height: 2px; margin: 2px auto 0; background: var(--color-text-primary); opacity: 0; transition: opacity 400ms var(--ease-out); transition-delay: 1700ms; }
+[data-on] .rh-zone.is-on > span::after { opacity: 1; }
+.rh-needle { position: absolute; top: -6px; height: 26px; left: 0; right: 3px; transform: translateX(0); transition: transform 1500ms var(--ease-swap); transition-delay: 300ms; }
+.rh-needle i { width: 3px; }
+.rh-needle.is-critical i { background: var(--color-risk-critical); }
+.rh-needle.is-high i { background: var(--color-risk-high); }
+.rh-needle.is-medium i { background: var(--color-risk-medium); }
+.rh-needle.is-low i { background: var(--color-risk-low); }
+[data-on] .rh-needle { transform: translateX(var(--p)); }
+.rh-verdict { margin: 8px 0 0; font: 400 14px/1.45 var(--font-serif); color: var(--color-text-primary); text-wrap: pretty; }
+.rh-verdict b { font-weight: 600; }
+.rh-verdict b.is-critical { color: var(--color-risk-critical-text); }
+.rh-verdict b.is-high { color: var(--color-risk-high-text); }
+.rh-verdict b.is-medium { color: var(--color-risk-medium-text); }
+.rh-verdict b.is-low { color: var(--color-text-muted); }
+.htr.is-still .rh-rec > div, .htr.is-still .rh-dots, .htr.is-still .rh-needle, .htr.is-still .rh-zone > span::after { transition: none; }
+/* a keyboard reader tabbing into a step before the play reaches it sees it at once */
+.htr-steps > li:focus-within .htr-b, .htr-steps > li:focus-within .rh-rec > div, .htr-steps > li:focus-within .rh-dots { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .htr-prog { animation: none; } }
+
+/* the comparison carries the longest sentences: its column is wider, so the three panels end together */
+.rh .htr-steps { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr); }
+@media (max-width: 760px) { .rh .htr-steps { grid-template-columns: 1fr; } }

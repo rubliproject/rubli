@@ -1,0 +1,54 @@
+/* Dossier depth layers (components/dossier/layers.tsx). In place only: nothing here adds height
+   until a row is opened. Tokens from contrato.css (--ct-*). */
+
+/* L1 — a hot row / mark and its twins light together */
+.is-hot, .ct-row.is-hot, .ct-brow.is-hot { background: var(--ct-tint); }
+.vd-trend .pt.is-hot { r: 5px; }
+.vd-trend .hit { fill: transparent; cursor: pointer; }
+.vd-trend .hit:focus-visible { outline: none; stroke: var(--ct-ink); stroke-width: 1; }
+.vd-trend text.hv { fill: var(--ct-ink); font-weight: 700; }
+
+/* L3 — the value is its own toggle; the drill sits under the row */
+.dl-toggle { display: inline-flex; align-items: baseline; gap: 4px; margin: -10px 0; padding: 10px 0; font: inherit; color: inherit; text-align: right; cursor: pointer; text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; transition: text-decoration-color var(--dur-press) ease-out; }
+.dl-toggle:hover, .dl-toggle[aria-expanded='true'] { text-decoration-color: var(--ct-ink); }
+.dl-toggle:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.dl-caret { font-size: 12px; color: var(--ct-gray); }
+.dl-drill { grid-column: 1 / -1; margin: 4px 0 8px; padding: 4px 0 4px 12px; border-left: 2px solid var(--ct-ink); animation: ct-rise var(--dur-state) var(--ease-out) both; }
+td > .dl-drill { margin: 0; }
+.dl-tr > td { padding: 4px 0 8px; }
+.dl-tr:hover { background: none; }
+.dl-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 16px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.dl-x { min-height: 32px; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; }
+.dl-x:hover { text-decoration-color: var(--ct-ink); }
+.dl-note { font: 400 13px/1.45 var(--font-serif); color: var(--ct-gray); padding: 4px 0; }
+.dl-drill ol { list-style: none; margin: 0; padding: 0; }
+.dl-drill li { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr) 40px 88px 112px; column-gap: 12px; align-items: baseline; padding: 4px 0; border-bottom: 1px solid var(--ct-rule); font-size: 14px; line-height: 1.35; }
+.dl-drill li:last-child { border-bottom: 0; }
+.dl-drill li:not(:has(.dl-who)) { grid-template-columns: minmax(0, 1fr) 40px 88px 112px; }
+.dl-t { min-width: 0; text-wrap: pretty; }
+.dl-who { min-width: 0; font-size: 14px; }
+.dl-y, .dl-m { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--ct-gray); }
+.dl-m { color: var(--ct-ink); }
+.dl-r .ct-gw { justify-content: flex-end; }
+.dl-drill .ct-more { margin-top: 4px; }
+
+/* L5 — «Citar» rides a heading line: the 40px hit area overlaps, the line keeps its height */
+.dl-cite { display: inline-flex; margin: -12px 0 -12px auto; }
+.dl-cite .nt-cite { min-height: 40px; padding: 0 4px; border: 0; font-size: 13px; color: var(--ct-gray); text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; }
+.dl-cite .nt-cite:hover { color: var(--ct-ink); text-decoration-color: var(--ct-ink); }
+
+/* L4 — a two-word lens on a heading line */
+.dl-lens { display: inline-flex; gap: 8px; margin: -12px 0; font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); }
+.dl-lens button { min-height: 40px; color: var(--ct-gray); }
+.dl-lens button[aria-pressed='true'] { color: var(--ct-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+@media (max-width: 760px) {
+  .dl-drill { padding-left: 8px; }
+  .dl-drill li, .dl-drill li:not(:has(.dl-who)) { grid-template-columns: minmax(0, 1fr) max-content max-content; }
+  .dl-t, .dl-who { grid-column: 1 / -1; }
+  .dl-who { font-size: 13px; color: var(--ct-gray); }
+  .dl-y { text-align: left; }
+  .ct-stack tr.dl-tr { padding: 0 0 8px; }
+  .ct-stack tr.dl-tr > td { flex: 1 1 100%; font: 400 15px/1.35 var(--font-serif); }
+}
+@media (prefers-reduced-motion: reduce) { .dl-drill { animation: none; } }

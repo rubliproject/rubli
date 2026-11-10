@@ -1,0 +1,47 @@
+/* The story page on «El Contrato» (DESIGN.md §2, §3, §5.1, §6). The chapter
+   layouts are unchanged; these classes name their three tracks once — the
+   frame, the figure track and the reading track — so no paragraph carries a cap.
+   Reading track = the one measure a lone long-form column gets (§2: a paragraph
+   alone on a full-width track caps; this is that column, set once, here). */
+.st-frame { width: min(100%, 1010px); margin-inline: auto; }
+.st-fig { width: min(100%, 760px); margin-inline: auto; }
+.st-read { width: min(100%, 640px); margin-inline: auto; }
+
+/* cover: the story's hero IS its cover (§5.1 read page) */
+.ct-cover.is-story { grid-template-columns: 1fr; }
+.st-byline { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 16px; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.st-byline b { font-weight: 600; }
+.st-kick { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 0 32px; margin-top: 24px; border-top: 1px solid var(--ct-ink); }
+.st-kick-cell { padding: 16px 0; border-bottom: 1px solid var(--ct-rule); min-width: 0; }
+.st-kick-txt { display: block; margin-top: 8px; font-size: 15px; line-height: 1.5; color: var(--color-text-secondary); text-wrap: pretty; }
+.st-lead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--ct-ink); }
+.st-lead-fig { font: 600 36px/1.1 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; letter-spacing: -.01em; }
+.st-lead-label { font-size: 17px; line-height: 1.5; color: var(--ct-ink); }
+.st-lead-sub { flex-basis: 100%; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+
+/* chapter openers and banners: h2 at fig scale (28; 22 on phones) */
+.st-h2-open { font: 600 28px/1.15 var(--font-serif); letter-spacing: -.01em; }
+.st-banner { margin-top: 16px; margin-bottom: 8px; }
+.st-divider { width: 48px; margin: 16px auto; border-top: 1px solid var(--ct-rule); }
+.st-figrule { border-top: 1px solid var(--ct-ink); padding-top: 16px; }
+
+/* drop caps (index.css owns the rule; the template sets Spectral 600, two lines, under 40px) */
+.st-page .hero-dropcap::first-letter,
+.st-page .feature-dropcap::first-letter { font-weight: 600; font-size: 2.3em; line-height: .85; margin-top: .06em; }
+
+/* links out: ruled rows, no tinted boxes */
+.st-cta { display: block; padding: 16px 0; border-top: 1px solid var(--ct-ink); border-bottom: 1px solid var(--ct-rule); color: inherit; text-decoration: none; }
+@media (hover: hover) and (pointer: fine) { .st-cta:hover p, .st-cta:hover h4, .st-link:hover p:first-child { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; } }
+.st-chip { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--ct-rule); font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); transition: border-color 120ms ease-out, transform 120ms ease-out; }
+.st-chip:hover { border-color: var(--ct-ink); }
+.st-chip:active { transform: scale(.97); }
+.st-links { border-top: 1px solid var(--ct-ink); }
+.st-link { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--ct-rule); color: inherit; text-decoration: none; }
+.st-back { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; margin-top: 16px; font: 400 13px/1 var(--font-mono); color: var(--ct-gray); }
+.st-back:hover { color: var(--ct-ink); }
+
+@media (max-width: 760px) {
+  .st-kick { grid-template-columns: 1fr; }
+  .st-h2-open { font-size: 22px; line-height: 1.25; }
+  .st-lead-fig { font-size: 28px; }
+}

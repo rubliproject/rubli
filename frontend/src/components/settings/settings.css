@@ -1,0 +1,31 @@
+/* /settings on «El Contrato» (frontend/DESIGN.md §5.1 tool page). Page-local only. */
+
+.st-object { margin-top: 16px; }
+.st-panel { padding-top: 24px; }
+.st-body > * + * { margin-top: 16px; }
+.st-body > .ct-annex-h, .st-body > .st-h3, .st-body > .st-stack { margin-top: 32px; }
+.st-h3 { font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); }
+.st-body > .st-h3 + * { margin-top: 8px; }
+.st-body p { text-wrap: pretty; }
+
+.st-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; }
+.st-bar > p { flex: 1 1 240px; color: var(--color-text-secondary); }
+
+.st-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 24px; border-top: 1px solid var(--ct-ink); }
+.st-facts > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); min-width: 0; }
+.st-facts dt { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.st-facts dd { margin: 0; font-size: 13px; text-align: right; color: var(--ct-ink); overflow-wrap: anywhere; }
+.st-facts-4 > div { display: block; padding: 12px 0; }
+.st-facts-4 dd { text-align: left; }
+.st-facts dd.st-fig { margin-top: 4px; font: 600 28px/1.1 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; }
+.st-fig small { margin-left: 8px; font: 400 13px/1 var(--font-mono); color: var(--ct-gray); }
+
+.st-stack > div + div { margin-top: 32px; }
+.st-stack .ct-annex-h { margin-bottom: 8px; }
+.st-hold { min-height: 480px; }
+
+.st-page .ct-chip:disabled { color: var(--color-text-muted); border-color: var(--color-border); cursor: not-allowed; }
+
+@media (max-width: 760px) {
+  .st-facts dd.st-fig { font-size: 24px; }
+}

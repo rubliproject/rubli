@@ -1,0 +1,346 @@
+{
+ "lexicon": {
+  "instalaciýn": "instalación",
+  "distribuciýn": "distribución",
+  "coxcatlýn": "coxcatlán",
+  "adquisiciýn": "adquisición",
+  "ýtiles": "útiles",
+  "informýticos": "informáticos",
+  "construcciýn": "construcción",
+  "potabilizaciýn": "potabilización",
+  "captaciýn": "captación",
+  "operaciýn": "operación",
+  "vehýculos": "vehículos",
+  "secretarýa": "secretaría",
+  "pýblica": "pública",
+  "procuradurýa": "procuraduría",
+  "perforaciýn": "perforación",
+  "reparaciýn": "reparación",
+  "licitaciýn": "licitación",
+  "electrýnica": "electrónica",
+  "inversiýn": "inversión",
+  "aýo": "año",
+  "mýdicos": "médicos",
+  "especializaciýn": "especialización",
+  "hospitalizaciýn": "hospitalización",
+  "rýo": "río",
+  "josý": "josé",
+  "grýa": "grúa",
+  "hidrýulica": "hidráulica",
+  "mediciýn": "medición",
+  "patrýn": "patrón",
+  "anestýsico": "anestésico",
+  "curaciýn": "curación",
+  "radiolýgico": "radiológico",
+  "genýricos": "genéricos",
+  "presentaciýn": "presentación",
+  "lýnea": "línea",
+  "conducciýn": "conducción",
+  "regulaciýn": "regulación",
+  "reservaciýn": "reservación",
+  "expediciýn": "expedición",
+  "transportaciýn": "transportación",
+  "ýrea": "área",
+  "supervisiýn": "supervisión",
+  "continuaciýn": "continuación",
+  "býsicas": "básicas",
+  "recýmaras": "recámaras",
+  "týcnico": "técnico",
+  "soluciýn": "solución",
+  "martýn": "martín",
+  "aledaýas": "aledañas",
+  "garcýa": "garcía",
+  "elýctrico": "eléctrico",
+  "ampliaciýn": "ampliación",
+  "tuberýa": "tubería",
+  "colocaciýn": "colocación",
+  "petrýleos": "petróleos",
+  "actualizaciýn": "actualización",
+  "imýgenes": "imágenes",
+  "turýstica": "turística",
+  "marýa": "maría",
+  "pavýn": "pavón",
+  "sustituciýn": "sustitución",
+  "aproximaciýn": "aproximación",
+  "precisiýn": "precisión",
+  "electromecýnicos": "electromecánicos",
+  "subestaciýn": "subestación",
+  "michoacýn": "michoacán",
+  "contrataciýn": "contratación",
+  "coordinaciýn": "coordinación",
+  "electromecýnicas": "electromecánicas",
+  "remodelaciýn": "remodelación",
+  "ýreas": "áreas",
+  "protecciýn": "protección",
+  "seýalamiento": "señalamiento",
+  "quýmicos": "químicos",
+  "implementaciýn": "implementación",
+  "integraciýn": "integración",
+  "tecnolýgica": "tecnológica",
+  "mýxico": "méxico",
+  "reconstrucciýn": "reconstrucción",
+  "cobý": "cobá",
+  "mýdico": "médico",
+  "delegaciýn": "delegación",
+  "asý": "así",
+  "reubicaciýn": "reubicación",
+  "asfýltico": "asfáltico",
+  "cýmputo": "cómputo",
+  "papelerýa": "papelería",
+  "televisiýn": "televisión",
+  "computaciýn": "computación",
+  "administraciýn": "administración"
+ },
+ "examples": [
+  [
+   96927,
+   "Instalaciýn de Postes de Red de Distribuciýn, en la Zona de Distribuciýn Tehuacan, Paquete Coxcatlýn.",
+   "Instalación de Postes de Red de Distribución, en la Zona de Distribución Tehuacan, Paquete Coxcatlán."
+  ],
+  [
+   353182,
+   "Adquisiciýn de materiales y ýtiles para el procesamiento en equipos y bienes informýticos",
+   "Adquisición de materiales y útiles para el procesamiento en equipos y bienes informáticos"
+  ],
+  [
+   151689,
+   "Construcciýn de Sistema de Potabilizaciýn consistente en: Captaciýn, Planta Potabilizadora (Osmosis Inversa) Caseta de Operaciýn, Placas Preventivas.",
+   "Construcción de Sistema de Potabilización consistente en: Captación, Planta Potabilizadora (Osmosis Inversa) Caseta de Operación, Placas Preventivas."
+  ],
+  [
+   298655,
+   "Adquisiciýn de vehýculos para la Secretarýa de Seguridad Pýblica y Procuradurýa General_x000D_\nde la Justicia.",
+   "Adquisición de vehículos para la Secretaría de Seguridad Pública y Procuraduría General_x000D_\nde la Justicia."
+  ],
+  [
+   165112,
+   "Apoyo Operativo Especializado Durante Actividades de Perforaciýn, Reparaciýn y Mantenimiento de Pozos",
+   "Apoyo Operativo Especializado Durante Actividades de Perforación, Reparación y Mantenimiento de Pozos"
+  ],
+  [
+   113809,
+   "Licitaciýn Pýblica Nacional  Electrýnica  para la Adquisiciýn de Bienes de Inversiýn  para el aýo 2005",
+   "Licitación Pública Nacional  Electrónica  para la Adquisición de Bienes de Inversión  para el año 2005"
+  ],
+  [
+   164137,
+   "Servicios Mýdicos Subrogados de Especializaciýn  y Hospitalizaciýn",
+   "Servicios Médicos Subrogados de Especialización  y Hospitalización"
+  ],
+  [
+   151709,
+   "Construcciýn de 77 tanques superficiales individuales de 13.80 m3 de capacidad",
+   "Construcción de 77 tanques superficiales individuales de 13.80 m3 de capacidad"
+  ],
+  [
+   692861,
+   "Construcciýn de Colector de Aguas Negras Rýo Guanajuato del pozo 116 hasta tramo final  de colector ubicado en la comunidad de San Josý de la Luz.",
+   "Construcción de Colector de Aguas Negras Río Guanajuato del pozo 116 hasta tramo final  de colector ubicado en la comunidad de San José de la Luz."
+  ],
+  [
+   213063,
+   "Grýa Hidrýulica, Herramientas, Equipo de Mediciýn, Supresor de Descargas y Equipo Patrýn",
+   "Grúa Hidráulica, Herramientas, Equipo de Medición, Supresor de Descargas y Equipo Patrón"
+  ],
+  [
+   164648,
+   "Construcciýn de Colector",
+   "Construcción de Colector"
+  ],
+  [
+   168907,
+   "Adquisiciýn y suministro del anestýsico desflurano para las delegaciones de Durango y Coahuila",
+   "Adquisición y suministro del anestésico desflurano para las delegaciones de Durango y Coahuila"
+  ],
+  [
+   107468,
+   "material de curaciýn",
+   "material de curación"
+  ],
+  [
+   125698,
+   "Adquisiciýn de medicamentos sustantivos claves 5000, material de curaciýn y radiolýgico",
+   "Adquisición de medicamentos sustantivos claves 5000, material de curación y radiológico"
+  ],
+  [
+   163333,
+   "Medicamentos Genýricos Intercambiables ý Innovadores y Medicamentos en Presentaciýn Sector Salud ý Comercial",
+   "Medicamentos Genéricos Intercambiables ý Innovadores y Medicamentos en Presentación Sector Salud ý Comercial"
+  ],
+  [
+   212743,
+   "Obra de Captaciýn, Lýnea de Conducciýn, Tanque de Regulaciýn,  Red de Distribuciýn y Tomas Domiciliarias en Metlaltepec, Mpio. de Huautla",
+   "Obra de Captación, Línea de Conducción, Tanque de Regulación,  Red de Distribución y Tomas Domiciliarias en Metlaltepec, Mpio. de Huautla"
+  ],
+  [
+   693172,
+   "Servicios de \"Reservaciýn, expediciýn y entrega de boletos de transportaciýn ýrea nacional e internacional (agencia de viajes)\"",
+   "Servicios de \"Reservación, expedición y entrega de boletos de transportación área nacional e internacional (agencia de viajes)\""
+  ],
+  [
+   328927,
+   "Supervisiýn a la continuaciýn de las obras de construcciýn del  puerto fronterizo Ciudad Hidalgo Chis.",
+   "Supervisión a la continuación de las obras de construcción del  puerto fronterizo Ciudad Hidalgo Chis."
+  ],
+  [
+   688487,
+   "Construcciýn de 50 unidades býsicas de vivienda, cnstrucciýn de 40 recýmaras adicionales y construcciýn de 1560.00 m2 de techo losa de concreto a base de vigueta y bovedilla",
+   "Construcción de 50 unidades básicas de vivienda, cnstrucciýn de 40 recámaras adicionales y construcción de 1560.00 m2 de techo losa de concreto a base de vigueta y bovedilla"
+  ],
+  [
+   306812,
+   "\"Estudio Týcnico Operativo que Permita Elaborar el Acuerdo Alternativo de Soluciýn Definitiva para que con el Cierre de los Accesos Irregulares en la Autopista San Martýn Texmelucan-Tlaxcala-El Molinito, se Evite Afectar a los Habitantes de las Poblaciones Aledaýas\"",
+   "\"Estudio Técnico Operativo que Permita Elaborar el Acuerdo Alternativo de Solución Definitiva para que con el Cierre de los Accesos Irregulares en la Autopista San Martín Texmelucan-Tlaxcala-El Molinito, se Evite Afectar a los Habitantes de las Poblaciones Aledañas\""
+  ],
+  [
+   202158,
+   "Construcciýn de Colectores Las Brisas, Mortero y San Francisco en la Cabecera Municipal de Jerez de Garcýa Salinas, Zac",
+   "Construcción de Colectores Las Brisas, Mortero y San Francisco en la Cabecera Municipal de Jerez de García Salinas, Zac"
+  ],
+  [
+   142732,
+   "Perforaciýn de Pozo: Movimiento y transporte de equipo de perforaciýn; acarreo de agua, perforaciýn exploratoria; registro elýctrico; ampliaciýn de perforaciýn; suministro de tuberýa y colocaciýn; desarrollo y aforo.",
+   "Perforación de Pozo: Movimiento y transporte de equipo de perforación; acarreo de agua, perforación exploratoria; registro eléctrico; ampliación de perforación; suministro de tubería y colocación; desarrollo y aforo."
+  ],
+  [
+   154911,
+   "Construcciýn de Tanques Colectores de Aceite en la Zona de Distribuciýn Puebla Poniente",
+   "Construcción de Tanques Colectores de Aceite en la Zona de Distribución Puebla Poniente"
+  ],
+  [
+   99970,
+   "Adquisiciýn de equipos de audio y video",
+   "Adquisición de equipos de audio y video"
+  ],
+  [
+   302912,
+   "ADQUISICION DE MEDICAMENTOS, REGISTRADOS POR LA SECRETARýA DE SALUD, REQUERIDO PARA LAS 44 FARMACIAS DE LAS UNIDADES DEL SISTEMA DE SERVICIOS DE SALUD DE PETRýLEOS MEXICANOS, DISTRIBUIDAS EN OCHO REGIONES",
+   "ADQUISICION DE MEDICAMENTOS, REGISTRADOS POR LA SECRETARÍA DE SALUD, REQUERIDO PARA LAS 44 FARMACIAS DE LAS UNIDADES DEL SISTEMA DE SERVICIOS DE SALUD DE PETRÓLEOS MEXICANOS, DISTRIBUIDAS EN OCHO REGIONES"
+  ],
+  [
+   267283,
+   "Servicio de Uso de derechos de software - Servicio de Refaccionamiento a Equipo de computo - Servicio de Actualizaciýn Equipo Digitalizador de Imýgenes",
+   "Servicio de Uso de derechos de software - Servicio de Refaccionamiento a Equipo de computo - Servicio de Actualización Equipo Digitalizador de Imágenes"
+  ],
+  [
+   199510,
+   "Supervisiýn para el control de la obra de retiro de material de playa adyacente al rompeolas oriente y de la terminal turýstica en Puerto Chiapas, Chis",
+   "Supervisión para el control de la obra de retiro de material de playa adyacente al rompeolas oriente y de la terminal turística en Puerto Chiapas, Chis"
+  ],
+  [
+   202443,
+   "Lic: 33057001-170-06: Alumbrado de la calle Durango, tramo: 5 de Mayo a Josý Marýa Morelos y Pavýn, en la localidad de La Paz, B.C.S. Municipio de La Paz",
+   "Lic: 33057001-170-06: Alumbrado de la calle Durango, tramo: 5 de Mayo a José María Morelos y Pavón, en la localidad de La Paz, B.C.S. Municipio de La Paz"
+  ],
+  [
+   262450,
+   "Sustituciýn de Sistema Indicador de pendiente de aproximaciýn de precisiýn (PAPI), equipos electromecýnicos en subestaciýn y obras complementarias de ayudas  de ayudas visuales  en el Aeropuerto de Uruapan, Michoacýn",
+   "Sustitución de Sistema Indicador de pendiente de aproximación de precisión (PAPI), equipos electromecánicos en subestación y obras complementarias de ayudas  de ayudas visuales  en el Aeropuerto de Uruapan, Michoacán"
+  ],
+  [
+   298406,
+   "Contrataciýn de una empresa farmaceutica que suministre medicamentos de patente vigente, de alta especialidad y genýricos intercambiables a los Jubilados, Pensionados y sus derechohabientes (en lo sucesivo los \"Derechohabientes\") del Fideicomiso Fondo de Pensiones del Sistema BANRURAL",
+   "Contratación de una empresa farmaceutica que suministre medicamentos de patente vigente, de alta especialidad y genéricos intercambiables a los Jubilados, Pensionados y sus derechohabientes (en lo sucesivo los \"Derechohabientes\") del Fideicomiso Fondo de Pensiones del Sistema BANRURAL"
+  ],
+  [
+   280992,
+   "Supervisiýn Directa en Campo, Coordinaciýn, Vigilancia y Control de los Trabajos de Obra Civil e Instalaciones Electromecýnicas, correspondientes a la Ampliaciýn, Remodelaciýn y Remozamiento de los Servicios de Consulta Externa, Gobierno, ýreas de Apoyo y Obras Exteriores del la U.M.F. Tipo \"E+R-2\" ubicada en la localidad de Jerez, Zacatecas.",
+   "Supervisión Directa en Campo, Coordinación, Vigilancia y Control de los Trabajos de Obra Civil e Instalaciones Electromecánicas, correspondientes a la Ampliación, Remodelación y Remozamiento de los Servicios de Consulta Externa, Gobierno, áreas de Apoyo y Obras Exteriores del la U.M.F. Tipo \"E+R-2\" ubicada en la localidad de Jerez, Zacatecas."
+  ],
+  [
+   220297,
+   "Adquisiciýn de Material de Curacion",
+   "Adquisición de Material de Curacion"
+  ],
+  [
+   203955,
+   "Vestuario, Prendas de Protecciýn y Uniformes",
+   "Vestuario, Prendas de Protección y Uniformes"
+  ],
+  [
+   206714,
+   "ADQUISICIýN DE MOBILIARIO ESCOLAR 2006",
+   "ADQUISICIÓN DE MOBILIARIO ESCOLAR 2006"
+  ],
+  [
+   308083,
+   "Continuacion de la Construccion de Terracerias, Obras complementarias, Pavimentacion y Seýalamiento del Periferico Oriente, tramo carretero San Martin de las Flores - El Verde a carretera libre Guadalajara - Zapotlanejo, Jalisco. del km. 8+000 al km. 9+000.",
+   "Continuacion de la Construccion de Terracerias, Obras complementarias, Pavimentacion y Señalamiento del Periferico Oriente, tramo carretero San Martin de las Flores - El Verde a carretera libre Guadalajara - Zapotlanejo, Jalisco. del km. 8+000 al km. 9+000."
+  ],
+  [
+   124796,
+   "Articulos Quýmicos y Aseo",
+   "Articulos Químicos y Aseo"
+  ],
+  [
+   117938,
+   "ropa para Servicios Mýdicos",
+   "ropa para Servicios Médicos"
+  ],
+  [
+   191278,
+   "La Construcciýn del Colector Sacramento Norte Colonia Chihuahua 2000-Planta de Tratamiento Norte, en la Ciudad de Chihuahua. Tramo 1 del Km. 0+000 al Km. 0+820",
+   "La Construcción del Colector Sacramento Norte Colonia Chihuahua 2000-Planta de Tratamiento Norte, en la Ciudad de Chihuahua. Tramo 1 del Km. 0+000 al Km. 0+820"
+  ],
+  [
+   274530,
+   "Adquisiciýn de Equipo para  la Implementaciýn y Operaciýn de la  \"Integraciýn Tecnolýgica: Plataforma Mýxico\"",
+   "Adquisición de Equipo para  la Implementación y Operación de la  \"Integración Tecnológica: Plataforma México\""
+  ],
+  [
+   162214,
+   "Adquisiciýn de Vestuario y Uniformes",
+   "Adquisición de Vestuario y Uniformes"
+  ],
+  [
+   201714,
+   "Reconstrucciýn del camino Cobý-Nuevo Xcan",
+   "Reconstrucción del camino Cobá-Nuevo Xcan"
+  ],
+  [
+   169136,
+   "Bienes de inversiýn de Mobiliarios Mýdicos, Administrtivos y Equipo Mýdico, grupos de suministro 511, 513, 515, 517, 519, 522, 523, 525, 527, 529, 531, 533, 535 y 537 para cubir las necesidades Delegacionales y del Programa IMSS - Oportunidades",
+   "Bienes de inversión de Mobiliarios Médicos, Administrtivos y Equipo Médico, grupos de suministro 511, 513, 515, 517, 519, 522, 523, 525, 527, 529, 531, 533, 535 y 537 para cubir las necesidades Delegacionales y del Programa IMSS - Oportunidades"
+  ],
+  [
+   288383,
+   "ADQUISICIýN DE MATERIAL DE CURACION DE ALTA ESPECIALIDAD GRUPO 060, PARA LA DELEGACIýN VERACRUZ NORTE, PARA EL EJERCICIO 2008.",
+   "ADQUISICIÓN DE MATERIAL DE CURACION DE ALTA ESPECIALIDAD GRUPO 060, PARA LA DELEGACIÓN VERACRUZ NORTE, PARA EL EJERCICIO 2008."
+  ],
+  [
+   105870,
+   "* No podran participar las personas que se encuentran en los supuestos del articulo 50 de la ley de adquisiciones arrendamiento del sector publico._x000D_\n*Los bienes sujetos de la presente licitaciýn seran adjudicadas por partidas._x000D_\n*Ninguna de las condiciones en las bases de la licitacion asý como las proposiciones presentadas por los licitantes podran ser negociada._x000D_\n* Las juntas de aclaraciones y los actos de presentacion de proposiciones y apertura de las propuestas tecnicas y economicas se efectuaran los dias y a las horas indicadas en los recuadros respectivos, en la sala de juntas de la Secretaria de Salud en Baja California Sur, ubicada en avenida Revolucion No. 822 Norte entre Juan Maria de Salvatierra y Manuel Torre Iglesias, Colonia El Esterito, Codigo Postal 23020, La Paz, B.C.S._x000D_\n* Cualquier persona podra asistir a los diferentes actos de la licitacion en calidad de observadora,sin necesidad de adquirir las bases, registrando previamente su participacion.",
+   "* No podran participar las personas que se encuentran en los supuestos del articulo 50 de la ley de adquisiciones arrendamiento del sector publico._x000D_\n*Los bienes sujetos de la presente licitación seran adjudicadas por partidas._x000D_\n*Ninguna de las condiciones en las bases de la licitacion así como las proposiciones presentadas por los licitantes podran ser negociada._x000D_\n* Las juntas de aclaraciones y los actos de presentacion de proposiciones y apertura de las propuestas tecnicas y economicas se efectuaran los dias y a las horas indicadas en los recuadros respectivos, en la sala de juntas de la Secretaria de Salud en Baja California Sur, ubicada en avenida Revolucion No. 822 Norte entre Juan Maria de Salvatierra y Manuel Torre Iglesias, Colonia El Esterito, Codigo Postal 23020, La Paz, B.C.S._x000D_\n* Cualquier persona podra asistir a los diferentes actos de la licitacion en calidad de observadora,sin necesidad de adquirir las bases, registrando previamente su participacion."
+  ],
+  [
+   139225,
+   "Construcciýn de 14 puentes peatonales y 28 paraderos, incluye retiro y reubicaciýn e obra inducida, asý como la construcciýn de las ýreas de ascenso y descenso de pasaje con carpeta de concreto asfýltico",
+   "Construcción de 14 puentes peatonales y 28 paraderos, incluye retiro y reubicación e obra inducida, así como la construcción de las áreas de ascenso y descenso de pasaje con carpeta de concreto asfáltico"
+  ],
+  [
+   690923,
+   "Consumibles generales para equipo de cýmputo y papelerýa en general",
+   "Consumibles generales para equipo de cómputo y papelería en general"
+  ],
+  [
+   319026,
+   "Ampliaciýn del sistema de drenaje sanitario de la Cabecera Municipal, Municipio de Tejupilco",
+   "Ampliación del sistema de drenaje sanitario de la Cabecera Municipal, Municipio de Tejupilco"
+  ],
+  [
+   207584,
+   "ADQUISICIýN DE EQUIPOS DE TELEVISIýN (AUDIO Y VIDEO) Y EQUIPOS DE COMPUTACIýN",
+   "ADQUISICIÓN DE EQUIPOS DE TELEVISIÓN (AUDIO Y VIDEO) Y EQUIPOS DE COMPUTACIÓN"
+  ],
+  [
+   202977,
+   "Instrumental, Mobiliario, Equipo Mýdico y de Oficina",
+   "Instrumental, Mobiliario, Equipo Médico y de Oficina"
+  ],
+  [
+   314817,
+   "Adquisiciýn de Mobiliario, Equipo de Administraciýn, Educacional y Recreativo",
+   "Adquisición de Mobiliario, Equipo de Administración, Educacional y Recreativo"
+  ]
+ ]
+}

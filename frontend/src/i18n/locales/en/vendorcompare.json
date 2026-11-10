@@ -1,0 +1,40 @@
+{
+  "back": "Back",
+  "subtitle": "Side-by-side risk profile analysis for two selected vendors.",
+  "errorTitle": "Could not load vendor data",
+  "errorBody": "One or both vendor IDs may be invalid. Please check the IDs and try again.",
+  "viewProfile": "View full profile",
+  "radarTitle": "Multidimensional Risk Profile",
+  "radarSubtitle": "Solid line = Vendor A. Dashed line = Vendor B. Values toward edge = higher deviation from sector norms.",
+  "noRadarData": "No z-score data available for radar comparison.",
+  "metricTitle": "Contracting Metrics",
+  "metricSubtitle": "The \"Delta\" column shows how Vendor B differs. Red = worse risk; green = better.",
+  "metricColLabel": "Metric",
+  "metricColDelta": "Delta",
+  "deltaEqual": "equal",
+  "vendorA": "Vendor A",
+  "vendorB": "Vendor B",
+  "picker": {
+    "labelA": "Vendor A",
+    "labelB": "Vendor B",
+    "placeholderA": "Search vendor...",
+    "compare": "Compare",
+    "hint": "You can also navigate here from any vendor’s profile page using the “Compare” button."
+  },
+  "verdict": {
+    "section": "VERDICT",
+    "title": "Which vendor is riskier?",
+    "narrative": "{{winner}} has a risk score {{pct}}% higher than {{loser}}",
+    "tiedMessage": "Both vendors present similar risk profiles.",
+    "higherRisk": "Higher risk",
+    "vs": "vs"
+  },
+  "contracts": "contracts",
+  "noResults": "No results",
+  "searching": "Searching...",
+  "headline": {
+    "section": "VENDOR COMPARISON",
+    "title": "Face to Face: Comparative Analysis",
+    "subtitle": "Select two vendors to reveal their differences in contracting patterns and risk"
+  }
+}

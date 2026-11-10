@@ -1,0 +1,104 @@
+{
+  "status": {
+    "pending": "Pendiente",
+    "corroborated": "Corroborado",
+    "refuted": "Refutado",
+    "inconclusive": "No concluyente"
+  },
+  "filters": {
+    "allStatuses": "Todos los estados",
+    "anyScore": "Cualquier puntaje",
+    "scoreMin": "Puntuación ≥ {{threshold}}"
+  },
+  "table": {
+    "case": "Caso",
+    "sector": "Sector",
+    "status": "Estado"
+  },
+  "vendors": "Proveedores",
+  "queue": {
+    "critical": "Crítico",
+    "high": "Alto",
+    "medium": "Medio",
+    "low": "Bajo",
+    "priority": "Prioridad",
+    "allPriorities": "Todos"
+  },
+  "caseDetail": {
+    "untitledSource": "Fuente sin título",
+    "breadcrumb": "Investigaciones",
+    "caseLabel": "Caso de investigación",
+    "confidencePct": "{{pct}}% de confianza",
+    "changeStatusBtn": "Cambiar estado",
+    "addEvidenceBtn": "Agregar evidencia",
+    "promoteToGT": "Agregar a la base de casos",
+    "vendorsInvolved": "Evidencia de proveedores",
+    "acrossContracts": "en {{n}} contratos",
+    "totalValue": "Valor total",
+    "scaleMXN": "escala: 0–100B MXN",
+    "suspicionScore": "Puntuación de sospecha",
+    "riskThresholdHint": "crítico ≥ 60 · alto ≥ 40",
+    "caseNarrative": "Narrativa del caso",
+    "signalsTriggered": "Señales activadas",
+    "asfLookupBtn": "Buscar ASF",
+    "newsBtn": "Noticias",
+    "riskLabel": "Riesgo",
+    "contractsLabel": "Contratos",
+    "valueLabel": "Valor",
+    "redThread": "Hilo Rojo →",
+    "investigationQuestions": "Preguntas de investigación",
+    "highPriorityLabel": "Alta prioridad",
+    "supportingEvidence_other": "{{count}} evidencias de apoyo",
+    "evidenceLog": "Registro de evidencias",
+    "noEvidenceLogged": "Aún no hay evidencia externa registrada.",
+    "attachEvidenceHint": "Adjunta artículos de noticias, auditorías de la ASF o expedientes legales para corroborar este caso.",
+    "logNewEvidence": "Registrar nueva evidencia",
+    "sourceUrlPlaceholder": "URL de la fuente (https://…)",
+    "notFoundLabel": "Investigación · No encontrada",
+    "notFoundTitle": "Caso {{caseId}} no encontrado",
+    "notFoundBody": "Esta investigación puede no existir o no se pudo cargar. Verifique el ID del caso y vuelva a intentarlo.",
+    "allInvestigations": "← Todas las investigaciones"
+  },
+  "card": {
+    "contracts": "contratos",
+    "estLoss": "Pérdida est.",
+    "atRisk": "En riesgo"
+  },
+  "viewCards": "Vista de tarjetas",
+  "viewTable": "Vista de tabla",
+  "caseCount_one": "{{count}} caso",
+  "caseCount_other": "{{count}} casos",
+  "noInvestigationCasesFound": "No se encontraron casos de investigación",
+  "tryAdjustingFilters": "Ajuste los filtros",
+  "noCasesYet": "Aún no se han creado casos",
+  "signalTags": {
+    "multiple_price_anomalies": "Anomalía de monto",
+    "high_single_bid_rate": "Un solo adjudicado",
+    "year_end_concentration": "Cierre de año",
+    "high_avg_risk_score": "Riesgo alto",
+    "high_direct_award_rate": "Adjudicación directa",
+    "corporate_group_pattern": "Grupo corp.",
+    "multi_entity_anomaly": "Multi-Entidad"
+  },
+  "tableCol": {
+    "score": "Puntuación",
+    "value": "Valor",
+    "evidence": "Evidencia"
+  },
+  "filterHeader": "Filtros de investigación",
+  "searchPlaceholder": "Buscar caso, proveedor, sector...",
+  "tableHeader": "Registro de investigaciones",
+  "verify": {
+    "heading": "Cómo verificar esta pista",
+    "toggle": "▸ Cómo verificar",
+    "step1": "Busca en ComprasMX (comprasmx.buengobierno.gob.mx) y el histórico de CompraNet en datos abiertos el RFC o nombre completo del proveedor para consultar los registros originales de sus contratos",
+    "step2": "Revise en la lista EFOS del SAT (sat.gob.mx) si el proveedor está clasificado como empresa fantasma",
+    "step3": "Revise los informes de auditoría de la ASF (asf.gob.mx) para la institución contratante en el año correspondiente",
+    "step4": "Solicite documentos a través de la Plataforma Nacional de Transparencia (plataformadetransparencia.org.mx) con base en los artículos 70-73 de la LGTAIP",
+    "editorial": "Cita sugerida: 'De acuerdo con el análisis de contrataciones de RUBLI, los contratos adjudicados a [proveedor] muestran patrones de compra estadísticamente parecidos a los de proveedores que después aparecen vinculados a casos documentados (indicador de riesgo: [X]/1.0). Esto no constituye prueba de irregularidades y requiere corroboración periodística.'",
+    "disclaimer": "Los indicadores de riesgo son estadísticos, no determinaciones legales. Las puntuaciones altas indican similitud con patrones de corrupción documentada y requieren verificación independiente antes de su publicación."
+  },
+  "riskScoreLabel": "Indicador de riesgo",
+  "riskScoreTooltip": "Indicador de riesgo = similitud estadística con patrones conocidos de corrupción. No es prueba de irregularidad.",
+  "loadingError": "No se pudo cargar la información. Vuelva a intentarlo más tarde."
+}

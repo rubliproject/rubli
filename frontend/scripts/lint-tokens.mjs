@@ -1,0 +1,248 @@
+#!/usr/bin/env node
+/**
+ * lint-tokens.mjs — token hygiene gate.
+ *
+ * Two tiers:
+ *   severity: 'fail' — blocks the build (exit 1). Used for forbidden tokens.
+ *   severity: 'warn' — reports count + samples but does NOT fail. Used to
+ *                      track legacy debt being migrated toward 0.
+ *
+ * Run as part of CI or pre-commit:
+ *   npm run lint:tokens
+ *
+ * Allowed exemptions:
+ *   - comments (lines beginning with `//` or inside block comments)
+ *   - JSON locale files (i18n translations may quote hex as text content)
+ *   - explicit ALLOWLIST_FILES below (canonical palette / token files)
+ *
+ * To extend: add a new pattern to PATTERNS array.
+ */
+import { execFileSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
+
+// Scan paths. src/hooks was added 2026-04-27 after AnimatedFill in
+// useAnimations.tsx was discovered to have been hiding three forbidden
+// patterns (preserveAspectRatio="none" stretched ovals, dark-mode hex
+// '#2d2926' rendering as black on cream, Math.max(1,…) floor making
+// sub-percent stats meaningless) for weeks. The lint scope was the
+// reason the bug survived multiple audits.
+const ROOTS = ['src/pages', 'src/components', 'src/hooks']
+
+// Files that are LEGITIMATELY palette / token authorities. Any hex in these
+// is canonical, by definition. Exempt from hex-literal warnings.
+const ALLOWLIST_FILES = [
+  'src/components/charts/editorial/tokens.ts',
+  'src/components/charts/editorial/colorScales.ts',
+]
+
+const PATTERNS = [
+  // ── FAIL tier ────────────────────────────────────────────────────────
+  // Tailwind 400-tier saturations — dark-mode era, washed-out on cream.
+  // Original 5 hues: 'fail' (the worst offenders, already 0 in fail tier)
+  {
+    name: 'Tailwind text-{red|amber|emerald|cyan|violet}-{300|400|500}',
+    regex: 'text-(red|amber|emerald|cyan|violet)-(300|400|500)',
+    severity: 'fail',
+  },
+  {
+    name: 'Tailwind bg-*-950 (red|amber|emerald|cyan|violet|slate|zinc)',
+    regex: 'bg-(red|amber|emerald|cyan|violet|slate|zinc)-950',
+    severity: 'fail',
+  },
+  // Newly-discovered hues (orange/purple/yellow) and border/bg variants:
+  // 'warn' for now — too much pre-existing debt to block on. Promote to
+  // 'fail' once each pattern's count drops below ~10.
+  {
+    name: 'Tailwind text-{orange|purple|yellow}-{300|400|500} (warn — dark-mode era hues)',
+    regex: 'text-(orange|purple|yellow)-(300|400|500)',
+    severity: 'warn',
+  },
+  {
+    name: 'Tailwind border-{red|amber|emerald|orange|purple}-{300|400|500|600|700} (warn)',
+    regex: 'border-(red|amber|emerald|orange|purple)-(300|400|500|600|700)',
+    severity: 'warn',
+  },
+  {
+    name: 'Tailwind bg-{orange|purple}-950 (warn)',
+    regex: 'bg-(orange|purple)-950',
+    severity: 'warn',
+  },
+  {
+    name: 'Tailwind bg-{red|orange|purple}-{600|700}/* opacity (warn)',
+    regex: 'bg-(red|orange|purple)-(600|700)/[0-9]+',
+    severity: 'warn',
+  },
+  // Raw hex inside SVG color attributes (fill=/stroke=/stopColor="#…").
+  // Tracked SEPARATELY from the generic raw-hex warning below so it doesn't
+  // hide in the ~1k generic-hex pool. The 2026-05-29 chart audit found these
+  // slipping past review because they read as "just a chart color" — but they
+  // bypass RISK_COLORS / SECTOR_COLORS and the cream-theme tokens. 'warn' for
+  // now; promote to 'fail' once the count drops below ~10 (same philosophy as
+  // the orange/purple hues above). Excludes url(#…) filter/gradient refs.
+  {
+    name: 'Raw hex in SVG color attr (fill=/stroke=/stopColor="#…") — use RISK_COLORS/SECTOR_COLORS/var(--…) (warn → promote to fail near 0)',
+    regex: "(fill|stroke|stopColor)=[\"']#[0-9a-fA-F]{3,6}",
+    severity: 'warn',
+  },
+  // Measure directive (PARALLAX D2c, 2026-09-18): running text is left /
+  // ragged-right site-wide. Justified text opened word gaps on the dashboard
+  // hero (Day-1 sweep) and is the one alignment the census found out of step.
+  {
+    name: 'Justified text (text-justify / textAlign: justify) — measure directive: left, ragged-right only',
+    regex: "text-justify|textAlign:\\s*['\"]justify",
+    severity: 'fail',
+  },
+  // Hardcoded dark-mode hex — render as black bullets on cream.
+  {
+    name: 'Hardcoded #2d2926 (dark empty-dot fill)',
+    regex: '#2d2926',
+    severity: 'fail',
+  },
+  {
+    name: 'Hardcoded #3d3734 (dark empty-dot stroke)',
+    regex: '#3d3734',
+    severity: 'fail',
+  },
+  // Bible §3.10: no green for safety on a corruption platform.
+  {
+    name: 'Emerald (no green-for-safety per bible §3.10)',
+    regex: 'text-emerald-|bg-emerald-|border-emerald-',
+    severity: 'fail',
+  },
+  // Green HEX in an SVG color attr (fill=/stroke=/stopColor="#10b981"…). This is
+  // the exact vector that put a green-for-safe OECD-ceiling line on /dashboard
+  // (Executive.tsx:754) past review — the generic "raw hex in SVG attr" pattern
+  // above is only a 'warn', so a green reference mark read as "just a chart
+  // colour". Greens used as SECTOR identity (ambiente/agricultura/hacienda) come
+  // from SECTOR_COLORS as a *variable* (fill={SECTOR_COLORS[code]}), never an
+  // inline hex, so this fails ONLY hard-coded green-as-signal. (The Tailwind
+  // green palette by hex: emerald 34d399/10b981/059669/047857, green
+  // 4ade80/22c55e/16a34a/15803d/166534.)
+  {
+    name: 'Green hex in SVG color attr (fill=/stroke=/stopColor) — no green-for-safety (bible §3.10); use SECTOR_COLORS var or a neutral token',
+    regex: "(fill|stroke|stopColor)=[\"']#(34d399|10b981|059669|047857|4ade80|22c55e|16a34a|15803d|166534)",
+    severity: 'fail',
+  },
+  // ── WARN tier (debt tracking; doesn't block build) ───────────────────
+  // Raw 6-digit hex literals in pages/components. Should come from
+  // lib/constants (RISK_COLORS, SECTOR_COLORS) or var(--…) tokens.
+  // Existing count is the baseline to drive toward 0.
+  {
+    name: 'Raw 6-digit hex literal (#RRGGBB) — should use lib/constants or var(--…)',
+    regex: "#[0-9a-fA-F]{6}\\b",
+    severity: 'warn',
+  },
+  // UI 1.0 «El Contrato» (frontend/DESIGN.md §2–§3, 2026-10-13): 12px type floor,
+  // tracking ≤0.05em, spacing ladder capped at 48. Each pattern promotes to
+  // 'fail' once its wave of the migration lands.
+  {
+    name: 'UI-v4 sub-12px type (text-[9–11.5px] / fontSize ≤11) — DESIGN.md §2 floor is 12px',
+    regex: "text-\\[(9|9\\.5|10|10\\.5|11|11\\.5)px\\]|fontSize: ?['\"]?(9|9\\.5|10|10\\.5|11)(px)?['\"]?[,} ]",
+    severity: 'warn',
+  },
+  {
+    name: 'UI-v4 tracking >0.05em (tracking-[…em] / letterSpacing) — DESIGN.md §2 max is 0.05em',
+    regex: "tracking-\\[0?\\.(0[6-9]|[1-9])[0-9]*em\\]|letterSpacing: ?['\"]0?\\.(0[6-9]|[1-9])[0-9]*em",
+    severity: 'warn',
+  },
+  {
+    // DESIGN.md §4: constrain the COLUMN, never the paragraph. A capped paragraph in a
+    // wide track leaves a void beside it — the owner's #1 complaint, reintroduced twice.
+    // FAIL on migrated surfaces; WARN elsewhere until their wave lands.
+    name: 'Paragraph cap (max-width: Nch / max-w-prose|2xl|3xl|[Nch]) on a migrated surface — DESIGN.md §4',
+    regex: "max-width: ?[0-9]+ch|maxWidth: ?['\"][0-9]+ch|max-w-(prose|2xl|3xl|\[[0-9]+ch\]|\[[5-9][0-9][0-9]px\])",
+    severity: 'fail',
+    files: /(components\/(contrato|aria|cases|sectors|atlas)\/|pages\/(Executive|Atlas|Sectors|AriaQueue|CaseLibrary)\.tsx)/,
+  },
+  {
+    name: 'Paragraph cap (max-width: Nch / max-w-prose|2xl|3xl) — legacy surface, fails at its wave (DESIGN.md §4)',
+    regex: "max-width: ?[0-9]+ch|maxWidth: ?['\"][0-9]+ch|max-w-(prose|2xl|3xl|\[[0-9]+ch\]|\[[5-9][0-9][0-9]px\])",
+    severity: 'warn',
+    files: /^(?!.*(components\/(contrato|aria|cases|sectors|atlas)\/|pages\/(Executive|Atlas|Sectors|AriaQueue|CaseLibrary)\.tsx))/,
+  },
+  {
+    name: 'UI-v4 spacing above ladder (mt/mb/py/pt/pb/space-y/gap ≥ 10) — DESIGN.md §3 cap is 48px',
+    // No \b: the grep node spawns on Windows drops it silently (0 matches).
+    regex: "(^|[[:space:]\"'`:])(mt|mb|py|pt|pb|space-y|gap|gap-y)-(10|14|16|20|24|32)([[:space:]\"'`]|$)",
+    severity: 'warn',
+  },
+]
+
+let failHits = 0
+let warnHits = 0
+const failures = []
+const warnings = []
+
+function isAllowlisted(line) {
+  // Line shape: "src/path/to/file.tsx:123:content"
+  const filePath = line.split(':')[0]
+  return ALLOWLIST_FILES.some((f) => filePath.endsWith(f) || filePath === f)
+}
+
+for (const root of ROOTS) {
+  if (!existsSync(root)) continue
+  for (const { name, regex, severity, files } of PATTERNS) {
+    let output = ''
+    try {
+      // execFileSync (no shell): grep receives `regex` as a single argv element,
+      // so a pattern with shell metacharacters — e.g. the green-hex rule's
+      // ["']#(34d399|10b981|…) — can't break quoting and crash the gate (it did
+      // under execSync, where the bare (a|b|c) became a subshell + pipes).
+      output = execFileSync(
+        'grep',
+        ['-rEn', regex, root, '--include=*.tsx', '--include=*.ts', '--include=*.css'],
+        { encoding: 'utf-8' }
+      )
+    } catch (err) {
+      if (err.status === 1) continue // 0 matches
+      throw err
+    }
+    const lines = output.split('\n').filter(Boolean)
+    const real = lines.filter((l) => {
+      const after = l.split(':').slice(2).join(':')
+      const trimmed = after.trim()
+      if (trimmed.startsWith('//') || trimmed.startsWith('*')) return false
+      if (isAllowlisted(l)) return false
+      if (files && !files.test(l.split(':')[0].replaceAll('\\', '/'))) return false
+      return true
+    })
+    if (real.length > 0) {
+      const entry = { name, count: real.length, samples: real.slice(0, 5), severity }
+      if (severity === 'fail') {
+        failures.push(entry)
+        failHits += real.length
+      } else {
+        warnings.push(entry)
+        warnHits += real.length
+      }
+    }
+  }
+}
+
+// Print warnings first (informational)
+if (warnings.length > 0) {
+  console.error(`⚠ token hygiene WARNINGS — ${warnHits} occurrence(s) (legacy debt; not gating):\n`)
+  for (const { name, count, samples } of warnings) {
+    console.error(`  [${count}] ${name}`)
+    for (const s of samples) console.error(`    ${s}`)
+    if (count > samples.length) console.error(`    ... and ${count - samples.length} more`)
+  }
+  console.error('')
+}
+
+if (failures.length === 0) {
+  console.log(
+    `✓ token hygiene gate PASS — 0 forbidden patterns in ${ROOTS.join(' + ')}` +
+      (warnHits > 0 ? ` (${warnHits} warnings)` : '')
+  )
+  process.exit(0)
+}
+
+console.error(`✗ token hygiene gate FAIL — ${failHits} forbidden pattern(s) found:\n`)
+for (const { name, count, samples } of failures) {
+  console.error(`  [${count}] ${name}`)
+  for (const s of samples) console.error(`    ${s}`)
+  if (count > samples.length) console.error(`    ... and ${count - samples.length} more`)
+}
+console.error('\nFix or document each occurrence. See .claude/marathon/SHIP_CHECKLIST.md band B2.')
+process.exit(1)

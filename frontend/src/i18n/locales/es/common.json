@@ -1,0 +1,667 @@
+{
+  "loading": "Cargando...",
+  "error": "Error",
+  "retry": "Reintentar",
+  "noResults": "Sin resultados",
+  "search": "Buscar",
+  "filters": "Filtros",
+  "clearFilters": "Limpiar filtros",
+  "page": "Página",
+  "of": "de",
+  "showing": "Mostrando",
+  "results": "resultados",
+  "contracts": "Contratos",
+  "vendors": "Proveedores",
+  "institutions": "Instituciones",
+  "sectors": "Sectores",
+  "gap": "El Apagón",
+  "riskScore": "Indicador de riesgo",
+  "riskLevel": "Nivel de riesgo",
+  "amount": "Monto",
+  "year": "Año",
+  "critical": "Crítico",
+  "high": "Alto",
+  "medium": "Medio",
+  "low": "Bajo",
+  "directAward": "Adjudicación directa",
+  "singleBid": "Un solo adjudicado",
+  "totalValue": "Valor total",
+  "totalContracts": "Total de contratos",
+  "avgRisk": "Riesgo promedio",
+  "impacto": {
+    "label": "Este monto equivale a:",
+    "imssAnnualSalaries": "salarios anuales IMSS",
+    "ruralSchools": "escuelas rurales",
+    "ruralHospitals": "hospitales rurales",
+    "equippedAmbulances": "ambulancias equipadas",
+    "classroomsBuilt": "aulas construidas",
+    "basicEducationYears": "años de educación básica"
+  },
+  "exportCSV": "Exportar CSV",
+  "dateNote": "Granularidad de fecha disponible para ~48% de los contratos.",
+  "groundTruth": {
+    "caseName": "Nombre del caso",
+    "caseType": "Tipo",
+    "sector": "Sector",
+    "contracts": "Contratos",
+    "avgScore": "Indicador de riesgo promedio",
+    "estimatedFraud": "Fraude estimado",
+    "modelComparison": "Comparación de modelos",
+    "liveData": "Datos en vivo"
+  },
+  "notFound": {
+    "code": "404 · SIN REGISTRO",
+    "title": "Este registro fue archivado o nunca se indexó",
+    "description": "La página que busca no está en el registro. Busque un proveedor, una institución o un contrato, o consulte una investigación publicada.",
+    "backHome": "Volver al inicio",
+    "viewInvestigations": "Leer las historias →",
+    "searchPlaceholder": "Buscar proveedores, instituciones, contratos…"
+  },
+  "dossier": {
+    "addToDossier": "Agregar al expediente",
+    "noDossiers": "Aún no hay expedientes activos",
+    "newDossier": "Nuevo expediente...",
+    "newTitle": "Nuevo expediente de investigación",
+    "nameLabel": "Nombre *",
+    "description": "Descripción",
+    "descriptionPlaceholder": "¿De qué trata esta investigación?",
+    "color": "Color",
+    "cancel": "Cancelar",
+    "create": "Crear expediente",
+    "creating": "Creando…"
+  },
+  "header": {
+    "searchPlaceholder": "Buscar proveedores, casos...",
+    "alertsLabel": "{{count}} alertas de alto riesgo",
+    "noAlerts": "Sin alertas activas",
+    "live": "EN VIVO",
+    "connectedToDb": "Conectado a la base de datos",
+    "dataQuality": "Calidad de datos: {{grade}} ({{score}}%)",
+    "openMenu": "Abrir menú",
+    "toggleTheme": "Cambiar tema",
+    "home": "Inicio",
+    "userMenu": "Menú de usuario",
+    "myInvestigations": "Mis investigaciones",
+    "signOut": "Cerrar sesión",
+    "signIn": "Iniciar sesión"
+  },
+  "legal": {
+    "privacy": "Privacidad",
+    "terms": "Términos"
+  },
+  "unknown": "Desconocido",
+  "untitled": "Sin título",
+  "dismissBanner": "Cerrar anuncio",
+  "footerBrand": "RUBLI v0.9.2",
+  "footerTagline": "Plataforma de transparencia en compras públicas",
+  "footerOpenData": "Datos abiertos",
+  "footerContracts": "contratos",
+  "skipToContent": "Saltar al contenido principal",
+  "verified": "verificado",
+  "readMethodology": "Leer metodología →",
+  "story": {
+    "statusLabel": "Estado de la investigación",
+    "statusSoloDatos": "Solo datos: pista sin reportar",
+    "statusReporteado": "Reporteado por medios",
+    "statusAuditado": "Auditado por ASF / SFP",
+    "statusProcesado": "Proceso penal abierto",
+    "methodology": "Metodología",
+    "methodologyP1": "Este análisis fue producido por la plataforma RUBLI, que asigna un indicador de riesgo a",
+    "methodologyP2": "los contratos federales registrados en COMPRANET del 2002 al 28 de septiembre de 2025.",
+    "methodologyP3": "Los indicadores de riesgo los genera el modelo v0.9.2, entrenado con la base de casos documentados de RUBLI (casos registrados al entrenar: {{atTraining}}; hoy: {{today}}; la mayoría documentados por analistas y no resoluciones). El historial de cada proveedor solo mira años anteriores al contrato; las comparaciones con su sector usan los últimos tres años sin contar el propio contrato. Entrenado con años anteriores y probado en el siguiente (2019–2025), obtiene un AUC de 0.827 en años que el modelo no vio. El AUC es la proporción de veces que el modelo coloca a un proveedor con caso por encima de uno sin caso. El indicador mide la similitud con casos documentados: es un indicador de riesgo, no una prueba.",
+    "methodologyP4": "Todas las cifras provienen de datos públicos de COMPRANET. Los cálculos de adjudicación directa se basan en el tipo de procedimiento del registro oficial. Las clasificaciones sectoriales usan la taxonomía de 12 sectores de RUBLI basada en códigos de ramo presupuestal. Los proveedores señalados como pistas provienen de ARIA, la fila de investigación de RUBLI que ordena a los proveedores por evidencia de patrones.",
+    "nextSteps": "Próximos pasos para periodistas",
+    "fullMethodology": "Metodología completa",
+    "modelTransparency": "Transparencia del modelo",
+    "investigateMore": "Investigar más",
+    "viewOnPlatform": "Ver en la plataforma",
+    "allStories": "Todas las historias",
+    "notFound": "Historia no encontrada",
+    "notFoundDetail": "La historia \"{{slug}}\" no pudo encontrarse.",
+    "investigations": "Investigaciones RUBLI",
+    "shareInvestigation": "Compartir esta investigación",
+    "ariaIntelligence": "Informe ARIA",
+    "ariaDesc": "La fila de investigación de RUBLI",
+    "documentedCases": "Casos documentados",
+    "documentedCasesDesc": "Base de casos documentados",
+    "exploreContracts": "Explorar contratos",
+    "exploreContractsDesc": "Buscar en 3.18 millones de contratos",
+    "sectorAgricultura": "Sector Agricultura",
+    "sectorAgriculturaDesc": "93.4% adjudicación directa",
+    "actInvestigation": "LA INVESTIGACIÓN",
+    "actMethodology": "LA METODOLOGÍA",
+    "actFurtherInquiry": "PARA PROFUNDIZAR",
+    "actRelatedDossiers": "EXPEDIENTES RELACIONADOS",
+    "actReturnToIndex": "VOLVER AL ÍNDICE",
+    "notFoundSubtitle": "La investigación solicitada no pudo encontrarse.",
+    "viewCitations": "ver citas",
+    "sources_one": "{{count}} fuente",
+    "sources_other": "{{count}} fuentes",
+    "collapse": "cerrar"
+  },
+  "welcome": {
+    "subtitle": "Red Unificada de Búsqueda de Licitaciones Irregulares: detección de corrupción con IA en las compras del gobierno de México",
+    "step1Title": "Fila de investigación ARIA",
+    "step1Desc": "ARIA ordena a cada proveedor en 4 niveles de prioridad en la fila de investigación. El nivel 1 muestra 61 proveedores para revisión inmediata: combina indicadores de riesgo, detección de anomalías y registros externos de sanciones (SAT EFOS, SFP, ASF) en un solo indicador de prioridad (IPS).",
+    "step2Title": "Modelo de Riesgo v0.9.2",
+    "step2Desc": "3.18 millones de contratos con indicador de riesgo, calculado por una regresión logística entrenada con la base de casos documentados de RUBLI con información anterior a cada contrato. AUC de 0.827 en años que el modelo no vio; tasa de alto riesgo cercana al 10%, dentro de la meta de calibración propia de RUBLI (2–15%). El indicador mide la similitud con casos documentados: es un indicador de riesgo, no una prueba.",
+    "step2Critical": "Crítico ≥ 0.60",
+    "step2High": "Alto ≥ 0.40",
+    "step2Medium": "Medio ≥ 0.25",
+    "step2Low": "Bajo < 0.25",
+    "step2Caveat": "Un indicador alto significa una fuerte similitud con patrones de riesgo documentados. Sirve para ordenar la investigación: es un indicador de riesgo, no una prueba.",
+    "step3Title": "Investigaciones",
+    "step3Desc": "10 narrativas de análisis profundo, desde La Anomalía de Mil Millones hasta Compras de Emergencia COVID, Segalmex, compras de medicamentos del IMSS y adjudicaciones directas del Tren Maya. Cada historia es una investigación con desplazamiento, gráficas y datos en vivo.",
+    "step3SearchPlaceholder": "Buscar proveedores, casos, instituciones...",
+    "step4Title": "Espacio de trabajo",
+    "step4Desc": "Guarde proveedores, contratos y casos en carpetas de investigación. Construya expedientes, rastree pistas en el tiempo y exporte hallazgos: su investigación persiste entre sesiones.",
+    "step4Step1": "Buscar proveedor",
+    "step4Step2": "Revisar perfil",
+    "step4Step3": "Agregar al expediente",
+    "skip": "Omitir recorrido",
+    "next": "Siguiente",
+    "getStarted": "Comenzar",
+    "stepIndicator": "Paso {{n}}"
+  },
+  "caseLeadDialog": {
+    "title": "Enviar una pista de caso",
+    "vendorLabel": "Nombre del caso / Nombre del proveedor",
+    "fraudTypeLabel": "Tipo de fraude sospechado",
+    "sectorLabel": "Sector afectado",
+    "fromYear": "Desde el año",
+    "startYearPlaceholder": "Año inicial…",
+    "endYearPlaceholder": "Año final…",
+    "toYear": "Hasta el año",
+    "evidenceLabel": "Descripción de evidencia",
+    "submitBtn": "Enviar pista",
+    "cancelBtn": "Cancelar",
+    "successMsg": "Pista enviada. RUBLI la revisará.",
+    "errorMsg": "No se pudo enviar. Vuelva a intentarlo.",
+    "validation": {
+      "nameRequired": "El nombre del caso es obligatorio",
+      "fraudTypeRequired": "El tipo de fraude es obligatorio",
+      "evidenceRequired": "La descripción de evidencia es obligatoria",
+      "evidenceMinLength": "La descripción debe tener al menos 50 caracteres",
+      "emailInvalid": "El formato del correo electrónico es inválido"
+    },
+    "submitDesc": "¿Tiene información sobre un presunto fraude en contrataciones? Compártala con RUBLI. Todas las denuncias son confidenciales.",
+    "vendorHint": "Nombre del proveedor, institución o título descriptivo del caso",
+    "caseNamePlaceholder": "p. ej., ABC Construcciones, S.A. de C.V., o Irregularidad IMSS 2020",
+    "selectTypePlaceholder": "Seleccionar tipo…",
+    "selectSectorPlaceholder": "Seleccionar sector…",
+    "unknownSector": "Desconocido / Múltiple",
+    "evidenceMin": "(mín. 50 caracteres)",
+    "evidencePlaceholder": "Describa el patrón de fraude sospechado, lo que observó y los datos que lo respaldan…",
+    "evidenceCounter": "{{count}} / 50 mín. caracteres",
+    "sourceLabel": "Fuente",
+    "optional": "(opcional)",
+    "sourcePlaceholder": "Número de auditoría ASF, URL de artículo, referencia de documento…",
+    "emailLabel": "Correo de contacto",
+    "emailOptional": "(opcional, para seguimiento)",
+    "emailPrivacy": "Solo se usa para enviarle actualizaciones sobre esta pista. Nunca se comparte públicamente.",
+    "emailPlaceholder": "analista@ejemplo.org",
+    "successInline": "Pista enviada. RUBLI la revisará.",
+    "submittedBtn": "Enviado",
+    "submitLeadBtn": "Enviar pista",
+    "triggerBtn": "Enviar una pista",
+    "fraudTypes": {
+      "ghost_company": "Empresas fantasma",
+      "overpricing": "Sobreprecio",
+      "bid_rigging": "Colusión en licitación",
+      "conflict_of_interest": "Conflicto de interés",
+      "procurement_fraud": "Fraude en adquisiciones",
+      "bribery": "Soborno",
+      "monopoly": "Monopolio",
+      "other": "Otro"
+    }
+  },
+  "aboutData": "Los indicadores de riesgo los calcula un modelo de aprendizaje automático entrenado con la base de casos documentados de RUBLI (1,417 casos hoy; la mayoría son documentación de analistas sobre pistas surgidas del modelo, 387 provienen de prensa o registros oficiales). El indicador mide la similitud estadística con esos casos: es un indicador de riesgo, no una prueba ni una determinación legal. Fuente: COMPRANET (SHCP). Metodología: rubli.xyz/metodologia",
+  "aboutDataToggle": "Acerca de estos datos",
+  "storyType": {
+    "era": "Análisis de era",
+    "case": "Caso de investigación",
+    "thematic": "Investigación temática",
+    "year": "Análisis anual",
+    "readTime": "lectura",
+    "chapter": "Capítulo",
+    "chapterNav": "Navegación de capítulos",
+    "closing": "Cierre",
+    "pullquote": "Cita destacada"
+  },
+  "outletLabels": {
+    "longform": "REPORTAJE",
+    "investigative": "INVESTIGACIÓN",
+    "data_analysis": "ANÁLISIS DE DATOS",
+    "rubli": "RUBLI"
+  },
+  "era": {
+    "fox": "Fox (2000-2006)",
+    "calderon": "Calderón (2006-2012)",
+    "pena": "Peña Nieto (2012-2018)",
+    "amlo": "López Obrador (2018-2024)",
+    "sheinbaum": "Sheinbaum (2024-)",
+    "cross": "Varios sexenios"
+  },
+  "cronologia": {
+    "title": "Cronología de contratos",
+    "noData": "Sin datos de cronología disponibles para {{vendor}}.",
+    "contracts": "contratos",
+    "risk": "Riesgo"
+  },
+  "ariaWidget": {
+    "loadError": "Error al cargar las pistas de investigación ARIA",
+    "viewFull": "Ver todas las pistas de investigación",
+    "noVendorsInTier": "No hay proveedores en el Nivel {{tier}}"
+  },
+  "infographics": {
+    "sectionTitle": "Infografías para publicación",
+    "sectionSubtitle": "Datos verificados · Descarga libre · Cita: RUBLI / COMPRANET",
+    "source": "Fuente",
+    "download": "Descargar"
+  },
+  "cmdPalette": {
+    "inputPlaceholder": "Buscar proveedores, RFC, contratos, casos… o navegar",
+    "saveSearch": "Guardar esta búsqueda",
+    "searchingEllipsis": "Buscando…",
+    "noResultsFor": "Sin resultados para “{{query}}”",
+    "suggestedSearches": "Búsquedas sugeridas",
+    "researchActions": "Acciones de investigación",
+    "rfcSearch": "Buscar por RFC",
+    "searchByRfc": "Buscar por RFC:",
+    "groupVendors": "Proveedores",
+    "groupInstitutions": "Instituciones",
+    "groupContracts": "Contratos: mayor riesgo primero",
+    "groupCases": "Casos",
+    "groupPages": "Páginas",
+    "groupGoTo": "Ir a",
+    "highRisk": "Contratos de riesgo alto o crítico",
+    "hintNavigate": "navegar",
+    "hintSelect": "seleccionar",
+    "hintClose": "cerrar",
+    "rfcTip": "Consejo: escriba un RFC (p. ej. ABC123456789) para encontrar un proveedor",
+    "contractsCount_one": "{{count}} contrato",
+    "contractsCount_other": "{{count}} contratos",
+    "applySavedSearch": "Aplicar búsqueda guardada: {{label}}",
+    "removeSavedSearch": "Eliminar búsqueda guardada: {{label}}",
+    "saveCurrentSearch": "Guardar búsqueda “{{query}}”",
+    "action": {
+      "dashboard": {
+        "label": "Panel",
+        "desc": ""
+      },
+      "contracts": {
+        "label": "Contratos",
+        "desc": "Explorar 3.18 millones de contratos"
+      },
+      "vendors": {
+        "label": "Explorar proveedores",
+        "desc": ""
+      },
+      "institutions": {
+        "label": "Explorar instituciones",
+        "desc": ""
+      },
+      "sectors": {
+        "label": "Panorama de sectores",
+        "desc": ""
+      },
+      "network": {
+        "label": "Red de proveedores",
+        "desc": ""
+      },
+      "cases": {
+        "label": "Casos",
+        "desc": ""
+      },
+      "aria": {
+        "label": "Fila ARIA",
+        "desc": "Nivel 1: 61 proveedores para revisión inmediata"
+      },
+      "administrations": {
+        "label": "Administraciones",
+        "desc": "Comparación de compras entre sexenios"
+      },
+      "methodology": {
+        "label": "Metodología",
+        "desc": ""
+      },
+      "model": {
+        "label": "Transparencia del modelo",
+        "desc": ""
+      },
+      "critical-contracts": {
+        "label": "Ver contratos de riesgo crítico",
+        "desc": "Contratos con indicador de riesgo ≥ 0.60"
+      },
+      "single-bid-contracts": {
+        "label": "Contratos de procedimiento con un solo adjudicado",
+        "desc": "Licitaciones e invitaciones con un solo adjudicado"
+      },
+      "compare-sectors": {
+        "label": "Comparar sectores",
+        "desc": "Riesgo y gasto en los 12 sectores"
+      },
+      "top-risk-vendors": {
+        "label": "Proveedores de mayor riesgo",
+        "desc": "Proveedores ordenados por indicador de riesgo"
+      },
+      "imss-vendors": {
+        "label": "Investigación de proveedores IMSS",
+        "desc": "Proveedores contratados por el IMSS"
+      }
+    },
+    "suggested": {
+      "rfcSearch": "RFC: buscar por RFC",
+      "singleBid": "procedimiento con un solo adjudicado"
+    }
+  },
+  "contractDetail": {
+    "procurement": "Adquisición",
+    "procedure": "Procedimiento",
+    "contractType": "Tipo de contrato",
+    "publication": "Publicación",
+    "award": "Adjudicación",
+    "start": "Inicio",
+    "end": "Fin",
+    "sector": "Sector",
+    "status": "Estado",
+    "viewOnCompranet": "Ver en COMPRANET",
+    "context": "Contexto",
+    "electionYear": "Año electoral",
+    "anomalyScore": "Puntuación de anomalía",
+    "anomalyScoreSubtitle": "PyOD multimodelo",
+    "aiConfirmed": "Señalado por IA",
+    "ensemble": "IForest+COPOD",
+    "ensembleDetail": "conjunto",
+    "qualityLabel": "Calidad: {{grade}}",
+    "sourceLabel": "Fuente: Estructura {{structure}}",
+    "confidence": "Confianza: {{value}}",
+    "flagDirectAward": "Adjudicación directa",
+    "flagSingleBid": "Un solo adjudicado",
+    "flagYearEnd": "Fin de año",
+    "flagHighValue": "† Monto en revisión",
+    "flagHighValueTip": "Más de 10,000 MDP: se cuenta en los totales hasta su revisión manual",
+    "flagThresholdGaming": "Fraccionamiento de umbral"
+  },
+  "compareModal": {
+    "title": "Comparar contratos",
+    "selected": "({{n}} seleccionados)",
+    "closeComparison": "Cerrar comparación",
+    "fullDetails": "Ver detalles completos",
+    "riskScore": "Indicador de riesgo",
+    "riskLevel": "Nivel de riesgo",
+    "amount": "Monto",
+    "date": "Fecha",
+    "vendor": "Proveedor",
+    "institution": "Institución",
+    "sector": "Sector",
+    "procedure": "Procedimiento",
+    "flags": "Indicadores"
+  },
+  "riskExplainer": {
+    "whatItDetects": "Qué detecta",
+    "theory": "Teoría",
+    "inRubli": "En RUBLI",
+    "coefficientSuffix": "coeficiente",
+    "colFactor": "Factor",
+    "colCoefficient": "Coeficiente",
+    "colEvidenceStrength": "Solidez de evidencia",
+    "colKeySource": "Fuente principal",
+    "legendIncreasesRisk": "Aumenta el riesgo",
+    "legendDecreasesRisk": "Reduce el riesgo (protector)",
+    "legendNegligible": "Insignificante / regularizado a cero",
+    "legendCoefficients": "Coeficientes del modelo ElasticNet v0.9.2 (C=0.0037, l1_ratio=0.919, T=0.530)"
+  },
+  "sanctions": {
+    "onListSingular": "En {{count}} lista de sanciones:",
+    "onListPlural": "En {{count}} listas de sanciones:",
+    "rfcMatch": "Coincidencia RFC ({{pct}}%)",
+    "nameMatch": "Coincidencia por nombre ({{pct}}%)",
+    "nameFuzzy": "Nombre aproximado",
+    "collapseDetails": "Ocultar detalles",
+    "expandDetails": "Mostrar detalles",
+    "vendorLabel": "Proveedor:",
+    "efosTip": "Definitivo: aparece en la lista definitiva del SAT de empresas que facturan operaciones simuladas (EFOS). Presunto: en revisión del SAT.",
+    "listEfos": "SAT EFOS",
+    "listEfosDefinitivo": "SAT EFOS Definitivo (confirmado)",
+    "listEfosPresunto": "SAT EFOS Presunto (alegado)"
+  },
+  "politicalStrip": {
+    "title": "Contexto político",
+    "subtitle": "Principales proveedores por administración presidencial — ordenados por valor total",
+    "errorLoading": "Error al cargar datos de proveedores",
+    "noData": "Sin datos para esta administración"
+  },
+  "ariaMemo": {
+    "title": "Análisis de investigación",
+    "generatedByAi": "Generado por IA",
+    "errorLoading": "Error al cargar memo",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "disclaimer": "Generado automáticamente; requiere verificación periodística",
+    "notAvailable": "Memo no disponible para {{vendorName}}"
+  },
+  "charts": {
+    "racingBar": {
+      "play": "Reproducir",
+      "pause": "Pausar"
+    },
+    "sectorConcentration": {
+      "title": "Concentración de mercado",
+      "subtitle": "% de contratos adjudicados a los 3 proveedores principales por sector",
+      "skeletonAriaLabel": "Cargando concentración de mercado",
+      "noData": "sin datos",
+      "footnote": "Fuente: RUBLI v0.9.2 · todos los contratos · 2002-2026",
+      "ariaList": "Concentración de mercado por sector",
+      "levelHigh": "ALTA",
+      "levelModerate": "MODERADA",
+      "levelLow": "BAJA",
+      "levelCompetitive": "COMPETITIVA",
+      "legendHigh": "Alta ≥75%",
+      "legendModerate": "Moderada ≥50%",
+      "legendLow": "Baja ≥30%",
+      "legendCompetitive": "Competitiva <30%",
+      "concentrationAriaLabel": "{{pct}}% concentración"
+    },
+    "adminRiskTrajectory": {
+      "noData": "Sin datos de administración disponibles",
+      "tooltipAvgRisk": "Indicador de riesgo promedio",
+      "tooltipDirectAward": "Tasa de adjudicación directa",
+      "tooltipHighRisk": "Tasa de contratos de alto riesgo"
+    },
+    "adminSectorHeatmap": {
+      "noData": "Sin datos disponibles para el mapa de calor",
+      "pctOfTotalSpend": "% del gasto total",
+      "legendPctSpend": "% del gasto total de la administración",
+      "ariaTable": "Mapa de calor de intensidad de contratación: administraciones vs sectores"
+    }
+  },
+  "tooltip": {
+    "noBaselineData": "Sin datos de referencia para este sector/año"
+  },
+  "redaccion": {
+    "noAlerts": "Sin alertas activas"
+  },
+  "factorLabels": {
+    "price_volatility": "Montos muy dispares entre sus contratos",
+    "institution_diversity": "Diversidad institucional",
+    "vendor_concentration": "Concentración de proveedor",
+    "price_ratio": "Monto frente a contratos parecidos",
+    "network_member_count": "Red de Co-contratación",
+    "same_day_count": "Contratos mismo día",
+    "single_bid": "Procedimiento con un solo adjudicado",
+    "ad_period_days": "Período de publicación",
+    "win_rate": "Tasa de adjudicación",
+    "direct_award": "Adjudicación directa",
+    "sector_spread": "Diversificación sectorial",
+    "co_bid_rate": "Tasa de Co-licitación",
+    "price_hyp_confidence": "Monto atípico",
+    "year_end": "Fin de año",
+    "industry_mismatch": "Discrepancia industrial",
+    "institution_risk": "Riesgo institucional"
+  },
+  "zScoreLabels": {
+    "extreme": "Extremo",
+    "high": "Alto",
+    "moderate": "Moderado",
+    "normal": "Normal"
+  },
+  "factorTooltip": {
+    "sectorAvg": "Promedio sector:",
+    "vendorValue": "Valor proveedor:",
+    "distance": "Distancia:"
+  },
+  "ariaTable": {
+    "vendor": "Proveedor",
+    "sector": "Sector",
+    "risk": "Riesgo",
+    "ips": "IPS",
+    "pattern": "Patrón"
+  },
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "page": "Página",
+    "of": "de"
+  },
+  "backToAriaQueue": "Volver a la fila ARIA",
+  "backToCollusion": "Volver a Pares Coludidos",
+  "backToInstitutions": "Volver a Instituciones",
+  "share": {
+    "title": "Compartir",
+    "copied": "Copiado",
+    "whatsapp": "WhatsApp",
+    "postOnX": "Publicar en X",
+    "copyLink": "Copiar enlace",
+    "template": "🔍 {{summary}} — RUBLI, análisis de compras públicas: {{url}}"
+  },
+  "emptyState": {
+    "errorTitle": "Algo salió mal",
+    "networkError": "No se puede conectar al servidor. Por favor verifique su conexión.",
+    "unexpectedError": "Ocurrió un error inesperado.",
+    "tryAgain": "Intentar de nuevo",
+    "goHome": "Ir al inicio",
+    "slowTitle": "La carga está tardando más de lo esperado",
+    "slowDesc": "Los datos aún podrían estar cargando. Puede esperar o intentar de nuevo.",
+    "comingSoonTitle": "{{name}} próximamente",
+    "comingSoonDesc": "Esta función está en desarrollo y estará disponible en una actualización futura.",
+    "noFoundTitle": "No se encontraron {{name}}",
+    "noFoundDesc": "No hay {{name}} disponibles en la base de datos.",
+    "adjustFilters": "Ajuste los filtros para ver más resultados.",
+    "clearAllFilters": "Limpiar todos los filtros"
+  },
+  "errors": {
+    "couldNotLoad": "No se pudo cargar esta sección. Recargue la página.",
+    "failedToSubmit": "Error al enviar. Vuelva a intentarlo.",
+    "failedToLoad": "Error al cargar los datos.",
+    "noData": "Sin datos disponibles.",
+    "noResults": "Ningún resultado coincide con los filtros actuales."
+  },
+  "reportIssue": {
+    "title": "Reportar un problema",
+    "categoryLabel": "Categoría",
+    "subjectLabel": "Asunto",
+    "subjectPlaceholder": "Resumen breve del problema",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "¿Qué ocurrió? ¿Qué esperaba? Incluya los identificadores o valores relevantes.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "correo@ejemplo.com",
+    "emailNote": "(opcional, para seguimiento)",
+    "pageCapture": "La página actual se capturará automáticamente:",
+    "success": "Gracias, su reporte se recibió.",
+    "successDetail": "Se revisará. Si dejó un correo, recibirá un mensaje cuando se resuelva.",
+    "btnClose": "Cerrar",
+    "btnCancel": "Cancelar",
+    "btnSend": "Enviar reporte",
+    "signInToSend": "Inicie sesión para enviar comentarios",
+    "btnSending": "Enviando…",
+    "categories": {
+      "bug": "Error técnico",
+      "bugDesc": "Página rota, gráfica no carga, mensaje de error",
+      "wrongData": "Dato incorrecto",
+      "wrongDataDesc": "Monto erróneo, nombre de proveedor incorrecto, registro faltante",
+      "dispute": "Impugnar un hallazgo",
+      "disputeDesc": "Impugnar un indicador de riesgo o una alerta que considere incorrecta",
+      "feature": "Solicitud de función",
+      "featureDesc": "Nueva gráfica, filtro, formato de exportación o análisis",
+      "other": "Otro",
+      "otherDesc": "Comentarios generales o cualquier otra cosa",
+      "personaFisica": "Corrección u oposición",
+      "personaFisicaDesc": "Si usted es esta persona: una persona revisa la solicitud y responde en un máximo de 20 días. Deje un correo para recibir la respuesta."
+    }
+  },
+  "generateReport": "Generar reporte",
+  "report": {
+    "generateButton": "Generar reporte",
+    "generating": "Generando informe…",
+    "loadFailed": "Error al cargar el reporte. Vuelva a intentarlo.",
+    "generatedAt": "Generado: {{date}}",
+    "riskScore": "Indicador de riesgo",
+    "contracts": "Contratos",
+    "summary": "Resumen",
+    "riskIndicators": "Indicadores de riesgo",
+    "disclaimer": "Aviso:",
+    "disclaimerText": "Generado por RUBLI v0.9.2. Es un indicador de riesgo, no una prueba.",
+    "exportPdf": "Exportar PDF",
+    "print": "Imprimir",
+    "riskLabels": {
+      "critical": "Crítico",
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Bajo"
+    }
+  },
+  "contractExplain": {
+    "explain": "Explicar este indicador de riesgo",
+    "generating": "Generando explicación...",
+    "notConfigured": "Explicación por IA no configurada. Establece ANTHROPIC_API_KEY en el servidor.",
+    "couldNotLoad": "No se pudo cargar la explicación. Vuelva a intentarlo más tarde."
+  },
+  "alertFeed": {
+    "recentAlerts": "Alertas recientes",
+    "failedToLoad": "Error al cargar alertas",
+    "noAlerts": "Sin alertas críticas en los últimos {{days}} días",
+    "unknownVendor": "Proveedor desconocido",
+    "viewAll": "Ver todas las investigaciones"
+  },
+  "temporal": {
+    "failedToLoad": "Error al cargar datos de tendencia de riesgo.",
+    "retry": "Reintentar",
+    "retryLive": "Reintentar datos en vivo",
+    "liveData": "Datos en vivo",
+    "estimated": "Estimado"
+  },
+  "heatmap": {
+    "avgRiskScore": "Indicador de riesgo promedio",
+    "highRiskPct": "% alto riesgo",
+    "directAwardPct": "% Adjudicación directa",
+    "legendLow": "Bajo",
+    "legendMedium": "Medio",
+    "legendHigh": "Alto",
+    "legendCritical": "Crítico",
+    "noData": "Sin datos",
+    "tooltipContracts": "Contratos",
+    "tooltipValue": "Valor"
+  },
+  "edition": {
+    "cut": "DATOS AL {{date}}",
+    "model": "MODELO {{v}}",
+    "count": "{{n}} CONTRATOS CON IMPORTE VÁLIDO",
+    "cutTitle": "última publicación en CompraNet",
+    "countTitle": "contratos con 0 < importe < 100 mil millones MXN",
+    "indexAria": "Índice de la edición"
+  },
+  "footer": {
+    "count": "{{n}} contratos con importe válido"
+  },
+  "jump": {
+    "next": "SIGUE EN {{n}} · {{name}} →"
+  },
+  "count": {
+    "t1": "{{n}} en nivel 1",
+    "cases": "{{n}} casos documentados"
+  },
+  "gallery": {
+    "range": "{{n}} PIEZAS"
+  }
+}

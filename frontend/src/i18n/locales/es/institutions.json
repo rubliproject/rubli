@@ -1,0 +1,129 @@
+{
+  "columns": {
+    "contracts": "Contratos"
+  },
+  "profile": {
+    "breadcrumb": "Instituciones",
+    "sectorLabel": "Sector",
+    "notFound": "Institución no encontrada",
+    "notFoundDesc": "La institución con ID {{id}} no pudo ser localizada.",
+    "loadError": "Error al cargar la institución: {{message}}",
+    "backToInstitutions": "Volver a Instituciones",
+    "networkButton": "Red de proveedores",
+    "allContractsButton": "Todos los contratos",
+    "compareButton": "Comparar",
+    "editorialSection": "PERFIL INSTITUCIONAL",
+    "partOf": "Parte de",
+    "documentedCase": "Caso documentado: {{caseName}}",
+    "tabs": {
+      "overview": "Panorama",
+      "risk": "Riesgo",
+      "vendors": "Proveedores",
+      "officials": "Funcionarios",
+      "history": "Historial",
+      "external": "Externo"
+    },
+    "overview": {
+      "intelligenceBrief": "RESUMEN DEL ANÁLISIS",
+      "riskDistribution": "DISTRIBUCIÓN DE RIESGO",
+      "institutionDetails": "FICHA TÉCNICA",
+      "detailType": "Tipo",
+      "detailSize": "Tamaño",
+      "detailAutonomy": "Autonomía",
+      "detailScope": "Alcance",
+      "detailDataQuality": "Calidad de datos",
+      "detailAvgContract": "Contrato promedio",
+      "detailBaseRisk": "Riesgo base",
+      "detailSizeAdjustment": "Ajuste por tamaño",
+      "detailAutonomyRisk": "Riesgo por autonomía",
+      "topVendors": "PRINCIPALES PROVEEDORES POR GASTO",
+      "mostSuspiciousContract": "CONTRATO MÁS SOSPECHOSO",
+      "clickForDetails": "Clic para ver detalles completos",
+      "directAward": "Adj. directa",
+      "singleBidder": "Un solo adjudicado"
+    },
+    "risk": {
+      "trajectory": "TRAYECTORIA DE RIESGO",
+      "trendUp": "Empeorando",
+      "trendDown": "Mejorando",
+      "trendStable": "Estable"
+    },
+    "groundTruth": {
+      "bannerLabel": "CASO DE CORRUPCIÓN DOCUMENTADO",
+      "bannerText": "Esta institución tiene contratos de proveedores identificados en",
+      "contractsFlagged": "contrato(s) señalado(s)"
+    },
+    "riskLevels": {
+      "critical": "Crítico",
+      "high": "Alto",
+      "medium": "Medio",
+      "low": "Bajo",
+      "unknown": "Desconocido"
+    },
+    "integrityScoreLabel": "Calificación de integridad",
+    "effectiveRiskLabel": "Riesgo efectivo",
+    "noRiskData": "Sin datos de riesgo",
+    "noVendorData": "Sin datos de proveedores",
+    "noContractsFound": "Sin contratos encontrados",
+    "noCategoryData": "Sin datos de categorías",
+    "noOfficialsData": "Sin datos de funcionarios para esta institución",
+    "noAuditFindings": "Sin hallazgos de auditoría ASF registrados",
+    "noExternalEvents": "Sin eventos de registros externos",
+    "errorLoadingRisk": "Error al cargar datos de riesgo.",
+    "errorLoadingVendors": "Error al cargar proveedores.",
+    "errorLoadingTimeline": "Error al cargar línea de tiempo.",
+    "errorLoadingPeers": "Error al cargar datos de pares.",
+    "errorLoadingLoyalty": "Error al cargar datos de lealtad.",
+    "errorLoadingOfficials": "Error al cargar datos de funcionarios.",
+    "errorLoadingContracts": "Error al cargar contratos.",
+    "errorLoadingAudit": "Error al cargar hallazgos ASF.",
+    "errorLoadingScandals": "Error al cargar escándalos del sector.",
+    "errorLoadingConcentration": "Error al cargar el mapa de concentración.",
+    "noContractsTooltip": "Sin contratos",
+    "contractsRiskTooltip": "{{count}} contratos · riesgo {{risk}}%",
+    "untitled": "Sin título",
+    "institutionTypeLabels": {
+      "default": "Entidad gubernamental",
+      "secretaria": "Secretaría",
+      "organoDesconcentrado": "Órgano desconcentrado",
+      "entidadParaestatal": "Entidad paraestatal",
+      "empresaProductiva": "Empresa Productiva del Estado",
+      "organoAutonomo": "Órgano autónomo",
+      "poderJudicial": "Poder Judicial",
+      "poderLegislativo": "Poder Legislativo"
+    },
+    "editorialLedeCapture": "adjudicó el {{daPct}}% de sus contratos de forma directa — sin licitación competitiva. {{topVendor}} acapara el {{topVendorPct}}% del valor de compras en {{totalContracts}} contratos. Puntuación de riesgo promedio: {{score}}%.",
+    "editorialLedeMedium": "registra una puntuación de riesgo promedio de {{score}}% en {{totalContracts}} contratos, con el {{daPct}}% adjudicado directamente. Los patrones de compra merecen mayor escrutinio.",
+    "editorialLedeLow": "muestra una puntuación de riesgo promedio de {{score}}% en {{totalContracts}} contratos. Tasa de adjudicación directa: {{daPct}}%. No se detectaron anomalías críticas.",
+    "hallazgoLabels": {
+      "contractsAnalyzed": "Contratos analizados",
+      "totalAccumulatedSpend": "Gasto total acumulado",
+      "avgRiskIndex": "Índice de riesgo prom.",
+      "directAward": "Adjudicación directa %"
+    },
+    "longestTenuredVendors": "Proveedores de larga data",
+    "supplierDiversity": "Diversidad de proveedores (HHI)"
+  },
+  "drawer": {
+    "vendor": "Proveedor",
+    "aiRiskScore": "Indicador de riesgo (IA)",
+    "noTrajectory": "Sin datos de trayectoria",
+    "noSignificantRisk": "No se detectaron indicadores de riesgo significativos",
+    "aiIntelligence": "Análisis con IA",
+    "relationshipNetwork": "Red de relaciones",
+    "riskTrajectory": "Trayectoria de riesgo",
+    "asfFindings": "Hallazgos ASF"
+  },
+  "compare": {
+    "institutionA": "Institución A",
+    "institutionB": "Institución B",
+    "loadError": "Error al cargar instituciones",
+    "loadErrorDesc": "Verifique los IDs de las instituciones y vuelva a intentarlo.",
+    "hhi": {
+      "capture": "Captura",
+      "concentrated": "Concentrado",
+      "moderate": "Moderado",
+      "competitive": "Competitivo"
+    }
+  }
+}

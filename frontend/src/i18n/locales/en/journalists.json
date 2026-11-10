@@ -1,0 +1,99 @@
+{
+  "masthead": {
+    "section": "DATA ROOM",
+    "headline": "Investigations",
+    "subtitle": "Data analysis and investigative reporting on 23 years of Mexican federal procurement",
+    "lastUpdated": "Last data update: March 2026",
+    "compranetLabel": "contracts",
+    "satEfosLabel": "shell companies",
+    "desk": "Investigations Desk",
+    "updated": "Updated",
+    "activeLabel": "Active leads",
+    "deck": "investigations into MX$9.9T of federal contracting — where three of four pesos were awarded without competition.",
+    "totalLabel": "Investigations",
+    "prosecutedLabel": "Prosecuted",
+    "statContracts": "contracts",
+    "statHighRisk": "high-risk+",
+    "statValidated": "validated",
+    "statInvestigations": "investigations",
+    "startHere": "Start here:",
+    "lookupVendor": "Look up a vendor",
+    "institutionRanking": "Institution ranking",
+    "caseLibrary": "Case library"
+  },
+  "picks": {
+    "kicker": "Editor's Picks",
+    "title": "Investigations of consequence",
+    "dek": "Two stories where data, dollars, and documentation align."
+  },
+  "filters": {
+    "all": "All",
+    "amlo": "AMLO",
+    "pena": "Pena Nieto",
+    "salud": "Health",
+    "infra": "Infrastructure",
+    "case": "Cases",
+    "thematic": "Thematic",
+    "ghost": "Ghost Companies",
+    "monopoly": "Monopoly",
+    "overpricing": "Overpricing",
+    "fraud": "Procurement Fraud",
+    "eraPena": "Peña era",
+    "eraAmlo": "AMLO era",
+    "eraCross": "Cross-era",
+    "aria": "Filter investigations"
+  },
+  "grid": {
+    "noStories": "No stories for this filter.",
+    "kicker": "The Full Dossier",
+    "title": "Every investigation in the desk",
+    "showing": "showing",
+    "empty": "No investigations match this filter.",
+    "featuredAbove": "{{count}} matching investigation appears in the featured section above ↑",
+    "featuredAbove_plural": "{{count}} matching investigations appear in the featured section above ↑",
+    "fromObservatory": "From the connections:",
+    "clear": "CLEAR"
+  },
+  "lead": {
+    "statTotal": "Validated contract spend",
+    "statContracts": "Contracts",
+    "statSpan": "Time span"
+  },
+  "ticker": {
+    "aria": "ARIA queue",
+    "label": "vendors with the highest risk-indicator scores (model output, not an investigation)"
+  },
+  "status": {
+    "procesado": "Prosecuted",
+    "auditado": "Under audit",
+    "reporteado": "Reported",
+    "solo_datos": "Data lead"
+  },
+  "featuredLabel": "LEAD INVESTIGATION",
+  "observatoryBand": "a live scatter of vendor clusters by scale and risk indicator.",
+  "observatoryExplore": "Explore →",
+  "eraLabel": {
+    "pena": "EPN · 2012–2018",
+    "amlo": "AMLO · 2018–2024",
+    "cross": "Cross-era",
+    "sheinbaum": "Sheinbaum · 2024–"
+  },
+  "typeLabel": {
+    "ghost_company": "GHOST CO.",
+    "monopoly": "MONOPOLY",
+    "overpricing": "OVERPRICING",
+    "embezzlement": "EMBEZZLEMENT",
+    "procurement_fraud": "PROCUREMENT FRAUD"
+  },
+  "cards": {
+    "readStory": "Read story",
+    "readInvestigation": "Read investigation",
+    "scale": "Scale"
+  },
+  "footer": {
+    "source": "Source",
+    "riskModel": "Risk model",
+    "testAuc": "Test AUC",
+    "contractsAnalyzed": "contracts analyzed"
+  }
+}

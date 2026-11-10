@@ -1,0 +1,580 @@
+/**
+ * ConfoundPlate — §B of /sectors WHO "El Libro Mayor de la Exposición".
+ *
+ * The centrepiece plate of the Confounded Ledger redesign (DESIGNUS panel,
+ * winner [plate] + judge amendments). Twelve rows, each carrying TWO markers
+ * on TWO scales sharing one baseline:
+ *
+ *   Lane 1 — absolute VaR, LOG scale (filled dot ●, RISK_COLORS.critical).
+ *            Log rescues ranks 4–12 from the linear sliver-collapse: an 80×
+ *            leader-to-tail spread becomes ~1.9 readable decades.
+ *   Lane 2 — exposure over the sector's OWN spend, linear 0–100% (hollow
+ *            ring ○, intensity-colored). The ½-of-own-spend flag is pinned
+ *            at 50%; only Hacienda crosses it — the scandal made geometric.
+ *
+ * Named precedents (folio skill citation discipline):
+ *   FT Visual Vocabulary Cleveland dumbbell (two markers, two scales, one
+ *   row spine) · NYT Upshot annotated dot strip (log position + named
+ *   callouts on the plate) · Reuters Forever Pollution (named outliers only
+ *   at the breaks — exactly two annotations).
+ *
+ * Per the judge's directives: NO cross-gutter "disagreement connector"
+ * (its length encoded inverse-VaR garbage), solid Lane-1 dot (no two-tone
+ * core at r=5), sort lens URL-synced (?lens=var|saturation) with a ~280ms
+ * FLIP reorder.
+ */
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { EntityIdentityChip } from '@/components/ui/EntityIdentityChip'
+import { SxPlate } from './SxPlate'
+import { RISK_COLORS, SECTOR_COLORS } from '@/lib/constants'
+import { formatCompactMXN } from '@/lib/utils'
+import type { LedgerRow } from './ExposureLedger'
+import { intensityColor, intensityTextColor, makeLogFrac, logTicks, ownSpendShare, orderForLens } from './confoundScales'
+import type { PlateLens } from './confoundScales'
+
+import { DUR, EASE, css, cssEase, ms } from '@/lib/motion'
+const ROW_H = 44
+// Shared column template: rank · name · lane1 (log VaR) · gutter · lane2 (own-spend) · readout
+const GRID: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '26px 138px minmax(0,1fr) 26px 200px 58px',
+  columnGap: 10,
+  alignItems: 'center',
+}
+
+// Callouts sit just above the lane's hairline on paper, never across a stem.
+const CALLOUT_ABOVE: React.CSSProperties = { bottom: 'calc(50% + 4px)', background: 'var(--color-background)', padding: '0 2px' }
+
+const SERIF_NAME: React.CSSProperties = {
+  fontFamily: 'var(--font-family-editorial)',
+  fontStyle: 'normal',
+  fontWeight: 500,
+}
+
+const MONO_MICRO: React.CSSProperties = {
+  fontFamily: 'var(--font-family-archival)',
+  letterSpacing: '0.04em',
+ 
+}
+
+export function ConfoundPlate({
+  rows,
+  lang,
+  lens,
+  onLensChange,
+}: {
+  rows: LedgerRow[]
+  lang: 'en' | 'es'
+  lens: PlateLens
+  onLensChange: (l: PlateLens) => void
+}) {
+  const [hovered, setHovered] = useState<number | null>(null)
+
+  const logFrac = useMemo(() => makeLogFrac(rows), [rows])
+  // Ruler ticks (MXN, labelled in trillions) recomputed from the log origin.
+  const varTicks = useMemo(() => logTicks(rows, logFrac), [rows, logFrac])
+  const clearHalf = rows.filter((r) => ownSpendShare(r) > 0.5).length
+  // The Plate offers VaR and saturation; any other URL lens (the Register's
+  // intensity) shows VaR with no pressed button.
+  const plateLens: PlateLens = lens === 'saturation' ? 'saturation' : 'var'
+  const ordered = useMemo(() => orderForLens(rows, plateLens), [rows, plateLens])
+  const orderIndex = useMemo(
+    () => new Map(ordered.map((r, i) => [r.sectorId, i])),
+    [ordered],
+  )
+
+  // FLIP. Rows render in lens order (DOM/Tab order == visual order), but a
+  // node React physically moves loses its CSS transform transition — measured:
+  // 8 of 12 rows jumped on VaR → saturation. Replay the slide with WAAPI for
+  // every row whose slot changed; the inline transition stays for the rest.
+  const rowRefs = useRef(new Map<number, HTMLDivElement>())
+  const prevIndex = useRef(orderIndex)
+  useLayoutEffect(() => {
+    const prev = prevIndex.current
+    prevIndex.current = orderIndex
+    if (prev === orderIndex) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    for (const [id, idx] of orderIndex) {
+      const from = prev.get(id)
+      const el = rowRefs.current.get(id)
+      if (from == null || from === idx || !el?.animate) continue
+      el.animate(
+        [{ transform: `translateY(${from * ROW_H}px)` }, { transform: `translateY(${idx * ROW_H}px)` }],
+        { duration: ms(DUR.base), easing: cssEase(EASE.standard) },
+      )
+    }
+  }, [orderIndex])
+
+  // The two named outliers — computed argmax, never hardcoded (Reuters
+  // discipline: annotate the breaks only).
+  const maxVarId = useMemo(
+    () => (rows.length ? [...rows].sort((a, b) => b.varMxn - a.varMxn)[0].sectorId : null),
+    [rows],
+  )
+  const maxIntId = useMemo(
+    () =>
+      rows.length
+        ? [...rows].sort((a, b) => ownSpendShare(b) - ownSpendShare(a))[0].sectorId
+        : null,
+    [rows],
+  )
+
+  if (rows.length === 0) return null
+
+  const isEs = lang === 'es'
+
+  const caption = isEs
+    ? `${clearHalf} de ${rows.length} sectores superan la marca ½ — el modelo pondera anomalías de monto alto. Ordene por saturación y el orden del dinero se invierte.`
+    : `${clearHalf} of ${rows.length} sectors clear the ½ flag — the model weights high-value anomalies. Sort by saturation and the money order inverts.`
+
+  const sortControl = (
+    <div className="flex items-center gap-1" role="group" aria-label={isEs ? 'Ordenar el registro' : 'Sort the registry'}>
+      <span className="font-mono" style={{ ...MONO_MICRO, fontSize: 13, color: 'var(--color-text-muted)' }}>
+        {isEs ? 'Ordenar' : 'Sort'}
+      </span>
+      {(
+        [
+          { key: 'var' as PlateLens, es: 'VaR ↓', en: 'VaR ↓' },
+          { key: 'saturation' as PlateLens, es: 'Saturación ↓', en: 'Saturation ↓' },
+        ]
+      ).map((b) => (
+        <button
+          key={b.key}
+          type="button"
+          onClick={() => onLensChange(b.key)}
+          aria-pressed={lens === b.key}
+          className="px-2 py-1 font-mono rounded-sm border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-1"
+          style={{
+            ...MONO_MICRO,
+            fontSize: 13,
+            fontWeight: 700,
+            ...(lens === b.key
+              ? { background: 'var(--color-text-primary)', color: 'var(--color-background)', borderColor: 'transparent' }
+              : { color: 'var(--color-text-muted)', borderColor: 'var(--color-border)' }),
+          }}
+        >
+          {isEs ? b.es : b.en}
+        </button>
+      ))}
+    </div>
+  )
+
+  return (
+    <SxPlate label={isEs ? 'Registro de exposición sectorial' : 'Registry of sector exposure'} caption={caption}>
+      {/* ── How to read — plain-language key (both breakpoints) ────────────
+          The plate's whole trick is two markers on two scales; spell it out
+          so the reader can name what ● and ○ mean before decoding any row. */}
+      <div className="mb-4 pb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+        <p className="ct-sc mb-2" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+          {isEs ? 'Cómo leer · dos marcadores, dos preguntas' : 'How to read · two markers, two questions'}
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-7">
+          <span className="flex items-baseline gap-2">
+            <span
+              aria-hidden="true"
+              className="shrink-0 self-center rounded-full"
+              style={{ width: 9, height: 9, background: RISK_COLORS.critical }}
+            />
+            <span style={{ fontFamily: 'var(--font-family-editorial)', fontSize: 14, lineHeight: 1.4, color: 'var(--color-text-secondary)' }}>
+              <strong style={{ color: 'var(--color-text-primary)', fontStyle: 'normal', fontWeight: 600 }}>
+                {isEs ? '¿Cuánto dinero?' : 'How much money?'}
+              </strong>{' '}
+              {isEs
+                ? 'pesos que el modelo observa. Escala log: cada paso vale 10×. VaR — monto observado, el valor en riesgo del modelo.'
+                : "pesos the model flags for review. Log scale — each step is 10× the last. VaR — flagged amount, the model's value at risk."}
+            </span>
+          </span>
+          <span className="flex items-baseline gap-2">
+            <span
+              aria-hidden="true"
+              className="shrink-0 self-center rounded-full"
+              style={{ width: 9, height: 9, border: '1.5px solid var(--color-text-secondary)', background: 'var(--color-background)' }}
+            />
+            <span style={{ fontFamily: 'var(--font-family-editorial)', fontSize: 14, lineHeight: 1.4, color: 'var(--color-text-secondary)' }}>
+              <strong style={{ color: 'var(--color-text-primary)', fontStyle: 'normal', fontWeight: 600 }}>
+                {isEs ? '¿Qué tan saturado?' : 'How saturated?'}
+              </strong>{' '}
+              {isEs ? 'qué parte del gasto propio del sector está señalada (0–100%).' : "the share of the sector's own spend that's flagged (0–100%)."}
+            </span>
+          </span>
+        </div>
+        <p
+          className="mt-2"
+          style={{ fontFamily: 'var(--font-family-editorial)', fontStyle: 'normal', fontSize: 14, lineHeight: 1.45, color: 'var(--color-text-muted)' }}
+        >
+          {isEs
+            ? 'Son dos rankings distintos. Cuando no coinciden, el sector es chico en pesos pero arde en su propia casa — eso es el confundido.'
+            : "They're two different rankings. When they disagree, a sector is small in pesos but burning hot in its own house — that's the confound."}
+        </p>
+      </div>
+
+      {/* ── Desktop plate (md+) ──────────────────────────────────────────── */}
+      <div className="hidden md:block">
+        {/* Sort control — its own full-width row, right-aligned */}
+        <div className="flex justify-end mb-2">{sortControl}</div>
+
+        {/* Header strip: lane captions on top, editorial flags below */}
+        <div style={GRID} className="mb-1">
+          <span />
+          <span />
+          <span className="relative self-stretch" style={{ minHeight: 46 }}>
+            <span
+              className="absolute top-0 left-0 font-mono whitespace-nowrap"
+              style={{ ...MONO_MICRO, fontSize: 13, color: 'var(--color-text-muted)' }}
+            >
+              ● {isEs ? 'Monto observado · log' : 'Flagged amount · log'}
+            </span>
+          </span>
+          <span />
+          <span className="relative self-stretch" style={{ minHeight: 46 }}>
+            <span
+              className="absolute top-0 left-0 font-mono whitespace-nowrap"
+              style={{ ...MONO_MICRO, fontSize: 13, color: 'var(--color-text-muted)' }}
+            >
+              ○ {isEs ? '% del gasto propio' : '% of own spend'}
+            </span>
+            {/* ½ flag label */}
+            <span
+              className="absolute bottom-0 flex flex-col items-center"
+              style={{ left: '50%', transform: 'translateX(-50%)' }}
+              aria-hidden="true"
+            >
+              <span className="flex items-baseline gap-1 whitespace-nowrap">
+                <span
+                  style={{
+                    fontFamily: 'var(--font-family-editorial)',
+                    fontStyle: 'normal',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    lineHeight: 1,
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  ½
+                </span>
+                <span className="font-mono" style={{ ...MONO_MICRO, fontSize: 12, color: 'var(--color-text-muted)' }}>
+                  {isEs ? 'gasto propio' : 'own spend'}
+                </span>
+              </span>
+              <span style={{ width: 1, height: 5, marginTop: 2, background: 'rgba(160, 104, 32, 0.7)' }} />
+            </span>
+            {/* 80% flag label */}
+            {/* Start-anchored at its line so it never runs into the ½ label
+                (ES "½ GASTO PROPIO" overprinted it); full ink (a11y X5). */}
+            <span
+              className="absolute bottom-0 flex flex-col items-start"
+              style={{ left: '80%' }}
+              aria-hidden="true"
+            >
+              <span className="font-mono whitespace-nowrap" style={{ ...MONO_MICRO, fontSize: 12, color: 'var(--color-text-muted)' }}>
+                80%
+              </span>
+              <span style={{ width: 1, height: 5, marginTop: 2, background: 'rgba(160, 104, 32, 0.45)' }} />
+            </span>
+          </span>
+          <span />
+        </div>
+
+        {/* Rows — absolutely positioned for the FLIP sort transition */}
+        <div
+          role="list"
+          className="relative"
+          style={{ height: rows.length * ROW_H }}
+          onMouseLeave={() => setHovered(null)}
+        >
+          {/* Rendered in lens order so DOM (and Tab) order == visual order;
+              the slide is replayed by the FLIP effect above. */}
+          {ordered.map((r) => {
+            const idx = orderIndex.get(r.sectorId) ?? 0
+            const share = ownSpendShare(r)
+            const dotFrac = logFrac(r.varMxn)
+            const ringColor = intensityColor(r.avgRiskScore)
+            const sector = SECTOR_COLORS[r.sectorCode] ?? SECTOR_COLORS.otros
+            const isHover = hovered === r.sectorId
+            const dimmed = hovered !== null && !isHover
+            const sharePct = (share * 100).toFixed(0)
+
+            const aria = isEs
+              ? `${r.name} — ${formatCompactMXN(r.varMxn)} monto observado · ${sharePct}% de su propio gasto`
+              : `${r.name} — ${formatCompactMXN(r.varMxn)} flagged amount · ${sharePct}% of its own spend`
+
+            return (
+              <div
+                key={r.sectorId}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(r.sectorId, el)
+                  else rowRefs.current.delete(r.sectorId)
+                }}
+                role="listitem"
+                className="absolute inset-x-0"
+                style={{
+                  height: ROW_H,
+                  transform: `translateY(${idx * ROW_H}px)`,
+                  transition: [css('transform', DUR.base), css('opacity', DUR.instant)].join(', '),
+                  opacity: dimmed ? 0.45 : 1,
+                  borderBottom: '1px solid var(--color-border)',
+                }}
+                onMouseEnter={() => setHovered(r.sectorId)}
+              >
+                <div style={{ ...GRID, height: '100%' }}>
+                  {/* rank in the ACTIVE lens */}
+                  <span className="font-mono tabular-nums text-right" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+
+                  {/* name + sector rule — the row's link: the chip primitive's
+                      `name` variant (a bare Garamond link; the rule-1 exception
+                      lives in the primitive — PARALLAX D7b § Change 7). A
+                      border-coloured hairline at rest, full ink on hover/focus. */}
+                  <span className="flex items-baseline min-w-0">
+                  <span className="ct-sq shrink-0" aria-hidden="true" style={{ ['--c' as string]: sector }} />
+                  <EntityIdentityChip
+                    type="sector"
+                    id={r.sectorId}
+                    name={r.name}
+                    variant="name"
+                    ariaLabel={aria}
+                    className={`min-w-0 py-0.5 underline decoration-1 underline-offset-[3px] ${isHover ? 'decoration-current' : 'decoration-border'} focus-visible:decoration-current`}
+                    style={{
+                      ...SERIF_NAME,
+                      fontSize: 15,
+                      color: 'var(--color-text-primary)',
+                    }}
+                    onFocus={() => setHovered(r.sectorId)}
+                    onBlur={() => setHovered(null)}
+                  />
+                  </span>
+
+                  {/* Lane 1 — log VaR */}
+                  <span className="relative h-full block">
+                    {/* stem: reach from 0 to the dot */}
+                    <span
+                      className="absolute"
+                      style={{
+                        left: 0,
+                        width: `${dotFrac * 100}%`,
+                        top: '50%',
+                        height: 1,
+                        background: sector,
+                        opacity: isHover ? 0.7 : 0.35,
+                      }}
+                    />
+                    {/* filled VaR dot */}
+                    <span
+                      className="absolute rounded-full"
+                      style={{
+                        left: `${dotFrac * 100}%`,
+                        top: '50%',
+                        width: isHover ? 13 : 10,
+                        height: isHover ? 13 : 10,
+                        transform: 'translate(-50%, -50%)',
+                        background: RISK_COLORS.critical,
+                        transition: css(['width', 'height'], DUR.instant),
+                      }}
+                    />
+                    {/* hover readout: the VaR value, beside the dot */}
+                    {isHover && (
+                      <span
+                        className="absolute font-mono tabular-nums whitespace-nowrap"
+                        style={{
+                          left: dotFrac < 0.62 ? `calc(${dotFrac * 100}% + 12px)` : undefined,
+                          right: dotFrac >= 0.62 ? `calc(${(1 - dotFrac) * 100}% + 12px)` : undefined,
+                          ...CALLOUT_ABOVE,
+                          fontSize: 12,
+                          color: 'var(--color-text-secondary)',
+                        }}
+                      >
+                        {formatCompactMXN(r.varMxn)}
+                      </span>
+                    )}
+                    {/* named outlier — largest volume */}
+                    {r.sectorId === maxVarId && !isHover && (
+                      <span
+                        className="absolute font-mono whitespace-nowrap"
+                        style={{
+                          right: `calc(${(1 - dotFrac) * 100}% + 12px)`,
+                          ...CALLOUT_ABOVE,
+                          fontSize: 12,
+                          fontStyle: 'normal',
+                          letterSpacing: '0.04em',
+                          color: 'var(--color-text-muted)',
+                        }}
+                      >
+                        {isEs ? 'mayor volumen —' : 'largest volume —'}
+                      </span>
+                    )}
+                  </span>
+
+                  {/* gutter — deliberately empty (the judge excised the connector) */}
+                  <span />
+
+                  {/* Lane 2 — own-spend share */}
+                  <span className="relative h-full block">
+                    {/* track */}
+                    <span className="absolute left-0 right-0" style={{ top: '50%', height: 1, background: 'var(--color-border)' }} />
+                    {/* ½ + 80% flag hairlines (per-row → continuous column) */}
+                    <span className="absolute inset-y-0" style={{ left: '50%', width: 1, background: 'var(--color-text-primary)', opacity: 0.14 }} />
+                    <span className="absolute inset-y-0" style={{ left: '80%', width: 1, background: 'var(--color-text-primary)', opacity: 0.08 }} />
+                    {/* hollow intensity ring */}
+                    <span
+                      className="absolute rounded-full"
+                      style={{
+                        left: `${share * 100}%`,
+                        top: '50%',
+                        width: isHover ? 13 : 10,
+                        height: isHover ? 13 : 10,
+                        transform: 'translate(-50%, -50%)',
+                        border: `1.5px solid ${ringColor}`,
+                        background: 'var(--color-background)',
+                        transition: css(['width', 'height'], DUR.instant),
+                      }}
+                    />
+                    {/* named outlier — highest intensity */}
+                    {r.sectorId === maxIntId && (
+                      <span
+                        className="absolute font-mono whitespace-nowrap"
+                        style={{
+                          right: `calc(${(1 - share) * 100}% + 10px)`,
+                          ...CALLOUT_ABOVE,
+                          fontSize: 12,
+                          fontStyle: 'normal',
+                          letterSpacing: '0.04em',
+                          color: 'var(--color-accent-hover)',
+                        }}
+                      >
+                        {isEs ? 'mayor saturación ↘' : 'highest saturation ↘'}
+                      </span>
+                    )}
+                  </span>
+
+                  {/* own-spend % readout */}
+                  <span
+                    className="text-right tabular-nums"
+                    style={{
+                      fontFamily: 'var(--font-family-editorial)',
+                      fontStyle: 'normal',
+                      fontWeight: 600,
+                      fontSize: 14,
+                      color: intensityTextColor(r.avgRiskScore),
+                    }}
+                  >
+                    {sharePct}%
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Ruler row: lane-1 log ticks + lane-2 quartile ruler */}
+        <div style={{ ...GRID, alignItems: 'start' }} className="mt-1" aria-hidden="true">
+          <span />
+          <span />
+          <span className="relative block" style={{ height: 38 }}>
+            {varTicks.map((t) => {
+              const f = logFrac(t)
+              if (f <= 0 || f >= 1) return null
+              return (
+                <span key={t} className="absolute flex flex-col items-center" style={{ left: `${f * 100}%`, transform: 'translateX(-50%)' }}>
+                  <span style={{ width: 1, height: 4, background: 'var(--color-border)' }} />
+                  <span className="font-mono tabular-nums" style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 1 }}>
+                    {t / 1e12}
+                  </span>
+                </span>
+              )
+            })}
+            {/* Unit on its own line under the ticks — at 11px it no longer
+                fits beside the 0.5 / 1 tick labels. */}
+            <span
+              className="absolute right-0 font-mono whitespace-nowrap"
+              style={{ ...MONO_MICRO, top: 22, fontSize: 12, color: 'var(--color-text-muted)' }}
+            >
+              {isEs ? 'billones MXN' : 'trillions MXN'}
+            </span>
+          </span>
+          <span />
+          <span className="relative block" style={{ height: 20 }}>
+            {[0, 25, 50, 75, 100].map((t) => (
+              <span
+                key={t}
+                className="absolute flex flex-col items-center"
+                style={{
+                  left: `${t}%`,
+                  transform: t === 0 ? 'translateX(0)' : t === 100 ? 'translateX(-100%)' : 'translateX(-50%)',
+                }}
+              >
+                <span style={{ width: 1, height: 4, background: 'var(--color-border)' }} />
+                <span className="font-mono tabular-nums" style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 1 }}>
+                  {t}
+                </span>
+              </span>
+            ))}
+          </span>
+          <span />
+        </div>
+      </div>
+
+      {/* ── Mobile plate (<md): Lane 2 only — intensity is the point ─────── */}
+      <div className="md:hidden">
+        <div className="mb-2 flex items-center justify-between gap-2 flex-wrap">
+          {sortControl}
+          <span className="font-mono" style={{ ...MONO_MICRO, fontSize: 12, color: 'var(--color-text-muted)' }}>
+            {isEs ? 'monto observado · % del gasto propio' : 'flagged amount · % of own spend'}
+          </span>
+        </div>
+        <div role="list">
+          {ordered.map((r, idx) => {
+            const share = ownSpendShare(r)
+            const sector = SECTOR_COLORS[r.sectorCode] ?? SECTOR_COLORS.otros
+            return (
+              <div
+                key={r.sectorId}
+                role="listitem"
+                className="min-h-11 flex items-center"
+                style={{ borderBottom: '1px solid var(--color-border)' }}
+              >
+                {/* One line («La cifra», owner 2026-10-21 — the own-spend ruler went): rank · name · amount · %. */}
+                <div className="grid items-baseline gap-x-2 w-full" style={{ gridTemplateColumns: 'auto minmax(0,1fr) auto auto' }}>
+                  <span className="font-mono tabular-nums" style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>
+                    <span className="ct-sq" aria-hidden="true" style={{ ['--c' as string]: sector }} />
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <EntityIdentityChip
+                    type="sector"
+                    id={r.sectorId}
+                    name={r.name}
+                    variant="name"
+                    ariaLabel={
+                      isEs
+                        ? `${r.name} — ${formatCompactMXN(r.varMxn)} · ${(share * 100).toFixed(0)}% del gasto propio`
+                        : `${r.name} — ${formatCompactMXN(r.varMxn)} · ${(share * 100).toFixed(0)}% of own spend`
+                    }
+                    className="min-w-0 py-0.5 underline decoration-1 underline-offset-[3px] decoration-border focus-visible:decoration-current"
+                    style={{ ...SERIF_NAME, fontSize: 14, color: 'var(--color-text-primary)' }}
+                  />
+                  <span className="font-mono tabular-nums whitespace-nowrap text-right" style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                    {formatCompactMXN(r.varMxn)}
+                  </span>
+                  <span
+                    className="tabular-nums"
+                    style={{
+                      fontFamily: 'var(--font-family-editorial)',
+                      fontStyle: 'normal',
+                      fontWeight: 600,
+                      fontSize: 15,
+                      color: intensityTextColor(r.avgRiskScore),
+                      minWidth: 40,
+                      textAlign: 'right',
+                    }}
+                  >
+                    {(share * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </SxPlate>
+  )
+}

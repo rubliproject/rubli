@@ -1,0 +1,4290 @@
+/**
+ * RUBLI API Client
+ * Centralized API calls with TypeScript types
+ */
+
+import type { Columna, MonthSignals, PeriodSplit } from '@/lib/sexenios/columna'
+import axios, { type AxiosError, type AxiosInstance } from 'axios'
+import { formatContractTitle, omit, presentInstitutionName, toTitleCase } from '@/lib/utils'
+import type { FieldPayload, InstitutionHallazgos } from '@/lib/institutions/field'
+import type { SexenioPayload } from '@/lib/institutions/tiempo'
+import type { CategoryFieldPayload } from '@/lib/categories/field'
+import type { BuyerScope } from '@/lib/scope'
+import type {
+  CategoryPrediction,
+  ContractPrediction,
+  InstitutionPrediction,
+  PairPrediction,
+  VendorPrediction,
+  ScandalListItem,
+  ScandalDetail,
+  ScandalStats,
+  CaseLibraryParams,
+  PoliticalCycleResponse,
+  PublicationDelayResponse,
+  ThresholdGamingResponse,
+  ConcentrationRankingsResponse,
+  ContractListResponse,
+  ContractListItem,
+  ContractDetail,
+  ContractFilterParams,
+  ContractsFieldParams,
+  ContractsFieldResponse,
+  ContractStatistics,
+  ContractExportFilters,
+  TrendDataPoint,
+  VendorListResponse,
+  VendorDetailResponse,
+  VendorRiskProfile,
+  VendorTopListResponse,
+  VendorTopItem,
+  VendorInstitutionListResponse,
+  VendorInstitutionsTimelineResponse,
+  InstitutionVendorsTimelineResponse,
+  VendorFilterParams,
+  VendorExternalFlags,
+  InstitutionListResponse,
+  InstitutionDetailResponse,
+  InstitutionRiskProfile,
+  InstitutionTopListResponse,
+  InstitutionVendorListResponse,
+  InstitutionOfficialsResponse,
+  OfficialMoversResponse,
+  OfficialProfileResponse,
+  VendorPoolResponse,
+  InstitutionWaterfallResponse,
+  InstitutionFilterParams,
+  SectorListResponse,
+  TreemapResponse,
+  SectorDetailResponse,
+  SectorTrendsBundleResponse,
+  AnalysisOverview,
+  RiskDistribution,
+  YearOverYearChange,
+  ClassificationStatsResponse,
+  AnomalyItem,
+  SectorYearItem,
+  MoneyFlowResponse,
+  RiskFactorAnalysisResponse,
+  InstitutionRankingsResponse,
+  CoBiddingResponse,
+  ConcentrationResponse,
+  YearEndResponse,
+  InvestigationLeadsResponse,
+  FactorAnalysisValidationResponse,
+  InvestigationCaseListResponse,
+  InvestigationCaseDetail,
+  InvestigationStats,
+  InvestigationDashboardSummary,
+  InvestigationFilterParams,
+  ExternalEvidence,
+  ExecutiveSummaryResponse,
+  DashboardBundleResponse,
+  RiskExplanation,
+  ContractRiskBreakdownResponse,
+  ContractContextResponse,
+  ASFInstitutionResponse,
+  SectorASFResponse,
+  ASFInstitutionSummaryResponse,
+  DataQualityResponse,
+  MonthlyBreakdownResponse,
+  StructuralBreaksResponse,
+  TemporalEventsResponse,
+  WatchlistResponse,
+  WatchlistItem,
+  WatchlistItemCreate,
+  WatchlistItemUpdate,
+  WatchlistStats,
+  WatchlistChanges,
+  NetworkGraphResponse,
+  NetworkGraphParams,
+  CoBiddersResponse,
+  CommunitiesResponse,
+  PriceHypothesisItem,
+  PriceHypothesesResponse,
+  PriceHypothesisDetailResponse,
+  MlAnomaliesResponse,
+  FastDashboardResponse,
+  VendorGroundTruthStatus,
+  VendorWaterfallContribution,
+  VendorReport,
+  InstitutionReport,
+  SectorReport,
+  ThematicReport,
+  ReportTypeSummary,
+  VendorAISummary,
+  VendorQQWResponse,
+  FeatureImportanceItem,
+  ModelComparisonItem,
+  CommunityDetailResponse,
+  ComparePeriodResponse,
+  InstitutionRiskFactorResponse,
+  VendorSHAPResponse,
+  FeatureImportanceResponse,
+  PyodAgreementResponse,
+  DriftReportResponse,
+  AriaQueueItem,
+  AriaStatsResponse,
+  AriaQueueResponse,
+  AriaPatternGroupsResponse,
+  StoryPackagesResponse,
+  VendorSimilarCasesResponse,
+  VendorNarrativeResponse,
+  ContractHistogramResponse,
+  AdminBreakdownResponse,
+  AdminScandalsResponse,
+  AdminVendorsDeepResponse,
+  AdminInstitutionsResponse,
+  GapSummaryResponse,
+  GapFieldResponse,
+  GapMonthsResponse,
+  GapEntityResponse,
+  GapRelevoResponse,
+  GapCarryForwardResponse,
+  AriaNuevoItem,
+  GapContractsResponse,
+  GapContractFilterParams,
+  AmountHistogramResponse,
+  AmountHistogramParams,
+} from './types'
+
+// Re-export types that were moved from client.ts to types.ts for backward compatibility
+export type {
+  GradeDistribution,
+  StructureQuality,
+  FieldCompleteness,
+  KeyIssue,
+  DataQualityResponse,
+  MonthlyDataPoint,
+  MonthlyBreakdownResponse,
+  StructuralBreakpoint,
+  StructuralBreaksResponse,
+  TemporalEvent,
+  TemporalEventsResponse,
+  WatchlistItem,
+  WatchlistChanges,
+  WatchlistResponse,
+  WatchlistItemCreate,
+  WatchlistItemUpdate,
+  WatchlistStats,
+  NetworkNode,
+  NetworkLink,
+  NetworkGraphResponse,
+  NetworkGraphParams,
+  CoBidderItem,
+  CoBiddersResponse,
+  CommunityItem,
+  CommunitiesResponse,
+  PriceHypothesisItem,
+  PriceHypothesesResponse,
+  PriceHypothesisDetailResponse,
+  MlAnomalyItem,
+  MlAnomaliesResponse,
+  FastDashboardResponse,
+  VendorGroundTruthStatus,
+  VendorWaterfallContribution,
+  VendorReport,
+  InstitutionReport,
+  SectorReport,
+  ThematicReport,
+  ReportTypeSummary,
+  VendorAISummary,
+  FeatureImportanceItem,
+  ModelComparisonItem,
+  CommunityDetailResponse,
+  ComparePeriodResponse,
+  InstitutionRiskFactorResponse,
+  ContractExportFilters,
+  TrendDataPoint,
+  ContractListItem,
+  VendorQQWResponse,
+  VendorSHAPFactor,
+  VendorSHAPResponse,
+  FeatureImportanceV52Item,
+  FeatureImportanceResponse,
+  PyodRiskLevelBreakdown,
+  PyodAgreementResponse,
+  DriftFeature,
+  DriftReportResponse,
+  AriaQueueItem,
+  AriaStats,
+  AriaStatsResponse,
+  AriaQueueResponse,
+  StoryPackageExample,
+  StoryPackage,
+  StoryPackagesResponse,
+  VendorSimilarCase,
+  VendorSimilarCasesResponse,
+  VendorNarrativeYear,
+  VendorNarrativeResponse,
+} from './types'
+
+/** Generic query parameter map — used internally by buildQueryParams */
+type QueryParams = Record<string, unknown>
+
+// API Base URL - proxied through Vite in development; override with VITE_API_BASE_URL in production
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
+
+// Create axios instance with defaults
+export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// The browser never carries a server key in production: auth for mutations is
+// the signed-in user's JWT (Bearer interceptor below), checked server-side
+// against the admin allow-list (docs/security/WRITE_KEY_FIX_2026-10-02.md).
+// Local development only: VITE_RUBLI_WRITE_KEY (never committed) is attached
+// when set, for ergonomics against a local backend.
+const WRITE_KEY: string | undefined = import.meta.env.DEV
+  ? (import.meta.env.VITE_RUBLI_WRITE_KEY as string | undefined)
+  : undefined
+if (WRITE_KEY) {
+  api.interceptors.request.use((config) => {
+    const method = (config.method ?? '').toUpperCase()
+    const url = config.url ?? ''
+    // Always send write key on mutations (existing behavior)
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+      config.headers['X-Rubli-Key'] = WRITE_KEY
+    }
+    // Also send on personal-workspace GETs — these endpoints leak user
+    // data when unauthenticated (P0 finding from 2026-04-26 audit).
+    // Backend now requires X-Rubli-Key for these GETs as well.
+    if (
+      method === 'GET' &&
+      (url.includes('/watchlist') || url.includes('/dossiers') || url.includes('/folders'))
+    ) {
+      config.headers['X-Rubli-Key'] = WRITE_KEY
+    }
+    return config
+  })
+}
+
+// JWT auth interceptor — attaches the user's JWT (rubli_jwt in localStorage)
+// to every request as `Authorization: Bearer <token>`. Backend endpoints that
+// accept JWT (workspace_dossier, watchlist after the require_user_or_write_key
+// switch) will now authenticate signed-in users transparently. Without this,
+// signed-in users hit 401 on every personal-data endpoint because the api
+// client never sent their token.
+api.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem('rubli_jwt')
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`
+    }
+  } catch {
+    // localStorage unavailable (SSR / private mode) — skip silently.
+  }
+  return config
+})
+
+// Name-field normaliser — converts ALL-CAPS vendor/institution names to title case.
+// Applied once here so every component gets properly cased strings automatically.
+// State buyers lose their «JAL-» code to a «· Jalisco» qualifier (presentInstitutionName);
+// contract title/description get Spanish sentence case (formatContractTitle). Display only.
+const NAME_FIELDS = new Set(['vendor_name', 'institution_name'])
+const TEXT_FIELDS = new Set(['title', 'description', 'contract_title'])
+
+function normaliseName(obj: unknown): unknown {
+  if (Array.isArray(obj)) return obj.map(normaliseName)
+  // Plain JSON objects only — a Blob/ArrayBuffer download would rebuild as `{}` (CLICKPATH_AUDIT_2026-10-30 #1).
+  if (obj !== null && typeof obj === 'object' && Object.getPrototypeOf(obj) === Object.prototype) {
+    const out: Record<string, unknown> = {}
+    const isContract = 'amount_mxn' in obj || 'contract_number' in obj
+    for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
+      out[k] = typeof v !== 'string' ? normaliseName(v)
+        : k === 'institution_name' ? presentInstitutionName(v)
+        : NAME_FIELDS.has(k) ? toTitleCase(v)
+        // ALL-CAPS contract text → sentence case, only on contract-shaped rows
+        : isContract && TEXT_FIELDS.has(k) ? formatContractTitle(v)
+        : v
+      // Exports carry the source text (journalists need the original): keep it as `<k>_raw`; read via rawText().
+      if (typeof v === 'string' && out[k] !== v) out[`${k}_raw`] = v
+    }
+    return out
+  }
+  return obj
+}
+
+// Error handler
+api.interceptors.response.use(
+  (response) => {
+    if (response.data) response.data = normaliseName(response.data)
+    return response
+  },
+  (error: AxiosError) => {
+    console.error('API Error:', error.response?.data || error.message)
+    // Auth gate: a 401 on any endpoint means the token is missing, expired, or
+    // was invalidated (e.g. JWT secret rotation). Clear it and bounce to the
+    // login wall — unless we're already on an auth page (wrong-password 401s
+    // there must stay on the form, not loop).
+    if (
+      error.response?.status === 401 &&
+      typeof window !== 'undefined' &&
+      window.location.pathname !== '/login' &&
+      window.location.pathname !== '/register'
+    ) {
+      try {
+        localStorage.removeItem('rubli_jwt')
+      } catch {
+        /* localStorage unavailable — ignore */
+      }
+      window.location.assign('/login')
+    }
+    return Promise.reject(error)
+  }
+)
+
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * GET an optional resource: 404 means «none» and resolves to null quietly (no interceptor log,
+ * no query error). For per-entity extras that only some entities have (scorecards, grades).
+ */
+export async function getOptional<T>(url: string): Promise<T | null> {
+  const res = await api.get<T>(url, { validateStatus: (s) => (s >= 200 && s < 300) || s === 404 })
+  return res.status === 404 ? null : res.data
+}
+
+function buildQueryParams(params: Record<string, unknown>): URLSearchParams {
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      searchParams.append(key, String(value))
+    }
+  })
+  return searchParams
+}
+
+// ============================================================================
+// Sector Endpoints
+// ============================================================================
+
+export const sectorApi = {
+  /**
+   * Get all sectors with statistics.
+   * `year` restricts every statistic to contracts awarded in that year — the
+   * router already accepts it; SD-02 F5 compares 2019 against 2020 with it.
+   */
+  async getAll(params: { year?: number } = {}): Promise<SectorListResponse> {
+    const qs = params.year ? `?year=${params.year}` : ''
+    const { data } = await api.get<SectorListResponse>(`/sectors${qs}`)
+    return data
+  },
+
+  /**
+   * Get sector details by ID
+   */
+  async getById(sectorId: number, scope: BuyerScope = 'federal'): Promise<SectorDetailResponse> {
+    const { data } = await api.get<SectorDetailResponse>(`/sectors/${sectorId}`, { params: { scope } })
+    return data
+  },
+
+  /**
+   * Get the bundled treemap payload for the El Reparto Z0 entry.
+   * Returns all 12 sectors with top-3 institutions per sector + critical-share.
+   */
+  async getTreemap(): Promise<TreemapResponse> {
+    const { data } = await api.get<TreemapResponse>('/sectors/treemap')
+    return data
+  },
+
+  /**
+   * Get sector trends
+   */
+  async getTrends(sectorId: number): Promise<{ data: YearOverYearChange[] }> {
+    const { data } = await api.get(`/sectors/${sectorId}/trends`)
+    return data
+  },
+
+  /**
+   * Get bundled risk-trajectory series for all 12 sectors in one call.
+   * Feeds the Exposure Ledger per-row sparkline. Cached server-side 2h.
+   */
+  async getTrendsBundle(): Promise<SectorTrendsBundleResponse> {
+    const { data } = await api.get<SectorTrendsBundleResponse>('/sectors/trends-bundle')
+    return data
+  },
+
+  /**
+   * Get risk distribution for a sector
+   */
+  async getRiskDistribution(sectorId: number): Promise<{ data: RiskDistribution[] }> {
+    const { data } = await api.get(`/analysis/risk-distribution?sector_id=${sectorId}`)
+    return data
+  },
+
+  /**
+   * P2 #47: Get per-sector model coefficients
+   */
+  async getModelCoefficients(sectorId: number): Promise<{
+    sector_id: number
+    sector_code: string
+    sector_name: string
+    model_used: 'sector' | 'global'
+    intercept: number | null
+    coefficients: Array<{ feature: string; coefficient: number }>
+  }> {
+    const { data } = await api.get(`/sectors/${sectorId}/model-coefficients`)
+    return data
+  },
+
+  /**
+   * P2 #50: Get temporal anomaly for a sector. Returns per-year z-scores of
+   * key procurement factors vs the sector's own historical baseline. Shape
+   * matches backend/api/routers/sectors.py get_sector_temporal_anomaly.
+   */
+  async getTemporalAnomaly(sectorId: number): Promise<{
+    sector_id: number
+    sector_name: string
+    year_filter: number | null
+    anomalies: Array<{ year: number; overall_anomaly_score: number; feature_scores: Record<string, number> }>
+  }> {
+    const { data } = await api.get(`/sectors/${sectorId}/temporal-anomaly`)
+    return data
+  },
+
+  /**
+   * Per-year vendor-concentration history for a sector (Gini + top-vendor
+   * share). Instant — served from factor_baselines, no contracts scan.
+   * Shape matches backend get_sector_concentration_history.
+   */
+  async getConcentrationHistory(sectorId: number): Promise<{
+    sector_id: number
+    sector_name: string
+    history: Array<{ year: number; gini: number; top_vendor_share: number; total_value: number; vendor_count: number }>
+  }> {
+    const { data } = await api.get(`/sectors/${sectorId}/concentration-history`)
+    return data
+  },
+
+  /** Top-N single contracts by amount for a sector (precomputed, instant). */
+  async getTopContracts(sectorId: number, limit = 10): Promise<{
+    sector_id: number
+    sector_name: string
+    contracts: Array<{
+      contract_id: number
+      amount_mxn: number
+      year: number | null
+      risk_level: string | null
+      risk_score: number | null
+      vendor_id: number | null
+      vendor_name: string | null
+      /** persona física: named, always labelled (policy 10-29) */
+      persona_fisica?: boolean
+      institution_id: number | null
+      institution_name: string | null
+      title: string | null
+    }>
+  }> {
+    const { data } = await api.get(`/sectors/${sectorId}/top-contracts`, { params: { limit } })
+    return data
+  },
+
+  /** Ground-truth linkage for a sector (documented cases + GT vendors operating in it). */
+  async getGtLinkage(sectorId: number): Promise<{
+    sector_id: number
+    sector_name: string
+    cases: number
+    vendors: number
+  }> {
+    const { data } = await api.get(`/sectors/${sectorId}/gt-linkage`)
+    return data
+  },
+}
+
+// ============================================================================
+// Contract Endpoints
+// ============================================================================
+
+export const contractApi = {
+  /** A year's (or one month's) money by spending category, largest first (/administrations, W7). */
+  async getByCategory(year: number, month?: number | null): Promise<PeriodSplit> {
+    const { data } = await api.get<PeriodSplit>('/contracts/by-category', { params: month ? { year, month } : { year } })
+    return data
+  },
+
+  /**
+   * Get paginated list of contracts with filters
+   */
+  async getAll(params: ContractFilterParams = {}): Promise<ContractListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ContractListResponse>(`/contracts?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get contract details by ID
+   */
+  async getById(contractId: number): Promise<ContractDetail> {
+    const { data } = await api.get<ContractDetail>(`/contracts/${contractId}`)
+    return data
+  },
+
+  /**
+   * Get the "Los Señalados" highlights for the current filter — the top
+   * flagged contracts (documented cases first, then high+critical risk).
+   * Accepts the same filter params as getAll (search/sort/page are ignored).
+   */
+  async getHighlights(params: Partial<ContractFilterParams> = {}, limit = 8): Promise<ContractListItem[]> {
+    const rest = omit(params, ['search', 'sort_by', 'sort_order', 'page', 'per_page'])
+    const queryParams = buildQueryParams({ ...rest, limit } as QueryParams)
+    const { data } = await api.get<ContractListItem[]>(`/contracts/highlights?${queryParams}`)
+    return data
+  },
+
+  /** «La escalera de montos»: histogram + the largest contracts for the active filter (≤ 5,000 marks). */
+  async getField(params: ContractsFieldParams = {}): Promise<ContractsFieldResponse> {
+    const { data } = await api.get<ContractsFieldResponse>(`/contracts/field?${buildQueryParams(params as QueryParams)}`)
+    return data
+  },
+
+  /**
+   * Get contract statistics with optional filters
+   */
+  async getStatistics(params: Partial<ContractFilterParams> = {}): Promise<ContractStatistics> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ContractStatistics>(`/contracts/statistics?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Search contracts by text
+   */
+  async search(query: string, params: ContractFilterParams = {}): Promise<ContractListResponse> {
+    const queryParams = buildQueryParams({ ...params, search: query } as QueryParams)
+    const { data } = await api.get<ContractListResponse>(`/contracts?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get v6.0 risk score explanation with per-feature contributions
+   */
+  async getRiskExplanation(contractId: number): Promise<RiskExplanation> {
+    const { data } = await api.get<RiskExplanation>(`/contracts/${contractId}/risk-explain`)
+    return data
+  },
+
+  async getRiskBreakdown(contractId: number): Promise<ContractRiskBreakdownResponse> {
+    const { data } = await api.get<ContractRiskBreakdownResponse>(`/contracts/${contractId}/risk`)
+    return data
+  },
+
+  /**
+   * Size-in-context, vendor↔institution relationship, and named-official block.
+   * Additive endpoint (PK/indexed reads ~15-30ms); feeds §1 OfficialCard +
+   * §3 EL COTEJO. Every field nullable — caller hides absent blocks.
+   */
+  /** Up to 10 contracts by id, in the order requested (the archive's compare picks). */
+  async compare(ids: number[]): Promise<ContractDetail[]> {
+    const { data } = await api.get<{ data: ContractDetail[] }>(`/contracts/compare?ids=${ids.join(',')}`)
+    const byId = new Map(data.data.map((c) => [c.id, c]))
+    return ids.map((id) => byId.get(id)).filter((c): c is ContractDetail => !!c)
+  },
+
+  async getContext(contractId: number): Promise<ContractContextResponse> {
+    const { data } = await api.get<ContractContextResponse>(`/contracts/${contractId}/context`)
+    return data
+  },
+
+  async getPriceAnalysis(contractId: number): Promise<unknown> {
+    const { data } = await api.get(`/analysis/contracts/${contractId}/price-analysis`)
+    return data
+  },
+
+  async getByVendor(vendorId: number, page = 1): Promise<ContractListResponse> {
+    const { data } = await api.get<ContractListResponse>(`/contracts/by-vendor/${vendorId}?page=${page}`)
+    return data
+  },
+
+  async getByInstitution(institutionId: number, page = 1): Promise<ContractListResponse> {
+    const { data } = await api.get<ContractListResponse>(`/contracts/by-institution/${institutionId}?page=${page}`)
+    return data
+  },
+
+  /**
+   * Fetch a large batch of contracts for client-side export (up to 5000 rows).
+   * Uses the standard /contracts endpoint with a high per_page limit.
+   */
+  async getForExport(filters: ContractExportFilters = {}): Promise<ContractListItem[]> {
+    const params: Record<string, unknown> = {
+      ...filters,
+      per_page: Math.min(filters.limit ?? 100, 100),
+    }
+    delete params.limit
+    const queryParams = buildQueryParams(params)
+    const { data } = await api.get<ContractListResponse>(`/contracts?${queryParams}`)
+    return data.data
+  },
+}
+
+// ============================================================================
+// Vendor Endpoints
+// ============================================================================
+
+export const vendorApi = {
+  /**
+   * Get paginated list of vendors with filters
+   * @param year - Filter to vendors with contracts in this year
+   */
+  async getAll(params: VendorFilterParams & { year?: number } = {}): Promise<VendorListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<VendorListResponse>(`/vendors?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get vendor details by ID
+   */
+  async getById(vendorId: number): Promise<VendorDetailResponse> {
+    const { data } = await api.get<VendorDetailResponse>(`/vendors/${vendorId}`)
+    return data
+  },
+
+  /**
+   * Get vendor risk profile
+   */
+  async getRiskProfile(vendorId: number): Promise<VendorRiskProfile> {
+    const { data } = await api.get<VendorRiskProfile>(`/vendors/${vendorId}/risk-profile`)
+    return data
+  },
+
+  /**
+   * Get vendor's contracts
+   */
+  async getContracts(vendorId: number, params: ContractFilterParams = {}): Promise<ContractListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ContractListResponse>(`/vendors/${vendorId}/contracts?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get top vendors by metric
+   */
+  async getTop(
+    metric: 'value' | 'count' | 'risk' = 'value',
+    limit = 20,
+    params: Partial<VendorFilterParams> & { year?: number } = {}
+  ): Promise<VendorTopListResponse> {
+    const queryParams = buildQueryParams({ ...params, by: metric, limit } as QueryParams)
+    const { data } = await api.get<VendorTopListResponse>(`/vendors/top?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get top vendors by ALL metrics in a single request (3x fewer calls)
+   * @deprecated - defined but not yet wired to any UI
+   */
+  async getTopAll(limit = 5): Promise<{
+    value: VendorTopItem[]
+    count: VendorTopItem[]
+    risk: VendorTopItem[]
+  }> {
+    const { data } = await api.get(`/vendors/top-all?limit=${limit}`)
+    return data
+  },
+
+  /**
+   * Get vendor's institutions
+   */
+  async getInstitutions(vendorId: number, limit = 50): Promise<VendorInstitutionListResponse> {
+    const { data } = await api.get<VendorInstitutionListResponse>(`/vendors/${vendorId}/institutions?per_page=${limit}`)
+    return data
+  },
+
+  /**
+   * Buyer × year cells (top N buyers + «otros»): the dossier's «expediente por sexenios» (owner 2026-10-27)
+   */
+  async getInstitutionsTimeline(vendorId: number, top = 8): Promise<VendorInstitutionsTimelineResponse> {
+    const { data } = await api.get<VendorInstitutionsTimelineResponse>(`/vendors/${vendorId}/institutions/timeline?top=${top}`)
+    return data
+  },
+
+  /**
+   * Get vendor's spending categories (Atlas scope 2 § categorías pivot, Sep 2026)
+   */
+  async getCategories(vendorId: number): Promise<{
+    vendor_id: number
+    total_contracts: number
+    categories: Array<{
+      category_id: number
+      code: string
+      name_es: string
+      name_en: string
+      contracts: number
+      total_amount_mxn: number
+      share_of_vendor_value: number
+    }>
+  }> {
+    const { data } = await api.get(`/vendors/${vendorId}/categories`)
+    return data
+  },
+
+  /**
+   * Search vendors by name
+   */
+  async search(query: string, limit = 10): Promise<VendorListResponse> {
+    const { data } = await api.get<VendorListResponse>(`/vendors?search=${encodeURIComponent(query)}&per_page=${limit}`)
+    return data
+  },
+
+  /**
+   * Get external registry flags: SFP sanctions, RUPC grade, ASF cases
+   */
+  async getExternalFlags(vendorId: number): Promise<VendorExternalFlags> {
+    const { data } = await api.get<VendorExternalFlags>(`/vendors/${vendorId}/external-flags`)
+    return data
+  },
+
+  /**
+   * Get year-by-year risk timeline for a vendor (contract count, avg risk, total value per year)
+   */
+  async getRiskTimeline(vendorId: number): Promise<{
+    vendor_id: number
+    vendor_name: string
+    timeline: Array<{ year: number; avg_risk_score: number | null; contract_count: number; total_value: number }>
+  }> {
+    const { data } = await api.get(`/vendors/${vendorId}/risk-timeline`)
+    return data
+  },
+
+  /**
+   * Get top risk factors by frequency across a vendor's contracts (for Watchlist attribution)
+   */
+  async getTopFactors(vendorId: number, limit = 5): Promise<{
+    vendor_id: number
+    total_contracts: number
+    factors: Array<{ factor: string; count: number; pct: number }>
+  }> {
+    const { data } = await api.get(`/vendors/${vendorId}/top-factors?limit=${limit}`)
+    return data
+  },
+
+  async getGroundTruthStatus(vendorId: number): Promise<VendorGroundTruthStatus> {
+    const { data } = await api.get<VendorGroundTruthStatus>(`/vendors/${vendorId}/ground-truth-status`)
+    return data
+  },
+
+  async getRiskWaterfall(vendorId: number): Promise<VendorWaterfallContribution[]> {
+    const { data } = await api.get<{ items: VendorWaterfallContribution[] } | VendorWaterfallContribution[]>(`/vendors/${vendorId}/risk-waterfall`)
+    // Backend returns { vendor_id, items, total_contracts } — extract the array
+    if (data && !Array.isArray(data) && Array.isArray((data as { items: VendorWaterfallContribution[] }).items)) {
+      return (data as { items: VendorWaterfallContribution[] }).items
+    }
+    return Array.isArray(data) ? data : []
+  },
+
+  /** The waterfall with its basis: `total_contracts` = contracts whose stored z-features were averaged. */
+  async getRiskWaterfallDetail(vendorId: number): Promise<{ items: VendorWaterfallContribution[]; total_contracts: number; source: 'z_features' | 'v52' | null }> {
+    const { data } = await api.get<{ items: VendorWaterfallContribution[]; total_contracts: number; source?: 'z_features' | 'v52' | null }>(`/vendors/${vendorId}/risk-waterfall`)
+    // `source` names which numbers these are (absent on older backends → null).
+    return { items: data?.items ?? [], total_contracts: data?.total_contracts ?? 0, source: data?.source ?? null }
+  },
+
+  async getPeerComparison(vendorId: number): Promise<import('@/api/types').VendorPeerComparisonResponse> {
+    const { data } = await api.get(`/vendors/${vendorId}/peer-comparison`)
+    return data
+  },
+
+  async getContractAggregate(vendorId: number): Promise<import('@/api/types').VendorContractAggregate> {
+    const { data } = await api.get(`/vendors/${vendorId}/contract-aggregate`)
+    return data
+  },
+
+  async getLinkedScandals(vendorId: number): Promise<import('@/api/types').VendorLinkedScandalsResponse> {
+    const { data } = await api.get(`/vendors/${vendorId}/linked-scandals`)
+    return data
+  },
+
+  async getAsfCases(vendorId: number): Promise<unknown> {
+    const { data } = await api.get(`/vendors/${vendorId}/asf-cases`)
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async compare(ids: number[]): Promise<unknown> {
+    const { data } = await api.get(`/vendors/compare?ids=${ids.join(',')}`)
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async getVerified(): Promise<unknown> {
+    const { data } = await api.get('/vendors/verified')
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async getClassification(vendorId: number): Promise<unknown> {
+    const { data } = await api.get(`/vendors/${vendorId}/classification`)
+    return data
+  },
+
+  async getFootprint(vendorId: number): Promise<{
+    vendor_id: number
+    footprint: Array<{
+      sector_id: number
+      sector_name: string
+      institution_id: number
+      institution_name: string
+      contract_count: number
+      total_value: number
+      avg_risk_score: number | null
+    }>
+  }> {
+    const { data } = await api.get(`/vendors/${vendorId}/footprint`)
+    return data
+  },
+
+  async getAiSummary(vendorId: number): Promise<VendorAISummary> {
+    const { data } = await api.get<VendorAISummary>(`/vendors/${vendorId}/ai-summary`)
+    return data
+  },
+
+  async getQQW(vendorId: number): Promise<VendorQQWResponse> {
+    const { data } = await api.get<VendorQQWResponse>(`/vendors/${vendorId}/qqw`)
+    return data
+  },
+
+  /**
+   * Get SHAP-based risk explanation for a vendor (v5.2)
+   * Returns per-feature SHAP values and top contributing factors
+   */
+  async getShap(vendorId: number): Promise<VendorSHAPResponse> {
+    const { data } = await api.get<VendorSHAPResponse>(`/vendors/${vendorId}/shap`)
+    return data
+  },
+
+  async getNarrative(vendorId: number): Promise<VendorNarrativeResponse> {
+    const { data } = await api.get<VendorNarrativeResponse>(`/vendors/${vendorId}/narrative`)
+    return data
+  },
+
+  async getSimilarCases(vendorId: number): Promise<VendorSimilarCasesResponse> {
+    const { data } = await api.get<VendorSimilarCasesResponse>(`/vendors/${vendorId}/similar-cases`)
+    return data
+  },
+
+  /**
+   * Get year-by-year trajectory for a vendor (spending, risk, institution count)
+   */
+  async getTrajectory(vendorId: number): Promise<VendorTrajectoryResponse> {
+    const { data } = await api.get<VendorTrajectoryResponse>(`/vendors/${vendorId}/trajectory`)
+    return data
+  },
+
+  /**
+   * Get vendor's risk percentile rank among all vendors in the same sector
+   */
+  async getPercentile(vendorId: number): Promise<{ percentile: number; rank: number; total: number }> {
+    const { data } = await api.get(`/vendors/${vendorId}/percentile`)
+    return data
+  },
+
+  async getContractHistogram(vendorId: number): Promise<ContractHistogramResponse> {
+    const { data } = await api.get<ContractHistogramResponse>(`/vendors/${vendorId}/contract-histogram`)
+    return data
+  },
+
+  /**
+   * Get year-by-year rolling stats for a vendor from vendor_rolling_stats table.
+   * Each row is one (sector_id, as_of_year) combination.
+   * Used for the vendor rolling stats timeline chart in VendorProfile.
+   */
+  async getRollingTimeline(vendorId: number): Promise<{
+    vendor_id: number
+    vendor_name: string
+    rows: Array<{
+      vendor_id: number
+      sector_id: number
+      as_of_year: number
+      total_value: number
+      total_count: number
+      comp_wins: number
+      comp_total: number
+      n_institutions: number
+      n_sectors: number
+      win_rate: number | null
+    }>
+  }> {
+    const { data } = await api.get(`/vendors/${vendorId}/timeline`)
+    return data
+  },
+}
+
+// ============================================================================
+// Institution Endpoints
+// ============================================================================
+
+export const institutionApi = {
+  /**
+   * Get paginated list of institutions with filters
+   * @param year - Filter to institutions with contracts in this year
+   */
+  async getAll(params: InstitutionFilterParams & { year?: number } = {}): Promise<InstitutionListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<InstitutionListResponse>(`/institutions?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get institution details by ID
+   */
+  async getById(institutionId: number): Promise<InstitutionDetailResponse> {
+    const { data } = await api.get<InstitutionDetailResponse>(`/institutions/${institutionId}`)
+    return data
+  },
+
+  /**
+   * Get institution risk profile
+   */
+  async getRiskProfile(institutionId: number): Promise<InstitutionRiskProfile> {
+    const { data } = await api.get<InstitutionRiskProfile>(`/institutions/${institutionId}/risk-profile`)
+    return data
+  },
+
+  /**
+   * Get institution's contracts
+   */
+  async getContracts(institutionId: number, params: ContractFilterParams = {}): Promise<ContractListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ContractListResponse>(`/institutions/${institutionId}/contracts?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get top institutions by metric
+   */
+  async getTop(
+    metric: 'spending' | 'contracts' | 'risk' = 'spending',
+    limit = 20,
+    year?: number
+  ): Promise<InstitutionTopListResponse> {
+    const qs = year ? `&year=${year}` : ''
+    const { data } = await api.get<InstitutionTopListResponse>(`/institutions/top?by=${metric}&limit=${limit}${qs}`)
+    return data
+  },
+
+  /**
+   * Get institution's vendors
+   */
+  async getVendors(institutionId: number, limit = 50, page = 1): Promise<InstitutionVendorListResponse> {
+    const { data } = await api.get<InstitutionVendorListResponse>(`/institutions/${institutionId}/vendors?page=${page}&per_page=${limit}`)
+    return data
+  },
+
+  /** Vendor × year cells (top N vendors + «otros»): the institution's «expediente por sexenios» (owner 2026-10-27). */
+  async getVendorsTimeline(institutionId: number, top = 8): Promise<InstitutionVendorsTimelineResponse> {
+    const { data } = await api.get<InstitutionVendorsTimelineResponse>(`/institutions/${institutionId}/vendors/timeline?top=${top}`)
+    return data
+  },
+
+  /**
+   * Z2 "La Captura" — institution vendor-pool dossier.
+   * Returns top-N vendors with HR%/DA%/SB% counts, ARIA tier/pattern,
+   * + institution-level aggregates needed to render the editorial register.
+   */
+  async getVendorPool(institutionId: number, limit = 50): Promise<VendorPoolResponse> {
+    const { data } = await api.get<VendorPoolResponse>(`/institutions/${institutionId}/vendor-pool?limit=${limit}`)
+    return data
+  },
+
+  /**
+   * Per-feature risk attribution (avg z-score × global coefficient across the
+   * institution's contracts). Positive = risk-increasing, negative = protective.
+   * Server returns label_en only; ES labels are mapped client-side.
+   */
+  async getRiskWaterfall(institutionId: number): Promise<InstitutionWaterfallResponse> {
+    const { data } = await api.get<InstitutionWaterfallResponse>(`/institutions/${institutionId}/risk-waterfall`)
+    return data
+  },
+
+  /**
+   * Search institutions by name
+   */
+  async search(query: string, limit = 10): Promise<InstitutionListResponse> {
+    const { data } = await api.get<InstitutionListResponse>(
+      `/institutions?search=${encodeURIComponent(query)}&per_page=${limit}&scope=all`
+    )
+    return data
+  },
+
+  /**
+   * Get year-by-year risk timeline for an institution
+   */
+  async getRiskTimeline(institutionId: number): Promise<{
+    institution_id: number
+    institution_name: string
+    timeline: Array<{ year: number; avg_risk_score: number | null; contract_count: number; total_value: number }>
+  }> {
+    const { data } = await api.get(`/institutions/${institutionId}/risk-timeline`)
+    return data
+  },
+
+  async getVendorLoyalty(institutionId: number, topN = 15): Promise<{
+    institution_id: number
+    vendors: Array<{
+      vendor_id: number
+      vendor_name: string
+      total_value: number
+      first_year: number
+      last_year: number
+      year_count: number
+      years: Array<{ year: number; contract_count: number; total_value: number; avg_risk: number | null }>
+    }>
+    year_range: number[]
+  }> {
+    const { data } = await api.get(`/institutions/${institutionId}/vendor-loyalty?top_n=${topN}`)
+    return data
+  },
+
+  async getPeerComparison(institutionId: number): Promise<{
+    institution_id: number
+    institution_name: string
+    institution_type: string | null
+    peer_count: number
+    metrics: Array<{
+      metric: string
+      label: string
+      value: number
+      peer_min: number
+      peer_p25: number
+      peer_median: number
+      peer_p75: number
+      peer_max: number
+      percentile: number
+    }>
+  }> {
+    const { data } = await api.get(`/institutions/${institutionId}/peer-comparison`)
+    return data
+  },
+
+  async getTopCategories(institutionId: number, options?: { year?: number; limit?: number }) {
+    const { data } = await api.get(`/institutions/${institutionId}/top-categories`, { params: options })
+    return data
+  },
+
+  async getCriScatter(params: { sector_id?: number; min_contracts?: number; limit?: number } = {}): Promise<{
+    data: Array<{
+      id: number
+      name: string
+      sector_id: number
+      sector_code: string
+      total_contracts: number
+      avg_risk: number
+      direct_award_pct: number
+      single_bid_pct: number
+      /** Single-award share of competitive procedures (D20) — the displayed rate. */
+      single_award_pct?: number | null
+      high_risk_pct: number
+    }>
+    total: number
+  }> {
+    const q = new URLSearchParams()
+    if (params.sector_id) q.set('sector_id', String(params.sector_id))
+    if (params.min_contracts) q.set('min_contracts', String(params.min_contracts))
+    if (params.limit) q.set('limit', String(params.limit))
+    const { data } = await api.get(`/institutions/cri-scatter?${q}`)
+    return data
+  },
+
+  async getConcentrationRankings(params: {
+    year?: number
+    sector_id?: number
+    limit?: number
+  } = {}): Promise<ConcentrationRankingsResponse> {
+    const q = new URLSearchParams()
+    if (params.year) q.set('year', String(params.year))
+    if (params.sector_id) q.set('sector_id', String(params.sector_id))
+    if (params.limit) q.set('limit', String(params.limit))
+    const { data } = await api.get<ConcentrationRankingsResponse>(`/institutions/concentration-rankings?${q}`)
+    return data
+  },
+
+  /**
+   * Get ASF audit findings for an institution
+   */
+  async getGroundTruthStatus(institutionId: number): Promise<{
+    is_ground_truth_related: boolean
+    case_name?: string
+    case_type?: string
+    contract_count?: number
+  }> {
+    const { data } = await api.get(`/institutions/${institutionId}/ground-truth-status`)
+    return data
+  },
+
+  async getASFFindings(institutionId: number): Promise<ASFInstitutionResponse> {
+    const { data } = await api.get<ASFInstitutionResponse>(`/institutions/${institutionId}/asf-findings`)
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async compare(ids: number[]): Promise<unknown> {
+    const { data } = await api.get(`/institutions/compare?ids=${ids.join(',')}`)
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async getHierarchy(): Promise<unknown> {
+    const { data } = await api.get('/institutions/hierarchy')
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async getTypes(): Promise<unknown> {
+    const { data } = await api.get('/institutions/types')
+    return data
+  },
+
+  /** @deprecated - defined but not yet wired to any UI */
+  async getSizeTiers(): Promise<unknown> {
+    const { data } = await api.get('/institutions/size-tiers')
+    return data
+  },
+
+  /**
+   * Responsables de la Unidad Compradora (signing officers of record), 2018+.
+   * Precomputed in official_risk_profiles from contracts.responsible_uc.
+   * Defaults to a >=50-contract floor to suppress thin-n homonym noise.
+   */
+  async getOfficials(
+    institutionId: number,
+    minContracts = 50,
+  ): Promise<InstitutionOfficialsResponse> {
+    const { data } = await api.get<InstitutionOfficialsResponse>(
+      `/institutions/${institutionId}/officials`,
+      { params: { min_contracts: minContracts } },
+    )
+    return data
+  },
+}
+
+// ============================================================================
+// Analysis Endpoints
+// ============================================================================
+
+export const analysisApi = {
+  /**
+   * Get fast pre-computed dashboard stats (single request, <100ms)
+   */
+  async getFastDashboard(): Promise<FastDashboardResponse> {
+    const { data } = await api.get<FastDashboardResponse>('/stats/dashboard/fast')
+    return data
+  },
+
+  /**
+   * Get combined risk overview (overview + risk distribution + trends in one call)
+   */
+  async getRiskOverview(): Promise<{
+    overview: unknown
+    risk_distribution: unknown[]
+    yearly_trends: unknown[]
+  }> {
+    const { data } = await api.get('/analysis/risk-overview')
+    return data
+  },
+
+  /**
+   * Get all pattern match counts in a single request (for DetectivePatterns page)
+   */
+  async getPatternCounts(): Promise<{
+    counts: {
+      critical: number
+      december_rush: number
+      split_contracts: number
+      co_bidding: number
+      price_outliers: number
+    }
+  }> {
+    const { data } = await api.get('/analysis/patterns/counts')
+    return data
+  },
+
+  /**
+   * Get overall analysis overview
+   */
+  async getOverview(): Promise<AnalysisOverview> {
+    const { data } = await api.get<AnalysisOverview>('/analysis/overview')
+    return data
+  },
+
+  /**
+   * Get risk distribution across all contracts
+   */
+  async getRiskDistribution(): Promise<{ data: RiskDistribution[] }> {
+    const { data } = await api.get('/analysis/risk-distribution')
+    return data
+  },
+
+  /**
+   * Get year-over-year trends
+   */
+  async getYearOverYear(): Promise<{ data: YearOverYearChange[] }> {
+    const { data } = await api.get('/analysis/year-over-year')
+    return data
+  },
+
+  async getAdminBreakdown(): Promise<AdminBreakdownResponse> {
+    const { data } = await api.get('/analysis/admin-breakdown')
+    return data
+  },
+
+  async getAdminScandals(): Promise<AdminScandalsResponse> {
+    const { data } = await api.get('/analysis/admin-scandals')
+    return data
+  },
+
+  async getAdminVendorsDeep(era: string, limit = 100, sinEnergia = false): Promise<AdminVendorsDeepResponse> {
+    const { data } = await api.get(`/analysis/admin-breakdown/${era}/vendors`, { params: sinEnergia ? { limit, sin_energia: true } : { limit } })
+    return data
+  },
+
+  async getAdminInstitutions(era: string, limit = 12): Promise<AdminInstitutionsResponse> {
+    const { data } = await api.get(`/analysis/admin-breakdown/${era}/institutions`, { params: { limit } })
+    return data
+  },
+
+  /** «La columna» on /administrations: years × governments, precomputed (scripts/precompute_sexenios_columna.py). */
+  async getSexeniosColumna(): Promise<Columna> {
+    const { data } = await api.get('/sexenios/columna')
+    return data
+  },
+
+  /** W7: an open year's 12 months — critical pesos, the sector that pops out, the largest critical contract. */
+  async getMonthSignals(year: number): Promise<MonthSignals> {
+    const { data } = await api.get<MonthSignals>('/sexenios/month-signals', { params: { year } })
+    return data
+  },
+
+  /**
+   * Get trend data for export/charting — wraps the year-over-year endpoint
+   * with optional sector/year range filtering.
+   */
+  async getTrendData(params: { sector_id?: number; year_start?: number; year_end?: number } = {}): Promise<TrendDataPoint[]> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const paramStr = queryParams.toString()
+    const { data } = await api.get<{ data: TrendDataPoint[] }>(
+      `/analysis/year-over-year${paramStr ? `?${paramStr}` : ''}`
+    )
+    return data.data
+  },
+
+  /**
+   * Contract counts by amount bucket, with exact-value spikes called out.
+   *
+   * SD-07 — the four live figures of `/stories/el-umbral-de-los-300k`. The
+   * scan visits every contract in the band, so the server caches the answer
+   * for ten minutes; callers share one query key rather than one each.
+   */
+  async getAmountHistogram(params: AmountHistogramParams = {}): Promise<AmountHistogramResponse> {
+    const q = buildQueryParams(params as QueryParams)
+    const paramStr = q.toString()
+    const { data } = await api.get<AmountHistogramResponse>(
+      `/analysis/amount-histogram${paramStr ? `?${paramStr}` : ''}`,
+    )
+    return data
+  },
+
+  /**
+   * Get monthly breakdown for a specific year
+   */
+  async getMonthlyBreakdown(year: number, sectorId?: number): Promise<MonthlyBreakdownResponse> {
+    const params = sectorId ? `?sector_id=${sectorId}` : ''
+    const { data } = await api.get<MonthlyBreakdownResponse>(`/analysis/monthly-breakdown/${year}${params}`)
+    return data
+  },
+
+  /**
+   * Get temporal events affecting procurement
+   */
+  async getTemporalEvents(year?: number, eventType?: string): Promise<TemporalEventsResponse> {
+    const queryParams = buildQueryParams({ year, event_type: eventType } as QueryParams)
+    const paramStr = queryParams.toString()
+    const { data } = await api.get<TemporalEventsResponse>(`/analysis/temporal-events${paramStr ? `?${paramStr}` : ''}`)
+    return data
+  },
+
+  /**
+   * Get detected anomalies
+   */
+  async getAnomalies(severity?: string): Promise<{ data: AnomalyItem[]; total: number }> {
+    const params = severity ? `?severity=${severity}` : ''
+    const { data } = await api.get(`/analysis/anomalies${params}`)
+    return data
+  },
+
+  /**
+   * Get classification statistics
+   */
+  async getClassificationStats(): Promise<ClassificationStatsResponse> {
+    const { data } = await api.get<ClassificationStatsResponse>('/stats/classifications')
+    return data
+  },
+
+  /**
+   * Get sector x year cross-tabulation for administration analysis
+   */
+  async getSectorYearBreakdown(): Promise<{ data: SectorYearItem[]; total_rows: number }> {
+    const { data } = await api.get('/analysis/sector-year-breakdown')
+    return data
+  },
+
+  /**
+   * Get money flow data for Sankey visualization
+   */
+  async getMoneyFlow(year?: number, sectorId?: number, directAwardOnly?: boolean, sortBy?: string): Promise<MoneyFlowResponse> {
+    const params = buildQueryParams({
+      year,
+      sector_id: sectorId,
+      direct_award_only: directAwardOnly || undefined,
+      sort_by: sortBy && sortBy !== 'value' ? sortBy : undefined,
+    } as QueryParams)
+    const paramStr = params.toString()
+    const { data } = await api.get<MoneyFlowResponse>(`/analysis/money-flow${paramStr ? `?${paramStr}` : ''}`)
+    return data
+  },
+
+  /**
+   * Get risk factor frequency and co-occurrence analysis
+   */
+  async getRiskFactorAnalysis(sectorId?: number, year?: number): Promise<RiskFactorAnalysisResponse> {
+    const params = buildQueryParams({ sector_id: sectorId, year } as QueryParams)
+    const paramStr = params.toString()
+    const { data } = await api.get<RiskFactorAnalysisResponse>(`/analysis/risk-factor-analysis${paramStr ? `?${paramStr}` : ''}`)
+    return data
+  },
+
+  /**
+   * Get institution health rankings with HHI
+   */
+  async getInstitutionRankings(sortBy = 'risk', minContracts = 100, limit = 50): Promise<InstitutionRankingsResponse> {
+    const { data } = await api.get<InstitutionRankingsResponse>(
+      `/analysis/institution-rankings?sort_by=${sortBy}&min_contracts=${minContracts}&limit=${limit}`
+    )
+    return data
+  },
+
+  /**
+   * Get per-case detection statistics from live contract data
+   */
+  async getPerCaseDetection(): Promise<unknown> {
+    const { data } = await api.get('/analysis/validation/per-case-detection')
+    return data
+  },
+
+  /**
+   * Get ground truth validation summary
+   */
+  async getValidationSummary(): Promise<unknown> {
+    const { data } = await api.get('/analysis/validation/summary')
+    return data
+  },
+
+  /**
+   * Get detection rate metrics
+   */
+  async getDetectionRate(modelVersion?: string): Promise<unknown> {
+    const params = modelVersion ? `?model_version=${modelVersion}` : ''
+    const { data } = await api.get(`/analysis/validation/detection-rate${params}`)
+    return data
+  },
+
+  /**
+   * Get false negatives from ground truth
+   */
+  async getFalseNegatives(limit = 50): Promise<unknown> {
+    const { data } = await api.get(`/analysis/validation/false-negatives?limit=${limit}`)
+    return data
+  },
+
+  /**
+   * Get per-factor lift: detection rate on ground-truth contracts vs population base rate.
+   * lift > 1.0 means the factor is over-represented in GT-labelled contracts (vendor x case window, not proven-corrupt contracts).
+   */
+  async getFactorLift(): Promise<{
+    factors: Array<{ factor: string; gt_count: number; gt_rate: number; base_rate: number; lift: number }>
+    gt_total: number
+    population_total: number
+  }> {
+    const { data } = await api.get('/analysis/validation/factor-lift')
+    return data
+  },
+
+  /**
+   * Get data quality metrics
+   */
+  async getDataQuality(): Promise<DataQualityResponse> {
+    const { data } = await api.get<DataQualityResponse>('/stats/data-quality')
+    return data
+  },
+
+  /**
+   * Get executive summary data (all sections in one call)
+   */
+  async getExecutiveSummary(): Promise<ExecutiveSummaryResponse> {
+    const { data } = await api.get<ExecutiveSummaryResponse>('/executive/summary')
+    return data
+  },
+
+  /** Portada «El Campo»: public tier 1–3 vendors, columnar [id, name, tier, risk, mxn, n, sector, da, y0, doc, novel]. */
+  async getVendorField(): Promise<{ columns: string[]; rows: Array<[number, string, number, number | null, number, number, number, number | null, number | null, 0 | 1, 0 | 1]>; n_queue: number }> {
+    const { data } = await api.get('/executive/vendor-field', { timeout: 60_000 })
+    return data
+  },
+
+  /**
+   * Get top 5 institutional-capture leaders (P6) with peer vendor shares.
+   * Used by Executive Summary Finding 04 Cleveland pair chart.
+   */
+  async getCaptureLeaders(): Promise<{
+    leaders: Array<{
+      label: string
+      institution_name: string
+      top: number
+      second: number
+      gap: number
+      peak_year: number
+      captured: boolean
+    }>
+  }> {
+    const { data } = await api.get('/executive/capture-leaders')
+    return data
+  },
+
+  /**
+   * Get ALL 6 Dashboard data blocks in a single cached, server-side-concurrent
+   * call (replaces 6 separate round-trips). Each block mirrors its standalone
+   * endpoint, or is null if that block failed/timed out — consume per-section.
+   */
+  async getDashboardBundle(): Promise<DashboardBundleResponse> {
+    const { data } = await api.get<DashboardBundleResponse>('/executive/dashboard-bundle')
+    return data
+  },
+
+  /**
+   * Get December spike analysis — average spike ratio vs. average month
+   */
+  async getDecemberSpike(startYear = 2015, endYear = 2024): Promise<{
+    years: Array<{ year: number; spike_ratio: number | null; is_significant: boolean }>
+    average_spike_ratio: number
+    years_with_significant_spike: number
+    total_years_analyzed: number
+    description: string
+  }> {
+    const { data } = await api.get(
+      `/analysis/december-spike-analysis?start_year=${startYear}&end_year=${endYear}`
+    )
+    return data
+  },
+
+  async getCoBiddingPatterns(minCoBidRate = 0.5): Promise<CoBiddingResponse> {
+    const { data } = await api.get(`/analysis/patterns/co-bidding?min_rate=${minCoBidRate * 100}`)
+    return data
+  },
+
+  async getConcentrationPatterns(minSharePct = 0.3): Promise<ConcentrationResponse> {
+    const { data } = await api.get(`/analysis/patterns/concentration?min_share=${minSharePct * 100}`)
+    return data
+  },
+
+  async getYearEndPatterns(startYear = 2010, endYear = 2024): Promise<YearEndResponse> {
+    const { data } = await api.get(
+      `/analysis/patterns/year-end?start_year=${startYear}&end_year=${endYear}`
+    )
+    return data
+  },
+
+  async getInvestigationLeads(limit = 20): Promise<InvestigationLeadsResponse> {
+    const { data } = await api.get(`/analysis/leads?limit=${limit}`)
+    return data
+  },
+
+  async getFactorEffectiveness(): Promise<FactorAnalysisValidationResponse> {
+    const { data } = await api.get('/analysis/validation/factor-analysis')
+    return data
+  },
+
+  /**
+   * Detect statistically significant change points in 23-year procurement trends.
+   * Uses PELT algorithm (ruptures library). Cached server-side for 1 hour.
+   */
+  async getStructuralBreaks(): Promise<StructuralBreaksResponse> {
+    const { data } = await api.get<StructuralBreaksResponse>('/analysis/structural-breaks')
+    return data
+  },
+
+  async getPoliticalCycle(): Promise<PoliticalCycleResponse> {
+    const { data } = await api.get<PoliticalCycleResponse>('/analysis/political-cycle')
+    return data
+  },
+
+  async getPublicationDelays(): Promise<PublicationDelayResponse> {
+    const { data } = await api.get<PublicationDelayResponse>('/analysis/transparency/publication-delays')
+    return data
+  },
+
+  async getThresholdGaming(): Promise<ThresholdGamingResponse> {
+    const { data } = await api.get<ThresholdGamingResponse>('/analysis/threshold-gaming')
+    return data
+  },
+
+  /**
+   * Get ASF audit findings for a sector
+   */
+  async getSectorASFFindings(sectorId: number): Promise<SectorASFResponse> {
+    const { data } = await api.get<SectorASFResponse>(`/analysis/sectors/${sectorId}/asf-findings`)
+    return data
+  },
+
+  /**
+   * Get ASF audit findings aggregated by entity, cross-referenced with RUBLI risk scores
+   */
+  async getASFInstitutionSummary(): Promise<ASFInstitutionSummaryResponse> {
+    const { data } = await api.get<ASFInstitutionSummaryResponse>('/analysis/asf-institution-summary')
+    return data
+  },
+
+  async comparePeriods(p1s: string, p1e: string, p2s: string, p2e: string): Promise<ComparePeriodResponse> {
+    const { data } = await api.get<ComparePeriodResponse>(
+      `/analysis/compare-periods?period1_start=${p1s}&period1_end=${p1e}&period2_start=${p2s}&period2_end=${p2e}`
+    )
+    return data
+  },
+
+  async getInstitutionRiskFactors(limit = 10): Promise<InstitutionRiskFactorResponse[]> {
+    const { data } = await api.get<InstitutionRiskFactorResponse[]>(`/analysis/institution-risk-factors?limit=${limit}`)
+    return data
+  },
+
+  async getModelMetadata(): Promise<{ version: string; trained_at: string; auc_test: number; pu_correction?: number; n_contracts?: number; gt_cases_at_training?: number | null }> {
+    const { data } = await api.get('/analysis/model/metadata')
+    return data
+  },
+
+  async getModelCalibration(): Promise<{
+    model_version: string
+    run_id: string
+    created_at: string
+    global_intercept: number
+    coefficients: Array<{
+      factor: string
+      beta: number
+      ci_lower: number | null
+      ci_upper: number | null
+    }>
+    auc_train: number | null
+    auc_test: number | null
+    pu_correction_c: number | null
+    n_positive: number | null
+    n_negative: number | null
+    hyperparameters: Record<string, unknown> | null
+  }> {
+    const { data } = await api.get('/analysis/model/calibration')
+    return data
+  },
+
+  async getFeatureImportance(sectorId?: number): Promise<FeatureImportanceItem[]> {
+    const { data } = await api.get<FeatureImportanceItem[]>(
+      `/investigation/feature-importance${sectorId ? `?sector_id=${sectorId}` : ''}`
+    )
+    return data
+  },
+
+  async getModelComparison(): Promise<ModelComparisonItem[]> {
+    const { data } = await api.get<ModelComparisonItem[]>('/investigation/model-comparison')
+    return data
+  },
+
+  /**
+   * Get flash vendors — short-lived but high-value vendors
+   */
+  async getFlashVendors(params: {
+    max_active_years?: number
+    min_value?: number
+    limit?: number
+  } = {}): Promise<FlashVendorsResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<FlashVendorsResponse>(
+      `/analysis/flash-vendors${queryParams.toString() ? `?${queryParams}` : ''}`
+    )
+    return data
+  },
+
+  /**
+   * Get value concentration alerts — vendors dominating a single institution's spending
+   */
+  async getValueConcentration(params: {
+    min_pct?: number
+    limit?: number
+  } = {}): Promise<ValueConcentrationResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ValueConcentrationResponse>(
+      `/analysis/value-concentration${queryParams.toString() ? `?${queryParams}` : ''}`
+    )
+    return data
+  },
+
+  /**
+   * Get seasonal risk by month — compares target month risk premium vs. rest of year
+   */
+  async getSeasonalRisk(month = 12): Promise<SeasonalRiskResponse> {
+    const { data } = await api.get<SeasonalRiskResponse>(
+      `/analysis/seasonal-risk?month=${month}`
+    )
+    return data
+  },
+
+  /**
+   * Get monthly risk summary — avg risk per calendar month (1-12) across all years
+   */
+  async getMonthlyRiskSummary(sectorId?: number): Promise<MonthlyRiskSummaryResponse> {
+    const qs = sectorId != null ? `?sector_id=${sectorId}` : ''
+    const { data } = await api.get<MonthlyRiskSummaryResponse>(
+      `/analysis/monthly-risk-summary${qs}`
+    )
+    return data
+  },
+
+  /**
+   * Get procedure risk comparison — direct award vs. competitive risk by sector/year
+   */
+  async getProcedureRiskComparison(params: {
+    sector_id?: number
+    year?: number
+  } = {}): Promise<ProcedureRiskComparisonResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<ProcedureRiskComparisonResponse>(
+      `/analysis/procedure-risk-comparison${queryParams.toString() ? `?${queryParams}` : ''}`
+    )
+    return data
+  },
+
+  /**
+   * Get industry risk clusters — vendor count, total value, avg risk by sector.
+   * First call takes ~100s (no cache), subsequent calls are fast.
+   */
+  async getIndustryClusters(minContracts = 100): Promise<IndustryClusterResponse> {
+    const { data } = await api.get<IndustryClusterResponse>(
+      `/analysis/industry-risk-clusters?min_contracts=${minContracts}`,
+      { timeout: 180000 }
+    )
+    return data
+  },
+
+  /**
+   * Get the top vendors or institutions for a given year range.
+   * entity: 'vendor' | 'institution'
+   * by: 'value' | 'count'
+   */
+  async getTopByPeriod(
+    startYear: number,
+    endYear: number,
+    entity: 'vendor' | 'institution',
+    by: 'value' | 'count' = 'value',
+    limit = 20,
+  ): Promise<TopByPeriodResponse> {
+    const queryParams = buildQueryParams({
+      start_year: startYear,
+      end_year: endYear,
+      entity,
+      by,
+      limit,
+    } as QueryParams)
+    const { data } = await api.get<TopByPeriodResponse>(
+      `/analysis/top-by-period?${queryParams}`,
+    )
+    return data
+  },
+
+  /**
+   * Get sector-level value and contract count growth for year vs. year-1.
+   */
+  async getSectorGrowth(year: number): Promise<SectorGrowthResponse> {
+    const { data } = await api.get<SectorGrowthResponse>(
+      `/analysis/sector-growth?year=${year}`,
+    )
+    return data
+  },
+
+  /**
+   * Get a comprehensive summary for a single procurement year.
+   */
+  async getYearSummary(year: number): Promise<YearSummaryResponse> {
+    const { data } = await api.get<YearSummaryResponse>(
+      `/analysis/year-summary/${year}`,
+    )
+    return data
+  },
+
+  /**
+   * Get SHAP-based global feature importance (v5.2)
+   * Optional sector_id for per-sector model breakdown
+   */
+  async getFeatureImportanceV52(sectorId?: number): Promise<FeatureImportanceResponse> {
+    const { data } = await api.get<FeatureImportanceResponse>(
+      `/analysis/feature-importance${sectorId ? `?sector_id=${sectorId}` : ''}`
+    )
+    return data
+  },
+
+  /**
+   * Get PyOD anomaly detection agreement with v6.0 risk scores
+   * Shows confirmation rate between ML outlier detection and risk model
+   */
+  async getPyodAgreement(): Promise<PyodAgreementResponse> {
+    const { data } = await api.get<PyodAgreementResponse>('/analysis/pyod-agreement')
+    return data
+  },
+
+  /**
+   * Get latest feature drift report (v5.2)
+   * Uses Kolmogorov-Smirnov test to detect distributional shift
+   */
+  async getDrift(): Promise<DriftReportResponse> {
+    const { data } = await api.get<DriftReportResponse>('/analysis/drift')
+    return data
+  },
+
+  /**
+   * Get factor baselines (mean/stddev) for a given sector and year
+   */
+  async getFactorBaselines(sectorId: number, year: number): Promise<FactorBaselineResponse> {
+    const { data } = await api.get<FactorBaselineResponse>(`/analysis/factor-baselines/${sectorId}/${year}`)
+    return data
+  },
+
+  /**
+   * Get vendor concentration per sector — top-N vendors' share of contracts
+   * Returns metric_value as 0-100 (SectorComparisonItem shape)
+   */
+  async getVendorConcentration(topN: number = 3): Promise<{ data: Array<{ sector_id: number; sector_name: string; color: string; metric_value: number; rank: number }> }> {
+    const { data } = await api.get(`/analysis/vendor-concentration?top_n=${topN}`)
+    return data
+  },
+
+  /**
+   * Get daily contract activity for a full year — GitHub-style calendar heatmap data.
+   * Returns 365 (or 366 for leap years) records, one per calendar day.
+   */
+  async getCalendarHeatmap(year: number): Promise<Array<{ date: string; total_contracts: number; high_risk_contracts: number; risk_rate: number }>> {
+    const { data } = await api.get<Array<{ date: string; total_contracts: number; high_risk_contracts: number; risk_rate: number }>>(`/analysis/calendar-heatmap?year=${year}`)
+    return data
+  },
+}
+
+// ============================================================================
+// Export Data Endpoints
+// ============================================================================
+
+export const exportApi = {
+  /**
+   * Export contracts to CSV
+   */
+  async exportContracts(params: ContractFilterParams = {}): Promise<Blob> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get(`/export/contracts/csv?${queryParams}`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  /**
+   * Export vendors to CSV
+   */
+  async exportVendors(params: VendorFilterParams = {}): Promise<Blob> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get(`/export/vendors/csv?${queryParams}`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+
+  async downloadExcel(filters: Record<string, unknown> = {}): Promise<Blob> {
+    const queryParams = buildQueryParams(filters)
+    const { data } = await api.get(`/export/contracts/excel?${queryParams}`, {
+      responseType: 'blob',
+    })
+    return data
+  },
+}
+
+// ============================================================================
+// Officials Endpoints — Responsables de la Unidad Compradora
+// ============================================================================
+
+export const officialsApi = {
+  /** Cross-institution movers — officials who signed at >1 institution (2018+). */
+  async getMovers(limit = 40, minContracts = 50): Promise<OfficialMoversResponse> {
+    const { data } = await api.get<OfficialMoversResponse>('/officials/movers', {
+      params: { limit, min_contracts: minContracts },
+    })
+    return data
+  },
+  /** Per-institution rollup for one official (responsible_uc — any case/accents). */
+  async getProfile(name: string): Promise<OfficialProfileResponse> {
+    const { data } = await api.get<OfficialProfileResponse>(`/officials/${encodeURIComponent(name)}`)
+    return data
+  },
+}
+
+// ============================================================================
+// Watchlist Endpoints
+// ============================================================================
+
+/** Alert item returned by /watchlist/alerts/check (feature 4.3C) */
+export interface WatchlistAlertItem {
+  id: number
+  item_type: string
+  item_id: number
+  item_name: string
+  alert_threshold: number
+  current_risk_score: number
+  priority: string
+  status: string
+  notes: string | null
+}
+
+export const watchlistApi = {
+  /**
+   * Get all watchlist items with optional filters
+   */
+  async getAll(params?: { status?: string; item_type?: string; priority?: string; folder_id?: number }): Promise<WatchlistResponse> {
+    const queryParams = params ? buildQueryParams(params as QueryParams) : ''
+    const { data } = await api.get<WatchlistResponse>(`/watchlist?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get watchlist item by ID
+   */
+  async getById(id: number): Promise<WatchlistItem> {
+    const { data } = await api.get<WatchlistItem>(`/watchlist/${id}`)
+    return data
+  },
+
+  /**
+   * Add item to watchlist
+   */
+  async create(item: WatchlistItemCreate): Promise<WatchlistItem> {
+    const { data } = await api.post<WatchlistItem>('/watchlist', item)
+    return data
+  },
+
+  /**
+   * Update watchlist item
+   */
+  async update(id: number, update: WatchlistItemUpdate): Promise<WatchlistItem> {
+    const { data } = await api.patch<WatchlistItem>(`/watchlist/${id}`, update)
+    return data
+  },
+
+  /**
+   * Remove item from watchlist
+   */
+  async delete(id: number): Promise<{ message: string; id: number }> {
+    const { data } = await api.delete<{ message: string; id: number }>(`/watchlist/${id}`)
+    return data
+  },
+
+  /**
+   * Get watchlist statistics
+   */
+  async getStats(): Promise<WatchlistStats> {
+    const { data } = await api.get<WatchlistStats>('/watchlist/stats')
+    return data
+  },
+
+  /**
+   * Get risk score changes since item was added to watchlist
+   */
+  async getChanges(id: number): Promise<WatchlistChanges> {
+    const { data } = await api.get<WatchlistChanges>(`/watchlist/${id}/changes`)
+    return data
+  },
+
+  /**
+   * 4.3C Alert System — return watchlist items whose current risk score has
+   * reached or exceeded their configured alert threshold.
+   */
+  async checkAlerts(): Promise<WatchlistAlertItem[]> {
+    const { data } = await api.get<WatchlistAlertItem[]>('/watchlist/alerts/check')
+    return data
+  },
+
+  async getFolders(): Promise<Array<{ id: number; name: string; color: string }>> {
+    const { data } = await api.get<{ folders?: Array<{ id: number; name: string; color: string }> } | Array<{ id: number; name: string; color: string }>>('/watchlist/folders')
+    if (Array.isArray(data)) return data
+    return (data as { folders?: Array<{ id: number; name: string; color: string }> }).folders ?? []
+  },
+
+  async createFolder(name: string, color: string): Promise<{ id: number; name: string; color: string }> {
+    const { data } = await api.post<{ id: number; name: string; color: string }>('/watchlist/folders', { name, color })
+    return data
+  },
+
+  async deleteFolder(folderId: number): Promise<void> {
+    await api.delete(`/watchlist/folders/${folderId}`)
+  },
+}
+
+// ============================================================================
+// Network Graph Endpoints
+// ============================================================================
+
+export const networkApi = {
+  /**
+   * Get network graph data for visualization
+   */
+  async getGraph(params: NetworkGraphParams = {}): Promise<NetworkGraphResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<NetworkGraphResponse>(`/network/graph?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get co-bidders for a vendor
+   */
+  async getCoBidders(vendorId: number, minProcedures = 3, limit = 20): Promise<CoBiddersResponse> {
+    const { data } = await api.get<CoBiddersResponse>(
+      `/network/co-bidders/${vendorId}?min_procedures=${minProcedures}&limit=${limit}`
+    )
+    return data
+  },
+
+  /**
+   * Get vendors connected to an institution
+   */
+  async getInstitutionVendors(
+    institutionId: number,
+    params?: { year?: number; min_contracts?: number; limit?: number }
+  ): Promise<{
+    institution_id: number
+    institution_name: string
+    vendors: Array<{
+      vendor_id: number
+      vendor_name: string
+      contract_count: number
+      total_value: number
+      avg_risk_score: number | null
+      direct_award_count: number
+      direct_award_pct: number
+    }>
+    total_vendors: number
+    total_contracts: number
+    total_value: number
+    concentration_index: number
+  }> {
+    const queryParams = params ? buildQueryParams(params as QueryParams) : ''
+    const { data } = await api.get(`/network/institution-vendors/${institutionId}?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get related vendors (same group, shared RFC, similar names)
+   */
+  async getRelatedVendors(vendorId: number, limit = 20): Promise<{
+    vendor_id: number
+    vendor_name: string
+    related: Array<{
+      vendor_id: number
+      vendor_name: string
+      rfc: string | null
+      relationship: string
+      match_tier?: string | null
+      confidence: number
+      contracts: number
+      value: number
+    }>
+    total: number
+  }> {
+    const { data } = await api.get(`/network/related-vendors/${vendorId}?limit=${limit}`)
+    return data
+  },
+
+  async getCommunityDetail(communityId: number): Promise<CommunityDetailResponse> {
+    const { data } = await api.get<CommunityDetailResponse>(`/network/communities/${communityId}`)
+    return data
+  },
+
+  /**
+   * Get Louvain co-bidding communities (requires build_vendor_graph.py)
+   */
+  async getCommunities(params?: {
+    min_size?: number
+    min_avg_risk?: number
+    sector_id?: number
+    limit?: number
+  }): Promise<CommunitiesResponse> {
+    const queryParams = params ? buildQueryParams(params as QueryParams) : ''
+    const { data } = await api.get<CommunitiesResponse>(`/network/communities?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get pattern spotlight: top T1/T2 ARIA vendors per corruption typology (P1-P7)
+   */
+  async getPatternSpotlight(): Promise<PatternSpotlightResponse> {
+    const { data } = await api.get<PatternSpotlightResponse>('/network/pattern-spotlight')
+    return data
+  },
+
+  /**
+   * La Trama — enriched community index (RUNG 0).
+   * Precomputed: per-community value, DA/SB rates, hub vendor, pattern mix.
+   */
+  async getCommunitiesIndex(): Promise<CommunityIndexResponse> {
+    const { data } = await api.get<CommunityIndexResponse>('/network/communities/index')
+    return data
+  },
+
+  /**
+   * La Trama — real co-bidding force graph for one Louvain community (RUNG 1).
+   * Nodes = members (top-100 by pagerank when >150), edges = co_bidding_stats pairs.
+   */
+  async getCommunityGraph(communityId: number): Promise<CommunityGraphResponse> {
+    const { data } = await api.get<CommunityGraphResponse>(`/network/communities/${communityId}/graph`)
+    return data
+  },
+
+  /**
+   * La Trama institution lens — top federal buyers as capture targets.
+   */
+  async getInstitutionCapture(limit = 120, sort: 'value' | 'top1_share' | 'hhi' | 'risk' = 'value'): Promise<InstitutionCaptureResponse> {
+    const { data } = await api.get<InstitutionCaptureResponse>(`/network/institution-capture?limit=${limit}&sort=${sort}`)
+    return data
+  },
+
+  /**
+   * La Trama institution star — top-30 vendor orbit around one buyer,
+   * with Louvain community_id per vendor for clan coloring.
+   */
+  async getInstitutionStar(institutionId: number): Promise<InstitutionStarResponse> {
+    const { data } = await api.get<InstitutionStarResponse>(`/network/institution-capture/${institutionId}/star`)
+    return data
+  },
+}
+
+// ============================================================================
+// La Trama (/network) types — frozen contract with backend Phase A
+// ============================================================================
+
+export interface PatternMixItem {
+  pattern: string
+  count: number
+}
+
+export interface CommunityGraphNode {
+  vendor_id: number
+  name: string
+  pagerank: number
+  degree: number
+  risk_score: number | null
+  total_value_mxn: number | null
+  contract_count: number | null
+  is_sanctioned: boolean
+  primary_pattern: string | null
+  gt_case_count: number
+}
+
+export interface CommunityGraphEdge {
+  a: number
+  b: number
+  shared_procedures: number
+  co_bid_rate: number
+  is_potential_collusion: boolean
+}
+
+export interface CommunityGraphStats {
+  total_value_mxn: number
+  da_rate: number | null
+  sb_rate: number | null
+  avg_risk: number
+  pattern_mix: PatternMixItem[]
+  labeled_count: number
+  gt_vendor_count: number
+  sanctioned_count: number
+}
+
+export interface CommunityGraphResponse {
+  community_id: number
+  total_members: number
+  rendered_members: number
+  truncated: boolean
+  nodes: CommunityGraphNode[]
+  edges: CommunityGraphEdge[]
+  edges_truncated: boolean
+  stats: CommunityGraphStats
+}
+
+export interface CommunityIndexItem {
+  community_id: number
+  size: number
+  hub_vendor_id: number
+  hub_vendor_name: string
+  avg_risk: number
+  total_value_mxn: number
+  da_rate: number | null
+  sb_rate: number | null
+  dominant_sector_name: string | null
+  pattern_mix: PatternMixItem[]
+  labeled_count: number
+  gt_vendor_count: number
+  sanctioned_count: number
+}
+
+export interface CommunityIndexResponse {
+  communities: CommunityIndexItem[]
+  total_communities: number
+  generated_at: string
+}
+
+export interface CaptureTopVendor {
+  vendor_id: number
+  vendor_name: string
+  total_value_mxn: number
+  avg_risk_score: number | null
+}
+
+export interface CaptureCommunityRef {
+  community_id: number
+  vendor_count: number
+}
+
+export interface InstitutionCaptureItem {
+  institution_id: number
+  name: string
+  sector_id: number | null
+  total_value_mxn: number
+  total_contracts: number
+  vendor_count: number
+  direct_award_pct: number | null // 0-100 scale
+  single_bid_pct: number | null // 0-100 scale
+  avg_risk_score: number | null
+  top1_vendor: CaptureTopVendor | null
+  top1_share_pct: number | null // 0-100 scale
+  latest_hhi: number | null
+  feeding_communities: CaptureCommunityRef[]
+}
+
+export interface InstitutionCaptureResponse {
+  institutions: InstitutionCaptureItem[]
+  total: number
+  generated_at: string
+}
+
+export interface StarVendor {
+  vendor_id: number
+  vendor_name: string
+  total_value_mxn: number
+  avg_risk_score: number | null
+  contract_count: number
+  community_id: number | null
+  is_sanctioned: boolean
+}
+
+export interface InstitutionStarResponse {
+  institution_id: number
+  name: string
+  sector_id: number | null
+  total_value_mxn: number
+  total_vendors: number
+  vendors: StarVendor[]
+}
+
+// ============================================================================
+// Pattern Spotlight types (used by CorruptionClusters + RedesKnownDossier)
+// ============================================================================
+
+export interface PatternVendorItem {
+  vendor_id: number
+  vendor_name: string
+  ips_final: number
+  total_value_mxn: number | null
+  avg_risk_score: number | null
+  primary_sector_name: string | null
+  total_contracts: number | null
+}
+
+export interface PatternSpotlight {
+  code: string
+  vendor_count: number
+  t1_count: number
+  t2_count: number
+  avg_ips: number
+  gt_case_count: number
+  total_value_mxn: number | null
+  avg_da_rate: number | null
+  avg_sb_rate: number | null
+  top_vendors: PatternVendorItem[]
+}
+
+export interface PatternSpotlightResponse {
+  patterns: PatternSpotlight[]
+}
+
+// ============================================================================
+// Price Hypothesis Endpoints (types that stayed local for priceApi use)
+// ============================================================================
+
+export interface SectorPriceBaseline {
+  sector_id: number
+  sector_name: string
+  contract_type: string
+  percentile_10: number
+  percentile_25: number
+  percentile_50: number
+  percentile_75: number
+  percentile_90: number
+  percentile_95: number
+  mean_value: number
+  std_dev: number
+  iqr: number
+  upper_fence: number
+  extreme_fence: number
+  sample_count: number
+}
+
+export interface PriceHypothesesSummary {
+  status: string
+  overall?: {
+    total_hypotheses: number
+    pending_review: number
+    confirmed: number
+    dismissed: number
+    total_flagged_value: number
+    avg_confidence: number
+  }
+  by_type: Array<{
+    type: string
+    count: number
+    avg_confidence: number
+    total_value: number
+  }>
+  by_sector: Array<{
+    sector_id: number
+    sector_name: string
+    count: number
+    total_value: number
+  }>
+  by_confidence: Array<{
+    level: string
+    count: number
+  }>
+  recent_runs: Array<{
+    run_id: string
+    started_at: string
+    completed_at?: string
+    contracts_analyzed: number
+    hypotheses_generated: number
+    status: string
+  }>
+}
+
+export interface ContractPriceAnalysis {
+  contract_id: number
+  amount_mxn: number
+  sector_id?: number
+  sector_name?: string
+  sector_comparison?: {
+    median: number
+    p75: number
+    p95: number
+    upper_fence: number
+    extreme_fence: number
+    ratio_to_median: number
+    sample_count: number
+  }
+  vendor_comparison?: {
+    avg_contract_value: number
+    median_contract_value: number
+    contract_count: number
+    price_trend: string
+    ratio_to_vendor_median: number
+  }
+  hypotheses: PriceHypothesisItem[]
+  price_percentile?: number
+  is_outlier: boolean
+  outlier_type?: string
+}
+
+export interface PriceHypothesesFilterParams {
+  hypothesis_type?: string
+  confidence_level?: string
+  min_confidence?: number
+  sector_id?: number
+  year?: number
+  is_reviewed?: boolean
+  is_valid?: boolean
+  sort_by?: string
+  sort_order?: string
+  page?: number
+  per_page?: number
+}
+
+// ============================================================================
+// Price Hypothesis Endpoints
+// ============================================================================
+
+export const priceApi = {
+  /**
+   * Get paginated list of price hypotheses
+   */
+  async getHypotheses(params: PriceHypothesesFilterParams = {}): Promise<PriceHypothesesResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<PriceHypothesesResponse>(`/analysis/price-hypotheses?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get detailed hypothesis with context
+   */
+  async getHypothesisDetail(hypothesisId: string): Promise<PriceHypothesisDetailResponse> {
+    const { data } = await api.get<PriceHypothesisDetailResponse>(`/analysis/price-hypotheses/${hypothesisId}`)
+    return data
+  },
+
+  /**
+   * Review a hypothesis (confirm/dismiss)
+   */
+  async reviewHypothesis(hypothesisId: string, isValid: boolean, notes?: string): Promise<{ success: boolean }> {
+    const { data } = await api.put(`/analysis/price-hypotheses/${hypothesisId}/review`, {
+      is_valid: isValid,
+      review_notes: notes,
+    })
+    return data
+  },
+
+  /**
+   * Get price analysis for a specific contract
+   */
+  async getContractPriceAnalysis(contractId: number): Promise<ContractPriceAnalysis> {
+    const { data } = await api.get<ContractPriceAnalysis>(`/analysis/contracts/${contractId}/price-analysis`)
+    return data
+  },
+
+  /**
+   * Get sector price baselines
+   */
+  async getBaselines(sectorId?: number): Promise<SectorPriceBaseline[]> {
+    const params = sectorId ? `?sector_id=${sectorId}` : ''
+    const { data } = await api.get<SectorPriceBaseline[]>(`/analysis/price-baselines${params}`)
+    return data
+  },
+
+  /**
+   * Get price hypotheses summary statistics
+   */
+  async getSummary(): Promise<PriceHypothesesSummary> {
+    const { data } = await api.get<PriceHypothesesSummary>('/analysis/price-hypotheses/summary')
+    return data
+  },
+
+  /**
+   * Get ML-detected price anomalies (Isolation Forest, multi-feature).
+   * Populate via: python -m scripts.compute_price_anomaly_scores
+   */
+  async getMlAnomalies(params: {
+    sector_id?: number
+    limit?: number
+    only_new?: boolean
+    model?: string
+  } = {}): Promise<MlAnomaliesResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<MlAnomaliesResponse>(`/analysis/prices/ml-anomalies?${queryParams}`)
+    return data
+  },
+}
+
+// ============================================================================
+// Investigation Endpoints
+// ============================================================================
+
+export const investigationApi = {
+  /**
+   * Get paginated list of investigation cases
+   */
+  async getCases(params: InvestigationFilterParams = {}): Promise<InvestigationCaseListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<InvestigationCaseListResponse>(`/investigation/cases?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Get full case details by case_id
+   */
+  async getCaseById(caseId: string): Promise<InvestigationCaseDetail> {
+    const { data } = await api.get<InvestigationCaseDetail>(`/investigation/cases/${caseId}`)
+    return data
+  },
+
+  /**
+   * Get investigation stats summary
+   */
+  async getStats(): Promise<InvestigationStats> {
+    const { data } = await api.get<InvestigationStats>('/investigation/stats')
+    return data
+  },
+
+  /**
+   * Get top N most suspicious cases
+   */
+  async getTopCases(n: number, sectorId?: number): Promise<{ data: unknown[]; count: number }> {
+    const params = sectorId ? `?sector_id=${sectorId}` : ''
+    const { data } = await api.get(`/investigation/top/${n}${params}`)
+    return data
+  },
+
+  /**
+   * Get combined dashboard summary (funnel, hit rate, top corroborated)
+   */
+  async getDashboardSummary(): Promise<InvestigationDashboardSummary> {
+    const { data } = await api.get<InvestigationDashboardSummary>('/investigation/dashboard-summary')
+    return data
+  },
+
+  /**
+   * Update case review status
+   */
+  async reviewCase(caseId: string, status: string, notes?: string, reviewedBy?: string): Promise<{ success: boolean }> {
+    const { data } = await api.put(`/investigation/cases/${caseId}/review`, {
+      validation_status: status,
+      review_notes: notes,
+      reviewed_by: reviewedBy,
+    })
+    return data
+  },
+
+  /**
+   * Add external evidence to a case
+   */
+  async addEvidence(caseId: string, evidence: ExternalEvidence[], updateStatus?: string): Promise<{ success: boolean; total_evidence: number }> {
+    const { data } = await api.put(`/investigation/cases/${caseId}/evidence`, {
+      evidence,
+      update_status: updateStatus,
+    })
+    return data
+  },
+
+  /**
+   * Promote corroborated case to ground truth
+   */
+  async promoteToGroundTruth(caseId: string, caseName: string, caseType?: string): Promise<{ success: boolean; ground_truth_case_id: string }> {
+    const { data } = await api.post(`/investigation/cases/${caseId}/promote-to-ground-truth`, {
+      case_name: caseName,
+      case_type: caseType || 'procurement_fraud',
+    })
+    return data
+  },
+
+  /**
+   * Get SHAP-based vendor explanation
+   */
+  async getVendorExplanation(vendorId: number, sectorId?: number): Promise<unknown> {
+    const { data } = await api.get(`/investigation/vendors/${vendorId}/explanation${sectorId ? `?sector_id=${sectorId}` : ''}`)
+    return data
+  },
+
+  async getTopAnomalousVendors(limit = 20, sectorId?: number): Promise<TopAnomalousVendorsResponse> {
+    const { data } = await api.get<TopAnomalousVendorsResponse>(`/investigation/top-anomalous-vendors?limit=${limit}${sectorId ? `&sector_id=${sectorId}` : ''}`)
+    return data
+  },
+
+  async runPipeline(): Promise<unknown> {
+    const { data } = await api.post('/investigation/run', {})
+    return data
+  },
+
+  async getCaseExport(caseId: number): Promise<unknown> {
+    const { data } = await api.get(`/investigation/cases/${caseId}/export`)
+    return data
+  },
+
+  async getCaseAsfMatches(caseId: number): Promise<unknown> {
+    const { data } = await api.get(`/investigation/cases/${caseId}/asf-matches`)
+    return data
+  },
+}
+
+// ============================================================================
+// Report Endpoints
+// ============================================================================
+
+export const reportApi = {
+  async getVendorReport(id: number): Promise<VendorReport> {
+    const { data } = await api.get<VendorReport>(`/reports/vendor/${id}`)
+    return data
+  },
+
+  async getInstitutionReport(id: number): Promise<InstitutionReport> {
+    const { data } = await api.get<InstitutionReport>(`/reports/institution/${id}`)
+    return data
+  },
+
+  async getSectorReport(id: number): Promise<SectorReport> {
+    const { data } = await api.get<SectorReport>(`/reports/sector/${id}`)
+    return data
+  },
+
+  async getThematicReport(theme: string): Promise<ThematicReport> {
+    const { data } = await api.get<ThematicReport>(`/reports/thematic/${theme}`)
+    return data
+  },
+
+  async getAvailableReports(): Promise<ReportTypeSummary> {
+    const { data } = await api.get<ReportTypeSummary>('/reports/')
+    return data
+  },
+}
+
+// ============================================================================
+// Stats Endpoints
+// ============================================================================
+
+export const statsApi = {
+  async getDatabase(): Promise<unknown> {
+    const { data } = await api.get('/stats/database')
+    return data
+  },
+}
+
+// ============================================================================
+// Industries Endpoints
+// ============================================================================
+
+export const industriesApi = {
+  async getAll(): Promise<unknown> {
+    const { data } = await api.get('/industries')
+    return data
+  },
+}
+
+// ============================================================================
+// CATEGORIES API
+// ============================================================================
+
+export const categoriesApi = {
+  getSummary: async () => {
+    const { data } = await api.get('/categories/summary')
+    return data
+  },
+
+  /** «Hallazgos»: four findings + glyph matrix + drill layer (precomputed). */
+  getHallazgos: async (sector?: number | null): Promise<import('@/lib/categories/hallazgosModel').Payload> => {
+    const { data } = await api.get('/categories/hallazgos', { params: sector ? { sector } : undefined })
+    return data
+  },
+
+  /** «El Anaquel»: institution × category pairs (columnar, cached server-side). */
+  getField: async (): Promise<CategoryFieldPayload> => {
+    const { data } = await api.get<CategoryFieldPayload>('/categories/field')
+    return data
+  },
+
+  getContracts: async (categoryId: number, params?: { page?: number; per_page?: number; risk_level?: string; year?: number; sort_by?: string; sort_order?: string }) => {
+    const { data } = await api.get(`/categories/${categoryId}/contracts`, { params })
+    return data
+  },
+
+  getTrends: async (yearFrom = 2010, yearTo = 2025) => {
+    const { data } = await api.get('/categories/trends', { params: { year_from: yearFrom, year_to: yearTo } })
+    return data
+  },
+
+  /** /categories filters (TEAL-4): rows [category_id, sector_id, sexenio, contracts, value, direct_count, high_risk_count]. */
+  getCategoryCube: async () => {
+    const { data } = await api.get('/categories/cube')
+    return data as { columns: string[]; rows: [number, number, string, number, number, number, number][] }
+  },
+
+  /** «Lo que más se compra» (TEAL-4): the largest named subcategories across all categories. */
+  getTopSubcategories: async (limit = 15) => {
+    const { data } = await api.get('/categories/subcategories/top', { params: { limit } })
+    return data as {
+      total: number
+      data: {
+        subcategory_id: number; name_es: string; name_en: string; category_id: number; category_es: string; category_en: string
+        total_contracts: number; total_value: number; direct_award_pct: number | null; high_risk_pct: number | null
+      }[]
+    }
+  },
+
+  getSubcategories: async (categoryId: number) => {
+    const { data } = await api.get(`/categories/${categoryId}/subcategories`)
+    return data as {
+      category_id: number
+      category_name: string
+      total: number
+      data: {
+        subcategory_id: number
+        code: string
+        name_en: string
+        name_es: string
+        is_catch_all: boolean
+        display_order: number
+        total_contracts: number
+        total_value: number
+        avg_risk: number
+        direct_award_pct: number
+        single_bid_pct: number
+        /** Single-award share of competitive procedures (D20) — the displayed rate. */
+        single_award_pct?: number | null
+        year_min: number | null
+        year_max: number | null
+        top_vendor_name: string | null
+        top_vendor_id: number | null
+        example_titles: string[]
+        pct_of_category: number
+        /** share (0–100) of the value bought through a «compra consolidada» — a mechanism, not a kind (null before 2026-11-03) */
+        consolidated_value_pct?: number | null
+        /** share (0–100) of its contracts with a high or critical risk indicator (≥ 0.40); null before TEAL-4 */
+        high_risk_pct?: number | null
+        /** the largest vendors inside the subcategory (≤10, by value; subcategory_vendor_topn) */
+        vendors?: { vendor_id: number; vendor_name: string; contract_count: number; vendor_value: number; avg_risk: number | null; persona_fisica: boolean }[]
+      }[]
+    }
+  },
+
+  getVendorInstitution: async (categoryId: number, limit = 25, scope = 'federal') => {
+    const { data } = await api.get(`/categories/${categoryId}/vendor-institution`, { params: { limit, scope } })
+    return data as {
+      category_id: number
+      category_name: string
+      total: number
+      data: {
+        vendor_id: number
+        vendor_name: string
+        institution_id: number
+        institution_name: string
+        contract_count: number
+        total_value: number
+        avg_risk: number
+        max_risk: number
+        direct_award_pct: number
+        single_bid_pct: number
+        /** Single-award share of competitive procedures (D20) — the displayed rate. */
+        single_award_pct?: number | null
+      }[]
+    }
+  },
+
+  getSexenio: async () => {
+    const { data } = await api.get('/categories/sexenio')
+    return data as {
+      data: {
+        category_id: number
+        name_es: string
+        name_en: string
+        sector_id: number | null
+        sector_code: string | null
+        lifetime_value: number
+        administrations: Record<string, { value: number; contracts: number; avg_risk: number }>
+      }[]
+      administrations: { name: string; years: string }[]
+      total: number
+    }
+  },
+
+  getTopVendors: async (categoryId: number, limit = 10) => {
+    // Always use the precomputed fast endpoint. The slow /top-vendors endpoint
+    // causes 300-440s queries that lock SQLite and kill Gunicorn workers.
+    const { data } = await api.get(`/categories/${categoryId}/top-vendors-fast`, { params: { limit } })
+    return data as {
+      category_id: number
+      category_name: string
+      total_value: number
+      total_contracts: number
+      hhi: number
+      concentration_label: 'highly_concentrated' | 'moderately_concentrated' | 'competitive'
+      top3_share_pct: number
+      data: {
+        vendor_id: number
+        vendor_name: string
+        contract_count: number
+        vendor_value: number
+        market_share_pct: number
+        avg_risk: number
+        direct_award_pct: number
+        single_bid_pct: number
+        /** Single-award share of competitive procedures (D20) — the displayed rate. */
+        single_award_pct?: number | null
+      }[]
+    }
+  },
+
+  getPatterns: async (categoryId: number) => {
+    const { data } = await api.get(`/categories/${categoryId}/patterns`)
+    return data as {
+      category_id: number
+      category_name: string
+      total_vendors: number
+      vendors_in_aria: number
+      dominant_pattern: string | null
+      patterns: {
+        pattern: string
+        label_es: string
+        label_en: string
+        color: string
+        vendor_count: number
+        pct_of_aria: number
+        avg_confidence: number
+        high_tier_count: number
+      }[]
+      tier_distribution: { tier: number; count: number }[]
+    }
+  },
+
+  getSeasonality: async (categoryId: number) => {
+    const { data } = await api.get(`/categories/${categoryId}/seasonality`)
+    return data as {
+      category_id: number
+      category_name: string
+      monthly: {
+        month: number
+        month_name: string
+        contracts: number
+        value: number
+        pct_contracts: number
+        pct_value: number
+      }[]
+      december_pct_value: number
+      december_index: number
+      yearly_december: {
+        year: number
+        dec_pct: number
+        dec_cnt_pct: number
+      }[]
+    }
+  },
+
+  getCompetition: async (categoryId: number) => {
+    const { data } = await api.get(`/categories/${categoryId}/competition`)
+    return data as {
+      category_id: number
+      category_name: string
+      sector_id: number | null
+      total_contracts: number
+      procedure_breakdown: {
+        type: string
+        count: number
+        pct_contracts: number
+        value: number
+        pct_value: number
+      }[]
+      yearly_trend: {
+        year: number
+        contracts: number
+        da_pct: number
+        sb_pct: number
+      }[]
+      sector_da_avg: number | null
+      sector_sb_avg: number | null
+    }
+  },
+
+  getPriceDistribution: async (categoryId: number) => {
+    const { data } = await api.get(`/categories/${categoryId}/price-distribution`)
+    return data as {
+      category_id: number
+      category_name: string
+      n: number
+      p25: number | null
+      p50: number | null
+      p75: number | null
+      mean: number | null
+      iqr: number | null
+      mean_median_ratio: number | null
+      outlier_count: number
+      outlier_value: number
+      outlier_value_pct?: number
+      mega_count?: number
+      mega_value?: number
+      mega_value_pct?: number
+      total_value?: number
+      yearly_trend: { year: number; count: number; avg_value: number }[]
+    }
+  },
+
+  getTopContracts: async (categoryId: number, limit = 8) => {
+    const { data } = await api.get(`/categories/${categoryId}/top-contracts`, { params: { limit } })
+    return data as {
+      category_id: number
+      category_name: string
+      contracts: {
+        contract_id: number
+        amount_mxn: number
+        year: number | null
+        risk_level: string | null
+        risk_score: number | null
+        vendor_id: number | null
+        vendor_name: string | null
+        /** persona física: named, always labelled (policy 10-29) */
+        persona_fisica?: boolean
+        institution_id: number | null
+        institution_name: string | null
+        title: string | null
+      }[]
+    }
+  },
+
+  getTopInstitutions: async (categoryId: number, limit = 6) => {
+    const { data } = await api.get(`/categories/${categoryId}/top-institutions`, { params: { limit } })
+    return data as {
+      category_id: number
+      category_name: string
+      institutions: {
+        institution_id: number
+        name: string
+        full_name: string
+        contract_count: number
+        value_mxn: number
+        share_pct: number
+        avg_risk: number | null
+      }[]
+    }
+  },
+}
+
+// ============================================================================
+// Issue Reporting Endpoints
+// ============================================================================
+
+export const issueApi = {
+  async submit(data: {
+    category: string
+    subject: string
+    description: string
+    page_url: string
+    email?: string
+  }): Promise<{ id: number; status: string; created_at: string }> {
+    const { data: res } = await api.post('/issues', data)
+    return res
+  },
+}
+
+// ============================================================================
+// Case Library Endpoints
+// ============================================================================
+
+export const caseLibraryApi = {
+  async getAll(params: CaseLibraryParams = {}): Promise<ScandalListItem[]> {
+    const { data } = await api.get<ScandalListItem[]>('/cases', { params })
+    return data
+  },
+
+  async getStats(): Promise<ScandalStats> {
+    const { data } = await api.get<ScandalStats>('/cases/stats')
+    return data
+  },
+
+  async getBySlug(slug: string): Promise<ScandalDetail> {
+    const { data } = await api.get<ScandalDetail>(`/cases/${slug}`)
+    return data
+  },
+
+  async getBySector(sectorId: number): Promise<ScandalListItem[]> {
+    const { data } = await api.get<ScandalListItem[]>(`/cases/by-sector/${sectorId}`)
+    return data
+  },
+}
+
+// ============================================================================
+// Federated Search Types & Endpoints
+// ============================================================================
+
+export interface FederatedVendorResult {
+  id: number
+  name: string
+  rfc?: string | null
+  contracts: number
+  risk_score?: number | null
+  is_efos?: boolean
+  is_sfp_sanctioned?: boolean
+}
+
+export interface FederatedInstitutionResult {
+  id: number
+  name: string
+  institution_type?: string | null
+  total_contracts?: number | null
+}
+
+export interface FederatedContractResult {
+  id: number
+  title: string
+  amount?: number | null
+  risk_level?: string | null
+  year?: number | null
+}
+
+// Flash Vendors
+export interface FlashVendorItem {
+  vendor_id: number
+  vendor_name: string
+  total_value: number
+  contract_count: number
+  min_year: number
+  max_year: number
+  active_years: number
+  avg_risk_score: number
+  primary_institution: string | null
+  is_currently_active: boolean
+}
+
+export interface FlashVendorsResponse {
+  data: FlashVendorItem[]
+  total: number
+  max_active_years: number
+  min_value: number
+}
+
+// Vendor Trajectory
+export interface VendorTrajectoryYear {
+  year: number
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score: number | null
+  institution_count: number
+}
+
+export interface VendorTrajectoryResponse {
+  vendor_id: number
+  vendor_name?: string
+  scores?: Record<string, number | null>
+  data?: VendorTrajectoryYear[]
+}
+
+// Top Anomalous Vendors
+export interface AnomalousVendorItem {
+  vendor_id: number
+  vendor_name: string
+  sector_id: number | null
+  sector_name: string | null
+  risk_score: number
+  risk_level: string
+  anomaly_score: number
+  ensemble_score: number | null
+  both_flagged: boolean
+  total_contracts: number
+  total_value_mxn: number
+}
+
+export interface TopAnomalousVendorsResponse {
+  data: AnomalousVendorItem[]
+  total: number
+  agreement_rate: number
+}
+
+// Factor Baselines
+export interface FactorBaselineItem {
+  factor_name: string
+  mean: number
+  stddev: number
+  count: number
+}
+
+export interface FactorBaselineResponse {
+  sector_id: number
+  year: number
+  baselines: FactorBaselineItem[]
+}
+
+// ARIA Memos
+export interface AriaMemoResponse {
+  vendor_id: number
+  vendor_name: string
+  tier: number | null
+  memo_text: string
+  generated_at: string
+  model_used: string | null
+  /** S.3 provenance classification: 'llm_narrative' | 'template' | 'stub' | 'duplicate' */
+  memo_type?: string | null
+  created_at?: string | null
+  generated_by?: string | null
+}
+
+export interface AriaMemoListResponse {
+  data: AriaMemoResponse[]
+  total: number
+}
+
+// Value Concentration
+export interface ValueConcentrationItem {
+  vendor_id: number
+  vendor_name: string
+  institution_id: number
+  institution_name: string
+  vendor_value: number
+  institution_total_value: number
+  value_share_pct: number
+  contract_count: number
+  avg_risk_score: number
+}
+
+export interface ValueConcentrationResponse {
+  data: ValueConcentrationItem[]
+  total: number
+  min_pct: number
+}
+
+// Seasonal Risk
+export interface SeasonalRiskItem {
+  sector_id: number
+  sector_name: string
+  month_risk: number
+  other_risk: number
+  risk_premium_pct: number
+  month_value: number
+  month_count: number
+  other_count: number
+}
+
+export interface SeasonalRiskResponse {
+  month: number
+  data: SeasonalRiskItem[]
+}
+
+// Monthly Risk Summary (all 12 months, cross-year averages)
+export interface MonthlyRiskSummaryItem {
+  month: number
+  month_name: string
+  avg_risk: number
+  overall_avg_risk: number
+  risk_premium_pct: number
+  contract_count: number
+}
+
+export interface MonthlyRiskSummaryResponse {
+  data: MonthlyRiskSummaryItem[]
+  overall_avg_risk: number
+}
+
+// Procedure Risk Comparison
+export interface ProcedureRiskItem {
+  sector_id: number
+  sector_name: string
+  year: number
+  direct_award_risk: number
+  competitive_risk: number
+  ratio: number
+}
+
+export interface ProcedureRiskComparisonResponse {
+  data: ProcedureRiskItem[]
+  total: number
+}
+
+// Industry Risk Clusters
+export interface IndustryClusterItem {
+  sector_id: number
+  sector_name: string
+  vendor_count: number
+  total_value: number
+  avg_risk_score: number
+  high_risk_vendor_count: number
+  top_vendor_name: string | null
+  top_vendor_value: number | null
+  top_vendor_risk: number | null
+}
+
+export interface IndustryClusterResponse {
+  data: IndustryClusterItem[]
+  total: number
+  min_contracts: number
+}
+
+// Top By Period
+export interface TopPeriodEntityItem {
+  id: number
+  name: string
+  rfc?: string | null
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score: number | null
+  direct_award_pct: number | null
+}
+
+export interface TopByPeriodResponse {
+  entity: 'vendor' | 'institution'
+  by: 'value' | 'count'
+  start_year: number
+  end_year: number
+  limit: number
+  data: TopPeriodEntityItem[]
+}
+
+// Sector Growth
+export interface SectorGrowthItem {
+  sector_id: number
+  name_es: string | null
+  name_en: string | null
+  color: string | null
+  current_value: number
+  prior_value: number | null
+  value_growth_pct: number | null
+  current_contracts: number
+  prior_contracts: number | null
+  contracts_growth_pct: number | null
+  avg_risk: number | null
+}
+
+export interface SectorGrowthResponse {
+  year: number
+  prior_year: number
+  data: SectorGrowthItem[]
+}
+
+// Year Summary
+export interface YearSummaryOverview {
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score: number | null
+  high_risk_count: number
+  high_risk_pct: number | null
+}
+
+export interface YearSummaryVsPrior {
+  contracts_change_pct: number | null
+  value_change_pct: number | null
+  risk_change_pct: number | null
+}
+
+export interface YearSummaryTopGrowingSector {
+  sector_id: number
+  name_es: string | null
+  name_en: string | null
+  color: string | null
+  current_value: number
+  prior_value: number
+  value_growth_pct: number | null
+}
+
+export interface YearSummaryResponse {
+  year: number
+  overview: YearSummaryOverview
+  vs_prior_year: YearSummaryVsPrior | null
+  top_vendors_by_value: TopPeriodEntityItem[]
+  top_institutions_by_spend: TopPeriodEntityItem[]
+  top_growing_sector: YearSummaryTopGrowingSector | null
+  risk_level_counts: { critical: number; high: number; medium: number; low: number }
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+}
+
+export interface FederatedCaseResult {
+  slug: string
+  title: string
+  year?: number | null
+  sector?: string | null
+}
+
+export interface FederatedSearchResponse {
+  query: string
+  vendors: FederatedVendorResult[]
+  institutions: FederatedInstitutionResult[]
+  contracts: FederatedContractResult[]
+  cases: FederatedCaseResult[]
+  total: number
+}
+
+export const searchApi = {
+  async federated(q: string, limit = 5): Promise<FederatedSearchResponse> {
+    const { data } = await api.get<FederatedSearchResponse>('/search', {
+      params: { q, limit },
+    })
+    return data
+  },
+}
+
+// ============================================================================
+// Alerts API — critical-risk contract feed
+// ============================================================================
+
+export interface AlertItem {
+  type: string
+  vendor_id: number | null
+  vendor_name: string | null
+  /** persona física: named, always labelled (policy 10-29) */
+  persona_fisica?: boolean
+  risk_score: number | null
+  amount_mxn: number | null
+  contract_date: string | null
+  sector_name: string | null
+  contract_id: number
+}
+
+export interface AlertFeedResponse {
+  alerts: AlertItem[]
+  total: number
+}
+
+export const alertsApi = {
+  async feed(days = 30, limit = 20): Promise<AlertFeedResponse> {
+    const { data } = await api.get<AlertFeedResponse>('/alerts/feed', {
+      params: { days, limit },
+    })
+    return data
+  },
+}
+
+// ============================================================================
+// Feedback API (feature 4.7 — False Positive Feedback Loop)
+// ============================================================================
+
+export interface FeedbackRecord {
+  id: number
+  entity_type: string
+  entity_id: number
+  feedback_type: 'not_suspicious' | 'confirmed_suspicious' | 'needs_review'
+  reason?: string | null
+  created_at: string
+}
+
+export interface FeedbackIn {
+  entity_type: string
+  entity_id: number
+  feedback_type: string
+  reason?: string
+}
+
+export const feedbackApi = {
+  /** Retrieve analyst feedback for an entity, or null if none recorded. */
+  async get(entityType: string, entityId: number): Promise<FeedbackRecord | null> {
+    const { data } = await api.get<FeedbackRecord | null>('/feedback', {
+      params: { entity_type: entityType, entity_id: entityId },
+    })
+    return data
+  },
+
+  /** Submit or update feedback (upsert). */
+  async submit(body: FeedbackIn): Promise<FeedbackRecord> {
+    const { data } = await api.post<FeedbackRecord>('/feedback', body)
+    return data
+  },
+
+  /** Remove feedback for an entity. */
+  async remove(entityType: string, entityId: number): Promise<void> {
+    await api.delete('/feedback', {
+      params: { entity_type: entityType, entity_id: entityId },
+    })
+  },
+}
+
+// ============================================================================
+// Dossier API (feature 4.3A — Case Dossier System)
+// ============================================================================
+
+export interface DossierSummary {
+  id: number
+  name: string
+  description?: string | null
+  status: 'active' | 'archived' | 'closed'
+  color: string
+  item_count: number
+  highest_risk_score?: number | null
+  highest_risk_name?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface DossierItem {
+  id: number
+  dossier_id: number
+  item_type: 'vendor' | 'institution' | 'contract' | 'note'
+  item_id?: number | null
+  item_name: string
+  annotation?: string | null
+  color: string
+  created_at: string
+  // Alias fields for consistency with entity_* naming convention
+  /** Alias for item_type */
+  entity_type?: 'vendor' | 'institution' | 'contract'
+  /** Alias for item_id */
+  entity_id?: number | null
+  /** Alias for item_name */
+  entity_name?: string
+  /** Alias for created_at */
+  added_at?: string
+  /** Alias for annotation */
+  notes?: string | null
+}
+
+export const dossierApi = {
+  async list(status?: string): Promise<DossierSummary[]> {
+    const { data } = await api.get<DossierSummary[]>('/workspace/dossiers', { params: status ? { status } : {} })
+    return data
+  },
+  async create(body: { name: string; description?: string; color?: string }): Promise<DossierSummary> {
+    const { data } = await api.post<DossierSummary>('/workspace/dossiers', body)
+    return data
+  },
+  async update(id: number, body: { name: string; description?: string; status?: string; color?: string }): Promise<DossierSummary> {
+    const { data } = await api.patch<DossierSummary>(`/workspace/dossiers/${id}`, body)
+    return data
+  },
+  async remove(id: number): Promise<void> {
+    await api.delete(`/workspace/dossiers/${id}`)
+  },
+  async listItems(dossierId: number): Promise<DossierItem[]> {
+    const { data } = await api.get<DossierItem[]>(`/workspace/dossiers/${dossierId}/items`)
+    return data
+  },
+  async addItem(dossierId: number, item: { item_type: string; item_id?: number; item_name: string; annotation?: string }): Promise<DossierItem> {
+    const { data } = await api.post<DossierItem>(`/workspace/dossiers/${dossierId}/items`, item)
+    return data
+  },
+  async removeItem(dossierId: number, itemId: number): Promise<void> {
+    await api.delete(`/workspace/dossiers/${dossierId}/items/${itemId}`)
+  },
+}
+
+export const subnationalApi = {
+  async getStates(year?: number): Promise<import('./types').SubnationalStatesResponse> {
+    const { data } = await api.get<import('./types').SubnationalStatesResponse>(
+      '/subnational/states',
+      year ? { params: { year } } : undefined,
+    )
+    return data
+  },
+  async getStateDetail(code: string): Promise<import('./types').SubnationalStateDetail> {
+    const { data } = await api.get<import('./types').SubnationalStateDetail>(`/subnational/states/${code}`)
+    return data
+  },
+  async getStateVendors(code: string, localOnly?: boolean): Promise<import('./types').SubnationalVendorsResponse> {
+    const { data } = await api.get<import('./types').SubnationalVendorsResponse>(
+      `/subnational/states/${code}/vendors`,
+      { params: localOnly ? { local_only: true } : {} }
+    )
+    return data
+  },
+  async getStateVendorsByYear(
+    code: string,
+    year: number,
+  ): Promise<import('./types').SubnationalTopVendorsByYearResponse> {
+    const { data } = await api.get<import('./types').SubnationalTopVendorsByYearResponse>(
+      `/subnational/states/${code}/vendors`,
+      { params: { year, limit: 10 } },
+    )
+    return data
+  },
+  async getStateInstitutions(code: string, options?: { year?: number; limit?: number }) {
+    const { data } = await api.get(
+      `/subnational/states/${code}/institutions`,
+      { params: options },
+    )
+    return data
+  },
+  async getStateSectors(code: string, year?: number): Promise<import('./types').SubnationalSectorsResponse> {
+    const { data } = await api.get<import('./types').SubnationalSectorsResponse>(
+      `/subnational/states/${code}/sectors`,
+      { params: year ? { year } : {} },
+    )
+    return data
+  },
+}
+
+// ============================================================================
+// ARIA Investigation Queue API
+// ============================================================================
+
+export const ariaApi = {
+  /**
+   * Fetch the investigation queue with optional filters and pagination
+   */
+  async getQueue(params?: {
+    tier?: number
+    pattern?: string
+    search?: string
+    vendor_id?: number
+    /** Comma-separated vendor ids, ≤ 200 — the /atlas lasso (weekend E1). */
+    ids?: string
+    efos_only?: boolean
+    new_vendor_only?: boolean
+    novel_only?: boolean
+    status?: string
+    sector_id?: number
+    min_years_active?: number
+    page?: number
+    per_page?: number
+  }): Promise<AriaQueueResponse> {
+    const queryParams = params ? buildQueryParams(params as QueryParams) : ''
+    const { data } = await api.get<AriaQueueResponse>(`/aria/queue?${queryParams}`)
+    return data
+  },
+
+  /** Tier-1 vendors' largest contracts as [year, amount_mxn, risk_score, is_direct_award] — the «Rayos X» wall. */
+  async getRosettes(perVendor = 100, set: 'tier1' | 'nuevos' = 'tier1', tier = 2): Promise<{
+    tier: number; per_vendor: number; set?: string
+    vendors: Record<string, Array<[number, number, number | null, 0 | 1]>>
+    /** set=nuevos only: the vendor rows (no ground-truth link, active 2019+), value-descending. */
+    items?: Array<AriaNuevoItem>
+  }> {
+    const q = set === 'nuevos' ? `&set=nuevos&tier=${tier}` : ''
+    const { data } = await api.get(`/aria/rosettes?per_vendor=${perVendor}${q}`, { timeout: 120_000 })
+    return data
+  },
+
+  /** «El mapa de la fila»: the fila (tiers 1–3) grouped by main buyer, with sector totals. */
+  async getMapa(): Promise<import('./types').AriaMapaResponse> {
+    const { data } = await api.get('/aria/mapa')
+    return data
+  },
+
+  /** «¿Quién se benefició más?»: the whole fila as columns with money per sexenio (lib/aria/escenario decodes it). */
+  async getEscenario(): Promise<import('./types').AriaEscenarioResponse> {
+    const { data } = await api.get('/aria/mapa/escenario')
+    return data
+  },
+
+  /** The fila's IPS ranking inside a sector or a main buyer, each row with its standout aspects. */
+  async getMapaVendors(params: { sector_id?: number; institution_id?: number; limit?: number } = {}): Promise<{ rule: string; total: number; data: import('./types').AriaMapaVendor[] }> {
+    const { data } = await api.get(`/aria/mapa/vendors?${buildQueryParams(params as QueryParams)}`)
+    return data
+  },
+
+  /**
+   * Get detailed breakdown for a single vendor in the queue
+   */
+  async getVendorDetail(vendorId: number): Promise<AriaQueueItem> {
+    const { data } = await api.get<AriaQueueItem>(`/aria/queue/${vendorId}`)
+    return data
+  },
+
+  /**
+   * Fetch the ARIA queue entry for a vendor (for VendorProfile review notes #63).
+   * Returns null if the vendor is not in the queue.
+   */
+  async getAriaQueueEntry(vendorId: number): Promise<AriaQueueItem | null> {
+    try {
+      const { data } = await api.get<AriaQueueItem>(`/aria/queue/${vendorId}`)
+      return data
+    } catch {
+      return null
+    }
+  },
+
+  /**
+   * Get CENTINELA web evidence articles for a vendor
+   */
+  async getWebEvidence(vendorId: number): Promise<{ articles: Array<{ query_type: string; verdict: string; confidence: number; snippet: string; source_url: string | null; source_name: string | null; published_date: string | null; reasoning: string }>, aggregate: { web_evidence_score: number; web_evidence_verdict: string; web_evidence_updated_at: string } | null }> {
+    const { data } = await api.get(`/aria/queue/${vendorId}/web-evidence`)
+    return data
+  },
+
+  /**
+   * Update review status for a queue item
+   */
+  async updateReview(
+    vendorId: number,
+    update: { review_status: AriaQueueItem['review_status']; reviewer_name?: string }
+  ): Promise<AriaQueueItem> {
+    const { data } = await api.patch<AriaQueueItem>(`/aria/queue/${vendorId}/review`, {
+      status: update.review_status,
+      reviewer_name: update.reviewer_name,
+    })
+    return data
+  },
+
+  /**
+   * Where one ARIA pattern concentrates — its vendors grouped by the buyer they
+   * contract with most (`group: 'institution'`, the default) or by their primary
+   * sector (`group: 'sector'`).
+   *
+   * Read the direction: a row's `total_value_mxn` is the lifetime contracting of
+   * the vendors ANCHORED at that buyer, not the captured share of that buyer's
+   * budget. `flagged_value_mxn` is the all-patterns denominator to take a share
+   * against. `vendors` inlines the group's largest, for the entity chips.
+   */
+  async getPatternGroups(
+    code: string,
+    params: { limit?: number; group?: 'institution' | 'sector'; vendors?: number } = {},
+  ): Promise<AriaPatternGroupsResponse> {
+    const q = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<AriaPatternGroupsResponse>(
+      `/aria/patterns/${encodeURIComponent(code)}/institutions?${q}`,
+    )
+    return data
+  },
+
+  /**
+   * Fetch aggregate stats about the latest ARIA run
+   */
+  async getStats(): Promise<AriaStatsResponse> {
+    const { data } = await api.get<AriaStatsResponse>('/aria/stats')
+    return data
+  },
+
+  /**
+   * Promote a confirmed ARIA lead to the ground truth corpus
+   */
+  async promoteToGroundTruth(
+    vendorId: number,
+    body: { case_name?: string; case_type?: string; confidence_level?: string; notes?: string; reviewer_name?: string }
+  ): Promise<{ vendor_id: number; case_id: string; case_name: string; message: string }> {
+    const { data } = await api.post(`/aria/queue/${vendorId}/promote-gt`, body)
+    return data
+  },
+
+  /**
+   * Trigger a new ARIA pipeline run (async — returns immediately)
+   */
+  async runPipeline(): Promise<{ message: string; run_id: string }> {
+    const { data } = await api.post<{ message: string; run_id: string }>('/aria/run')
+    return data
+  },
+
+  /**
+   * Get LLM-generated investigation memo for a vendor
+   */
+  async getMemo(vendorId: number): Promise<AriaMemoResponse | null> {
+    try {
+      const { data } = await api.get<AriaMemoResponse>(`/aria/memos/${vendorId}`)
+      return data
+    } catch {
+      return null
+    }
+  },
+
+  /**
+   * Get paginated list of ARIA memos
+   */
+  async getMemos(params: { tier?: number; limit?: number; offset?: number } = {}): Promise<AriaMemoListResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<AriaMemoListResponse>(`/aria/memos?${queryParams}`)
+    return data
+  },
+
+  /**
+   * Fetch ghost company confidence scores (P2 suspects ranked by multi-signal convergence)
+   */
+  async getGhostSuspects(params: {
+    tier?: string
+    min_signals?: number
+    page?: number
+    per_page?: number
+  } = {}): Promise<import('./types').GhostSuspectsResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<import('./types').GhostSuspectsResponse>(`/aria/ghost-suspects?${queryParams}`)
+    return data
+  },
+}
+
+// ============================================================================
+// Procurement Health Index (PHI) Endpoints
+// ============================================================================
+
+export const phiApi = {
+  async getSectors(yearMin?: number, yearMax?: number) {
+    const params = buildQueryParams({ year_min: yearMin, year_max: yearMax })
+    const { data } = await api.get(`/procurement-health/sectors?${params}`)
+    return data
+  },
+  async getSectorDetail(sectorId: number, yearMin?: number, yearMax?: number) {
+    const params = buildQueryParams({ year_min: yearMin, year_max: yearMax })
+    const { data } = await api.get(`/procurement-health/sectors/${sectorId}?${params}`)
+    return data
+  },
+  async getTrend() {
+    const { data } = await api.get('/procurement-health/trend')
+    return data
+  },
+  async getCorrelation() {
+    const { data } = await api.get('/procurement-health/ml-correlation')
+    return data
+  },
+}
+
+export const scorecardApi = {
+  async getSummary() {
+    const { data } = await api.get('/scorecards/summary')
+    return data
+  },
+  async getInstitutions(params: {
+    page?: number
+    per_page?: number
+    sort_by?: string
+    order?: string
+    grade?: string
+    sector?: string
+    min_score?: number
+    max_score?: number
+    search?: string
+    federal_only?: boolean
+    scope?: 'federal' | 'subnational' | 'all'
+    min_contracts?: number
+  } = {}) {
+    const q = buildQueryParams(params)
+    const { data } = await api.get(`/scorecards/institutions?${q}`)
+    return data
+  },
+  async getInstitutionStats(params: { federal_only?: boolean; scope?: 'federal' | 'subnational' | 'all'; min_contracts?: number } = {}) {
+    const q = buildQueryParams(params)
+    const suffix = q ? `?${q}` : ''
+    const { data } = await api.get(`/scorecards/institutions/stats${suffix}`)
+    return data
+  },
+  async getInstitution(id: number) {
+    const { data } = await api.get(`/scorecards/institutions/${id}`)
+    return data
+  },
+  /** Computed Hallazgos cards for /institutions («Por pesos» spec §5; cached, precomputed tables only). */
+  async getInstitutionHallazgos(): Promise<InstitutionHallazgos> {
+    const { data } = await api.get('/scorecards/institutions/hallazgos')
+    return data
+  },
+  /** The N biggest active federal buyers taken apart: how they buy, from whom, with what risk (/institutions ?ver=anatomia|diagrama). */
+  async getInstitutionAnatomy(limit = 12): Promise<import('@/lib/institutions/anatomy').AnatomyPayload> {
+    const { data } = await api.get('/scorecards/institutions/anatomy', { params: { limit } })
+    return data
+  },
+  /** Who got a buyer's pesos without a tender: its top direct-award recipients (El diagrama, «¿a quién?»). */
+  async getInstitutionDaTop(id: number, limit = 3): Promise<{ institution_id: number; da_value_mxn: number; top: Array<{ id: number; name: string | null; kind: 'pf' | 'co' | 'pub'; value_mxn: number; share: number | null }> }> {
+    const { data } = await api.get(`/scorecards/institutions/${id}/sin-licitacion`, { params: { limit } })
+    return data
+  },
+  /** Columnar scorecard population for the /institutions field (spec institutions-tamiz §1). */
+  async getInstitutionField(): Promise<FieldPayload> {
+    const { data } = await api.get('/scorecards/institutions/field', { params: { scope: 'all' } })
+    return data
+  },
+  /** v3 grade per institution per sexenio, columnar («El Tamiz en el tiempo»). */
+  async getInstitutionSexenios(): Promise<SexenioPayload> {
+    const { data } = await api.get('/scorecards/institutions/sexenios', { params: { scope: 'all' } })
+    return data
+  },
+  async getVendors(params: {
+    page?: number
+    per_page?: number
+    sort_by?: string
+    order?: string
+    grade?: string
+    min_score?: number
+    max_score?: number
+    search?: string
+  } = {}) {
+    const q = buildQueryParams(params)
+    const { data } = await api.get(`/scorecards/vendors?${q}`)
+    return data
+  },
+  /** null = this vendor has no scorecard (404). */
+  async getVendor(id: number) {
+    return getOptional(`/scorecards/vendors/${id}`)
+  },
+}
+
+export const storiesApi = {
+  async getAdministrationComparison() {
+    const { data } = await api.get('/stories/administration-comparison')
+    return data
+  },
+  async getGhostCompanies() {
+    const { data } = await api.get('/stories/ghost-companies')
+    return data
+  },
+  async getTopSuspiciousVendors() {
+    const { data } = await api.get('/stories/top-suspicious-vendors')
+    return data
+  },
+  async getOverpricingPatterns() {
+    const { data } = await api.get('/stories/overpricing-patterns')
+    return data
+  },
+  async getPackages(): Promise<StoryPackagesResponse> {
+    const { data } = await api.get<StoryPackagesResponse>('/stories/packages')
+    return data
+  },
+}
+
+export interface SharedContract {
+  id: number
+  procedure_number: string
+  vendor_id: number
+  vendor_name: string
+  amount: number
+  contract_date: string | null
+  risk_level: string | null
+  risk_score: number | null
+  procedure_type: string | null
+  sector_name: string | null
+  institution_name: string | null
+  is_direct_award: boolean
+  is_single_bid: boolean
+}
+
+export interface SharedContractsResponse {
+  data: SharedContract[]
+  pagination: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+  }
+  summary: {
+    shared_procedure_count: number
+    total_shared_amount: number
+  }
+}
+
+// ============================================================================
+// INTERSECTION API — model vs regulators contradiction surface
+// ============================================================================
+
+export interface IntersectionVendor {
+  vendor_id: number
+  vendor_name: string
+  avg_risk_score: number
+  ips_final: number
+  ips_tier: number
+  primary_pattern: string | null
+  total_contracts: number
+  total_value_mxn: number
+  primary_sector_id: number | null
+  primary_sector_name: string | null
+  is_efos_definitivo: boolean
+  is_sfp_sanctioned: boolean
+  in_ground_truth: boolean
+  // WHY fields — turn a ledger row into a mini-case
+  direct_award_rate: number | null
+  single_bid_rate: number | null
+  is_disappeared: boolean
+}
+
+/** Two Worlds — RUBLI model flags × the official record (v3, Venn-centric). */
+export interface IntersectionSummary {
+  thresholds: {
+    rubli_flags: number
+    rubli_clean: number
+    min_contracts: number
+    ghost_patterns: string[]
+    set_aside_value_floor: number
+  }
+  high_risk_total: number
+  /** The five Venn regions of model-flags × official-record (EFOS/SFP). */
+  worlds: {
+    model_flags: number
+    official_record: number
+    overlap: number
+    model_only: number
+    blind_spots: number
+    self_documented: number
+    ghost_signature: number
+  }
+  /** One ranked vendor list per clickable Venn zone. */
+  zones: {
+    ghost: { count: number; vendors: IntersectionVendor[] }
+    confirmed: { count: number; vendors: IntersectionVendor[] }
+    blindspot: { count: number; vendors: IntersectionVendor[] }
+  }
+  set_aside: { count: number; sample: IntersectionVendor[] }
+  registry_breakdown: {
+    efos_definitivo: number
+    sfp_sanctioned: number
+    in_ground_truth: number
+  }
+}
+
+export interface IntersectionQuadrantPage {
+  quadrant: string
+  data: IntersectionVendor[]
+  pagination: { page: number; per_page: number; total: number; total_pages: number }
+}
+
+export const intersectionApi = {
+  async getSummary(topN = 20): Promise<IntersectionSummary> {
+    const { data } = await api.get<IntersectionSummary>(
+      `/intersection/summary?top_n=${topN}`,
+    )
+    return data
+  },
+  async getQuadrant(
+    quadrant: 'ghost' | 'uncorroborated' | 'set_aside',
+    params: { page?: number; per_page?: number; sector_id?: number } = {},
+  ): Promise<IntersectionQuadrantPage> {
+    const q = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<IntersectionQuadrantPage>(
+      `/intersection/quadrant/${quadrant}?${q}`,
+    )
+    return data
+  },
+}
+
+// ============================================================================
+// CAPTURE API — institutional-capture creep detection (deterministic HHI-style)
+// ============================================================================
+
+export interface CapturePoint {
+  year: number
+  share_pct: number
+  value_mxn: number
+}
+
+export interface CaptureItem {
+  institution_id: number
+  institution_name: string
+  institution_full_name: string | null
+  institution_sector_id: number | null
+  institution_sector_name: string | null
+  vendor_id: number
+  vendor_name: string
+  earliest_year: number
+  earliest_share_pct: number
+  peak_year: number
+  peak_share_pct: number
+  latest_year: number
+  latest_share_pct: number
+  years_observed: number
+  cumulative_value_mxn: number
+  institution_total_window: number
+  score: number
+  timeline: CapturePoint[]
+  /**
+   * ARIA model cross-light, folded into /capture/top additively (sub-ms IN-join).
+   * The arithmetic leads; this is commentary only — "two methods, one conclusion".
+   * null when the vendor is absent from the ARIA queue.
+   */
+  aria: {
+    in_ground_truth: boolean
+    ips_tier: number | null
+    is_efos_definitivo: boolean
+    is_sfp_sanctioned: boolean
+  } | null
+}
+
+export interface CaptureTopResponse {
+  thresholds: {
+    min_inst_total_mxn: number
+    min_cumulative_value_mxn: number
+    floor_share_pct: number
+    ceil_share_pct: number
+    min_years: number
+    year_window: string
+  }
+  total_captures: number
+  total_unfiltered: number
+  data: CaptureItem[]
+}
+
+export interface CaptureLandscapeCaptured {
+  institution_id: number
+  name: string
+  sector_id: number | null
+  share_pct: number
+  top1_vendor_id: number
+  top1_vendor_name: string
+  window_total_mxn: number
+  latest_hhi: number | null
+}
+
+/** Tick tuple: [institution_id, name, sector_id, cumulative top-1 share %]. Share-desc ordered. */
+export type CaptureLandscapeTick = [number, string, number | null, number]
+
+export interface CaptureLandscapeResponse {
+  qualifying_count: number
+  captured_now_count: number
+  antesala_count: number
+  aria_p6_total: number
+  monotonic_institution_ids: number[]
+  thresholds: {
+    min_inst_total_mxn: number
+    floor_share_pct: number
+    ceil_share_pct: number
+  }
+  ticks: CaptureLandscapeTick[]
+  captured_now: CaptureLandscapeCaptured[]
+  antesala_top: Array<{ institution_id: number; name: string; share_pct: number }>
+  generated_at: string
+}
+
+/** /capture/current — one private supplier past half of a buyer's 2024–Sep 2025 spend. */
+export interface CaptureCurrentPair {
+  institution_id: number
+  institution_name: string
+  institution_full_name: string | null
+  sector_id: number | null
+  vendor_id: number
+  vendor_name: string
+  window_share_pct: number
+  window_vendor_mxn: number
+  window_inst_mxn: number
+  other_vendors: number
+  runner_up_share_pct: number
+  /** 2021–2025; share_pct null = the supplier had no contract with this buyer that year. */
+  years: Array<{ year: number; share_pct: number | null; vendor_mxn: number; inst_mxn: number }>
+  first_majority_year: number | null
+  consecutive_majority_years: number
+  latest_year: number
+  latest_share_pct: number | null
+  holding: boolean
+  n_contracts: number
+  da_pct: number
+  n_single_bid: number
+  flagged_amount: boolean
+  top_titles: Array<{ contract_id: number; title: string | null; year: number; amount_mxn: number; is_direct_award: boolean }>
+  seal: {
+    gt: 'documented' | 'lead' | null
+    gt_case_id: number | null
+    case_slug: string | null
+    ips_tier: number | null
+    pattern: string | null
+    efos: boolean
+    sfp: boolean
+  }
+}
+
+export interface CaptureCurrentResponse {
+  window: { from_year: number; to_year: number; data_horizon: string; partial_year: number }
+  thresholds: { min_inst_window_mxn: number; majority_pct: number }
+  field_count: number
+  majority_count_all: number
+  excluded: { public_or_structural: number; persona_fisica: number; suspect_decimal: number }
+  excluded_pairs: Array<{
+    institution_id: number
+    institution_name: string
+    vendor_id: number
+    vendor_name: string
+    share_pct: number
+    vendor_mxn: number
+    reason: 'public_or_structural' | 'suspect_decimal'
+  }>
+  count: number
+  held_mxn: number
+  buyers_total_mxn: number
+  n_labelled: number
+  n_documented: number
+  n_aria_t12: number
+  n_majority_da: number
+  n_holding: number
+  n_efos_sfp: number
+  pairs: CaptureCurrentPair[]
+  generated_at: string
+}
+
+export const captureApi = {
+  async getCurrent(): Promise<CaptureCurrentResponse> {
+    const { data } = await api.get<CaptureCurrentResponse>(`/capture/current`)
+    return data
+  },
+
+  async getTop(params: { limit?: number; sector_id?: number } = {}): Promise<CaptureTopResponse> {
+    const q = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<CaptureTopResponse>(`/capture/top?${q}`)
+    return data
+  },
+
+  /**
+   * The full federal capture field — every institution ≥100M MXN of recorded
+   * spend with its #1 vendor's CUMULATIVE share of the recorded total.
+   * Snapshot of the RECORD, not of "today" (copy must say "acumulada").
+   */
+  async getLandscape(): Promise<CaptureLandscapeResponse> {
+    const { data } = await api.get<CaptureLandscapeResponse>(`/capture/landscape`)
+    return data
+  },
+}
+
+export const collusionApi = {
+  async getPairs(params: {
+    is_potential_collusion?: boolean
+    min_shared_procedures?: number
+    min_co_bid_rate?: number
+    sort_by?: 'shared_procedures' | 'co_bid_rate'
+    page?: number
+    per_page?: number
+  } = {}) {
+    const q = buildQueryParams(params)
+    const { data } = await api.get(`/collusion/pairs?${q}`)
+    return data
+  },
+  async getStats() {
+    const { data } = await api.get('/collusion/stats')
+    return data
+  },
+  async getSharedContracts(vendorAId: number, vendorBId: number, page = 1, perPage = 20): Promise<SharedContractsResponse> {
+    const q = buildQueryParams({ page, per_page: perPage })
+    const { data } = await api.get<SharedContractsResponse>(`/collusion/pairs/${vendorAId}/${vendorBId}/shared-contracts?${q}`)
+    return data
+  },
+}
+
+// ── Atlas cluster-vendor types ────────────────────────────────────────────────
+
+export interface AtlasClusterVendorItem {
+  vendor_id: number
+  name: string
+  size_category: string | null
+  risk_score: number | null // null = no scored contract yet (ComprasMX)
+  risk_level: 'critical' | 'high' | 'medium' | 'low'
+  tier: number
+  total_contracts: number
+  total_amount_mxn: number
+  primary_sector_code: string
+  primary_sector_name: string
+  is_gt: boolean
+  /** Full ARIA pattern-confidence dict (e.g. {"P2": 0.91, "P6": 0.80}) — feeds
+   *  the Atlas File Panel fingerprint + cross-pattern jump chips. */
+  pattern_confidences?: Record<string, number> | null
+}
+
+export interface AtlasClusterVendorsResponse {
+  lens: string
+  code: string
+  label_es: string
+  label_en: string
+  total: number
+  vendors: AtlasClusterVendorItem[]
+  next_cursor: number | null
+}
+
+// ── Atlas API module ──────────────────────────────────────────────────────────
+
+// 2026-05-09: Spatial-nav Z1 — institutions inside a sector with a
+// pre-computed (fx, fy) layout. Backend endpoint added in same sprint.
+export interface SpatialInstitution {
+  institution_id: number
+  name: string
+  institution_type: string | null
+  fx: number
+  fy: number
+  size: number
+  risk: number
+  total_contracts: number
+  total_amount_mxn: number
+  direct_award_pct: number | null
+  high_risk_pct: number | null
+}
+
+export interface SectorInstitutionsSpatialResponse {
+  sector_id: number
+  sector_code: string
+  sector_name_es: string
+  sector_name_en: string
+  total: number
+  /** Institutions with contracts in the whole sector (D15 § 3) — `total` is only the rows returned. */
+  sector_institution_count?: number | null
+  /** The sector's contract value — same source as the Z0 treemap tile (D15 § 3). */
+  sector_total_value_mxn?: number | null
+  /** Buyer scope of the rows and the count (lib/scope.ts). */
+  scope?: BuyerScope
+  institutions: SpatialInstitution[]
+}
+
+export const atlasApi = {
+  async getClusterVendors(params: {
+    lens: string
+    code: string
+    limit?: number
+    cursor?: number
+    /** Sexenio key (fox|calderon|pena_nieto|amlo|sheinbaum) — restricts to
+     *  vendors with >=1 contract during that period. Omit for all-time. */
+    period?: string
+    /** risk (API default) or value — the Atlas cohort register ranks by money.
+     *  `cursor` is the last row's sort key, so keep `sort` fixed across pages. */
+    sort?: 'risk' | 'value'
+  }): Promise<AtlasClusterVendorsResponse> {
+    const q = buildQueryParams({
+      lens: params.lens,
+      code: params.code,
+      limit: params.limit ?? 50,
+      ...(params.cursor !== undefined ? { cursor: params.cursor } : {}),
+      ...(params.period ? { period: params.period } : {}),
+      ...(params.sort ? { sort: params.sort } : {}),
+    })
+    const { data } = await api.get<AtlasClusterVendorsResponse>(`/atlas/cluster-vendors?${q}`)
+    return data
+  },
+
+  /**
+   * Live per-cluster aggregates for the faithful-encoding Observatory scatter.
+   * All-time (not year-sliced) by default; patterns + sectors + categories.
+   * Pass `period` (fox|calderon|pena_nieto|amlo|sheinbaum) to scope vendor
+   * cohort membership to a presidential sexenio — the response then carries
+   * `period` + an honest `note` about what the numbers mean.
+   */
+  async getClusterStats(lens: string, period?: string): Promise<{
+    lens: string
+    clusters: Array<{
+      code: string
+      label_es: string
+      label_en: string
+      vendors: number
+      t1: number
+      high_risk_rate: number
+      total_value_mxn: number
+    }>
+    period?: string
+    note?: string
+  }> {
+    const q = period ? `&period=${encodeURIComponent(period)}` : ''
+    const { data } = await api.get(`/atlas/cluster-stats?lens=${encodeURIComponent(lens)}${q}`)
+    return data
+  },
+
+  /**
+   * Batch variant — fetch top-N vendors for many clusters in ONE request.
+   * Used by the galaxy view to avoid 7+ parallel TLS handshakes on /atlas page load.
+   * Returns `{ lens, clusters: [ClusterVendorsResponse, ...] }`.
+   */
+  async getClusterVendorsBatch(params: {
+    lens: string
+    codes: string[]
+    limit?: number
+  }): Promise<{ lens: string; clusters: AtlasClusterVendorsResponse[] }> {
+    const q = buildQueryParams({
+      lens: params.lens,
+      codes: params.codes.join(','),
+      limit: params.limit ?? 10,
+    })
+    const { data } = await api.get<{ lens: string; clusters: AtlasClusterVendorsResponse[] }>(
+      `/atlas/cluster-vendors-batch?${q}`,
+    )
+    return data
+  },
+
+  async getSectorInstitutionsSpatial(params: {
+    sectorId: number
+    limit?: number
+    minContracts?: number
+    scope?: BuyerScope
+  }): Promise<SectorInstitutionsSpatialResponse> {
+    const q = buildQueryParams({
+      sector_id: params.sectorId,
+      limit: params.limit ?? 60,
+      min_contracts: params.minContracts ?? 50,
+      scope: params.scope ?? 'federal',
+    })
+    const { data } = await api.get<SectorInstitutionsSpatialResponse>(`/atlas/sector-institutions?${q}`)
+    return data
+  },
+}
+
+// Gap Endpoints — post-CompraNet 2025-2026 recovery (ComprasMX scrape)
+// ============================================================================
+
+export const gapApi = {
+  /**
+   * Summary stats for the post-Sep-28-2025 procurement gap.
+   * Returns DA%, recovered amounts, young-vendor count, exception articles.
+   */
+  async getSummary(): Promise<GapSummaryResponse> {
+    const { data } = await api.get<GapSummaryResponse>('/gap/summary')
+    return data
+  },
+
+  /**
+   * Paginated contract register from the ComprasMX scrape.
+   * Supports DA filter, recovered-only, young-only, sector, text search,
+   * and sort by amount or date.
+   */
+  async getContracts(params: GapContractFilterParams = {}): Promise<GapContractsResponse> {
+    const queryParams = buildQueryParams(params as QueryParams)
+    const { data } = await api.get<GapContractsResponse>(`/gap/contracts?${queryParams}`)
+    return data
+  },
+
+  /** Every award as columns — the «Las puertas» object (cached server-side). */
+  async getField(): Promise<GapFieldResponse> {
+    const { data } = await api.get<GapFieldResponse>('/gap/field', { timeout: 120_000 })
+    return data
+  },
+
+  /** CompraNet's last months (Apr–Sep 2025) for the gap buyers, by institution id. */
+  async getMonths(): Promise<GapMonthsResponse> {
+    const { data } = await api.get<GapMonthsResponse>('/gap/months', { timeout: 120_000 })
+    return data
+  },
+
+  /** «La placa»: four buckets × twenty doors; part=head drops the marks (≈ 1 per 10 awards). */
+  async getPlate<T>(part: 'head' | 'all'): Promise<T> {
+    const { data } = await api.get<T>(`/gap/plate${part === 'head' ? '?part=head' : ''}`, { timeout: 60_000 })
+    return data
+  },
+
+  /** Every award of one legal door (1 mark = 1 award), for the plate's field. */
+  async getPlateDoor<T>(door: string): Promise<T> {
+    const { data } = await api.get<T>(`/gap/plate/door/${encodeURIComponent(door)}`, { timeout: 60_000 })
+    return data
+  },
+
+  /** One award for the plate's card: by door + index, or by its ComprasMX uuid (citations). */
+  async getPlateAward<T>(q: { door: string; i: number } | { uuid: string }): Promise<T> {
+    const { data } = await api.get<T>('/gap/plate/award', { params: q })
+    return data
+  },
+
+  /** One dossier's post-CompraNet slice — the «Después del apagón» block. */
+  async getEntity(kind: 'institution' | 'vendor' | 'category', id: number | string): Promise<GapEntityResponse> {
+    const { data } = await api.get<GapEntityResponse>(`/gap/entity/${kind}/${id}`)
+    return data
+  },
+
+  /** «El relevo» — the dossier block «Después del apagón» (before vs after, ribbons, pulses, sentences). */
+  async getRelevo(kind: 'institution' | 'vendor' | 'category', id: number | string): Promise<GapRelevoResponse> {
+    const { data } = await api.get<GapRelevoResponse>(`/gap/entity/${kind}/${id}/relevo`, { timeout: 60_000 })
+    return data
+  },
+
+  /** Read post-blackout money by the vendors' historical risk tier. */
+  async getCarryForward(): Promise<GapCarryForwardResponse> {
+    const { data } = await api.get<GapCarryForwardResponse>('/gap/carry-forward')
+    return data
+  },
+}
+
+// Default export with all API modules
+export default {
+  sector: sectorApi,
+  contract: contractApi,
+  vendor: vendorApi,
+  institution: institutionApi,
+  analysis: analysisApi,
+  export: exportApi,
+  price: priceApi,
+  watchlist: watchlistApi,
+  network: networkApi,
+  investigation: investigationApi,
+  categories: categoriesApi,
+  cases: caseLibraryApi,
+  report: reportApi,
+  stats: statsApi,
+  industries: industriesApi,
+  search: searchApi,
+  feedback: feedbackApi,
+  dossiers: dossierApi,
+  issues: issueApi,
+  aria: ariaApi,
+  phi: phiApi,
+  alerts: alertsApi,
+  scorecards: scorecardApi,
+  stories: storiesApi,
+  collusion: collusionApi,
+  atlas: atlasApi,
+  gap: gapApi,
+}
+
+/** «Predicción» tab (backend/api/routers/predictions.py): back-tested habits, never risk. */
+export const predictionsApi = {
+  async institution(id: number): Promise<InstitutionPrediction> {
+    const { data } = await api.get<InstitutionPrediction>(`/predictions/institution/${id}`)
+    return data
+  },
+  async vendor(id: number): Promise<VendorPrediction> {
+    const { data } = await api.get<VendorPrediction>(`/predictions/vendor/${id}`)
+    return data
+  },
+  async contract(id: number): Promise<ContractPrediction> {
+    const { data } = await api.get<ContractPrediction>(`/predictions/contract/${id}`)
+    return data
+  },
+  async category(id: number): Promise<CategoryPrediction> {
+    const { data } = await api.get<CategoryPrediction>(`/predictions/category/${id}`)
+    return data
+  },
+  async pair(vendorId: number, institutionId: number): Promise<PairPrediction> {
+    const { data } = await api.get<PairPrediction>('/predictions/pair', { params: { vendor_id: vendorId, institution_id: institutionId } })
+    return data
+  },
+}

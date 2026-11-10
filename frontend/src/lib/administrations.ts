@@ -1,0 +1,133 @@
+import { CATEGORICAL } from '@/lib/constants'
+/**
+ * Mexican federal presidential administrations — single source of truth.
+ *
+ * Replaces ADMIN_DISPLAY / ADMIN_ORDER / getAdministration duplicated across
+ * ContractDetail.tsx, CategoryProfile.tsx, SectorProfile.tsx, CaseDetail.tsx
+ * (4 files, slightly different accent handling and year ranges).
+ *
+ * Year boundaries are inclusive on both ends and non-overlapping. A contract
+ * signed in 2018 resolves to Pena Nieto, not AMLO: Mexican federal terms
+ * start 1 December, so 11 of the transition year's 12 months are still the
+ * outgoing administration. Same outgoing-president convention as the
+ * backend's canonical table (backend/api/administrations.py).
+ */
+
+export type AdministrationKey = 'fox' | 'calderon' | 'epn' | 'amlo' | 'sheinbaum'
+
+export interface Administration {
+  key: AdministrationKey
+  /** Short display name without accents (canonical UI label). */
+  short: string
+  /** Long display name with proper accents. */
+  long: string
+  /** First year of the term. */
+  yearStart: number
+  /** Last year of the term (inclusive). */
+  yearEnd: number
+}
+
+export const ADMINISTRATIONS: Administration[] = [
+  { key: 'fox',       short: 'Fox',       long: 'Vicente Fox',          yearStart: 2000, yearEnd: 2006 },
+  { key: 'calderon',  short: 'Calderon',  long: 'Felipe Calderón',      yearStart: 2007, yearEnd: 2012 },
+  { key: 'epn',       short: 'Pena Nieto', long: 'Enrique Peña Nieto',  yearStart: 2013, yearEnd: 2018 },
+  { key: 'amlo',      short: 'AMLO',      long: 'Andrés Manuel López Obrador', yearStart: 2019, yearEnd: 2024 },
+  { key: 'sheinbaum', short: 'Sheinbaum', long: 'Claudia Sheinbaum',    yearStart: 2025, yearEnd: 2030 },
+]
+
+/** Display order — chronological. Used by sexenio matrices and admin filters. */
+export const ADMIN_ORDER: readonly AdministrationKey[] = [
+  'fox', 'calderon', 'epn', 'amlo', 'sheinbaum',
+] as const
+
+/** Canonical short-name display map (accent-stripped where the historical
+ *  page convention does that — same as the four duplicates we replaced). */
+export const ADMIN_DISPLAY: Record<AdministrationKey, string> = {
+  fox: 'Fox',
+  calderon: 'Calderon',
+  epn: 'Pena Nieto',
+  amlo: 'AMLO',
+  sheinbaum: 'Sheinbaum',
+}
+
+/** Accented short-name display map — correct Spanish spelling (Calderón / Peña
+ *  Nieto). Same string length as ADMIN_DISPLAY (the accent replaces an existing
+ *  letter), so it is layout-safe. Used by editorial surfaces that render the
+ *  term names as prose (the sector dossier sexenio strip + case roll). Kept
+ *  separate from ADMIN_DISPLAY because the latter is string-matched against
+ *  un-accented keys in CategoryProfile. */
+export const ADMIN_DISPLAY_ACCENTED: Record<AdministrationKey, string> = {
+  fox: 'Fox',
+  calderon: 'Calderón',
+  epn: 'Peña Nieto',
+  amlo: 'AMLO',
+  sheinbaum: 'Sheinbaum',
+}
+
+/** Identity palette for administrations — used by sexenio matrices,
+ *  timeline bands, and other charts that need to distinguish terms.
+ *  These are identity colors (not severity); they should never be used
+ *  to convey risk. Tokens chosen from the platform's editorial palette. */
+export const ADMIN_COLORS: Record<AdministrationKey, string> = {
+  // by slot, so the night edition re-values them (lib/theme.ts runs before this module evaluates)
+  fox:       CATEGORICAL[1], // C2 blue   (DESIGN §6.3)
+  calderon:  CATEGORICAL[5], // C6 cyan
+  epn:       CATEGORICAL[6], // C7 brown
+  amlo:      CATEGORICAL[3], // C4 violet
+  sheinbaum: CATEGORICAL[4], // C5 magenta
+}
+
+/** Backward-compatible alias map for legacy string keys with accents. */
+export const ADMIN_DISPLAY_LEGACY: Record<string, string> = {
+  Fox: ADMIN_DISPLAY.fox,
+  Calderon: ADMIN_DISPLAY.calderon,
+  'Calderón': ADMIN_DISPLAY.calderon,
+  'Pena Nieto': ADMIN_DISPLAY.epn,
+  'Peña Nieto': ADMIN_DISPLAY.epn,
+  AMLO: ADMIN_DISPLAY.amlo,
+  Sheinbaum: ADMIN_DISPLAY.sheinbaum,
+}
+
+/** Resolve a year (or undefined) to its administration short name. Returns ''
+ *  for null/undefined years, matching the prior helper signature. */
+export function getAdministrationShortName(
+  year: number | null | undefined
+): string {
+  if (year == null) return ''
+  for (const a of ADMINISTRATIONS) {
+    if (year <= a.yearEnd) return a.short
+  }
+  return ADMINISTRATIONS[ADMINISTRATIONS.length - 1].short
+}
+
+/** Resolve a year to its full Administration record (or undefined). */
+export function getAdministrationByYear(
+  year: number | null | undefined
+): Administration | undefined {
+  if (year == null) return undefined
+  for (const a of ADMINISTRATIONS) {
+    if (year >= a.yearStart && year <= a.yearEnd) return a
+  }
+  return undefined
+}
+
+/** The backend's `period=` query vocabulary (atlas cluster-stats /
+ *  cluster-vendors, etc.) differs from AdministrationKey for one term:
+ *  Peña Nieto is `pena_nieto` there, `epn` here. Map explicitly at the API
+ *  boundary — never string-compare the two directly. */
+export const PERIOD_API_KEY: Record<AdministrationKey, string> = {
+  fox: 'fox',
+  calderon: 'calderon',
+  epn: 'pena_nieto',
+  amlo: 'amlo',
+  sheinbaum: 'sheinbaum',
+}
+
+/** Reverse lookup: an API period key (e.g. from `?period=` in the URL) to
+ *  its Administration record. Returns undefined for null/invalid keys. */
+export function getAdministrationByPeriodKey(
+  periodKey: string | null | undefined
+): Administration | undefined {
+  if (!periodKey) return undefined
+  return ADMINISTRATIONS.find((a) => PERIOD_API_KEY[a.key] === periodKey)
+}

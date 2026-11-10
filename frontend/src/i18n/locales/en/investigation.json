@@ -1,0 +1,104 @@
+{
+  "status": {
+    "pending": "Pending",
+    "corroborated": "Corroborated",
+    "refuted": "Refuted",
+    "inconclusive": "Inconclusive"
+  },
+  "filters": {
+    "allStatuses": "All statuses",
+    "anyScore": "Any score",
+    "scoreMin": "Score ≥ {{threshold}}"
+  },
+  "table": {
+    "case": "Case",
+    "sector": "Sector",
+    "status": "Status"
+  },
+  "vendors": "Vendors",
+  "queue": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
+    "priority": "Priority",
+    "allPriorities": "All"
+  },
+  "caseDetail": {
+    "untitledSource": "Untitled source",
+    "breadcrumb": "Investigations",
+    "caseLabel": "Investigation Case",
+    "confidencePct": "{{pct}}% confidence",
+    "changeStatusBtn": "Change status",
+    "addEvidenceBtn": "Add evidence",
+    "promoteToGT": "Promote to GT",
+    "vendorsInvolved": "Vendor evidence",
+    "acrossContracts": "across {{n}} contracts",
+    "totalValue": "Total value",
+    "scaleMXN": "scale: 0–100B MXN",
+    "suspicionScore": "Suspicion score",
+    "riskThresholdHint": "critical ≥ 60 · high ≥ 40",
+    "caseNarrative": "Case narrative",
+    "signalsTriggered": "Signals triggered",
+    "asfLookupBtn": "ASF lookup",
+    "newsBtn": "News",
+    "riskLabel": "Risk",
+    "contractsLabel": "Contracts",
+    "valueLabel": "Value",
+    "redThread": "Red Thread →",
+    "investigationQuestions": "Investigation questions",
+    "highPriorityLabel": "High priority",
+    "supportingEvidence_other": "{{count}} supporting evidence",
+    "evidenceLog": "Evidence log",
+    "noEvidenceLogged": "No external evidence logged yet.",
+    "attachEvidenceHint": "Attach news articles, ASF audits, or legal filings to corroborate this case.",
+    "logNewEvidence": "Log new evidence",
+    "sourceUrlPlaceholder": "Source URL (https://…)",
+    "notFoundLabel": "Investigation · Not Found",
+    "notFoundTitle": "Case {{caseId}} not found",
+    "notFoundBody": "This investigation may not exist or failed to load. Check the case ID and try again.",
+    "allInvestigations": "← All investigations"
+  },
+  "card": {
+    "contracts": "contracts",
+    "estLoss": "Value at Risk",
+    "atRisk": "At Risk"
+  },
+  "viewCards": "Card view",
+  "viewTable": "Table view",
+  "caseCount_one": "{{count}} case",
+  "caseCount_other": "{{count}} cases",
+  "noInvestigationCasesFound": "No investigation cases found",
+  "tryAdjustingFilters": "Try adjusting your filters",
+  "noCasesYet": "No cases have been created yet",
+  "signalTags": {
+    "multiple_price_anomalies": "Amount anomaly",
+    "high_single_bid_rate": "Single award",
+    "year_end_concentration": "Year-End Rush",
+    "high_avg_risk_score": "High Risk Score",
+    "high_direct_award_rate": "Direct Award",
+    "corporate_group_pattern": "Corp. Group",
+    "multi_entity_anomaly": "Multi-Entity"
+  },
+  "tableCol": {
+    "score": "Score",
+    "value": "Value",
+    "evidence": "Evidence"
+  },
+  "filterHeader": "Investigation filters",
+  "searchPlaceholder": "Search case, vendor, sector...",
+  "tableHeader": "Investigation records",
+  "verify": {
+    "heading": "How to verify this lead",
+    "toggle": "▸ How to verify",
+    "step1": "Search ComprasMX (comprasmx.buengobierno.gob.mx) and the CompraNet open-data archive for this vendor's RFC or full name to access original contract records",
+    "step2": "Cross-reference against SAT EFOS list (sat.gob.mx) to check if the vendor is classified as a ghost company",
+    "step3": "Review ASF audit reports (asf.gob.mx) for the contracting institution in the relevant year",
+    "step4": "Request documents via Plataforma Nacional de Transparencia (plataformadetransparencia.org.mx) under articles 70-73 of LGTAIP",
+    "editorial": "Suggested citation: 'According to RUBLI procurement analysis, contracts awarded to [vendor] show procurement patterns statistically similar to those of vendors later linked to documented cases (risk indicator: [X]/1.0). This does not constitute proof of wrongdoing and requires journalistic corroboration.'",
+    "disclaimer": "Risk scores are statistical indicators, not legal determinations. High scores indicate similarity to documented corruption patterns and require independent verification before publication."
+  },
+  "riskScoreLabel": "Risk indicator",
+  "riskScoreTooltip": "Risk score = statistical similarity to known corruption patterns. Not proof of wrongdoing.",
+  "loadingError": "Could not load information. Please try again later."
+}

@@ -1,0 +1,2755 @@
+"""API router for institution endpoints."""
+import math
+import logging
+import sqlite3 as _sqlite3
+import threading
+from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+from fastapi import APIRouter, HTTPException, Query, Path, Response
+
+from ..cache import shared
+from ..dependencies import get_db
+from ..config.constants import MAX_CONTRACT_VALUE
+from ..services.active_model import (
+    V10_MODELS, load_active_global_coefficients, load_active_global_model, v10_centred_means, v10_display_name,
+)
+from ..models.institution import (
+    InstitutionResponse,
+    InstitutionDetailResponse,
+    InstitutionListResponse,
+    InstitutionRiskProfile,
+    InstitutionTypeResponse,
+    InstitutionTypeListResponse,
+    SizeTierResponse,
+    SizeTierListResponse,
+    AutonomyLevelResponse,
+    AutonomyLevelListResponse,
+    InstitutionVendorItem,
+    InstitutionVendorListResponse,
+    VendorPoolItem,
+    VendorPoolResponse,
+    InstitutionTopItem,
+    InstitutionTopListResponse,
+    InstitutionHierarchyItem,
+    InstitutionHierarchyResponse,
+    InstitutionSearchResult,
+    InstitutionSearchResponse,
+    InstitutionComparisonItem,
+    InstitutionComparisonResponse,
+)
+from ..models.common import PaginationMeta
+from ..models.contract import ContractListItem, ContractListResponse, PaginationMeta as ContractPaginationMeta
+from pydantic import BaseModel
+from ..services.institution_service import institution_service
+from ..services.institution_canonical import canonical_id, canonical_expr, group_ids, scope_predicate
+from ..services import vendor_canonical as vcanon
+from ..services.institution_panorama import build_panorama
+from ..models.asf import ASFInstitutionResponse, ASFInstitutionFinding
+from ..public_labels import DOCUMENTED_LINK_SQL, apply_public_labels, clean_name, is_named_persona
+from ..helpers.analysis_helpers import single_award_of_competitive
+from ..config.constants import DATA_LAST_YEAR
+from ..helpers.analysis_helpers import fnone, rnd  # DQ1: unknown stays None
+from ..config.constants import proc_den, proc_known  # DQ1 § 2
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/institutions", tags=["institutions"])
+
+# Simple cache for expensive /top endpoint (avoids full 3.1M-row scan on every call)
+_top_cache: Dict[str, Dict[str, Any]] = {}
+_top_cache_lock = threading.Lock()
+_TOP_CACHE_TTL = 3600  # 1 hour
+
+
+def _get_top_cache(key: str) -> Any:
+    with _top_cache_lock:
+        entry = _top_cache.get(key)
+        if entry and datetime.now() < entry["expires_at"]:
+            return entry["value"]
+        return None
+
+
+def _set_top_cache(key: str, value: Any) -> None:
+    with _top_cache_lock:
+        _top_cache[key] = {"value": value, "expires_at": datetime.now() + timedelta(seconds=_TOP_CACHE_TTL)}
+
+# Risk baselines from taxonomy (duplicated here for API use)
+INSTITUTION_RISK_BASELINES = {
+    'autonomous_constitutional': 0.10,
+    'judicial': 0.10,
+    'regulatory_agency': 0.15,
+    'federal_secretariat': 0.15,
+    'legislative': 0.15,
+    'military': 0.15,
+    'research_education': 0.18,
+    'federal_agency': 0.20,
+    'educational': 0.20,
+    'state_enterprise_finance': 0.22,
+    'health_institution': 0.25,
+    'state_enterprise_infra': 0.25,
+    'social_security': 0.25,
+    'other': 0.25,
+    'state_enterprise_energy': 0.28,
+    'social_program': 0.30,
+    'state_government': 0.30,
+    'state_agency': 0.30,
+    'municipal': 0.35,
+}
+
+SIZE_TIER_ADJUSTMENTS = {
+    'mega': 0.05,
+    'large': 0.02,
+    'medium': 0.00,
+    'small': -0.02,
+    'micro': -0.05,
+}
+
+AUTONOMY_BASELINES = {
+    'full_autonomy': 0.10,
+    'technical_autonomy': 0.15,
+    'operational_autonomy': 0.20,
+    'dependent': 0.25,
+    'subnational': 0.30,
+}
+
+
+@router.get("", response_model=InstitutionListResponse)
+def list_institutions(
+    page: int = Query(1, ge=1, description="Page number (1-indexed)"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    institution_type: Optional[str] = Query(None, description="Filter by institution type code"),
+    size_tier: Optional[str] = Query(None, description="Filter by size tier"),
+    autonomy_level: Optional[str] = Query(None, description="Filter by autonomy level"),
+    sector_id: Optional[int] = Query(None, description="Filter by sector ID"),
+    state_code: Optional[str] = Query(None, description="Filter by state code"),
+    search: Optional[str] = Query(None, min_length=2, description="Search institution name"),
+    min_contracts: Optional[int] = Query(None, ge=0, description="Minimum contract count"),
+    is_legally_decentralized: Optional[bool] = Query(None, description="Filter by legal decentralized status"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level: critical, high, medium, low (comma-separated)"),
+    sort_by: str = Query("total_contracts", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    scope: Optional[str] = Query(None, description="Buyer scope: federal (default) | local | estatal | municipal | all"),
+):
+    """
+    List institutions with pagination, filters, and sorting.
+
+    Supports filtering by type, size, autonomy, sector, state, search, and risk level.
+    Joins with institution_stats for richer metrics.
+    """
+    # Validate risk_level before database operations (supports comma-separated: "critical,high")
+    VALID_RISK_LEVELS = {"low", "medium", "high", "critical"}
+    if risk_level is not None:
+        requested = {l.strip().lower() for l in risk_level.split(",") if l.strip()}
+        invalid = requested - VALID_RISK_LEVELS
+        if invalid:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid risk_level(s) {invalid}. Must be one of: {', '.join(sorted(VALID_RISK_LEVELS))}"
+            )
+
+    with get_db() as conn:
+        result = institution_service.list_institutions(
+            conn,
+            page=page,
+            per_page=per_page,
+            institution_type=institution_type,
+            size_tier=size_tier,
+            autonomy_level=autonomy_level,
+            sector_id=sector_id,
+            state_code=state_code,
+            search=search,
+            min_contracts=min_contracts,
+            is_legally_decentralized=is_legally_decentralized,
+            risk_level=risk_level,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            scope=scope,
+        )
+
+        institutions = [InstitutionResponse(**row) for row in result.data]
+
+        # Track applied filters; the buyer scope is always stated
+        filters_applied = {"scope": scope_predicate(conn, scope, "i.id")[2]}
+        if institution_type:
+            filters_applied["institution_type"] = institution_type
+        if size_tier:
+            filters_applied["size_tier"] = size_tier
+        if autonomy_level:
+            filters_applied["autonomy_level"] = autonomy_level
+        if sector_id:
+            filters_applied["sector_id"] = sector_id
+        if state_code:
+            filters_applied["state_code"] = state_code
+        if search:
+            filters_applied["search"] = search
+        if min_contracts is not None:
+            filters_applied["min_contracts"] = min_contracts
+        if is_legally_decentralized is not None:
+            filters_applied["is_legally_decentralized"] = is_legally_decentralized
+
+        return InstitutionListResponse(
+            data=institutions,
+            pagination=PaginationMeta(**result.pagination),
+            filters_applied=filters_applied,
+        )
+
+
+@router.get("/{institution_id:int}", response_model=InstitutionDetailResponse)
+def get_institution(institution_id: int):
+    """
+    Get details for a specific institution.
+
+    Returns institution information with risk profile data including
+    avg_risk_score, direct_award_rate, and high_risk metrics for comparison.
+    """
+    with get_db() as conn:
+        # An absorbed id (name variant / older CompraNet era) serves its canonical
+        # dossier; `canonical_id` tells the frontend to move to that URL.
+        institution_id = canonical_id(conn, institution_id)
+        detail = institution_service.get_institution_detail(conn, institution_id)
+
+        if detail is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Institution {institution_id} not found",
+            )
+
+        total_contracts = detail["total_contracts"] or 0
+        stats = detail.get("stats")
+
+        # Calculate derived metrics from pre-computed stats
+        avg_value = None
+        if total_contracts > 0 and detail["total_amount_mxn"]:
+            avg_value = detail["total_amount_mxn"] / total_contracts
+
+        high_risk_count = stats["high_risk_count"] if stats else 0
+        high_risk_pct = stats["high_risk_pct"] if stats else 0.0
+
+        direct_award_count = stats["direct_award_count"] if stats else 0
+        direct_award_rate = stats["direct_award_pct"] if stats else None
+
+        single_bid_pct = stats.get("single_bid_pct") if stats else None
+
+        avg_risk_score = stats["avg_risk_score"] if stats else None
+        if avg_risk_score is not None:
+            avg_risk_score = round(avg_risk_score, 4)
+
+        # Longest-tenured vendors at this institution (Coviello & Gagliarducci 2017)
+        cursor = conn.cursor()
+        tenure_rows = cursor.execute("""
+            SELECT vit.vendor_id, v.name AS vendor_name,
+                   vit.first_contract_year, vit.last_contract_year,
+                   vit.total_contracts,
+                   vs.avg_risk_score AS avg_risk
+            FROM vendor_institution_tenure vit
+            JOIN vendors v ON vit.vendor_id = v.id
+            LEFT JOIN vendor_stats vs ON vit.vendor_id = vs.vendor_id
+            WHERE vit.institution_id = ?
+            ORDER BY (vit.last_contract_year - vit.first_contract_year) DESC, vit.total_contracts DESC
+            LIMIT 10
+        """, (institution_id,)).fetchall()
+        longest_tenured = [
+            {
+                "vendor_id": r["vendor_id"],
+                "vendor_name": r["vendor_name"],
+                "first_contract_year": r["first_contract_year"],
+                "last_contract_year": r["last_contract_year"],
+                "tenure_years": (r["last_contract_year"] - r["first_contract_year"] + 1),
+                "total_contracts": r["total_contracts"],
+                "avg_risk_score": round(r["avg_risk"], 4) if r["avg_risk"] else None,
+            }
+            for r in tenure_rows
+        ]
+
+        # Supplier diversity: HHI over recent years (Prozorro analytics; Fazekas CRI)
+        # Precomputed in institution_hhi (was 77s live for IMSS, now <10ms).
+        # Falls back to live aggregation if the precomputed table is missing.
+        try:
+            hhi_rows = cursor.execute("""
+                SELECT contract_year, hhi, unique_vendors
+                FROM institution_hhi
+                WHERE institution_id = ?
+                ORDER BY contract_year DESC
+                LIMIT 10
+            """, (institution_id,)).fetchall()
+        except sqlite3.OperationalError:
+            hhi_rows = cursor.execute("""
+                WITH vendor_shares AS (
+                    SELECT contract_year, vendor_id,
+                           SUM(COALESCE(amount_mxn, 0)) AS vendor_value
+                    FROM contracts
+                    WHERE institution_id = ? AND vendor_id IS NOT NULL
+                      AND contract_year IS NOT NULL AND amount_mxn > 0
+                    GROUP BY contract_year, vendor_id
+                ),
+                year_totals AS (
+                    SELECT contract_year,
+                           SUM(vendor_value) AS total_value,
+                           COUNT(DISTINCT vendor_id) AS unique_vendors
+                    FROM vendor_shares GROUP BY contract_year
+                )
+                SELECT vs.contract_year,
+                       ROUND(SUM((vs.vendor_value * 100.0 / yt.total_value) *
+                                 (vs.vendor_value * 100.0 / yt.total_value)), 1) AS hhi,
+                       yt.unique_vendors
+                FROM vendor_shares vs
+                JOIN year_totals yt ON vs.contract_year = yt.contract_year
+                WHERE yt.total_value > 0
+                GROUP BY vs.contract_year
+                ORDER BY vs.contract_year DESC
+                LIMIT 10
+            """, (institution_id,)).fetchall()
+
+        supplier_diversity = None
+        if hhi_rows:
+            hhi_list = [{"year": r["contract_year"], "hhi": float(r["hhi"]), "unique_vendors": int(r["unique_vendors"])} for r in hhi_rows]
+            current = hhi_list[0]
+            recent_5 = hhi_list[:5]
+            hhi_5yr_avg = round(sum(h["hhi"] for h in recent_5) / len(recent_5), 1)
+
+            def _concentration_level(h: float) -> str:
+                if h >= 2500: return "high"
+                if h >= 1000: return "medium"
+                return "low"
+
+            trend = "stable"
+            if len(hhi_list) >= 3:
+                if hhi_list[0]["hhi"] > hhi_list[2]["hhi"] * 1.1:
+                    trend = "increasing"
+                elif hhi_list[0]["hhi"] < hhi_list[2]["hhi"] * 0.9:
+                    trend = "decreasing"
+
+            supplier_diversity = {
+                "hhi_current_year": current["hhi"],
+                "hhi_5yr_avg": hhi_5yr_avg,
+                "unique_vendors_current_year": current["unique_vendors"],
+                "concentration_level": _concentration_level(current["hhi"]),
+                "trend": trend,
+                "history": hhi_list,
+                "prozorro_note": "Ukraine's Prozorro flags institutions with HHI >4000 as concentrated purchasing.",
+            }
+
+        return InstitutionDetailResponse(
+            id=detail["id"],
+            canonical_id=institution_id,
+            name=detail["name"],
+            name_normalized=detail["name_normalized"],
+            siglas=detail["siglas"],
+            institution_type=detail["institution_type"],
+            institution_type_id=detail["institution_type_id"],
+            size_tier=detail["size_tier"],
+            autonomy_level=detail["autonomy_level"],
+            is_legally_decentralized=bool(detail["is_legally_decentralized"]) if detail["is_legally_decentralized"] is not None else None,
+            sector_id=detail["sector_id"],
+            state_code=detail["state_code"],
+            geographic_scope=detail["geographic_scope"],
+            total_contracts=total_contracts,
+            total_amount_mxn=detail["total_amount_mxn"],
+            vendor_count=detail["vendor_count"],
+            classification_confidence=detail["classification_confidence"],
+            data_quality_grade=detail["data_quality_grade"],
+            risk_baseline=detail["type_risk_baseline"],
+            size_risk_adjustment=detail["size_risk_adjustment"],
+            autonomy_risk_baseline=detail["autonomy_risk_baseline"],
+            avg_contract_value=avg_value,
+            high_risk_contract_count=high_risk_count,
+            high_risk_percentage=round(high_risk_pct, 2),
+            avg_risk_score=avg_risk_score,
+            direct_award_rate=rnd(direct_award_rate, 2),
+            direct_award_count=direct_award_count,
+            single_bid_pct=round(single_bid_pct, 2) if single_bid_pct is not None else None,
+            single_award_pct=single_award_of_competitive(single_bid_pct, direct_award_rate) if single_bid_pct is not None else None,
+            longest_tenured_vendors=longest_tenured,
+            supplier_diversity=supplier_diversity,
+        )
+
+
+@router.get("/{institution_id:int}/risk-timeline")
+def get_institution_risk_timeline(
+    institution_id: int = Path(..., description="Institution ID"),
+):
+    """
+    Get year-by-year average risk score for an institution.
+
+    Returns a timeline of average risk scores and contract counts per year.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Verify institution exists
+        cursor.execute("SELECT name FROM institutions WHERE id = ?", (institution_id,))
+        institution = cursor.fetchone()
+        if not institution:
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        cursor.execute("""
+            SELECT
+                contract_year as year,
+                AVG(risk_score) as avg_risk_score,
+                COUNT(*) as contract_count,
+                SUM(amount_mxn) as total_value
+            FROM contracts
+            WHERE institution_id = ?
+              AND risk_score IS NOT NULL
+              AND contract_year IS NOT NULL
+            GROUP BY contract_year
+            ORDER BY contract_year
+        """, (institution_id,))
+
+        timeline = [
+            {
+                "year": row["year"],
+                "avg_risk_score": round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+                "contract_count": row["contract_count"],
+                "total_value": row["total_value"] or 0,
+            }
+            for row in cursor.fetchall()
+        ]
+
+        return {
+            "institution_id": institution_id,
+            "institution_name": institution["name"],
+            "timeline": timeline,
+        }
+
+
+# =============================================================================
+# INSTITUTION RISK WATERFALL
+# =============================================================================
+
+class InstitutionWaterfallItem(BaseModel):
+    feature: str
+    z_score: float
+    coefficient: float
+    contribution: float
+    label_en: str
+
+
+class InstitutionWaterfallResponse(BaseModel):
+    institution_id: int
+    items: List[InstitutionWaterfallItem]
+    total_contracts: int
+
+
+_INST_FEATURE_LABELS = {
+    "single_bid": "Single award",
+    "direct_award": "Direct Award",
+    "price_ratio": "Amount vs similar contracts",
+    "vendor_concentration": "Vendor Concentration",
+    "ad_period_days": "Ad Period Length",
+    "year_end": "Year-End Timing",
+    "same_day_count": "Same-Day Contracts",
+    "network_member_count": "Network Membership",
+    "co_bid_rate": "Co-Bidding Rate",
+    "price_hyp_confidence": "Amount-outlier confidence",
+    "industry_mismatch": "Industry Mismatch",
+    "institution_risk": "Institution Risk",
+    "price_volatility": "Very uneven contract sizes",
+    "sector_spread": "Sector Spread",
+    "win_rate": "Win Rate",
+    "institution_diversity": "Institution Diversity",
+}
+
+_INST_Z_COLS = [
+    "z_single_bid", "z_direct_award", "z_price_ratio", "z_vendor_concentration",
+    "z_ad_period_days", "z_year_end", "z_same_day_count", "z_network_member_count",
+    "z_co_bid_rate", "z_price_hyp_confidence", "z_industry_mismatch", "z_institution_risk",
+    "z_price_volatility", "z_sector_spread", "z_win_rate", "z_institution_diversity",
+]
+
+
+def _load_inst_z_means(conn, institution_id: int):
+    """Fallback per-institution mean z-vector from the precomputed
+    institution_z_means table — used when contract_z_features is absent (prod
+    deploy DB). Returns a Row with cnt + the _INST_Z_COLS, or None.
+    See scripts/_precompute_institution_z_means.py."""
+    try:
+        cols = ", ".join(_INST_Z_COLS)
+        return conn.execute(
+            f"SELECT cnt, {cols} FROM institution_z_means WHERE institution_id = ?",
+            (institution_id,),
+        ).fetchone()
+    except _sqlite3.OperationalError:
+        return None
+
+
+@router.get("/{institution_id:int}/risk-waterfall", response_model=InstitutionWaterfallResponse)
+def get_institution_risk_waterfall(
+    institution_id: int = Path(..., description="Institution ID"),
+):
+    """Returns per-feature risk contributions for an institution (average across contracts)."""
+    cache_key = f"inst_wf:{institution_id}"
+    cached = _get_top_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        if not conn.execute("SELECT id FROM institutions WHERE id = ?", (institution_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        model = load_active_global_model(conn)
+        if model["model_version"] in V10_MODELS:
+            from api.routers.vendors import _FEATURE_LABELS as _VENDOR_LABELS  # v0.9.2 names (lazy: no import cycle)
+            # v0.9.2: (institution mean - population mean) of each as-of input x its raw-unit beta
+            means, n = v10_centred_means(conn, "institution_id", institution_id, model["coefficients"])
+            items = [InstitutionWaterfallItem(
+                feature=v10_display_name(f), z_score=round(means[f], 4), coefficient=round(b, 4),
+                contribution=round(b * means[f], 4),
+                label_en=_INST_FEATURE_LABELS.get(v10_display_name(f)) or _VENDOR_LABELS.get(v10_display_name(f), v10_display_name(f)),
+            ) for f, b in model["coefficients"].items() if means and b and f in means]
+            items.sort(key=lambda x: abs(x.contribution), reverse=True)
+            result = InstitutionWaterfallResponse(institution_id=institution_id, items=items, total_contracts=n)
+            _set_top_cache(cache_key, result)
+            return result
+
+        # Precompute FIRST (PARALLAX D9 § Change 1): institution_z_means ships
+        # to the deploy DB and answers in milliseconds; the live AVG over
+        # contract_z_features joined to contracts is a 662K-row walk for IMSS
+        # (> 280s cold on the local disk). The live path only runs when the
+        # precompute row is missing. See scripts/_precompute_institution_z_means.py.
+        row = _load_inst_z_means(conn, institution_id)
+
+        if not row or not row["cnt"]:
+            # safe: _INST_Z_COLS is a hardcoded module-level constant, not from user input
+            avg_cols = ", ".join(f"AVG(czf.{col}) as {col}" for col in _INST_Z_COLS)
+            try:
+                row = conn.execute(f"""
+                    SELECT {avg_cols}, COUNT(*) as cnt
+                    FROM contract_z_features czf
+                    JOIN contracts c ON czf.contract_id = c.id
+                    WHERE c.institution_id = ?
+                """, (institution_id,)).fetchone()
+            except _sqlite3.OperationalError:
+                row = None  # prod deploy DB omits contract_z_features
+
+        if not row or not row["cnt"]:
+            result = InstitutionWaterfallResponse(institution_id=institution_id, items=[], total_contracts=0)
+            _set_top_cache(cache_key, result)
+            return result
+
+        # Active-model (v0.8.5) global coefficients, normalized to a flat dict.
+        # Was `WHERE sector_id IS NULL` → superseded v6.0 betas. See active_model.py.
+        coefficients = load_active_global_coefficients(conn)
+
+        items = []
+        for z_col in _INST_Z_COLS:
+            feature_name = z_col[2:]
+            z_val = row[z_col] or 0.0
+            coeff = coefficients.get(feature_name, 0.0)
+            contribution = z_val * coeff
+            items.append(InstitutionWaterfallItem(
+                feature=feature_name,
+                z_score=round(z_val, 4),
+                coefficient=round(coeff, 4),
+                contribution=round(contribution, 4),
+                label_en=_INST_FEATURE_LABELS.get(feature_name, feature_name),
+            ))
+
+        items.sort(key=lambda x: abs(x.contribution), reverse=True)
+        result = InstitutionWaterfallResponse(
+            institution_id=institution_id, items=items, total_contracts=row["cnt"]
+        )
+        _set_top_cache(cache_key, result)
+        return result
+
+
+@router.get("/{institution_id:int}/risk-profile", response_model=InstitutionRiskProfile)
+def get_institution_risk_profile(institution_id: int):
+    """
+    Get detailed risk profile for an institution.
+
+    Returns risk breakdown by factors and contract risk distribution.
+    """
+    cache_key = f"risk-profile:{institution_id}"
+    cached = _get_top_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Get institution info
+        cursor.execute("""
+            SELECT
+                i.id, i.name, i.institution_type, i.size_tier, i.autonomy_level,
+                i.total_contracts, i.total_amount_mxn
+            FROM institutions i
+            WHERE i.id = ?
+        """, (institution_id,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Institution {institution_id} not found"
+            )
+
+        # Get risk baselines
+        inst_type = row["institution_type"] or "other"
+        size_tier = row["size_tier"] or "micro"
+        autonomy = row["autonomy_level"] or "dependent"
+
+        risk_baseline = INSTITUTION_RISK_BASELINES.get(inst_type, 0.25)
+        size_adjustment = SIZE_TIER_ADJUSTMENTS.get(size_tier, 0.0)
+        autonomy_baseline = AUTONOMY_BASELINES.get(autonomy, 0.25)
+
+        # Calculate effective risk (weighted combination)
+        # Note: size_adjustment ranges from -0.05 to +0.05, normalized to 0.15-0.25 range
+        effective_risk = (risk_baseline * 0.5) + (autonomy_baseline * 0.3) + ((size_adjustment + 0.2) * 0.2)
+
+        # Get contract risk distribution
+        cursor.execute("""
+            SELECT risk_level, COUNT(*) as count
+            FROM contracts
+            WHERE institution_id = ?
+            GROUP BY risk_level
+        """, (institution_id,))
+
+        contracts_by_risk = {}
+        for risk_row in cursor.fetchall():
+            level = risk_row["risk_level"] or "unknown"
+            contracts_by_risk[level] = risk_row["count"]
+
+        # Get average risk score
+        cursor.execute("""
+            SELECT AVG(risk_score) as avg_risk
+            FROM contracts
+            WHERE institution_id = ?
+        """, (institution_id,))
+        avg_risk_row = cursor.fetchone()
+
+        response = InstitutionRiskProfile(
+            institution_id=row["id"],
+            institution_name=row["name"],
+            institution_type=inst_type,
+            risk_baseline=risk_baseline,
+            size_tier=size_tier,
+            size_risk_adjustment=size_adjustment,
+            autonomy_level=autonomy,
+            autonomy_risk_baseline=autonomy_baseline,
+            effective_risk=round(effective_risk, 4),
+            total_contracts=row["total_contracts"] or 0,
+            total_value=row["total_amount_mxn"] or 0.0,
+            contracts_by_risk_level=contracts_by_risk,
+            avg_risk_score=avg_risk_row["avg_risk"] if avg_risk_row else None,
+        )
+        _set_top_cache(cache_key, response)
+        return response
+
+
+# =============================================================================
+# INSTITUTION HELPER ENDPOINTS
+# =============================================================================
+
+@router.get("/search", response_model=InstitutionSearchResponse)
+def search_institutions(
+    q: str = Query(..., min_length=2, description="Search query"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum results"),
+):
+    """
+    Search institutions by name, acronym, or normalized name.
+
+    Returns institutions matching the query with match type indication.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        search_pattern = f"%{q}%"
+
+        # Matches on any spelling (m) resolve to the canonical institution (i), once.
+        query = f"""
+            SELECT
+                i.id, i.name, i.siglas, i.name_normalized, i.institution_type, i.sector_id,
+                COALESCE(ist.total_contracts, i.total_contracts) AS total_contracts,
+                MIN(CASE
+                    WHEN m.siglas LIKE ? THEN 1
+                    WHEN m.name LIKE ? THEN 2
+                    ELSE 3
+                END) as match_rank
+            FROM institutions m
+            JOIN institutions i ON i.id = {canonical_expr(conn, "m.id")}
+            LEFT JOIN institution_stats ist ON ist.institution_id = i.id
+            WHERE m.siglas LIKE ? OR m.name LIKE ? OR m.name_normalized LIKE ?
+            GROUP BY i.id
+            ORDER BY match_rank, total_contracts DESC NULLS LAST
+            LIMIT ?
+        """
+        cursor.execute(query, (
+            search_pattern, search_pattern,  # CASE
+            search_pattern, search_pattern, search_pattern,  # WHERE
+            limit
+        ))
+        rows = cursor.fetchall()
+
+        results = [
+            InstitutionSearchResult(
+                id=row["id"],
+                name=row["name"],
+                siglas=row["siglas"],
+                institution_type=row["institution_type"],
+                sector_id=row["sector_id"],
+                total_contracts=row["total_contracts"],
+                match_type={1: "siglas", 2: "name"}.get(row["match_rank"], "normalized"),
+            )
+            for row in rows
+        ]
+
+        return InstitutionSearchResponse(
+            data=results,
+            query=q,
+            total=len(results),
+        )
+
+
+@router.get("/compare", response_model=InstitutionComparisonResponse)
+def compare_institutions(
+    ids: str = Query(..., description="Comma-separated list of institution IDs to compare"),
+):
+    """
+    Compare multiple institutions side-by-side.
+
+    Returns comprehensive metrics for each institution including:
+    - avg_risk_score: Average risk score of all contracts
+    - direct_award_rate: Percentage of direct award contracts
+    - high_risk_count: Number of high/critical risk contracts
+    - single_bid_rate: Percentage of single-bid contracts
+
+    Accepts up to 10 institutions for comparison.
+    """
+    # Parse institution IDs
+    try:
+        institution_ids = [int(id.strip()) for id in ids.split(",") if id.strip()]
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid institution IDs. Must be comma-separated integers.")
+
+    if not institution_ids:
+        raise HTTPException(status_code=400, detail="At least one institution ID is required")
+
+    if len(institution_ids) > 10:
+        raise HTTPException(status_code=400, detail="Maximum 10 institutions can be compared at once")
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Build placeholders for IN clause
+        placeholders = ",".join("?" * len(institution_ids))
+
+        # Get institution info with aggregated metrics in a single efficient query
+        query = f"""
+            SELECT
+                i.id,
+                i.name,
+                i.siglas,
+                i.institution_type,
+                i.sector_id,
+                i.total_contracts,
+                i.total_amount_mxn,
+                COALESCE(metrics.avg_risk_score, 0) as avg_risk_score,
+                COALESCE(metrics.direct_award_count, 0) as direct_award_count,
+                COALESCE(metrics.high_risk_count, 0) as high_risk_count,
+                COALESCE(metrics.scored_count, 0) as scored_count,
+                COALESCE(metrics.single_bid_count, 0) as single_bid_count
+            FROM institutions i
+            LEFT JOIN (
+                SELECT
+                    institution_id,
+                    AVG(risk_score) as avg_risk_score,
+                    SUM(CASE WHEN is_direct_award = 1 THEN 1 ELSE 0 END) as direct_award_count,
+                    SUM(CASE WHEN risk_level IN ('high', 'critical') THEN 1 ELSE 0 END) as high_risk_count,
+                    COUNT(risk_score) as scored_count,
+                    SUM(CASE WHEN is_single_bid = 1 THEN 1 ELSE 0 END) as single_bid_count
+                FROM contracts
+                WHERE institution_id IN ({placeholders})
+                AND COALESCE(amount_mxn, 0) <= ?
+                GROUP BY institution_id
+            ) metrics ON i.id = metrics.institution_id
+            WHERE i.id IN ({placeholders})
+        """
+
+        # Parameters: institution_ids for subquery, MAX_CONTRACT_VALUE, institution_ids for main query
+        params = institution_ids + [MAX_CONTRACT_VALUE] + institution_ids
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        # Build comparison items
+        items = []
+        for row in rows:
+            total_contracts = row["total_contracts"] or 0
+            total_value = row["total_amount_mxn"] or 0
+
+            # Calculate rates
+            direct_award_rate = (row["direct_award_count"] / total_contracts * 100) if total_contracts > 0 else 0.0
+            high_risk_pct = (row["high_risk_count"] / row["scored_count"] * 100) if row["scored_count"] > 0 else 0.0
+            single_bid_rate = (row["single_bid_count"] / total_contracts * 100) if total_contracts > 0 else 0.0
+            avg_contract_value = (total_value / total_contracts) if total_contracts > 0 else None
+
+            items.append(InstitutionComparisonItem(
+                id=row["id"],
+                name=row["name"],
+                siglas=row["siglas"],
+                institution_type=row["institution_type"],
+                sector_id=row["sector_id"],
+                total_contracts=total_contracts,
+                total_value_mxn=total_value,
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+                direct_award_rate=rnd(direct_award_rate, 2),
+                direct_award_count=row["direct_award_count"],
+                high_risk_count=row["high_risk_count"],
+                high_risk_percentage=round(high_risk_pct, 2),
+                single_bid_rate=round(single_bid_rate, 2),
+                avg_contract_value=round(avg_contract_value, 2) if avg_contract_value else None,
+            ))
+
+        # Sort to match input order
+        id_order = {id: i for i, id in enumerate(institution_ids)}
+        items.sort(key=lambda x: id_order.get(x.id, 999))
+
+        return InstitutionComparisonResponse(
+            data=items,
+            total=len(items),
+        )
+
+
+@router.get("/top", response_model=InstitutionTopListResponse)
+def get_top_institutions(
+    by: str = Query("spending", description="Ranking metric: spending, contracts, risk"),
+    limit: int = Query(20, ge=1, le=100, description="Number of results"),
+    institution_type: Optional[str] = Query(None, description="Filter by institution type"),
+    sector_id: Optional[int] = Query(None, ge=1, le=12, description="Filter by sector"),
+    year: Optional[int] = Query(None, ge=2002, le=DATA_LAST_YEAR, description="Filter by contract year"),
+):
+    """
+    Get top institutions by spending, contract count, or risk score.
+
+    Returns institutions ranked by the specified metric with aggregate statistics.
+    """
+    cache_key = f"top:{by}:{limit}:{institution_type}:{sector_id}:{year}"
+    cached = _get_top_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Build filters
+        conditions = ["COALESCE(c.amount_mxn, 0) <= ?"]
+        params = [MAX_CONTRACT_VALUE]
+
+        if institution_type is not None:
+            conditions.append("i.institution_type = ?")
+            params.append(institution_type)
+
+        if sector_id is not None:
+            conditions.append("c.sector_id = ?")
+            params.append(sector_id)
+
+        if year is not None:
+            conditions.append("c.contract_year = ?")
+            params.append(year)
+
+        where_clause = " AND ".join(conditions)
+
+        # Determine sort expression based on metric
+        metric_mapping = {
+            "spending": ("SUM(c.amount_mxn)", "DESC"),
+            "contracts": ("COUNT(c.id)", "DESC"),
+            "risk": ("AVG(c.risk_score)", "DESC"),
+        }
+        if by not in metric_mapping:
+            raise HTTPException(status_code=400, detail=f"Invalid metric '{by}'. Use: spending, contracts, risk")
+
+        sort_expr, sort_dir = metric_mapping[by]
+        _VALID_INSTITUTION_METRIC_EXPRS = {"SUM(c.amount_mxn)", "COUNT(c.id)", "AVG(c.risk_score)"}
+        assert sort_expr in _VALID_INSTITUTION_METRIC_EXPRS, f"Invalid sort expression: {sort_expr}"
+
+        query = f"""
+            SELECT
+                i.id,
+                i.name,
+                i.institution_type,
+                {sort_expr} as metric_value,
+                COUNT(c.id) as total_contracts,
+                COALESCE(SUM(c.amount_mxn), 0) as total_value_mxn,
+                COALESCE(AVG(c.risk_score), 0) as avg_risk_score
+            FROM contracts c
+            JOIN institutions i ON i.id = {canonical_expr(conn, "c.institution_id")}
+            WHERE {where_clause}
+            GROUP BY i.id, i.name, i.institution_type
+            HAVING COUNT(c.id) > 0
+            ORDER BY metric_value {sort_dir} NULLS LAST
+            LIMIT ?
+        """
+        params.append(limit)
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+
+        institutions = [
+            InstitutionTopItem(
+                rank=i + 1,
+                institution_id=row["id"],
+                institution_name=row["name"],
+                institution_type=row["institution_type"],
+                metric_value=row["metric_value"] or 0,
+                total_contracts=row["total_contracts"],
+                total_value_mxn=row["total_value_mxn"],
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+            )
+            for i, row in enumerate(rows)
+        ]
+
+        response = InstitutionTopListResponse(
+            data=institutions,
+            metric=by,
+            total=len(institutions),
+        )
+        _set_top_cache(cache_key, response)
+        return response
+
+
+@router.get("/hierarchy", response_model=InstitutionHierarchyResponse)
+def get_institution_hierarchy():
+    """
+    Get institution hierarchy by type.
+
+    Returns institutions grouped by type with aggregate statistics.
+    """
+    cached = _get_top_cache("hierarchy")
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        query = """
+            SELECT
+                i.institution_type,
+                it.name_es as institution_type_name,
+                COUNT(DISTINCT i.id) as count,
+                COALESCE(SUM(i.total_contracts), 0) as total_contracts,
+                COALESCE(SUM(i.total_amount_mxn), 0) as total_value_mxn,
+                COALESCE(SUM(s.avg_risk_score * s.total_contracts)
+                         / NULLIF(SUM(s.total_contracts), 0), 0) as avg_risk_score
+            FROM institutions i
+            LEFT JOIN institution_types it ON i.institution_type = it.code
+            -- canonical per-institution aggregate; the old LEFT JOIN contracts
+            -- scanned 3.1M rows (>60s cold → 504) and fanned out the SUMs
+            -- (each institution's totals counted once per contract).
+            LEFT JOIN institution_stats s ON s.institution_id = i.id
+            GROUP BY i.institution_type, it.name_es
+            ORDER BY total_contracts DESC
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        hierarchy = [
+            InstitutionHierarchyItem(
+                institution_type=row["institution_type"] or "unknown",
+                institution_type_name=row["institution_type_name"],
+                count=row["count"],
+                total_contracts=row["total_contracts"],
+                total_value_mxn=row["total_value_mxn"],
+                avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] else None,
+            )
+            for row in rows
+        ]
+
+        # Get total counts
+        cursor.execute("SELECT COUNT(*) FROM institutions")
+        total_institutions = cursor.fetchone()[0]
+
+        response = InstitutionHierarchyResponse(
+            data=hierarchy,
+            total_institutions=total_institutions,
+            total_types=len(hierarchy),
+        )
+        _set_top_cache("hierarchy", response)
+        return response
+
+
+@router.get("/{institution_id:int}/top-categories")
+def get_institution_top_categories(
+    institution_id: int,
+    year: Optional[int] = Query(None, ge=2002, le=DATA_LAST_YEAR),
+    limit: int = Query(10, ge=5, le=50),
+):
+    """
+    Top spending categories for an institution on the canonical `categories`
+    taxonomy (contracts.category_id), with contract count, value, mean risk
+    indicator, direct-award % and high/critical-risk count.
+
+    Reads the precomputed `institution_category_stats` first (see
+    scripts/precompute_institution_categories.py); falls back to a live
+    GROUP BY when the table is absent or a `year` filter is requested.
+    An institution without categorised contracts returns 200 with `data: []`.
+
+    PARALLAX D9 § Change 1: the previous query filtered on
+    `c.institution_name`, a column `contracts` does not have; the swallowed
+    OperationalError made every institution 404.
+    """
+    cache_key = f"inst_topcat:{institution_id}:{year}:{limit}"
+    cached = _get_top_cache(cache_key)
+    if cached is not None:
+        return cached
+
+    with get_db() as conn:
+        institution = conn.execute(
+            "SELECT name FROM institutions WHERE id = ?", (institution_id,)
+        ).fetchone()
+        if not institution:
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        rows = None
+        source = "live"
+        if year is None:
+            try:
+                rows = conn.execute(
+                    """
+                    SELECT ics.category_id, cat.name_es, cat.name_en, cat.code, cat.sector_id,
+                           ics.contract_count, ics.total_value_mxn, ics.avg_risk_score,
+                           ics.direct_award_pct, ics.high_risk_count
+                    FROM institution_category_stats ics
+                    JOIN categories cat ON cat.id = ics.category_id
+                    WHERE ics.institution_id = ?
+                    ORDER BY ics.total_value_mxn DESC
+                    LIMIT ?
+                    """,
+                    (institution_id, limit),
+                ).fetchall()
+                totals = conn.execute(
+                    """
+                    SELECT COUNT(*), SUM(contract_count), SUM(total_value_mxn)
+                    FROM institution_category_stats WHERE institution_id = ?
+                    """,
+                    (institution_id,),
+                ).fetchone()
+                source = "precomputed"
+            except _sqlite3.OperationalError:
+                rows = None  # table absent (fixture DB / before the precompute ran)
+
+        if rows is None:
+            conditions = ["c.institution_id = ?", "COALESCE(c.amount_mxn, 0) <= ?"]
+            params: List[Any] = [institution_id, MAX_CONTRACT_VALUE]
+            if year is not None:
+                conditions.append("c.contract_year = ?")
+                params.append(year)
+            totals = conn.execute(
+                f"""
+                SELECT COUNT(DISTINCT c.category_id), COUNT(*), SUM(COALESCE(c.amount_mxn, 0))
+                FROM contracts c
+                JOIN categories cat ON cat.id = c.category_id
+                WHERE {" AND ".join(conditions)}
+                """,
+                params,
+            ).fetchone()
+            params.append(limit)
+            rows = conn.execute(
+                f"""
+                SELECT c.category_id, cat.name_es, cat.name_en, cat.code, cat.sector_id,
+                       COUNT(*) AS contract_count,
+                       SUM(COALESCE(c.amount_mxn, 0)) AS total_value_mxn,
+                       AVG(c.risk_score) AS avg_risk_score,
+                       ROUND(100.0 * SUM(CASE WHEN {proc_known('c.is_direct_award', 'c.contract_year')} = 1 THEN 1 ELSE 0 END) / {proc_den('c.is_direct_award', 'c.contract_year')}, 1) AS direct_award_pct,
+                       SUM(CASE WHEN c.risk_level IN ('high', 'critical') THEN 1 ELSE 0 END) AS high_risk_count
+                FROM contracts c
+                JOIN categories cat ON cat.id = c.category_id
+                WHERE {" AND ".join(conditions)}
+                GROUP BY c.category_id
+                ORDER BY total_value_mxn DESC
+                LIMIT ?
+                """,
+                params,
+            ).fetchall()
+
+        result = {
+            "institution_id": institution_id,
+            "institution_name": institution["name"],
+            "data_note": f"Filtered to year {year}" if year is not None else "All years",
+            "source": source,
+            # Coverage of the rows below: how many categories the institution
+            # buys in, and the contracts / value they categorise (PARALLAX D9b F9).
+            "total_categories": int(totals[0] or 0),
+            "total_contracts_categorised": int(totals[1] or 0),
+            "total_value_categorised": float(totals[2] or 0),
+            "data": [
+                {
+                    "category_id": row["category_id"],
+                    "name_es": row["name_es"],
+                    "name_en": row["name_en"],
+                    "code": row["code"],
+                    "sector_id": row["sector_id"],
+                    "contract_count": row["contract_count"],
+                    "total_value_mxn": row["total_value_mxn"],
+                    "avg_risk_score": round(row["avg_risk_score"], 4) if row["avg_risk_score"] is not None else None,
+                    "direct_award_pct": row["direct_award_pct"],
+                    "high_risk_count": row["high_risk_count"],
+                }
+                for row in rows
+            ],
+        }
+        _set_top_cache(cache_key, result)
+        return result
+
+
+@router.get("/{institution_id:int}/contracts", response_model=ContractListResponse)
+def get_institution_contracts(
+    institution_id: int = Path(..., description="Institution ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+    year: Optional[int] = Query(None, ge=2002, le=2026, description="Filter by year"),
+    risk_level: Optional[str] = Query(None, description="Filter by risk level"),
+    sort_by: str = Query("contract_date", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    since: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/after (ISO)"),
+    vendor_id: Optional[int] = Query(None, ge=1, description="One supplier (canonical id; its absorbed ids count)"),
+    category_id: Optional[int] = Query(None, ge=1),
+):
+    """
+    Get contracts for a specific institution with pagination.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        # Verify institution exists
+        cursor.execute("SELECT name FROM institutions WHERE id = ?", (institution_id,))
+        institution = cursor.fetchone()
+        if not institution:
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        # The canonical dossier lists the contracts of every id folded into it
+        institution_id = canonical_id(conn, institution_id)
+        ids = group_ids(conn, institution_id)
+        # safe: conditions list contains only hardcoded column names, values are parameterized
+        conditions = [f"c.institution_id IN ({','.join('?' * len(ids))})", "COALESCE(c.amount_mxn, 0) <= ?"]
+        params = [*ids, MAX_CONTRACT_VALUE]
+
+        if year is not None:
+            conditions.append("c.contract_year = ?")
+            params.append(year)
+
+        if risk_level is not None:
+            conditions.append("c.risk_level = ?")
+            params.append(risk_level.lower())
+
+        # B2 card / board cuts (since · vendor · category); they take the generic plan below
+        narrowed = since is not None or vendor_id is not None or category_id is not None
+        if since is not None:
+            conditions += ["c.contract_year >= ?", "c.contract_date >= ?"]
+            params += [int(since[:4]), since]
+        if vendor_id is not None:
+            vids = vcanon.group_ids(conn, vendor_id)
+            conditions.append(f"c.vendor_id IN ({','.join('?' * len(vids))})")
+            params.extend(vids)
+        if category_id is not None:
+            conditions.append("c.category_id = ?")
+            params.append(category_id)
+
+        where_clause = " AND ".join(conditions)
+
+        # safe: sort_by is mapped through whitelist, never used as raw user input
+        SORT_FIELD_MAPPING = {
+            "contract_date": "c.contract_date",
+            "amount_mxn": "c.amount_mxn",
+            "risk_score": "c.risk_score",
+        }
+        sort_expr = SORT_FIELD_MAPPING.get(sort_by, "c.contract_date")
+        assert sort_expr in SORT_FIELD_MAPPING.values(), f"Invalid sort: {sort_expr}"
+        order_direction = "DESC" if sort_order.lower() == "desc" else "ASC"
+
+        # Count total -- use pre-computed stats when no filters active (fast path)
+        if year is None and risk_level is None and not narrowed:
+            cursor.execute(
+                "SELECT total_contracts FROM institution_stats WHERE institution_id = ?",
+                (institution_id,)
+            )
+            stats_row = cursor.fetchone()
+            total = stats_row["total_contracts"] if stats_row else 0
+        else:
+            cursor.execute(f"SELECT COUNT(*) FROM contracts c WHERE {where_clause}", params)
+            total = cursor.fetchone()[0]
+        total_pages = math.ceil(total / per_page) if total > 0 else 1
+
+        # Get paginated results
+        offset = (page - 1) * per_page
+        columns = """
+                c.id, c.contract_number, c.title, c.amount_mxn,
+                c.contract_date, c.contract_year, c.sector_id,
+                s.name_es as sector_name, c.risk_score, c.risk_level,
+                c.is_direct_award, c.is_single_bid,
+                c.vendor_id, c.institution_id,
+                v.name as vendor_name, i.name as institution_name,
+                c.procedure_type, c.source_structure, c.category_id,
+                v.is_individual as v_is_individual, v.rfc as v_rfc"""
+        joins = """
+            LEFT JOIN sectors s ON c.sector_id = s.id
+            LEFT JOIN vendors v ON c.vendor_id = v.id
+            LEFT JOIN institutions i ON c.institution_id = i.id"""
+        if sort_by == "amount_mxn" and year is None and not narrowed:
+            # Every filter column (institution_id, risk_level, amount_mxn) lives in
+            # idx_c_inst_risk, so the page is picked from the index alone and only
+            # per_page rows touch the table. The plain plan read and sorted every
+            # contract row of the institution: IMSS 661K rows, 18–22 s cold on prod
+            # (docs/LAUNCH_AUDIT_2026-10-30.md § S1).
+            query = f"""
+                SELECT {columns}
+                FROM (
+                    SELECT c.rowid AS rid, c.amount_mxn AS amt
+                    FROM contracts c INDEXED BY idx_c_inst_risk
+                    WHERE {where_clause}
+                    ORDER BY c.amount_mxn {order_direction} NULLS LAST, c.rowid
+                    LIMIT ? OFFSET ?
+                ) k
+                JOIN contracts c ON c.rowid = k.rid
+                {joins}
+                ORDER BY k.amt {order_direction} NULLS LAST, k.rid
+            """
+            page_params = params + [per_page, offset]
+        elif sort_expr == "c.contract_date" and year is None and not narrowed:
+            # Default dossier sort. One raw id walks idx_c_inst_date (prod) in date
+            # order and stops after offset+per_page rows; IN (a, b, …) over a
+            # canonical group defeats that and sorted every row (group 1327, 9 ids,
+            # 300K rows). So: each raw id picks its own top offset+per_page keys,
+            # then those few are merged. No INDEXED BY — the index is missing from
+            # local DBs, and the query is just slower without it.
+            # Ties: rowid in the direction the index walks (was arbitrary).
+            # (docs/LAUNCH_AUDIT_2026-10-30.md § S1)
+            tie = "ASC" if order_direction == "DESC" else "DESC"
+            per_id = " AND ".join(conditions[1:])
+            branch = f"""SELECT * FROM (
+                    SELECT c.rowid AS rid, c.contract_date AS d FROM contracts c
+                    WHERE c.institution_id = ? AND {per_id}
+                    ORDER BY c.contract_date {order_direction} NULLS LAST, c.rowid {tie}
+                    LIMIT ?)"""
+            keys = " UNION ALL ".join([branch] * len(ids))
+            query = f"""
+                SELECT {columns}
+                FROM (
+                    SELECT rid, d FROM ({keys})
+                    ORDER BY d {order_direction} NULLS LAST, rid {tie}
+                    LIMIT ? OFFSET ?
+                ) k
+                JOIN contracts c ON c.rowid = k.rid
+                {joins}
+                ORDER BY k.d {order_direction} NULLS LAST, k.rid {tie}
+            """
+            page_params = [p for i in ids for p in (i, *params[len(ids):], offset + per_page)]
+            page_params += [per_page, offset]
+        else:
+            query = f"""
+                SELECT {columns}
+                FROM contracts c
+                {joins}
+                WHERE {where_clause}
+                ORDER BY {sort_expr} {order_direction} NULLS LAST
+                LIMIT ? OFFSET ?
+            """
+            page_params = params + [per_page, offset]
+        cursor.execute(query, page_params)
+        rows = cursor.fetchall()
+
+        contracts = [
+            ContractListItem(
+                id=row["id"],
+                contract_number=row["contract_number"],
+                title=row["title"],
+                amount_mxn=row["amount_mxn"] or 0,
+                contract_date=row["contract_date"],
+                contract_year=row["contract_year"],
+                sector_id=row["sector_id"],
+                sector_name=row["sector_name"],
+                risk_score=row["risk_score"],
+                risk_level=row["risk_level"],
+                is_direct_award=bool(row["is_direct_award"]),
+                is_single_bid=bool(row["is_single_bid"]),
+                # F4 audit fix: include the IDs so click-through links work.
+                # Previously NULL, breaking /vendors/{id} and /institutions/{id}
+                # navigation from the institution profile contracts table.
+                vendor_id=row["vendor_id"],
+                institution_id=row["institution_id"],
+                vendor_name=clean_name(row["vendor_name"]),
+                # the persona-física label (is_named_persona); the RFC itself never leaves
+                vendor_is_individual=is_named_persona(row["v_is_individual"], row["v_rfc"], row["vendor_name"]),
+                institution_name=row["institution_name"],
+                procedure_type=row["procedure_type"],
+                source_structure=row["source_structure"],
+                category_id=row["category_id"],
+            )
+            for row in rows
+        ]
+
+        return ContractListResponse(
+            data=contracts,
+            pagination=ContractPaginationMeta(
+                page=page,
+                per_page=per_page,
+                total=total,
+                total_pages=total_pages,
+            )
+        )
+
+
+def _tl_cell(n: Any, v: Any, da: Any, rs: Any, rn: Any) -> Dict[str, Any]:
+    return {"amount_mxn": v or 0.0, "n_contracts": int(n or 0), "n_direct_award": int(da or 0),
+            "avg_risk_score": round(rs / rn, 4) if rn else None}
+
+
+def build_vendors_timeline(conn: _sqlite3.Connection, institution_id: int, top: int) -> Dict[str, Any]:
+    """Vendor × year cells for the institution dossier's «expediente por sexenios» (owner 2026-10-27).
+
+    The mirror of vendors.build_institutions_timeline (same keys, vendors as the entities).
+    `institution_id` is canonical: its absorbed ids' contracts are included; vendors on
+    vendor_canonical ids. Reads institution_vendor_year (scripts/precompute_institution_vendor_year.py)
+    when it exists, else one live GROUP BY (idx_c_inst_year). Every aggregate runs in SQL:
+    only the 200 largest vendors, the top cells and one row per year come back to Python.
+    `years[]` also carry the year's concentration: top vendor + share, top-5 share, HHI.
+    """
+    pre = conn.execute(
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'institution_vendor_year'").fetchone()
+    if pre:
+        vy = "SELECT vendor_id, year, n, amount_mxn AS v, n_da AS da, rs, rn FROM institution_vendor_year WHERE institution_id = ?"
+        vp: List[Any] = [institution_id]
+    else:
+        ids = group_ids(conn, institution_id)
+        vend = vcanon.has_canonical(conn)
+        vy = f"""
+            SELECT {'COALESCE(vc.canonical_id, c.vendor_id)' if vend else 'c.vendor_id'} AS vendor_id,
+                   c.contract_year AS year, COUNT(*) AS n, COALESCE(SUM(c.amount_mxn), 0) AS v,
+                   COALESCE(SUM(c.is_direct_award), 0) AS da, SUM(c.risk_score) AS rs, COUNT(c.risk_score) AS rn
+            FROM contracts c {'LEFT JOIN vendor_canonical vc ON vc.vendor_id = c.vendor_id' if vend else ''}
+            WHERE c.institution_id IN ({','.join('?' * len(ids))}) AND c.contract_year IS NOT NULL
+              AND c.vendor_id IS NOT NULL AND COALESCE(c.amount_mxn, 0) <= ?
+            GROUP BY 1, 2"""
+        vp = [*ids, MAX_CONTRACT_VALUE]
+        # ponytail: the live path re-runs this GROUP BY per query below (3×); the precompute is the fast path
+
+    ranked = conn.execute(
+        f"""WITH vy AS ({vy})
+            SELECT vendor_id, SUM(n) n, SUM(v) v, SUM(da) da, SUM(rs) rs, SUM(rn) rn,
+                   MIN(year) fy, MAX(year) ly, COUNT(*) OVER () AS total
+            FROM vy GROUP BY vendor_id ORDER BY SUM(v) DESC, SUM(n) DESC, vendor_id LIMIT 200""",
+        vp).fetchall()
+    years = conn.execute(
+        f"""WITH vy AS ({vy})
+            SELECT year, SUM(n) n, SUM(v) v, SUM(da) da, SUM(rs) rs, SUM(rn) rn,
+                   SUM(v * v) ss, MAX(CASE WHEN rk = 1 THEN vendor_id END) top_id,
+                   MAX(CASE WHEN rk = 1 THEN v END) top_v, SUM(CASE WHEN rk <= 5 THEN v ELSE 0 END) top5_v
+            FROM (SELECT vy.*, ROW_NUMBER() OVER (PARTITION BY year ORDER BY v DESC, vendor_id) rk FROM vy)
+            GROUP BY year ORDER BY year""",
+        vp).fetchall()
+    top_ids = [r["vendor_id"] for r in ranked[:top]]
+    cells_rows = conn.execute(
+        f"WITH vy AS ({vy}) SELECT * FROM vy WHERE vendor_id IN ({','.join('?' * len(top_ids))}) ORDER BY year, vendor_id",
+        [*vp, *top_ids]).fetchall() if top_ids else []
+
+    want = {r["vendor_id"] for r in ranked} | {r["top_id"] for r in years if r["top_id"] is not None}
+    names: Dict[int, str] = {}
+    wl = list(want)
+    for k in range(0, len(wl), 500):
+        chunk = wl[k:k + 500]
+        for r in conn.execute(f"SELECT id, name FROM vendors WHERE id IN ({','.join('?' * len(chunk))})", chunk):
+            names[r["id"]] = r["name"]
+
+    cells = [{"vendor_id": r["vendor_id"], "year": r["year"], **_tl_cell(r["n"], r["v"], r["da"], r["rs"], r["rn"])}
+             for r in cells_rows]
+    # «otros» per year = the year minus the top vendors' cells
+    topsum: Dict[int, List[float]] = {}
+    for r in cells_rows:
+        t = topsum.setdefault(r["year"], [0, 0.0, 0, 0.0, 0])
+        t[0] += r["n"]; t[1] += r["v"]; t[2] += r["da"]; t[3] += r["rs"] or 0; t[4] += r["rn"]
+    for y in years:
+        t = topsum.get(y["year"], [0, 0.0, 0, 0.0, 0])
+        if y["n"] - t[0] > 0:
+            cells.append({"vendor_id": None, "year": y["year"], **_tl_cell(
+                y["n"] - t[0], max(0.0, y["v"] - t[1]), y["da"] - t[2], (y["rs"] or 0) - t[3], y["rn"] - t[4])})
+    cells.sort(key=lambda c: (c["year"], c["vendor_id"] or 0))
+
+    top_set = set(top_ids)
+    return {
+        "institution_id": institution_id,
+        "top": len(top_ids),
+        "n_vendors": ranked[0]["total"] if ranked else 0,
+        # ponytail: the orbit reads the 200 largest vendors; the long tail is stated as a count
+        "vendors": [
+            {"vendor_id": r["vendor_id"], "name": names.get(r["vendor_id"]),
+             "first_year": r["fy"], "last_year": r["ly"], "is_top": r["vendor_id"] in top_set,
+             **_tl_cell(r["n"], r["v"], r["da"], r["rs"], r["rn"])}
+            for r in ranked
+        ],
+        "years": [
+            {"year": y["year"], **_tl_cell(y["n"], y["v"], y["da"], y["rs"], y["rn"]),
+             "top_vendor_id": y["top_id"], "top_vendor_name": names.get(y["top_id"]),
+             "top_share": round(y["top_v"] / y["v"], 4) if y["v"] else None,
+             "top5_share": round(y["top5_v"] / y["v"], 4) if y["v"] else None,
+             "hhi": round(y["ss"] / (y["v"] * y["v"]), 4) if y["v"] else None}
+            for y in years
+        ],
+        "cells": cells,
+    }
+
+
+@router.get("/{institution_id:int}/vendors/timeline")
+def get_institution_vendors_timeline(
+    institution_id: int = Path(..., description="Institution ID (an absorbed id serves its canonical one)"),
+    top: int = Query(8, ge=1, le=20, description="Vendors with their own cells; the rest fold into «otros»"),
+):
+    """Per vendor × year: amount, contracts, direct awards, mean risk indicator (top N vendors + «otros»)."""
+    with get_db() as conn:
+        if not conn.execute("SELECT 1 FROM institutions WHERE id = ?", (institution_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+        cid = canonical_id(conn, institution_id)
+        cache_key = f"vendors_timeline:{cid}:{top}"
+        cached = _get_top_cache(cache_key)
+        if cached is not None:
+            return cached
+        result = build_vendors_timeline(conn, cid, top)
+    _set_top_cache(cache_key, result)
+    return result
+
+
+@router.get("/{institution_id:int}/panorama")
+def get_institution_panorama(
+    institution_id: int = Path(..., description="Institution ID (an absorbed id serves its canonical one)"),
+    since: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/after (ISO), e.g. 2024-10-01 = «Hoy»"),
+    until: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$", description="Only contracts dated on/before (ISO): with since, one government"),
+    year: Optional[int] = Query(None, ge=2002, le=2030),
+    category_id: Optional[int] = Query(None, ge=1),
+):
+    """Concept B2 «La columna»: ficha + 50 largest suppliers (+ «los demás») + categories + year / sexenio squares,
+    for CompraNet + ComprasMX, cut by since / year / category (api/services/institution_panorama.py)."""
+    with get_db() as conn:
+        if not conn.execute("SELECT 1 FROM institutions WHERE id = ?", (institution_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+        cid = canonical_id(conn, institution_id)
+        key = f"panorama:{cid}:{since}:{until}:{year}:{category_id}"
+        cached = _get_top_cache(key)
+        if cached is not None:
+            return cached
+        # precomputed_stats copy shared by all workers (owner 11-07 speed: IMSS Historia 4–5 s cold on prod)
+        result = shared(f"shared:{key}", 12 * 3600,
+                        lambda: build_panorama(conn, cid, since=since, until=until, year=year, category_id=category_id), min_secs=1.0)
+    _set_top_cache(key, result)
+    return result
+
+
+@router.get("/{institution_id:int}/vendors", response_model=InstitutionVendorListResponse)
+def get_institution_vendors(
+    institution_id: int = Path(..., description="Institution ID"),
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(50, ge=1, le=100, description="Items per page"),
+):
+    """
+    Get vendors that an institution has contracted with.
+
+    Returns vendors ranked by contract value with this institution.
+    """
+    offset = (page - 1) * per_page
+    with get_db() as conn:
+        result = institution_service.get_institution_vendors(
+            conn, institution_id, limit=per_page, offset=offset,
+        )
+
+        if result is None:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Institution {institution_id} not found",
+            )
+
+        vendors = [
+            InstitutionVendorItem(
+                vendor_id=v["vendor_id"],
+                vendor_name=v["vendor_name"],
+                contract_count=v["contract_count"],
+                total_value_mxn=v["total_value"],
+                avg_risk_score=v["avg_risk_score"],
+                first_year=v["first_year"],
+                last_year=v["last_year"],
+            )
+            for v in result["vendors"]
+        ]
+
+        return InstitutionVendorListResponse(
+            institution_id=result["institution_id"],
+            institution_name=result["institution_name"],
+            data=vendors,
+            total=result["total_vendors"],
+        )
+
+
+# =============================================================================
+# Z2 "La Captura" — institution vendor-pool dossier
+# =============================================================================
+
+# 30-min TTL cache for the Z2 vendor-pool payload. Keyed by institution_id.
+_z2_pool_cache: Dict[int, VendorPoolResponse] = {}
+_z2_pool_cache_ts: Dict[int, float] = {}
+_z2_pool_lock = threading.Lock()
+_Z2_POOL_TTL_S = 1800  # 30 minutes
+
+# 2026-05-31 — cold-start fallback (same pattern as /stats/data-quality).
+# The full computation includes a live aggregate over contracts WHERE
+# institution_id=N AND vendor_id IN (≤50) that takes 60s+ for IMSS
+# (1M+ contracts). After every container restart, the in-memory cache
+# is empty → every cold caller exceeds the 60s Caddy edge timeout and
+# Z2 never loads. Fix: serve a degraded fast response (precomputed top
+# vendors with zero HR/DA/SB flag counts) immediately, and warm the
+# full response in a background daemon thread. Subsequent requests hit
+# the warm cache. Set of institution_ids currently being warmed avoids
+# spawning duplicate threads on burst-cold-start.
+_z2_warmup_in_flight: set = set()
+_z2_warmup_lock = threading.Lock()
+
+
+def _register_top50(cur, institution_id: int):
+    """Top 50 by spend from institution_vendor_register
+    (scripts/precompute_institution_vendor_register.py), or None when the table
+    is missing/empty for this institution — callers fall back to the legacy
+    count-ranked institution_top_vendors."""
+    try:
+        cur.execute(
+            """
+            SELECT vendor_id, vendor_name, contract_count,
+                   total_value_mxn, avg_risk_score, first_year, last_year,
+                   hr_count, da_count, sb_count
+            FROM institution_vendor_register
+            WHERE institution_id = ?
+            ORDER BY rank_by_value
+            LIMIT 50
+            """,
+            (institution_id,),
+        )
+    except _sqlite3.OperationalError:
+        return None
+    return cur.fetchall() or None
+
+
+def _z2_compute_full(institution_id: int) -> Optional[VendorPoolResponse]:
+    """Heavy full Z2 computation — precomputed top vendors + live aggregate
+    for HR/DA/SB flag counts + ARIA lookup. ~60s for IMSS, ~10s for small
+    institutions. Writes to _z2_pool_cache on success. Returns None for
+    404 cases. Extracted so the cold-start background warmup thread can
+    invoke it without re-entering the HTTP handler."""
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        # 1. Verify institution + grab metadata
+        cur.execute(
+            "SELECT id, name, siglas, sector_id FROM institutions WHERE id = ?",
+            (institution_id,),
+        )
+        inst = cur.fetchone()
+        if inst is None:
+            # 404 — return None so the caller can raise the HTTPException
+            return None
+
+        # 2. Institution-level aggregates (precomputed table)
+        cur.execute(
+            """
+            SELECT total_contracts, total_value_mxn, vendor_count,
+                   direct_award_pct, high_risk_pct, single_bid_pct
+            FROM institution_stats
+            WHERE institution_id = ?
+            """,
+            (institution_id,),
+        )
+        stats = cur.fetchone()
+        inst_total_value = float(stats["total_value_mxn"]) if stats else 0.0
+        inst_total_contracts = int(stats["total_contracts"]) if stats else 0
+        inst_vendor_count = int(stats["vendor_count"]) if stats else 0
+        inst_da_pct = fnone(stats["direct_award_pct"]) if stats else None
+        inst_hr_pct = float(stats["high_risk_pct"]) if stats else 0.0
+        inst_sb_pct = fnone(stats["single_bid_pct"]) if stats else None
+
+        # 3. Top-50 vendors (precomputed). Always fetch the full 50 — we
+        #    cache the full payload and slice on the way out, so a caller
+        #    asking for ?limit=10 doesn't poison the cache for ?limit=50.
+        top_rows = _register_top50(cur, institution_id)
+        if top_rows is None:
+            cur.execute(
+                """
+                SELECT vendor_id, vendor_name, contract_count,
+                       total_value_mxn, avg_risk_score, first_year, last_year
+                FROM institution_top_vendors
+                WHERE institution_id = ?
+                ORDER BY total_value_mxn DESC
+                LIMIT 50
+                """,
+                (institution_id,),
+            )
+            top_rows = cur.fetchall()
+
+        if not top_rows:
+            empty = VendorPoolResponse(
+                institution_id=inst["id"],
+                institution_name=inst["name"],
+                siglas=inst["siglas"],
+                sector_id=inst["sector_id"],
+                institution_total_value_mxn=inst_total_value,
+                institution_total_contracts=inst_total_contracts,
+                institution_vendor_count=inst_vendor_count,
+                institution_direct_award_pct=inst_da_pct,
+                institution_high_risk_pct=inst_hr_pct,
+                institution_single_bid_pct=inst_sb_pct,
+                data=[],
+                total=inst_vendor_count,
+            )
+            with _z2_pool_lock:
+                _z2_pool_cache[institution_id] = empty
+                _z2_pool_cache_ts[institution_id] = datetime.now().timestamp()
+            return empty
+
+        vendor_ids = [r["vendor_id"] for r in top_rows]
+        placeholders = ",".join("?" * len(vendor_ids))
+        ids = group_ids(conn, institution_id)  # every raw id folded into this canonical one
+        # top rows are canonical vendors: count their absorbed ids' contracts too
+        raw_to_canon = {raw: v for v in vendor_ids for raw in vcanon.group_ids(conn, v)}
+
+        # 4. Live aggregate: per-vendor HR / DA / SB counts scoped to this institution
+        #    Single GROUP BY on contracts WHERE institution_id IN (group) AND vendor_id IN (≤50).
+        #    Fast even at IMSS scale because the IN-list narrows to ~50 vendors.
+        cur.execute(
+            f"""
+            SELECT vendor_id,
+                   SUM(CASE WHEN risk_score >= 0.40 THEN 1 ELSE 0 END) AS hr_count,
+                   SUM(CASE WHEN is_direct_award = 1 THEN 1 ELSE 0 END) AS da_count,
+                   SUM(CASE WHEN is_single_bid = 1 THEN 1 ELSE 0 END) AS sb_count
+            FROM contracts
+            WHERE institution_id IN ({",".join("?" * len(ids))})
+              AND vendor_id IN ({",".join("?" * len(raw_to_canon))})
+              AND COALESCE(amount_mxn, 0) <= ?
+            GROUP BY vendor_id
+            """,
+            (*ids, *raw_to_canon, MAX_CONTRACT_VALUE),
+        )
+        flag_counts: Dict[int, Dict[str, int]] = {}
+        for r in cur.fetchall():
+            acc = flag_counts.setdefault(raw_to_canon[r["vendor_id"]], {"hr_count": 0, "da_count": 0, "sb_count": 0})
+            for k in acc:
+                acc[k] += r[k] or 0
+
+        # 5. ARIA tier/pattern lookup (+ official-registry seals — shape
+        #    parity with _z2_compute_degraded)
+        cur.execute(
+            f"""
+            SELECT vendor_id, ips_tier, primary_pattern, in_ground_truth,
+                   is_efos_definitivo, is_sfp_sanctioned, is_disappeared
+            FROM aria_queue
+            WHERE vendor_id IN ({placeholders})
+            """,
+            tuple(vendor_ids),
+        )
+        aria = {r["vendor_id"]: r for r in apply_public_labels(conn, [dict(r) for r in cur.fetchall()])}
+
+    # 6. Compose response
+    items: List[VendorPoolItem] = []
+    top10_value = 0.0
+    for rank, row in enumerate(top_rows, start=1):
+        vid = row["vendor_id"]
+        ccount = int(row["contract_count"] or 0)
+        value = float(row["total_value_mxn"] or 0)
+        share = (value / inst_total_value * 100.0) if inst_total_value > 0 else 0.0
+        if rank <= 10:
+            top10_value += value
+
+        flags = flag_counts.get(vid)
+        hr_count = int(flags["hr_count"]) if flags else 0
+        da_count = int(flags["da_count"]) if flags else 0
+        sb_count = int(flags["sb_count"]) if flags else 0
+        hr_pct = (hr_count / ccount * 100.0) if ccount > 0 else 0.0
+        da_pct = (da_count / ccount * 100.0) if ccount > 0 else 0.0
+        sb_pct = (sb_count / ccount * 100.0) if ccount > 0 else 0.0
+
+        a = aria.get(vid)
+        items.append(VendorPoolItem(
+            rank=rank,
+            vendor_id=vid,
+            vendor_name=row["vendor_name"],
+            contract_count=ccount,
+            total_value_mxn=value,
+            share_of_institution_pct=round(share, 2),
+            first_year=row["first_year"],
+            last_year=row["last_year"],
+            avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] is not None else None,
+            high_risk_count=hr_count,
+            high_risk_pct=round(hr_pct, 1),
+            direct_award_count=da_count,
+            direct_award_pct=round(da_pct, 1),
+            single_bid_count=sb_count,
+            single_bid_pct=round(sb_pct, 1),
+            single_award_pct=round(min(100.0, sb_count / (ccount - da_count) * 100.0), 1) if ccount > da_count else None,
+            ips_tier=int(a["ips_tier"]) if a and a["ips_tier"] is not None else None,
+            primary_pattern=a["primary_pattern"] if a else None,
+            in_ground_truth=int(a["in_ground_truth"]) if a and a["in_ground_truth"] is not None else 0,
+            is_efos_definitivo=int(a["is_efos_definitivo"]) if a and a["is_efos_definitivo"] is not None else None,
+            is_sfp_sanctioned=int(a["is_sfp_sanctioned"]) if a and a["is_sfp_sanctioned"] is not None else None,
+            is_disappeared=int(a["is_disappeared"]) if a and a["is_disappeared"] is not None else None,
+        ))
+
+    top1 = items[0] if items else None
+    top10_share = (top10_value / inst_total_value * 100.0) if inst_total_value > 0 else 0.0
+
+    response = VendorPoolResponse(
+        institution_id=inst["id"],
+        institution_name=inst["name"],
+        siglas=inst["siglas"],
+        sector_id=inst["sector_id"],
+        institution_total_value_mxn=inst_total_value,
+        institution_total_contracts=inst_total_contracts,
+        institution_vendor_count=inst_vendor_count,
+        institution_direct_award_pct=inst_da_pct,
+        institution_high_risk_pct=inst_hr_pct,
+        institution_single_bid_pct=inst_sb_pct,
+        top1_vendor_id=top1.vendor_id if top1 else None,
+        top1_vendor_name=top1.vendor_name if top1 else None,
+        top1_share_pct=top1.share_of_institution_pct if top1 else 0.0,
+        top10_share_pct=round(top10_share, 2),
+        data=items,
+        total=inst_vendor_count,
+    )
+
+    with _z2_pool_lock:
+        _z2_pool_cache[institution_id] = response
+        _z2_pool_cache_ts[institution_id] = datetime.now().timestamp()
+
+    # (2026-06-12) A dead "slice to caller's limit" block here referenced an
+    # out-of-scope `limit` — every warmup raised a NameError that _warm's
+    # except swallowed; harmless only because the cache write above ran first.
+    # The endpoint handler does the limit slicing; this helper just computes.
+    return response
+
+
+def _z2_compute_degraded(institution_id: int) -> Optional[VendorPoolResponse]:
+    """Fast cold-path Z2 response. Since the 2026-06-12 at-rest backfill
+    (scripts/backfill_z2_flags.py) this is no longer "degraded": the
+    HR/DA/SB counts are read straight off institution_top_vendors and the
+    cheap aria_queue IN-list rides along (tier/pattern/GT + the official-
+    registry seals), so a cold request serves the complete register in
+    <1s. Flag fields fall back to None only for rows newer than the last
+    backfill cut (or on a DB that never ran the script) — the legacy
+    warmup thread then fills them. Returns None for 404.
+    """
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        cur.execute(
+            "SELECT id, name, siglas, sector_id FROM institutions WHERE id = ?",
+            (institution_id,),
+        )
+        inst = cur.fetchone()
+        if inst is None:
+            return None
+
+        cur.execute(
+            """
+            SELECT total_contracts, total_value_mxn, vendor_count,
+                   direct_award_pct, high_risk_pct, single_bid_pct
+            FROM institution_stats
+            WHERE institution_id = ?
+            """,
+            (institution_id,),
+        )
+        stats = cur.fetchone()
+        inst_total_value = float(stats["total_value_mxn"]) if stats else 0.0
+        inst_total_contracts = int(stats["total_contracts"]) if stats else 0
+        inst_vendor_count = int(stats["vendor_count"]) if stats else 0
+        inst_da_pct = fnone(stats["direct_award_pct"]) if stats else None
+        inst_hr_pct = float(stats["high_risk_pct"]) if stats else 0.0
+        inst_sb_pct = fnone(stats["single_bid_pct"]) if stats else None
+
+        # Backfilled flag counts when the columns exist (additive migration —
+        # a DB that hasn't run backfill_z2_flags.py serves the legacy shape).
+        top_rows = _register_top50(cur, institution_id)  # spend-ranked, flags at rest
+        has_flag_cols = True
+        if top_rows is None:
+            try:  # legacy count-ranked top-50
+                cur.execute(
+                    """
+                    SELECT vendor_id, vendor_name, contract_count,
+                           total_value_mxn, avg_risk_score, first_year, last_year,
+                           hr_count, da_count, sb_count
+                    FROM institution_top_vendors
+                    WHERE institution_id = ?
+                    ORDER BY total_value_mxn DESC
+                    LIMIT 50
+                    """,
+                    (institution_id,),
+                )
+                top_rows = cur.fetchall()
+            except _sqlite3.OperationalError:
+                cur.execute(
+                    """
+                    SELECT vendor_id, vendor_name, contract_count,
+                           total_value_mxn, avg_risk_score, first_year, last_year
+                    FROM institution_top_vendors
+                    WHERE institution_id = ?
+                    ORDER BY total_value_mxn DESC
+                    LIMIT 50
+                    """,
+                    (institution_id,),
+                )
+                top_rows = cur.fetchall()
+                has_flag_cols = False
+
+        # ARIA lookup — cheap IN-list (~0.4s on 248,944 rows); the warm path
+        # always paid this exact query, the cold path now does too so badges
+        # and the official-registry seals never blank on first paint.
+        aria = {}
+        if top_rows:
+            vendor_ids = [r["vendor_id"] for r in top_rows]
+            placeholders = ",".join("?" * len(vendor_ids))
+            cur.execute(
+                f"""
+                SELECT vendor_id, ips_tier, primary_pattern, in_ground_truth,
+                       is_efos_definitivo, is_sfp_sanctioned, is_disappeared
+                FROM aria_queue
+                WHERE vendor_id IN ({placeholders})
+                """,
+                tuple(vendor_ids),
+            )
+            aria = {r["vendor_id"]: r for r in apply_public_labels(conn, [dict(r) for r in cur.fetchall()])}
+
+    items: List[VendorPoolItem] = []
+    top10_value = 0.0
+    for rank, row in enumerate(top_rows, start=1):
+        value = float(row["total_value_mxn"] or 0)
+        ccount = int(row["contract_count"] or 0)
+        share = (value / inst_total_value * 100.0) if inst_total_value > 0 else 0.0
+        if rank <= 10:
+            top10_value += value
+
+        hr_count = row["hr_count"] if has_flag_cols else None
+        da_count = row["da_count"] if has_flag_cols else None
+        sb_count = row["sb_count"] if has_flag_cols else None
+
+        def _pct(count) -> Optional[float]:
+            if count is None:
+                return None  # row newer than the backfill cut — honest pending
+            if ccount <= 0:
+                return 0.0
+            # Clamp: 64 of 88,569 ITV rows carry a stale (low) contract_count
+            # vs live contracts — without this they'd serve >100% rates.
+            return min(100.0, round(int(count) / ccount * 100.0, 1))
+
+        a = aria.get(row["vendor_id"])
+        items.append(VendorPoolItem(
+            rank=rank,
+            vendor_id=row["vendor_id"],
+            vendor_name=row["vendor_name"],
+            contract_count=ccount,
+            total_value_mxn=value,
+            share_of_institution_pct=round(share, 2),
+            first_year=row["first_year"],
+            last_year=row["last_year"],
+            avg_risk_score=round(row["avg_risk_score"], 4) if row["avg_risk_score"] is not None else None,
+            high_risk_count=int(hr_count) if hr_count is not None else None,
+            high_risk_pct=_pct(hr_count),
+            direct_award_count=int(da_count) if da_count is not None else None,
+            direct_award_pct=_pct(da_count),
+            single_bid_count=int(sb_count) if sb_count is not None else None,
+            single_bid_pct=_pct(sb_count),
+            single_award_pct=(round(min(100.0, int(sb_count) / (ccount - int(da_count)) * 100.0), 1)
+                              if sb_count is not None and da_count is not None and ccount > int(da_count) else None),
+            ips_tier=int(a["ips_tier"]) if a and a["ips_tier"] is not None else None,
+            primary_pattern=a["primary_pattern"] if a else None,
+            in_ground_truth=int(a["in_ground_truth"]) if a and a["in_ground_truth"] is not None else 0,
+            is_efos_definitivo=int(a["is_efos_definitivo"]) if a and a["is_efos_definitivo"] is not None else None,
+            is_sfp_sanctioned=int(a["is_sfp_sanctioned"]) if a and a["is_sfp_sanctioned"] is not None else None,
+            is_disappeared=int(a["is_disappeared"]) if a and a["is_disappeared"] is not None else None,
+        ))
+
+    top1 = items[0] if items else None
+    top10_share = (top10_value / inst_total_value * 100.0) if inst_total_value > 0 else 0.0
+
+    return VendorPoolResponse(
+        institution_id=inst["id"],
+        institution_name=inst["name"],
+        siglas=inst["siglas"],
+        sector_id=inst["sector_id"],
+        institution_total_value_mxn=inst_total_value,
+        institution_total_contracts=inst_total_contracts,
+        institution_vendor_count=inst_vendor_count,
+        institution_direct_award_pct=inst_da_pct,
+        institution_high_risk_pct=inst_hr_pct,
+        institution_single_bid_pct=inst_sb_pct,
+        top1_vendor_id=top1.vendor_id if top1 else None,
+        top1_vendor_name=top1.vendor_name if top1 else None,
+        top1_share_pct=top1.share_of_institution_pct if top1 else 0.0,
+        top10_share_pct=round(top10_share, 2),
+        data=items,
+        total=inst_vendor_count,
+    )
+
+
+@router.get("/{institution_id:int}/vendor-pool", response_model=VendorPoolResponse)
+def get_institution_vendor_pool(
+    response: Response,
+    institution_id: int = Path(..., description="Institution ID"),
+    limit: int = Query(50, ge=10, le=50, description="Top-N vendors by spend (max 50)"),
+):
+    """
+    Z2 "La Captura" — institution vendor-pool dossier.
+
+    Cache-first with cold-start fallback. See _z2_compute_full and
+    _z2_compute_degraded for the two execution paths.
+    """
+    # Cache hit — slice down if caller wants fewer than the cached 50
+    with _z2_pool_lock:
+        ts = _z2_pool_cache_ts.get(institution_id, 0)
+        if datetime.now().timestamp() - ts < _Z2_POOL_TTL_S and institution_id in _z2_pool_cache:
+            cached = _z2_pool_cache[institution_id]
+            response.headers["Cache-Control"] = "public, max-age=300"
+            if limit >= len(cached.data):
+                return cached
+            return cached.model_copy(update={"data": cached.data[:limit]})
+
+    # Cold start — the fast path now reads the backfilled at-rest counts, so
+    # when every row carries scoped flags the response IS complete: promote it
+    # straight into the cache and never spawn the 60-120s live aggregate.
+    degraded = _z2_compute_degraded(institution_id)
+    if degraded is None:
+        raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+    is_complete = bool(degraded.data) and all(
+        v.high_risk_pct is not None for v in degraded.data
+    )
+    if is_complete or not degraded.data:
+        with _z2_pool_lock:
+            _z2_pool_cache[institution_id] = degraded
+            _z2_pool_cache_ts[institution_id] = datetime.now().timestamp()
+        response.headers["Cache-Control"] = "public, max-age=300"
+        if limit < len(degraded.data):
+            return degraded.model_copy(update={"data": degraded.data[:limit]})
+        return degraded
+
+    # Legacy fallback (un-backfilled DB or post-backfill rows): spawn the heavy
+    # warmup if no other thread is doing it for this institution.
+    with _z2_warmup_lock:
+        warmup_needed = institution_id not in _z2_warmup_in_flight
+        if warmup_needed:
+            _z2_warmup_in_flight.add(institution_id)
+
+    if warmup_needed:
+        def _warm():
+            try:
+                _z2_compute_full(institution_id)
+            except Exception as e:
+                logger.warning("z2 background warmup failed for inst %d: %s", institution_id, e)
+            finally:
+                with _z2_warmup_lock:
+                    _z2_warmup_in_flight.discard(institution_id)
+        threading.Thread(target=_warm, daemon=True, name=f"z2-warmup-{institution_id}").start()
+
+    response.headers["Cache-Control"] = "no-store"  # don't cache incomplete
+    if limit < len(degraded.data):
+        return degraded.model_copy(update={"data": degraded.data[:limit]})
+    return degraded
+
+
+# =============================================================================
+# Vendor loyalty heatmap
+# =============================================================================
+
+class VendorYearPoint(BaseModel):
+    year: int
+    contract_count: int
+    total_value: float
+    avg_risk: Optional[float]
+
+class VendorLoyaltyItem(BaseModel):
+    vendor_id: int
+    vendor_name: str
+    total_value: float
+    first_year: int
+    last_year: int
+    year_count: int
+    years: List[VendorYearPoint]
+
+class VendorLoyaltyResponse(BaseModel):
+    institution_id: int
+    vendors: List[VendorLoyaltyItem]
+    year_range: List[int]
+
+_loyalty_cache: Dict[int, Any] = {}
+_loyalty_cache_ts: Dict[int, float] = {}
+_loyalty_lock = threading.Lock()
+
+@router.get("/{institution_id:int}/vendor-loyalty", response_model=VendorLoyaltyResponse)
+def get_vendor_loyalty(
+    institution_id: int = Path(...),
+    top_n: int = Query(15, ge=5, le=25),
+):
+    """
+    Per-vendor yearly contract activity for an institution.
+    Returns top N vendors by total value, with per-year breakdown.
+    Useful for detecting long-term capture relationships.
+    """
+    cache_key = institution_id * 100 + top_n
+    with _loyalty_lock:
+        ts = _loyalty_cache_ts.get(cache_key, 0)
+        if datetime.now().timestamp() - ts < 1800 and cache_key in _loyalty_cache:
+            return _loyalty_cache[cache_key]
+
+    with get_db() as conn:
+        cur = conn.cursor()
+
+        cur.execute("SELECT id FROM institutions WHERE id = ?", (institution_id,))
+        if not cur.fetchone():
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        # Top N vendors by total value at this institution
+        cur.execute("""
+            SELECT v.id as vendor_id, v.name as vendor_name,
+                   SUM(c.amount_mxn) as total_value
+            FROM contracts c
+            JOIN vendors v ON c.vendor_id = v.id
+            WHERE c.institution_id = ?
+              AND c.amount_mxn > 0
+            GROUP BY v.id, v.name
+            ORDER BY total_value DESC
+            LIMIT ?
+        """, (institution_id, top_n))
+        top_vendors = cur.fetchall()
+
+        if not top_vendors:
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found or has no vendors")
+
+        vendor_ids = [r["vendor_id"] for r in top_vendors]
+        placeholder = ",".join("?" * len(vendor_ids))
+
+        # Per-vendor, per-year breakdown
+        cur.execute(f"""
+            SELECT vendor_id, contract_year,
+                   COUNT(*) as contract_count,
+                   SUM(amount_mxn) as total_value,
+                   AVG(risk_score) as avg_risk
+            FROM contracts
+            WHERE institution_id = ?
+              AND vendor_id IN ({placeholder})
+              AND amount_mxn > 0
+            GROUP BY vendor_id, contract_year
+            ORDER BY vendor_id, contract_year
+        """, (institution_id, *vendor_ids))
+        rows = cur.fetchall()
+
+    # Build vendor → year map
+    by_vendor: Dict[int, Dict[int, dict]] = defaultdict(dict)
+    all_years: set = set()
+    for r in rows:
+        by_vendor[r["vendor_id"]][r["contract_year"]] = {
+            "contract_count": r["contract_count"],
+            "total_value": r["total_value"],
+            "avg_risk": r["avg_risk"],
+        }
+        all_years.add(r["contract_year"])
+
+    year_range = sorted(all_years)
+
+    vendor_items = []
+    for v in top_vendors:
+        vid = v["vendor_id"]
+        yd = by_vendor.get(vid, {})
+        years_with_data = sorted(yd.keys())
+        vendor_items.append(VendorLoyaltyItem(
+            vendor_id=vid,
+            vendor_name=v["vendor_name"],
+            total_value=v["total_value"],
+            first_year=min(years_with_data) if years_with_data else 0,
+            last_year=max(years_with_data) if years_with_data else 0,
+            year_count=len(years_with_data),
+            years=[
+                VendorYearPoint(
+                    year=yr,
+                    contract_count=yd[yr]["contract_count"],
+                    total_value=yd[yr]["total_value"],
+                    avg_risk=yd[yr]["avg_risk"],
+                )
+                for yr in year_range
+                if yr in yd
+            ],
+        ))
+
+    result = VendorLoyaltyResponse(
+        institution_id=institution_id,
+        vendors=vendor_items,
+        year_range=year_range,
+    )
+    with _loyalty_lock:
+        _loyalty_cache[cache_key] = result
+        _loyalty_cache_ts[cache_key] = datetime.now().timestamp()
+    return result
+
+
+# =============================================================================
+# Institution peer comparison
+# =============================================================================
+
+class PeerMetric(BaseModel):
+    metric: str
+    label: str
+    value: float
+    peer_min: float
+    peer_p25: float
+    peer_median: float
+    peer_p75: float
+    peer_max: float
+    percentile: int
+
+class PeerComparisonResponse(BaseModel):
+    institution_id: int
+    institution_name: str
+    institution_type: Optional[str]
+    peer_count: int
+    metrics: List[PeerMetric]
+
+_peer_cache: Dict[int, Any] = {}
+_peer_cache_ts: Dict[int, float] = {}
+_peer_lock = threading.Lock()
+
+def _percentile_rank(value: float, values: List[float]) -> int:
+    if not values:
+        return 50
+    below = sum(1 for v in values if v < value)
+    return round(below / len(values) * 100)
+
+@router.get("/{institution_id:int}/peer-comparison", response_model=PeerComparisonResponse)
+def get_peer_comparison(institution_id: int = Path(...)):
+    """
+    Compare an institution against peers of the same institution_type.
+    Returns percentile ranks and distribution (min/p25/median/p75/max) for
+    avg_risk_score, high_risk_pct, and direct_award_pct.
+    """
+    with _peer_lock:
+        ts = _peer_cache_ts.get(institution_id, 0)
+        if datetime.now().timestamp() - ts < 3600 and institution_id in _peer_cache:
+            return _peer_cache[institution_id]
+
+    with get_db() as conn:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT i.id, i.name, i.institution_type,
+                   ist.avg_risk_score, ist.high_risk_pct, ist.direct_award_pct
+            FROM institutions i
+            JOIN institution_stats ist ON i.id = ist.institution_id
+            WHERE i.id = ?
+        """, (institution_id,))
+        target = cur.fetchone()
+        if not target:
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        itype = target["institution_type"]
+        if itype:
+            cur.execute("""
+                SELECT ist.avg_risk_score, ist.high_risk_pct, ist.direct_award_pct
+                FROM institutions i
+                JOIN institution_stats ist ON i.id = ist.institution_id
+                WHERE i.institution_type = ?
+                  AND ist.avg_risk_score IS NOT NULL
+                  AND i.id != ?
+            """, (itype, institution_id))
+        else:
+            cur.execute("""
+                SELECT ist.avg_risk_score, ist.high_risk_pct, ist.direct_award_pct
+                FROM institution_stats ist
+                WHERE ist.avg_risk_score IS NOT NULL
+                  AND ist.institution_id != ?
+            """, (institution_id,))
+        peers = cur.fetchall()
+
+    def dist(vals: List[float], value: float) -> PeerMetric:
+        return PeerMetric(
+            metric="",
+            label="",
+            value=value,
+            peer_min=min(vals) if vals else 0.0,
+            peer_p25=sorted(vals)[len(vals)//4] if vals else 0.0,
+            peer_median=sorted(vals)[len(vals)//2] if vals else 0.0,
+            peer_p75=sorted(vals)[3*len(vals)//4] if vals else 0.0,
+            peer_max=max(vals) if vals else 0.0,
+            percentile=_percentile_rank(value, vals),
+        )
+
+    risk_vals = [p["avg_risk_score"] for p in peers if p["avg_risk_score"] is not None]
+    hr_vals   = [p["high_risk_pct"] for p in peers if p["high_risk_pct"] is not None]
+    da_vals   = [p["direct_award_pct"] for p in peers if p["direct_award_pct"] is not None]
+
+    def make_metric(key: str, label: str, val: Optional[float], peer_vals: List[float]) -> PeerMetric:
+        v = val if val is not None else 0.0
+        m = dist(peer_vals, v)
+        m.metric = key
+        m.label = label
+        return m
+
+    metrics = [
+        make_metric("avg_risk_score", "Avg Risk Score", target["avg_risk_score"], risk_vals),
+        make_metric("high_risk_pct",  "High Risk %",    target["high_risk_pct"],  hr_vals),
+        make_metric("direct_award_pct", "Direct Award %", target["direct_award_pct"], da_vals),
+    ]
+
+    result = PeerComparisonResponse(
+        institution_id=institution_id,
+        institution_name=target["name"],
+        institution_type=itype,
+        peer_count=len(peers),
+        metrics=metrics,
+    )
+    with _peer_lock:
+        _peer_cache[institution_id] = result
+        _peer_cache_ts[institution_id] = datetime.now().timestamp()
+    return result
+
+
+# =============================================================================
+# Lookup table endpoints
+# =============================================================================
+
+@router.get("/types", response_model=InstitutionTypeListResponse)
+def list_institution_types():
+    """
+    List all institution types.
+
+    Returns the 19 institution type definitions from taxonomy v2.0.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                id, code, name_es, name_en, description,
+                is_legally_decentralized, default_sector, risk_baseline
+            FROM institution_types
+            ORDER BY id
+        """)
+
+        rows = cursor.fetchall()
+
+        types = [
+            InstitutionTypeResponse(
+                id=row["id"],
+                code=row["code"],
+                name_es=row["name_es"],
+                name_en=row["name_en"],
+                description=row["description"],
+                is_legally_decentralized=bool(row["is_legally_decentralized"]),
+                default_sector=row["default_sector"],
+                risk_baseline=row["risk_baseline"]
+            )
+            for row in rows
+        ]
+
+        return InstitutionTypeListResponse(
+            data=types,
+            total=len(types)
+        )
+
+
+@router.get("/size-tiers", response_model=SizeTierListResponse)
+def list_size_tiers():
+    """
+    List all size tiers.
+
+    Returns the 5 size tier definitions (mega, large, medium, small, micro).
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                id, code, name_es, name_en,
+                min_contracts, max_contracts, risk_adjustment
+            FROM size_tiers
+            ORDER BY id
+        """)
+
+        rows = cursor.fetchall()
+
+        tiers = [
+            SizeTierResponse(
+                id=row["id"],
+                code=row["code"],
+                name_es=row["name_es"],
+                name_en=row["name_en"],
+                min_contracts=row["min_contracts"],
+                max_contracts=row["max_contracts"] if row["max_contracts"] != -1 else None,
+                risk_adjustment=row["risk_adjustment"]
+            )
+            for row in rows
+        ]
+
+        return SizeTierListResponse(
+            data=tiers,
+            total=len(tiers)
+        )
+
+
+@router.get("/autonomy-levels", response_model=AutonomyLevelListResponse)
+def list_autonomy_levels():
+    """
+    List all autonomy levels.
+
+    Returns the 5 autonomy level definitions.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                id, code, name_es, name_en, description, risk_baseline
+            FROM autonomy_levels
+            ORDER BY id
+        """)
+
+        rows = cursor.fetchall()
+
+        levels = [
+            AutonomyLevelResponse(
+                id=row["id"],
+                code=row["code"],
+                name_es=row["name_es"],
+                name_en=row["name_en"],
+                description=row["description"],
+                risk_baseline=row["risk_baseline"]
+            )
+            for row in rows
+        ]
+
+        return AutonomyLevelListResponse(
+            data=levels,
+            total=len(levels)
+        )
+
+
+# =============================================================================
+# CRI SCATTER — Fazekas-style institution risk scatter (Section 12.3)
+# =============================================================================
+
+_cri_scatter_cache: Dict[str, Any] = {}
+_CRI_SCATTER_TTL = 6 * 3600  # 6 hours
+
+@router.get("/cri-scatter")
+def get_cri_scatter(
+    sector_id: Optional[int] = Query(None, description="Filter by sector"),
+    min_contracts: int = Query(100, ge=10, description="Minimum contracts to include"),
+    limit: int = Query(200, ge=10, le=500, description="Max institutions to return"),
+):
+    """
+    Fazekas-style CRI scatter: institutions plotted by direct_award_pct (X)
+    vs avg_risk_score (Y), bubble size = total_contracts.
+    Used in Sectors.tsx to visualize institutional risk landscape.
+    """
+    import time as _t
+    cache_key = f"cri_{sector_id}_{min_contracts}_{limit}"
+    cached = _cri_scatter_cache.get(cache_key)
+    if cached and (_t.time() - cached["ts"]) < _CRI_SCATTER_TTL:
+        return cached["data"]
+
+    with get_db() as conn:
+        import sqlite3
+        conn.row_factory = sqlite3.Row
+
+        params: List[Any] = [min_contracts]
+        sector_filter = ""
+        if sector_id:
+            sector_filter = "AND i.sector_id = ?"
+            params.append(sector_id)
+
+        rows = conn.execute(f"""
+            SELECT
+                i.id,
+                i.name,
+                i.sector_id,
+                s.code AS sector_code,
+                ist.total_contracts,
+                ROUND(ist.avg_risk_score, 4) AS avg_risk,
+                ROUND(ist.direct_award_pct, 2) AS direct_award_pct,
+                ROUND(ist.single_bid_pct, 2) AS single_bid_pct,
+                ROUND(ist.high_risk_pct, 2) AS high_risk_pct  -- precompute: over scored contracts
+            FROM institution_stats ist
+            JOIN institutions i ON i.id = ist.institution_id
+            JOIN sectors s ON s.id = i.sector_id
+            WHERE ist.total_contracts >= ? {sector_filter}
+            ORDER BY ist.total_contracts DESC
+            LIMIT ?
+        """, params + [limit]).fetchall()
+
+        data = [
+            {
+                "id": r["id"],
+                "name": r["name"],
+                "sector_id": r["sector_id"],
+                "sector_code": r["sector_code"] or "otros",
+                "total_contracts": r["total_contracts"],
+                "avg_risk": float(r["avg_risk"] or 0),
+                "direct_award_pct": fnone(r["direct_award_pct"]),
+                "single_bid_pct": fnone(r["single_bid_pct"]),
+                "single_award_pct": single_award_of_competitive(fnone(r["single_bid_pct"]), fnone(r["direct_award_pct"])),
+                "high_risk_pct": float(r["high_risk_pct"] or 0),
+            }
+            for r in rows
+        ]
+
+        result = {"data": data, "total": len(data)}
+        _cri_scatter_cache[cache_key] = {"ts": _t.time(), "data": result}
+        return result
+
+
+# ---------------------------------------------------------------------------
+# Concentration Rankings (HHI-based supplier diversity)
+# ---------------------------------------------------------------------------
+_hhi_cache: Dict[str, Any] = {}
+_HHI_TTL = 7200  # 2 hours
+
+
+@router.get("/concentration-rankings")
+def get_concentration_rankings(
+    year: Optional[int] = Query(None, description="Year to compute HHI for. Defaults to most recent."),
+    sector_id: Optional[int] = Query(None, description="Filter by sector"),
+    limit: int = Query(20, ge=5, le=100, description="Number of institutions to return"),
+):
+    """
+    Institutions ranked by Herfindahl-Hirschman Index (HHI) of vendor concentration.
+    HHI = sum of squared market shares (0-10000 scale).
+    >2500 = highly concentrated; <1000 = competitive.
+    Based on Prozorro (Ukraine) analytics / Fazekas CRI methodology.
+    """
+    import time as _time
+    import sqlite3
+    cache_key = f"hhi_{year}_{sector_id}_{limit}"
+    cached = _hhi_cache.get(cache_key)
+    if cached and (_time.time() - cached["ts"]) < _HHI_TTL:
+        return cached["data"]
+
+    with get_db() as conn:
+        conn.row_factory = sqlite3.Row
+
+        # Determine year to use
+        if year is None:
+            row = conn.execute("SELECT MAX(contract_year) FROM contracts WHERE contract_year IS NOT NULL").fetchone()
+            year = row[0] if row and row[0] is not None else 2024
+
+        sector_filter = "AND i.sector_id = ?" if sector_id else ""
+        params: List[Any] = [year, limit]
+        if sector_id:
+            params = [year, sector_id, limit]
+
+        rows = conn.execute(f"""
+            WITH vendor_shares AS (
+                SELECT institution_id, vendor_id,
+                       SUM(COALESCE(amount_mxn, 0)) AS vendor_value
+                FROM contracts
+                WHERE contract_year = ? AND institution_id IS NOT NULL
+                  AND vendor_id IS NOT NULL AND amount_mxn > 0
+                GROUP BY institution_id, vendor_id
+            ),
+            inst_totals AS (
+                SELECT institution_id,
+                       SUM(vendor_value) AS total_value,
+                       COUNT(DISTINCT vendor_id) AS unique_vendors
+                FROM vendor_shares GROUP BY institution_id
+            ),
+            hhi_calc AS (
+                SELECT vs.institution_id,
+                       ROUND(SUM((vs.vendor_value * 100.0 / it.total_value) *
+                                 (vs.vendor_value * 100.0 / it.total_value)), 1) AS hhi,
+                       it.unique_vendors,
+                       it.total_value
+                FROM vendor_shares vs
+                JOIN inst_totals it ON vs.institution_id = it.institution_id
+                WHERE it.total_value > 0
+                GROUP BY vs.institution_id
+            )
+            SELECT h.institution_id, h.hhi, h.unique_vendors, h.total_value,
+                   i.name AS institution_name, i.siglas, i.sector_id
+            FROM hhi_calc h
+            JOIN institutions i ON h.institution_id = i.id
+            WHERE h.unique_vendors >= 3
+            {sector_filter}
+            ORDER BY h.hhi DESC
+            LIMIT ?
+        """, params).fetchall()
+
+        def _concentration_level(hhi: float) -> str:
+            if hhi >= 2500: return "high"
+            if hhi >= 1000: return "medium"
+            return "low"
+
+        most_concentrated = [
+            {
+                "institution_id": r["institution_id"],
+                "name": r["institution_name"],
+                "siglas": r["siglas"],
+                "sector_id": r["sector_id"],
+                "hhi": float(r["hhi"]),
+                "unique_vendors": int(r["unique_vendors"]),
+                "total_value_mxn": float(r["total_value"]),
+                "concentration_level": _concentration_level(float(r["hhi"])),
+            }
+            for r in rows
+        ]
+
+        # Also compute least concentrated (most diverse)
+        params_asc: List[Any] = [year, limit]
+        if sector_id:
+            params_asc = [year, sector_id, limit]
+
+        rows_asc = conn.execute(f"""
+            WITH vendor_shares AS (
+                SELECT institution_id, vendor_id,
+                       SUM(COALESCE(amount_mxn, 0)) AS vendor_value
+                FROM contracts
+                WHERE contract_year = ? AND institution_id IS NOT NULL
+                  AND vendor_id IS NOT NULL AND amount_mxn > 0
+                GROUP BY institution_id, vendor_id
+            ),
+            inst_totals AS (
+                SELECT institution_id,
+                       SUM(vendor_value) AS total_value,
+                       COUNT(DISTINCT vendor_id) AS unique_vendors
+                FROM vendor_shares GROUP BY institution_id
+            ),
+            hhi_calc AS (
+                SELECT vs.institution_id,
+                       ROUND(SUM((vs.vendor_value * 100.0 / it.total_value) *
+                                 (vs.vendor_value * 100.0 / it.total_value)), 1) AS hhi,
+                       it.unique_vendors,
+                       it.total_value
+                FROM vendor_shares vs
+                JOIN inst_totals it ON vs.institution_id = it.institution_id
+                WHERE it.total_value > 0
+                GROUP BY vs.institution_id
+            )
+            SELECT h.institution_id, h.hhi, h.unique_vendors, h.total_value,
+                   i.name AS institution_name, i.siglas, i.sector_id
+            FROM hhi_calc h
+            JOIN institutions i ON h.institution_id = i.id
+            WHERE h.unique_vendors >= 10
+            {sector_filter}
+            ORDER BY h.hhi ASC
+            LIMIT ?
+        """, params_asc).fetchall()
+
+        least_concentrated = [
+            {
+                "institution_id": r["institution_id"],
+                "name": r["institution_name"],
+                "siglas": r["siglas"],
+                "sector_id": r["sector_id"],
+                "hhi": float(r["hhi"]),
+                "unique_vendors": int(r["unique_vendors"]),
+                "total_value_mxn": float(r["total_value"]),
+                "concentration_level": _concentration_level(float(r["hhi"])),
+            }
+            for r in rows_asc
+        ]
+
+        result = {
+            "year": year,
+            "most_concentrated": most_concentrated,
+            "least_concentrated": least_concentrated,
+            "note": "HHI >2500 = highly concentrated (few dominant vendors). Based on Prozorro analytics / Fazekas CRI methodology.",
+        }
+        _hhi_cache[cache_key] = {"ts": _time.time(), "data": result}
+        return result
+
+
+@router.get("/{institution_id:int}/officials")
+def get_institution_officials(
+    institution_id: int = Path(..., description="Institution ID"),
+    min_contracts: int = Query(10, ge=1, description="Minimum contracts per official"),
+    limit: int = Query(50, ge=1, le=200, description="Max officials to return"),
+):
+    """
+    Risk profiles for signing officials at this institution (2018+ COMPRANET data).
+
+    Based on Coviello & Gagliarducci (2017) who found official tenure is the most
+    predictive variable for single-bid rates in procurement.
+
+    Source: official_risk_profiles, precomputed from contracts.responsible_uc
+    (Responsable de la Unidad Compradora) by compute_official_profiles.py.
+    Returns an empty list (graceful) if the table has not been populated yet.
+    """
+    import sqlite3
+    with get_db() as conn:
+        conn.row_factory = sqlite3.Row
+
+        if not conn.execute("SELECT id FROM institutions WHERE id = ?", (institution_id,)).fetchone():
+            raise HTTPException(status_code=404, detail=f"Institution {institution_id} not found")
+
+        # F4 audit fix: official_risk_profiles table may be missing or
+        # have a corrupted/missing index in some DB snapshots. Wrap in
+        # try/except so the Officials tab degrades gracefully to empty
+        # state instead of returning 503 DB_UNAVAILABLE.
+        try:
+            officials = conn.execute("""
+                SELECT official_name, total_contracts, first_contract_year, last_contract_year,
+                       single_bid_pct, direct_award_pct, avg_risk_score,
+                       vendor_diversity, hhi_vendors
+                FROM official_risk_profiles
+                WHERE institution_id = ?
+                  AND total_contracts >= ?
+                ORDER BY avg_risk_score DESC
+                LIMIT ?
+            """, (institution_id, min_contracts, limit)).fetchall()
+        except sqlite3.OperationalError:
+            # Table missing or query error — return empty (UI shows
+            # "no officials data" instead of crashing the whole tab).
+            officials = []
+
+        def _interpret(r) -> str:
+            parts = []
+            if r["vendor_diversity"] <= 3:
+                parts.append(f"contracted with only {r['vendor_diversity']} unique vendor(s)")
+            if r["hhi_vendors"] and r["hhi_vendors"] > 2500:
+                parts.append(f"highly concentrated vendors (HHI {r['hhi_vendors']:.0f})")
+            sa = single_award_of_competitive(r["single_bid_pct"], r["direct_award_pct"])
+            if sa is not None and sa > 50:
+                parts.append(f"{sa:.0f}% single-award competitive procedures")
+            if r["direct_award_pct"] is not None and r["direct_award_pct"] > 80:
+                parts.append(f"{r['direct_award_pct']:.0f}% direct awards")
+            return ("This official " + ", ".join(parts) + ".") if parts else ""
+
+        note_es = (
+            "Responsable de la Unidad Compradora · 2018+ (COMPRANET, Estructuras C/D). "
+            "Indicador de riesgo del modelo — no es una acusación."
+            + ("" if officials else " Sin funcionarios que alcancen el mínimo de contratos para esta institución.")
+        )
+        return {
+            "institution_id": institution_id,
+            "officials": [
+                {
+                    "official_name": r["official_name"],
+                    "total_contracts": r["total_contracts"],
+                    "first_contract_year": r["first_contract_year"],
+                    "last_contract_year": r["last_contract_year"],
+                    "single_bid_pct": rnd(r["single_bid_pct"], 1),
+                    "single_award_pct": single_award_of_competitive(r["single_bid_pct"], r["direct_award_pct"]),
+                    "direct_award_pct": rnd(r["direct_award_pct"], 1),
+                    "avg_risk_score": round(r["avg_risk_score"] or 0, 4),
+                    "vendor_diversity": r["vendor_diversity"],
+                    "hhi_vendors": round(r["hhi_vendors"] or 0, 1),
+                    "interpretation": _interpret(r),
+                }
+                for r in officials
+            ],
+            # One note per language (PARALLAX D9b F12 — the EN page printed the
+            # Spanish note). `note` stays as the ES text for older clients.
+            "note": note_es,
+            "note_es": note_es,
+            "note_en": (
+                "Head of the Buying Unit · 2018+ (COMPRANET Structures C/D). "
+                "Model risk indicator — not an accusation."
+                + ("" if officials else " No official reaches the contract minimum at this institution.")
+            ),
+            "data_available": len(officials) > 0,
+        }
+
+
+# ---------------------------------------------------------------------------
+# ASF (Auditoría Superior de la Federación) findings for an institution
+# ---------------------------------------------------------------------------
+
+# Simple 24h cache for ASF findings (changes at most annually)
+_asf_inst_cache: Dict[str, Any] = {}
+_asf_inst_cache_lock = threading.Lock()
+_ASF_INST_CACHE_TTL = 86400  # 24 hours
+
+
+@router.get("/{institution_id:int}/ground-truth-status")
+def get_institution_ground_truth_status(institution_id: int = Path(..., ge=1)):
+    """Check if any documented ground truth vendor has contracts with this institution."""
+    import sqlite3 as _sqlite3
+
+    with get_db() as conn:
+        conn.row_factory = _sqlite3.Row
+        row = conn.execute(f"""
+            SELECT gtc.case_name, gtc.case_type, COUNT(c.id) as contract_count
+            FROM contracts c
+            JOIN ground_truth_vendors gtv ON c.vendor_id = gtv.vendor_id
+            JOIN ground_truth_cases gtc ON gtv.case_id = gtc.id
+            WHERE c.institution_id = ? AND gtv.vendor_id IS NOT NULL
+              AND {DOCUMENTED_LINK_SQL}
+            GROUP BY gtc.case_name, gtc.case_type
+            ORDER BY contract_count DESC
+            LIMIT 1
+        """, (institution_id,)).fetchone()
+
+        if row:
+            return {
+                "is_ground_truth_related": True,
+                "case_name": row["case_name"],
+                "case_type": row["case_type"],
+                "contract_count": row["contract_count"],
+            }
+        return {"is_ground_truth_related": False}
+
+
+@router.get("/{institution_id:int}/asf-findings", response_model=ASFInstitutionResponse)
+def get_institution_asf_findings(institution_id: int = Path(..., ge=1)):
+    """ASF audits of this institution, via asf_institution_crosswalk (exact-key entity match)."""
+    import sqlite3 as _sqlite3
+
+    cache_key = f"asf_inst_{institution_id}"
+    with _asf_inst_cache_lock:
+        entry = _asf_inst_cache.get(cache_key)
+        if entry and datetime.now() < entry["expires_at"]:
+            return entry["value"]
+
+    with get_db() as conn:
+        conn.row_factory = _sqlite3.Row
+        # Get institution's ramo_id
+        inst = conn.execute(
+            "SELECT id, ramo_id FROM institutions WHERE id = ?",
+            (institution_id,),
+        ).fetchone()
+        if not inst:
+            raise HTTPException(status_code=404, detail="Institution not found")
+
+        ramo_code = inst["ramo_id"]
+        findings = []
+
+        # Exact-key crosswalk (asf_institution_crosswalk). The old bidirectional
+        # 20-char prefix LIKE attached other bodies' audits (IMSS's audits showed
+        # on the Instituto Mexicano del Petróleo); ~2% of attachments were correct.
+        rows = conn.execute(
+            """
+            SELECT a.report_year AS audit_year,
+                   NULL          AS observations_total,
+                   a.amount_mxn,
+                   NULL          AS observations_solved,
+                   a.finding_type
+            FROM asf_institution_crosswalk x
+            JOIN asf_cases a ON a.id = x.asf_case_id
+            WHERE x.institution_id = ?
+              AND x.confidence <> 'low'
+              AND a.amount_mxn IS NOT NULL
+            ORDER BY a.report_year
+            """,
+            (institution_id,),
+        ).fetchall()
+
+        for r in rows:
+            findings.append(
+                ASFInstitutionFinding(
+                    year=r["audit_year"] or 0,
+                    observations_total=r["observations_total"],
+                    amount_mxn=r["amount_mxn"],
+                    observations_solved=r["observations_solved"],
+                    finding_type=r["finding_type"],
+                    recovery_rate=None,
+                )
+            )
+
+        total_amount = sum(f.amount_mxn or 0 for f in findings)
+        result = ASFInstitutionResponse(
+            institution_id=institution_id,
+            ramo_code=ramo_code,
+            findings=findings,
+            total_amount_mxn=total_amount,
+            years_audited=len({f.year for f in findings if f.year}),
+        )
+
+    with _asf_inst_cache_lock:
+        _asf_inst_cache[cache_key] = {
+            "value": result,
+            "expires_at": datetime.now() + timedelta(seconds=_ASF_INST_CACHE_TTL),
+        }
+    return result

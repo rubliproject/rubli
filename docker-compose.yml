@@ -1,0 +1,73 @@
+# RUBLI - Mexican Government Procurement Analysis Platform
+# Docker Compose Configuration
+#
+# ⚠️  DEV ONLY — no Caddy, no HTTPS, frontend on port 3009.
+# Production: ssh root@37.60.232.109 "bash /opt/rubli/deploy.sh"
+# Or locally:  docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+
+services:
+  # Backend API (FastAPI + SQLite)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rubli-backend
+    # Port 8001 not exposed externally — nginx proxies internally via rubli-network
+    # For dev access, uncomment: ports: ["8001:8001"]
+    volumes:
+      - ./backend/RUBLI_NORMALIZED.db:/app/RUBLI_NORMALIZED.db
+    environment:
+      - PYTHONPATH=/app
+      - CORS_ORIGINS=http://localhost:3009,http://127.0.0.1:3009,http://rubli-frontend,https://rubli.xyz,https://www.rubli.xyz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8001/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - rubli-network
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: rubli-frontend
+    ports:
+      - "3009:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - rubli-network
+
+  # Scheduled database backup (daily at 3am UTC)
+  backup:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rubli-backup
+    # Mount RUBLI_DEPLOY.db (real file, not symlink) read-write so WAL checkpoint can run before backup.
+    # The script calls PRAGMA wal_checkpoint(TRUNCATE) to flush WAL into the main file before copying.
+    user: root  # volume is root:root 755; app user (uid=100) can't write backups
+    entrypoint: ["sh", "-c", "while true; do python -m scripts.backup_database --output-dir /backups && sleep 86400; done"]
+    volumes:
+      - ./backend/RUBLI_DEPLOY.db:/app/RUBLI_NORMALIZED.db  # rw: SQLite needs to create -shm sidecar in WAL mode
+      - rubli-backups:/backups
+    environment:
+      - PYTHONPATH=/app
+    healthcheck:
+      disable: true  # backup container has no HTTP server; inherited Dockerfile healthcheck is wrong here
+    restart: unless-stopped
+    networks:
+      - rubli-network
+
+networks:
+  rubli-network:
+    driver: bridge
+
+volumes:
+  rubli-backups:

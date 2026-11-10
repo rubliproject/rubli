@@ -1,0 +1,684 @@
+import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { vendorApi, institutionApi, dossierApi } from '@/api/client'
+import { formatCompactMXN, formatNumber, pctOrDash } from '@/lib/utils'
+import { formatVendorName } from '@/lib/vendor/formatName'
+import { RISK_COLORS, SECTORS, getRiskLevelFromScore, RISK_THRESHOLDS } from '@/lib/constants'
+import { DotBar } from '@/components/ui/DotBar'
+import { Skeleton } from '@/components/ui/skeleton'
+import {
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  RefreshCw,
+  UserX,
+  Building,
+  FolderPlus,
+  Folder,
+  Plus,
+  Loader2,
+  CheckCircle,
+} from 'lucide-react'
+import type { ExplorerFilters } from '@/hooks/useExplorerFilters'
+import type { VendorListItem, InstitutionResponse } from '@/api/types'
+import type { DossierSummary } from '@/components/AddToDossierButton'
+import { SortHeaderTh } from '@/components/ui/SortHeaderTh'
+import { EntityIdentityChip } from '@/components/ui/EntityIdentityChip'
+
+type SortField = 'avg_risk_score' | 'total_contracts' | 'total_value_mxn' | 'direct_award_pct'
+type SortOrder = 'asc' | 'desc'
+
+/** Signals the AI-confirmed filter reads; the /vendors list does not currently return them. */
+type AiSignals = { avg_risk_level?: string | null; risk_level?: string | null; ensemble_anomaly_score?: number | null }
+
+function isAiConfirmed(row: VendorListItem & AiSignals): boolean {
+  const level = row.avg_risk_level ?? row.risk_level
+  const isHighRisk = level === 'high' || level === 'critical'
+  const score = row.ensemble_anomaly_score
+  return isHighRisk && score != null && score >= 0.5
+}
+
+function getSortLabels(t: ReturnType<typeof useTranslation>['t']): Record<SortField, string> {
+  return {
+    avg_risk_score: t('resultTable.risk'),
+    total_contracts: t('resultTable.contracts'),
+    total_value_mxn: t('resultTable.totalValue'),
+    direct_award_pct: t('resultTable.daPercent'),
+  }
+}
+
+const PAGE_SIZE = 25
+
+interface ResultsTableProps {
+  filters: ExplorerFilters
+  page: number
+  onPageChange: (page: number) => void
+}
+
+export function ResultsTable({ filters, page, onPageChange }: ResultsTableProps) {
+  const { t } = useTranslation('explore')
+  const { sectorId, yearStart, yearEnd, riskLevels, searchText, entityType } = filters
+  const [sortField, setSortField] = useState<SortField>('avg_risk_score')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+  const [aiConfirmedOnly, setAiConfirmedOnly] = useState(false)
+  const sortLabels = getSortLabels(t)
+
+  const handleSort = (field: SortField) => {
+    if (field === sortField) {
+      setSortOrder(o => o === 'desc' ? 'asc' : 'desc')
+    } else {
+      setSortField(field)
+      setSortOrder('desc')
+    }
+    onPageChange(1)
+  }
+
+  // Build effective risk_level param: omit only when ALL 4 levels selected (no filter needed)
+  const riskLevelParam = riskLevels.length === 4 ? undefined : riskLevels.join(',')
+  // Pass year filter — API accepts a single year; use yearStart as the primary filter
+  const yearParam = yearStart ?? yearEnd
+
+  const vendorQuery = useQuery({
+    queryKey: ['explore', 'vendors', sectorId, yearStart, yearEnd, riskLevels, searchText, page, sortField, sortOrder],
+    placeholderData: keepPreviousData,
+    queryFn: () => vendorApi.getAll({
+      sector_id: sectorId,
+      risk_level: riskLevelParam,
+      search: searchText || undefined,
+      page,
+      per_page: PAGE_SIZE,
+      sort_by: sortField,
+      sort_order: sortOrder,
+      year: yearParam,
+    }),
+    enabled: entityType === 'vendor',
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const institutionQuery = useQuery({
+    queryKey: ['explore', 'institutions', sectorId, yearStart, yearEnd, riskLevels, searchText, page, sortField, sortOrder],
+    placeholderData: keepPreviousData,
+    queryFn: () => institutionApi.getAll({
+      sector_id: sectorId,
+      risk_level: riskLevelParam,
+      search: searchText || undefined,
+      scope: searchText ? 'all' : undefined,   // a name search finds a buyer at any level (lib/scope.ts)
+      page,
+      per_page: PAGE_SIZE,
+      sort_by: sortField,
+      sort_order: sortOrder,
+      year: yearParam,
+    }),
+    enabled: entityType === 'institution',
+    staleTime: 2 * 60 * 1000,
+  })
+
+  const isVendor = entityType === 'vendor'
+  const query = isVendor ? vendorQuery : institutionQuery
+  const isLoading = query.isLoading
+
+  if (isLoading) {
+    return (
+      <div className="space-y-1">
+        {[...Array(10)].map((_, i) => (
+          <Skeleton key={i} className="h-9 w-full" />
+        ))}
+      </div>
+    )
+  }
+
+  if (query.error) {
+    return (
+      <div className="py-10 text-center">
+        <AlertCircle className="h-8 w-8 text-risk-high mx-auto mb-2 opacity-60" aria-hidden="true" />
+        <p className="text-sm text-text-primary mb-1">Failed to load results</p>
+        <p className="text-xs text-text-muted mb-3">
+          {(query.error as Error).message || 'An unexpected error occurred.'}
+        </p>
+        <button
+          onClick={() => query.refetch()}
+          className="inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
+        >
+          <RefreshCw className="h-3 w-3" aria-hidden="true" />
+          Retry
+        </button>
+      </div>
+    )
+  }
+
+  if (!query.data) return null
+
+  const pagination = query.data.pagination
+  const hasFilters = sectorId != null || riskLevels.length < 4 || searchText || yearStart || yearEnd
+
+  if (!query.data.data?.length) {
+    return <EmptyState entityType={entityType} hasFilters={!!hasFilters} searchText={searchText} />
+  }
+
+  const rangeStart = (page - 1) * PAGE_SIZE + 1
+  const rangeEnd = Math.min(page * PAGE_SIZE, pagination.total)
+
+  if (isVendor) {
+    const allVendors: (VendorListItem & AiSignals)[] = vendorQuery.data?.data || []
+    const vendors = aiConfirmedOnly ? allVendors.filter(isAiConfirmed) : allVendors
+    const pageAvgRisk = vendors.length > 0
+      ? vendors.reduce((s, v) => s + (v.avg_risk_score || 0), 0) / vendors.length
+      : 0
+    const pageHighPlus = vendors.filter(v => (v.avg_risk_score || 0) >= RISK_THRESHOLDS.high).length
+    const aiConfirmedCount = allVendors.filter(isAiConfirmed).length
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+          <span className="text-xs text-text-muted font-mono tabular-nums">
+            Showing {rangeStart}–{rangeEnd} of {formatNumber(pagination.total)} vendors · sorted by {sortLabels[sortField]} {sortOrder === 'desc' ? '↓' : '↑'}
+          </span>
+          <div className="flex items-center gap-3 text-[13px] text-text-muted">
+            <span>Page avg risk: <span className="font-mono font-semibold text-text-primary">{(pageAvgRisk * 100).toFixed(0)}%</span></span>
+            <span className="text-border/60">·</span>
+            <span>High+ on page: <span className="font-mono font-semibold text-risk-high">{pageHighPlus}<span className="text-text-muted font-normal">/{vendors.length}</span></span></span>
+          </div>
+        </div>
+        {/* AI Confirmed filter chip */}
+        <div className="mb-2">
+          <button
+            onClick={() => setAiConfirmedOnly(prev => !prev)}
+            className={`inline-flex items-center gap-1.5 text-[13px] px-2 py-0.5 rounded border transition-colors ${
+              aiConfirmedOnly
+                ? 'bg-risk-critical/20 text-risk-critical border-risk-critical/40'
+                : 'bg-transparent text-text-muted border-border/40 hover:border-border hover:text-text-primary'
+            }`}
+            aria-pressed={aiConfirmedOnly}
+          >
+            <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {t('common:contractDetail.aiConfirmed')}
+            {aiConfirmedCount > 0 && (
+              <span className="font-mono">{aiConfirmedCount}</span>
+            )}
+          </button>
+        </div>
+        <div className="overflow-x-auto -mx-4 sm:mx-0">
+        <table className="w-full text-sm" role="grid" aria-label="Vendor search results">
+          <thead>
+            <tr>
+              <th className="data-cell-header text-left" scope="col">Vendor</th>
+              <SortHeader field="total_contracts" label="Contracts" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right" aria-hidden="true" />
+              <SortHeader field="total_value_mxn" label="Total Value" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right hidden md:table-cell" aria-hidden="true" />
+              <SortHeader field="avg_risk_score" label="Risk" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right" aria-hidden="true" />
+              <SortHeader field="direct_award_pct" label="DA %" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right hidden lg:table-cell" aria-hidden="true" />
+              <th className="data-cell-header text-right hidden xl:table-cell w-20" scope="col">Anomaly</th>
+              <th className="data-cell-header w-16" scope="col" />
+            </tr>
+          </thead>
+          <tbody>
+            {vendors.map((v) => {
+              const riskLevel = getRiskLevelFromScore(v.avg_risk_score ?? 0)
+              const riskColor = RISK_COLORS[riskLevel]
+              return (
+                <VendorRow key={v.id} vendor={v} riskColor={riskColor} />
+              )
+            })}
+          </tbody>
+        </table>
+        </div>
+        <Pagination pagination={pagination} page={page} onPageChange={onPageChange} />
+      </div>
+    )
+  }
+
+  // Institutions view
+  const institutions = institutionQuery.data?.data || []
+  const instPageAvgRisk = institutions.length > 0
+    ? institutions.reduce((s, v) => s + (v.avg_risk_score || 0), 0) / institutions.length
+    : 0
+  const instPageHighPlus = institutions.filter(v => (v.avg_risk_score || 0) >= RISK_THRESHOLDS.high).length
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+        <span className="text-xs text-text-muted font-mono tabular-nums">
+          Showing {rangeStart}–{rangeEnd} of {formatNumber(pagination.total)} institutions · sorted by {sortLabels[sortField]} {sortOrder === 'desc' ? '↓' : '↑'}
+        </span>
+        <div className="flex items-center gap-3 text-[13px] text-text-muted">
+          <span>Page avg risk: <span className="font-mono font-semibold text-text-primary">{(instPageAvgRisk * 100).toFixed(0)}%</span></span>
+          <span className="text-border/60">·</span>
+          <span>High+ on page: <span className="font-mono font-semibold text-risk-high">{instPageHighPlus}<span className="text-text-muted font-normal">/{institutions.length}</span></span></span>
+        </div>
+      </div>
+      <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <table className="w-full text-sm" role="grid" aria-label="Institution search results">
+        <thead>
+          <tr>
+            <th className="data-cell-header text-left" scope="col">Institution</th>
+            <SortHeader field="total_contracts" label="Contracts" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right" aria-hidden="true" />
+            <SortHeader field="total_value_mxn" label="Total Value" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right hidden md:table-cell" aria-hidden="true" />
+            <SortHeader field="avg_risk_score" label="Risk" sortField={sortField} sortOrder={sortOrder} onSort={handleSort} className="data-cell-header text-right" aria-hidden="true" />
+            <th className="data-cell-header w-16" scope="col" />
+          </tr>
+        </thead>
+        <tbody>
+          {institutions.map((inst) => {
+            const riskLevel = getRiskLevelFromScore(inst.avg_risk_score ?? 0)
+            const riskColor = RISK_COLORS[riskLevel]
+            return (
+              <InstitutionRow key={inst.id} institution={inst} riskColor={riskColor} />
+            )
+          })}
+        </tbody>
+      </table>
+      </div>
+      <Pagination pagination={pagination} page={page} onPageChange={onPageChange} />
+    </div>
+  )
+}
+
+// =============================================================================
+// Individual rows with inline dossier action
+// =============================================================================
+
+function VendorRow({ vendor, riskColor }: { vendor: VendorListItem & AiSignals; riskColor: string }) {
+  const { t: ts } = useTranslation('sectors')
+  const sector = vendor.primary_sector_id ? SECTORS.find(s => s.id === vendor.primary_sector_id) : null
+
+  return (
+    <tr
+      className="border-b border-border/10 hover:bg-background-elevated/30 transition-colors group interactive-card"
+      style={{ borderLeft: `3px solid ${riskColor}` }}
+    >
+      <td className="data-cell">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {sector && (
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: sector.color }}
+              title={ts(sector.code)}
+            />
+          )}
+          <EntityIdentityChip type="vendor" id={vendor.id} name={formatVendorName(vendor.name, 40)} size="sm" />
+        </div>
+        {sector && (
+          <div className="ml-3 text-[12px] mt-0.5" style={{ color: sector.color }}>
+            {ts(sector.code)}
+          </div>
+        )}
+      </td>
+      <td className="data-cell text-right font-mono text-text-secondary text-xs">
+        {formatNumber(vendor.total_contracts)}
+      </td>
+      <td className="data-cell text-right font-mono text-text-secondary text-xs hidden md:table-cell">
+        {formatCompactMXN(vendor.total_value_mxn || 0)}
+      </td>
+      <td className="data-cell text-right">
+        <div className="inline-flex flex-col items-end gap-1 min-w-[56px]">
+          {(() => {
+            const score = vendor.avg_risk_score ?? 0
+            const level = getRiskLevelFromScore(score)
+            const color = RISK_COLORS[level]
+            const riskClass = level === 'critical' ? 'risk-critical' : level === 'high' ? 'risk-high' : level === 'medium' ? 'risk-medium' : 'risk-low'
+            return (
+              <>
+                <span className={`${riskClass} text-xs font-bold font-mono px-1.5 py-0.5 rounded`}>
+                  {(score * 100).toFixed(0)}%
+                </span>
+                <DotBar
+                  value={score}
+                  max={1}
+                  color={color}
+                  emptyColor="var(--color-background-elevated)"
+                  emptyStroke="var(--color-border-hover)"
+                  dots={14}
+                  dotR={1.75}
+                  dotGap={4}
+                  thresholds={[0.25, 0.40, 0.60]}
+                />
+              </>
+            )
+          })()}
+          {(vendor.avg_risk_score || 0) >= 0.50 && (
+            <span className="text-[13px] font-medium text-accent/80 leading-none">
+              AI confirmed
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="data-cell text-right font-mono text-xs hidden lg:table-cell">
+        {vendor.direct_award_pct != null ? (
+          <span style={{
+            color: vendor.direct_award_pct >= 90 ? 'var(--color-risk-critical, #f87171)'
+                 : vendor.direct_award_pct >= 70 ? 'var(--color-risk-high, #fb923c)'
+                 : 'var(--color-text-muted)'
+          }}>
+            {pctOrDash(vendor.direct_award_pct, 0)}
+          </span>
+        ) : '–'}
+      </td>
+      <td className="data-cell text-right font-mono text-xs hidden xl:table-cell w-20">
+        {vendor.ensemble_anomaly_score != null ? (
+          <span className={isAiConfirmed(vendor) ? 'text-risk-critical font-semibold' : 'text-text-muted'}>
+            {(vendor.ensemble_anomaly_score * 100).toFixed(0)}%
+          </span>
+        ) : (
+          <span className="text-text-muted/40">–</span>
+        )}
+      </td>
+      <td className="data-cell">
+        <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            to={`/vendors/${vendor.id}`}
+            aria-label={`View ${vendor.name}`}
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-text-muted hover:text-accent transition-colors" aria-hidden="true" />
+          </Link>
+          <InlineDossierTrigger
+            entityType="vendor"
+            entityId={vendor.id}
+            entityName={vendor.name}
+          />
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+function InstitutionRow({ institution, riskColor }: { institution: InstitutionResponse; riskColor: string }) {
+  const { t: ts } = useTranslation('sectors')
+  const sector = institution.sector_id ? SECTORS.find(s => s.id === institution.sector_id) : null
+  const instId = institution.id
+  const instName = institution.name || '—'
+
+  return (
+    <tr
+      className="border-b border-border/10 hover:bg-background-elevated/30 transition-colors group interactive-card"
+      style={{ borderLeft: `3px solid ${riskColor}` }}
+    >
+      <td className="data-cell">
+        <div className="flex items-center gap-1.5 min-w-0">
+          {sector && (
+            <span
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: sector.color }}
+              title={ts(sector.code)}
+            />
+          )}
+          <EntityIdentityChip type="institution" id={instId} name={instName} size="sm" />
+        </div>
+        {sector && (
+          <div className="ml-3 text-[12px] mt-0.5" style={{ color: sector.color }}>
+            {ts(sector.code)}
+          </div>
+        )}
+      </td>
+      <td className="data-cell text-right font-mono text-text-secondary text-xs">
+        {formatNumber(institution.total_contracts || 0)}
+      </td>
+      <td className="data-cell text-right font-mono text-text-secondary text-xs hidden md:table-cell">
+        {formatCompactMXN(institution.total_amount_mxn || 0)}
+      </td>
+      <td className="data-cell text-right">
+        {(() => {
+          const level = getRiskLevelFromScore(institution.avg_risk_score ?? 0)
+          const riskClass = level === 'critical' ? 'risk-critical' : level === 'high' ? 'risk-high' : level === 'medium' ? 'risk-medium' : 'risk-low'
+          return (
+            <span className={`${riskClass} text-xs font-bold font-mono px-1.5 py-0.5 rounded`}>
+              {((institution.avg_risk_score || 0) * 100).toFixed(0)}%
+            </span>
+          )
+        })()}
+      </td>
+      <td className="data-cell">
+        <div className="flex items-center gap-1 justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            to={`/institutions/${instId}`}
+            aria-label={`View ${instName}`}
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-text-muted hover:text-accent transition-colors" aria-hidden="true" />
+          </Link>
+          <InlineDossierTrigger
+            entityType="institution"
+            entityId={instId}
+            entityName={instName}
+          />
+        </div>
+      </td>
+    </tr>
+  )
+}
+
+// Compact inline dossier trigger — icon-only popover for table rows
+function InlineDossierTrigger({
+  entityType,
+  entityId,
+  entityName,
+}: {
+  entityType: 'vendor' | 'institution'
+  entityId: number
+  entityName: string
+}) {
+  const queryClient = useQueryClient()
+  const [open, setOpen] = useState(false)
+  const [success, setSuccess] = useState<number | null>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  const { data: dossiers, isLoading } = useQuery({
+    queryKey: ['dossiers', 'list'],
+    queryFn: () => dossierApi.list(),
+    enabled: open,
+    staleTime: 30 * 1000,
+  })
+
+  const addMutation = useMutation({
+    mutationFn: ({ dossierId }: { dossierId: number }) =>
+      dossierApi.addItem(dossierId, {
+        item_type: entityType,
+        item_id: entityId,
+        item_name: entityName,
+      }),
+    onSuccess: (_data, { dossierId }) => {
+      queryClient.invalidateQueries({ queryKey: ['dossiers'] })
+      setSuccess(dossierId)
+      setTimeout(() => { setSuccess(null); setOpen(false) }, 1200)
+    },
+  })
+
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e: MouseEvent) {
+      if (
+        popoverRef.current && !popoverRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [open])
+
+  const activeDossiers = (dossiers ?? []).filter((d: DossierSummary) => d.status === 'active')
+
+  return (
+    <div className="relative">
+      <button
+        ref={buttonRef}
+        onClick={() => setOpen(prev => !prev)}
+        title={`Add ${entityName} to dossier`}
+        aria-label={`Add ${entityName} to dossier`}
+        className="h-6 w-6 flex items-center justify-center rounded hover:bg-accent/10 text-text-muted hover:text-accent transition-colors"
+      >
+        <FolderPlus className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <div
+          ref={popoverRef}
+          className="absolute right-0 top-full mt-1 z-50 min-w-[180px] rounded-lg border border-border/60 bg-background-card shadow-xl"
+          role="menu"
+        >
+          <div className="px-3 py-1.5 border-b border-border/40">
+            <p className="text-[12px] font-semibold text-text-muted uppercase tracking-wider">Add to dossier</p>
+          </div>
+          <div className="max-h-[160px] overflow-y-auto py-1">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-3">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-text-muted" />
+              </div>
+            ) : activeDossiers.length === 0 ? (
+              <div className="px-3 py-3 text-center">
+                <p className="text-xs text-text-muted">Aún no hay dossiers abiertos.</p>
+                <p className="text-[12px] text-text-muted mt-0.5">
+                  Cree el primero para agrupar esta investigación.
+                </p>
+              </div>
+            ) : (
+              activeDossiers.map((d: DossierSummary) => {
+                const isOk = success === d.id
+                const isPending = addMutation.isPending && addMutation.variables?.dossierId === d.id
+                return (
+                  <button
+                    key={d.id}
+                    role="menuitem"
+                    disabled={isPending || isOk}
+                    onClick={() => addMutation.mutate({ dossierId: d.id })}
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-background-elevated/60 transition-colors disabled:opacity-60"
+                  >
+                    {isOk ? (
+                      <CheckCircle className="h-3 w-3 text-risk-low shrink-0" aria-hidden="true" />
+                    ) : isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin text-accent shrink-0" />
+                    ) : (
+                      <Folder className="h-3 w-3 shrink-0" style={{ color: d.color }} aria-hidden="true" />
+                    )}
+                    <span className="whitespace-normal break-words leading-tight text-text-secondary">{d.name}</span>
+                  </button>
+                )
+              })
+            )}
+          </div>
+          <div className="border-t border-border/40 py-1">
+            <button
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs text-accent hover:bg-accent/5 transition-colors"
+            >
+              <Plus className="h-3 w-3" aria-hidden="true" />
+              New dossier
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// SortHeader extracted to components/ui/SortHeaderTh — local wrapper preserved
+// to keep the existing call-site shape (sortField/sortOrder vs activeField/order).
+function SortHeader(props: {
+  field: SortField
+  label: string
+  sortField: SortField
+  sortOrder: SortOrder
+  onSort: (field: SortField) => void
+  className?: string
+}) {
+  return (
+    <SortHeaderTh
+      field={props.field}
+      label={props.label}
+      activeField={props.sortField}
+      order={props.sortOrder}
+      onSort={props.onSort}
+      className={props.className}
+    />
+  )
+}
+
+// =============================================================================
+// Empty state with actionable guidance
+// =============================================================================
+
+function EmptyState({
+  entityType,
+  hasFilters,
+  searchText,
+}: {
+  entityType: 'vendor' | 'institution'
+  hasFilters: boolean
+  searchText: string
+}) {
+  const Icon = entityType === 'vendor' ? UserX : Building
+
+  if (hasFilters) {
+    return (
+      <div className="py-12 text-center space-y-3">
+        <Icon className="h-8 w-8 text-text-muted mx-auto opacity-40" />
+        <div>
+          <p className="text-sm text-text-primary font-medium">No {entityType}s match your current filters</p>
+          <p className="text-xs text-text-muted mt-1">Try broadening your search:</p>
+        </div>
+        <ul className="text-xs text-text-muted space-y-1 max-w-xs mx-auto text-left list-disc list-inside">
+          {searchText && (
+            <li>Remove the search term — try a shorter or different name</li>
+          )}
+          <li>Include more risk levels (click Critical / High in the strip above)</li>
+          <li>Click a different sector in the treemap, or clear the sector filter</li>
+          <li>Drag a wider year range in the time series chart</li>
+        </ul>
+      </div>
+    )
+  }
+
+  return (
+    <div className="py-12 text-center">
+      <Icon className="h-8 w-8 text-text-muted mx-auto mb-2 opacity-40" />
+      <p className="text-sm text-text-muted">No {entityType}s found</p>
+    </div>
+  )
+}
+
+// =============================================================================
+// Pagination
+// =============================================================================
+
+function Pagination({
+  pagination,
+  page,
+  onPageChange,
+}: {
+  pagination: { total: number; total_pages: number }
+  page: number
+  onPageChange: (p: number) => void
+}) {
+  if (!pagination || pagination.total_pages <= 1) return null
+  return (
+    <nav aria-label="Pagination" className="flex items-center justify-between mt-4 text-sm card p-3">
+      <span className="text-text-muted text-xs font-mono">
+        {pagination.total.toLocaleString()} total
+      </span>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          className="p-1.5 rounded border border-border/40 hover:bg-background-elevated/50 hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label="Previous page"
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+        </button>
+        <span className="px-3 text-text-primary font-mono text-xs font-bold" aria-live="polite">
+          {page} / {pagination.total_pages}
+        </span>
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= pagination.total_pages}
+          className="p-1.5 rounded border border-border/40 hover:bg-background-elevated/50 hover:border-border-hover disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          aria-label="Next page"
+        >
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </div>
+    </nav>
+  )
+}

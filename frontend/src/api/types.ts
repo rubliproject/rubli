@@ -1,0 +1,3690 @@
+/**
+ * RUBLI API Types
+ * Generated from backend Pydantic models
+ */
+
+import type { BuyerScope } from '@/lib/scope'
+// ============================================================================
+// Common Types
+// ============================================================================
+
+export interface PaginationMeta {
+  page: number
+  per_page: number
+  total: number
+  total_pages: number
+}
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  pagination: PaginationMeta
+}
+
+export type RiskLevel = 'critical' | 'high' | 'medium' | 'low'
+
+// ============================================================================
+// Sector Types
+// ============================================================================
+
+export interface Sector {
+  id: number
+  code: string
+  name: string
+  color: string
+}
+
+export interface SectorStatistics {
+  sector_id: number
+  sector_code: string
+  sector_name: string
+  color: string
+  total_contracts: number
+  total_value_mxn: number
+  total_vendors: number
+  total_institutions: number
+  /** Buyer scope of total_institutions (lib/scope.ts); money and contract totals cover every buyer. */
+  institution_scope?: BuyerScope
+  high_critical_value_mxn?: number | null
+  critical_value_mxn?: number | null
+  /** Spend of scored contracts: the denominator of a spend-at-risk share (ComprasMX loads unscored). */
+  scored_value_mxn?: number | null
+  avg_contract_value: number
+  avg_risk_score: number
+  low_risk_count: number
+  medium_risk_count: number
+  high_risk_count: number
+  critical_risk_count: number
+  high_risk_pct: number
+  direct_award_count: number
+  direct_award_pct: number | null
+  single_bid_count: number
+  single_bid_pct: number | null
+}
+
+export interface SectorTrend {
+  year: number
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+}
+
+export interface SectorDetailResponse extends Sector {
+  statistics: SectorStatistics
+  trends: SectorTrend[]
+}
+
+export interface SectorListResponse {
+  data: SectorStatistics[]
+  total_contracts: number
+  total_value_mxn: number
+}
+
+// Bundled per-sector risk trajectory (one call for all 12) — feeds the Exposure
+// Ledger's per-row sparkline. Keyed by sector_id (string) → year series.
+export interface SectorTrajectoryPoint {
+  year: number
+  avg_risk: number
+}
+
+export interface SectorTrendsBundleResponse {
+  sectors: Record<string, SectorTrajectoryPoint[]>
+}
+
+// El Reparto treemap response — bundled for the Z0 entry page.
+export interface TreemapSectorItem {
+  sector_id: number
+  sector_code: string
+  sector_name_es: string
+  sector_name_en: string
+  color: string
+  total_value_mxn: number
+  total_contracts: number
+  total_vendors: number
+  critical_risk_count: number
+  critical_share_pct: number
+  top_institutions: Array<{
+    institution_id: number
+    name: string
+    siglas?: string | null
+    value_mxn: number
+    share_pct: number
+  }>
+}
+
+export interface TreemapResponse {
+  sectors: TreemapSectorItem[]
+  total_value_mxn: number
+  total_critical_count: number
+  generated_at: string
+}
+
+// ============================================================================
+// Contract Types
+// ============================================================================
+
+export interface ContractBase {
+  id: number
+  contract_number?: string
+  title?: string
+  /** machine translation of `title` (docs/TITLE_TRANSLATION_2026-11-04.md); null for personas físicas / untranslated */
+  title_en?: string | null
+  amount_mxn: number
+  contract_date?: string
+  contract_year?: number
+  sector_id?: number
+  sector_name?: string
+  risk_score?: number | null
+  risk_level?: RiskLevel | string | null
+  /** < 3 vendor contracts in earlier years: a low reading means «no data» (isThinHistoryLow) */
+  thin_history?: boolean | null
+  is_direct_award: boolean
+  is_single_bid: boolean
+}
+
+export interface ContractListItem extends ContractBase {
+  vendor_id?: number
+  vendor_name?: string
+  vendor_rfc?: string
+  vendor_is_individual?: boolean | null
+  institution_id?: number
+  institution_name?: string | null
+  procedure_type?: string | null
+  mahalanobis_distance?: number
+  risk_factors?: string[]
+  ensemble_anomaly_score?: number
+  pyod_is_outlier?: boolean
+  /** 'pending_score' = loaded unscored (risk_score NULL) until a model passes. */
+  risk_model_version?: string | null
+  /** 'E' = ComprasMX feed (2025–26); A–D = CompraNet structures. */
+  source_structure?: string | null
+  // Documented-case seal — set only for strong-evidence GT contracts tied to a
+  // named procurement scandal (links to /cases/:slug). See contract_service.
+  is_documented_case?: boolean
+  case_slug?: string | null
+  case_name_es?: string | null
+  case_name_en?: string | null
+  /** Amount sanity flag: likely decimal error, or > 10B MXN for review (atlas moons, spec §2.5). */
+  amount_flag?: 'suspect_decimal' | 'review' | null
+  /** Board columns (DESIGN.md §7): the buyer's published siglas, the procedure, the active spending category
+   *  («Qué se compró») and its subcategory (catch-alls omitted). Set by contract_service.attach_row_labels. */
+  institution_siglas?: string | null
+  procedure?: 'directa' | 'licitacion' | 'invitacion' | 'otro' | null
+  category_id?: number | null
+  category_es?: string | null
+  category_en?: string | null
+  subcategory_es?: string | null
+  subcategory_en?: string | null
+}
+
+export interface ContractDetail extends ContractBase {
+  /** PERCENT_RANK (0–1) of risk_score within its sector (BIAS_AUDIT_SECTOR § 8); absent before the precompute */
+  sector_pct?: number | null
+  /** the persona-física verdict (public_labels); the name may show, labelled, never the RFC */
+  vendor_is_individual?: boolean | null
+  /** Amount sanity flag from the API: likely decimal error, or >10B MXN for review. */
+  amount_flag?: 'suspect_decimal' | 'review' | null
+  procedure_number?: string
+  expedient_code?: string
+  vendor_id?: number
+  vendor_name?: string
+  vendor_rfc?: string
+  institution_id?: number
+  institution_name?: string
+  institution_type?: string
+  description?: string
+  procedure_type?: string
+  procedure_type_normalized?: string
+  contract_type?: string
+  contract_type_normalized?: string
+  procedure_character?: string
+  participation_form?: string
+  partida_especifica?: string
+  /** Legal exception (article/fracción) and the «caso fortuito» field, verbatim; null before structure D. */
+  exception_article?: string | null
+  caso_fortuito?: string | null
+  start_date?: string
+  end_date?: string
+  award_date?: string
+  publication_date?: string
+  amount_original?: number
+  currency?: string
+  is_framework: boolean
+  is_consolidated: boolean
+  is_multiannual: boolean
+  is_high_value: boolean
+  is_year_end: boolean
+  threshold_proximity?: number
+  is_threshold_gaming: boolean
+  risk_factors?: string[]
+  risk_confidence?: string
+  risk_confidence_lower?: number
+  risk_confidence_upper?: number
+  risk_model_version?: string
+  data_quality_score?: number
+  data_quality_grade?: string
+  source_structure?: string
+  source_year?: number
+  url?: string
+  contract_status?: string
+  ensemble_anomaly_score?: number
+  pyod_is_outlier?: boolean
+  is_election_year?: boolean | null
+  publication_delay_days?: number | null
+  sexenio_year?: number | null
+  // Documented-case seal — same fields as the list item.
+  is_documented_case?: boolean
+  case_slug?: string | null
+  case_name_es?: string | null
+  case_name_en?: string | null
+}
+
+export type ContractListResponse = PaginatedResponse<ContractListItem>
+
+export interface ContractFilterParams {
+  /** ISO date: only contracts dated on/after (institution contracts, concept B2 «Hoy»). */
+  since?: string
+  /** ISO date: only contracts dated on/before (vendor contracts) */
+  until?: string
+  sector_id?: number
+  category_id?: number
+  year?: number
+  /** 1–12, the month of contract_date; needs year (W7). */
+  month?: number
+  /** Only the rows /sexenios/columna counts: CompraNet (no ComprasMX), 0 < amount <= 100B (W7). */
+  column_rows?: boolean
+  vendor_id?: number
+  institution_id?: number
+  risk_level?: RiskLevel
+  /** Risk floor: this level and above (high = high + critical). */
+  risk_level_min?: RiskLevel
+  risk_factor?: string  // v3.2: Filter by specific risk factor (e.g., co_bid, price_hyp, direct_award)
+  is_direct_award?: boolean
+  is_single_bid?: boolean
+  min_amount?: number
+  max_amount?: number
+  search?: string
+  page?: number
+  per_page?: number
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+}
+
+// v3.2 Risk factors for filtering
+export const RISK_FACTORS = [
+  { value: 'co_bid', label: 'Co-Bidding Pattern', label_es: 'Coparticipación', icon: 'users', description: 'Vendors frequently bidding together' },
+  { value: 'price_hyp', label: 'Amount outlier', label_es: 'Monto atípico', icon: 'dollar-sign', description: 'Statistical contract-amount outlier' },
+  { value: 'direct_award', label: 'Direct Award', label_es: 'Adjudicación directa', icon: 'zap', description: 'Non-competitive procedure' },
+  { value: 'single_bid', label: 'Single award', label_es: 'Un solo adjudicado', icon: 'user', description: 'Competitive procedure with one winner' },
+  { value: 'year_end', label: 'Year-End', label_es: 'Fin de año', icon: 'calendar', description: 'December contract' },
+  { value: 'short_ad', label: 'Short Ad Period', label_es: 'Convocatoria corta', icon: 'clock', description: 'Brief advertisement window' },
+  { value: 'split', label: 'Threshold Splitting', label_es: 'Fraccionamiento', icon: 'scissors', description: 'Multiple same-day contracts' },
+  { value: 'network', label: 'Network Risk', label_es: 'Red de proveedores', icon: 'git-branch', description: 'Related vendor group' },
+  { value: 'inst_risk', label: 'Institution Risk', label_es: 'Riesgo institucional', icon: 'building', description: 'Higher-risk institution type' },
+  { value: 'industry_mismatch', label: 'Industry Mismatch', label_es: 'Fuera de su giro', icon: 'alert-triangle', description: 'Vendor outside their sector' },
+] as const
+
+export interface ContractStatistics {
+  total_contracts: number
+  total_value_mxn: number
+  avg_contract_value: number
+  median_contract_value?: number
+  low_risk_count: number
+  medium_risk_count: number
+  high_risk_count: number
+  critical_risk_count: number
+  direct_award_count: number
+  direct_award_pct: number | null
+  single_bid_count: number
+  single_bid_pct: number | null
+  min_year: number
+  max_year: number
+}
+
+// ============================================================================
+// Export / Trend Types
+// ============================================================================
+
+export interface ContractExportFilters {
+  vendor_id?: number
+  institution_id?: number
+  sector_id?: number
+  year?: number
+  risk_level?: string
+  limit?: number
+}
+
+export interface TrendDataPoint {
+  year: number
+  sector_id?: number
+  sector_name?: string
+  total_contracts: number
+  high_risk_count: number
+  high_risk_pct: number
+  avg_risk_score: number
+  total_value_mxn: number
+}
+
+export interface RiskFeatureContribution {
+  feature: string
+  label: string
+  z_score: number
+  coefficient: number
+  contribution: number
+  /** v0.9.2 only: the term in its own units (price_ratio ×, vendor_concentration share, same_day_count n) */
+  raw?: number
+  /** v0.9.2 only: the model input x; z_score is x minus the mean scored contract */
+  value?: number
+}
+
+export interface RiskExplanation {
+  contract_id: number
+  risk_score: number
+  risk_level: string
+  model_version?: string
+  model_type?: string
+  sector_id?: number
+  confidence_interval?: {
+    lower?: number | null
+    upper?: number | null
+  }
+  explanation_available: boolean
+  intercept?: number
+  logit?: number
+  pu_correction?: number
+  run_id?: string | null
+  omitted_features?: string[]
+  /** v0.9.2: terms are centred on the mean scored contract — baseline_logit + Σ contribution = logit. */
+  baseline_logit?: number
+  /** min(σ(logit)/c_pu, 1) = risk_score_v92 */
+  model_score?: number
+  /** the stored risk_score (squashed above 0.60) — what this logit reproduces */
+  display_score?: number
+  features: RiskFeatureContribution[]
+}
+
+/** One server-parsed risk factor from GET /contracts/{id}/risk.
+ *  NOTE: `weight` is a v0.6.5-era hardcoded bucket (0.0 / 0.03 / 0.05), NOT a
+ *  per-contract magnitude — render severity, never the number as a coefficient. */
+export interface ContractRiskFactor {
+  code: string
+  name: string
+  description?: string
+  weight?: number
+  category?: string
+  severity?: string
+  icon?: string
+}
+
+export interface ContractRiskBreakdownResponse {
+  contract_id: number
+  risk_score: number | null
+  risk_level: string | null
+  risk_confidence?: number | null
+  factors: ContractRiskFactor[]
+}
+
+/** GET /contracts/{id}/context — size-in-context + relationship + named-official.
+ *  All fields nullable; the dossier hides any block whose data is absent. */
+export interface ContractContextResponse {
+  contract_id: number
+  amount_mxn: number
+  sector_id?: number | null
+  sector_name?: string | null
+  sector_p99_mxn?: number | null
+  sector_p50_mxn?: number | null
+  size_vs_p99?: number | null
+  official: {
+    responsible_uc?: string | null
+    exception_article?: string | null
+    category_id?: number | null
+    category_name_es?: string | null
+    category_name_en?: string | null
+  }
+  pair: {
+    vendor_id?: number | null
+    institution_id?: number | null
+    total_contracts: number
+    total_amount_mxn: number
+    first_year?: number | null
+    last_year?: number | null
+    this_rank?: number | null
+    tied?: number
+    /** Complete per-year aggregate (absent on an older backend → fall back to the register). */
+    by_year?: { year: number; n: number; sum: number; max_risk: number | null }[]
+  }
+  vendor_rank?: number | null
+  vendor_total_contracts: number
+  /** Sourced finding behind a documented-case seal (strong GT only). */
+  evidence?: { source_reference: string; source_url?: string | null; evidence_tier?: string | null; kind?: 'summary' | 'quote' } | null
+  /** The vendor's ARIA standing (aria_queue). */
+  vendor_standing?: {
+    /** aria_queue's own spelling — its search key (kept out of the client's title-casing). */
+    queue_name?: string | null
+    ips_tier?: number | null
+    primary_pattern?: string | null
+    /** a DOCUMENTED case only; an unsourced link is has_unverified_lead */
+    in_ground_truth: boolean
+    has_unverified_lead?: boolean
+    is_efos_definitivo: boolean
+    is_sfp_sanctioned: boolean
+  } | null
+}
+
+// ============================================================================
+// Vendor Types
+// ============================================================================
+
+/** Contracted MXN by contract_year (vendor-wide, merged ids folded in); years without contracts omitted. */
+export interface YearAmount {
+  year: number
+  amount_mxn: number
+}
+
+export interface VendorListItem {
+  id: number
+  yearly_amounts?: YearAmount[]
+  name: string
+  rfc?: string
+  name_normalized?: string
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score?: number
+  high_risk_pct: number | null  // over scored contracts; null = none scored yet (ComprasMX)
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  first_contract_year?: number
+  last_contract_year?: number
+  years_active?: number
+  primary_sector_id?: number
+  pct_anomalous?: number
+  is_efos?: boolean
+  efos_stage?: string | null
+  is_sfp_sanctioned?: boolean
+}
+
+export interface VendorDetailResponse {
+  id: number
+  name: string
+  /** an individual supplier (public_labels.is_named_persona): labelled, with the correction/opposition note */
+  persona_fisica?: boolean
+  /** Most of its contracts were scored with < 3 prior contracts (isThinHistoryLow) */
+  thin_history?: boolean | null
+  rfc?: string
+  /** 'raw_rows' | 'rupc' — company RFC recovered by entity resolution (scripts/migrate_vendors.py) */
+  rfc_recovered_source?: 'raw_rows' | 'rupc' | null
+  /** Canonical vendor id; differs from the requested id when that id was folded into it */
+  canonical_id?: number | null
+  /** CompraNet vendor records unified into this dossier (1 = not merged) */
+  merged_record_count?: number
+  name_normalized?: string
+  phonetic_code?: string
+  industry_id?: number
+  industry_code?: string
+  industry_name?: string
+  industry_confidence?: number
+  sector_affinity?: number
+  vendor_group_id?: number
+  group_name?: string
+  total_contracts: number
+  total_value_mxn: number
+  avg_contract_value?: number
+  avg_risk_score?: number
+  high_risk_count: number
+  high_risk_pct: number | null  // over scored contracts; null = none scored yet (ComprasMX)
+  direct_award_count: number
+  direct_award_pct: number | null
+  single_bid_count: number
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  first_contract_year?: number
+  last_contract_year?: number
+  years_active: number
+  primary_sector_id?: number
+  primary_sector_name?: string
+  sectors_count: number
+  total_institutions: number
+  avg_mahalanobis?: number
+  max_mahalanobis?: number
+  pct_anomalous?: number
+  name_variants: NameVariant[]
+  top_institutions: VendorTenureInstitution[]
+  // Co-bidding triangle clustering (Wachs, Fazekas & Kertész 2021)
+  cobid_clustering_coeff?: number
+  cobid_triangle_count?: number
+  // External watchlist flags
+  is_efos_ghost?: boolean
+  is_sfp_sanctioned?: boolean
+  // v5.2 SHAP
+  shap_top_risk_factors?: Array<{ factor: string; shap: number }> | null
+  // P1 enrichment
+  direct_award_rate_corrected?: number | null
+  avg_z_price_volatility?: number | null
+  new_vendor_risk_score?: number | null
+  new_vendor_risk_triggers?: string | null
+  year_end_pct?: number | null
+  year_end_sector_avg?: number | null
+  avg_confidence_lower?: number | null
+  avg_confidence_upper?: number | null
+  sector_risk_percentile?: number | null
+  /** PERCENT_RANK (0–1) of avg_risk_score among its primary sector's vendors */
+  sector_pct?: number | null
+}
+
+export interface ContractHistogramBucket {
+  bucket: string
+  count: number
+  min_amount: number
+  max_amount: number
+}
+
+export interface ContractHistogramResponse {
+  vendor_id: number
+  total_contracts: number
+  buckets: ContractHistogramBucket[]
+  threshold_mxn: number
+}
+
+export interface NameVariant {
+  variant_name: string
+  source: string  // 'qqw' | 'manual' | 'etl'
+}
+
+export interface VendorTenureInstitution {
+  institution_id: number
+  institution_name: string
+  first_contract_year: number
+  last_contract_year: number
+  tenure_years: number
+  total_contracts: number
+  total_amount_mxn: number
+}
+
+export interface LongestTenuredVendor {
+  vendor_id: number
+  vendor_name: string
+  first_contract_year: number
+  last_contract_year: number
+  tenure_years: number
+  total_contracts: number
+  avg_risk_score?: number
+}
+
+export interface VendorRiskProfile {
+  vendor_id: number
+  vendor_name: string
+  avg_risk_score?: number
+  risk_trend?: 'improving' | 'stable' | 'worsening'
+  contracts_by_risk_level: Record<RiskLevel, number>
+  value_by_risk_level: Record<RiskLevel, number>
+  top_risk_factors: Array<{
+    factor: string
+    count: number
+    percentage: number
+  }>
+  risk_vs_sector_avg?: number
+  risk_percentile?: number
+  risk_confidence_lower?: number
+  risk_confidence_upper?: number
+}
+
+export interface VendorInstitutionItem {
+  institution_id: number
+  institution_name: string
+  institution_type?: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score?: number
+  first_year?: number
+  last_year?: number
+}
+
+export interface VendorRelatedItem {
+  vendor_id: number
+  vendor_name: string
+  rfc?: string
+  relationship_type: 'same_group' | 'similar_name' | 'shared_rfc_root' | 'possible_same_entity'
+  match_tier?: string | null
+  similarity_score?: number
+  total_contracts: number
+  total_value_mxn: number
+}
+
+export interface VendorTopItem {
+  rank: number
+  vendor_id: number
+  vendor_name: string
+  rfc?: string
+  metric_value: number
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score?: number
+  yearly_amounts?: YearAmount[]
+}
+
+export interface VendorListResponse extends PaginatedResponse<VendorListItem> {
+  filters_applied: Record<string, unknown>
+  generated_at: string
+}
+
+export interface VendorTopListResponse {
+  data: VendorTopItem[]
+  metric: 'value' | 'count' | 'risk'
+  total: number
+  generated_at: string
+}
+
+export interface VendorInstitutionListResponse {
+  vendor_id: number
+  vendor_name: string
+  data: VendorInstitutionItem[]
+  total: number
+  generated_at: string
+}
+
+/** One buyer × year (or «otros» × year when institution_id is null) — GET /vendors/{id}/institutions/timeline. */
+export interface VendorTimelineCell {
+  amount_mxn: number
+  n_contracts: number
+  n_direct_award: number
+  avg_risk_score: number | null
+}
+
+export interface VendorInstitutionsTimelineResponse {
+  vendor_id: number
+  /** Buyers that keep their own cells; the rest fold into «otros» (institution_id null). */
+  top: number
+  n_institutions: number
+  /** Every buyer by value (capped at 200): the top ones first, `is_top` set. */
+  institutions: Array<VendorTimelineCell & {
+    institution_id: number
+    name: string | null
+    siglas: string | null
+    first_year: number
+    last_year: number
+    is_top: boolean
+  }>
+  years: Array<VendorTimelineCell & { year: number }>
+  cells: Array<VendorTimelineCell & { institution_id: number | null; year: number }>
+}
+
+/** The year row of a timeline; the institution one also carries the year's concentration. */
+export interface TimelineYear extends VendorTimelineCell {
+  year: number
+  top_vendor_id?: number | null
+  top_vendor_name?: string | null
+  /** The year's largest vendor's share of the year's money. */
+  top_share?: number | null
+  /** The year's five largest vendors' share (CR5). */
+  top5_share?: number | null
+  hhi?: number | null
+}
+
+/** GET /institutions/{id}/vendors/timeline — the mirror of the vendor one, vendors as the entities. */
+export interface InstitutionVendorsTimelineResponse {
+  institution_id: number
+  top: number
+  n_vendors: number
+  vendors: Array<VendorTimelineCell & {
+    vendor_id: number
+    name: string | null
+    first_year: number
+    last_year: number
+    is_top: boolean
+  }>
+  years: TimelineYear[]
+  cells: Array<VendorTimelineCell & { vendor_id: number | null; year: number }>
+}
+
+// ============================================================================
+// Institution Types
+// ============================================================================
+
+export interface InstitutionType {
+  id: number
+  code: string
+  name_es: string
+  name_en?: string
+  description?: string
+  is_legally_decentralized: boolean
+  default_sector?: string
+  risk_baseline: number
+}
+
+export interface InstitutionResponse {
+  id: number
+  name: string
+  name_normalized?: string
+  siglas?: string
+  institution_type?: string
+  institution_type_id?: number
+  size_tier?: string
+  autonomy_level?: string
+  is_legally_decentralized?: boolean
+  sector_id?: number
+  state_code?: string
+  geographic_scope?: string
+  total_contracts?: number
+  total_amount_mxn?: number
+  avg_risk_score?: number
+  high_risk_pct?: number
+  direct_award_pct?: number | null
+  single_bid_pct?: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  vendor_count?: number
+  classification_confidence?: number
+  data_quality_grade?: string
+}
+
+export interface InstitutionDetailResponse extends InstitutionResponse {
+  /** Canonical institution id; differs from the requested id when that id was folded into it */
+  canonical_id?: number | null
+  risk_baseline?: number
+  size_risk_adjustment?: number
+  autonomy_risk_baseline?: number
+  avg_contract_value?: number
+  high_risk_contract_count?: number
+  high_risk_percentage?: number
+  avg_risk_score?: number
+  direct_award_rate?: number | null
+  direct_award_count?: number
+  longest_tenured_vendors: LongestTenuredVendor[]
+  supplier_diversity?: SupplierDiversity
+}
+
+export interface InstitutionRiskProfile {
+  institution_id: number
+  institution_name: string
+  institution_type?: string
+  risk_baseline: number
+  size_tier?: string
+  size_risk_adjustment: number
+  autonomy_level?: string
+  autonomy_risk_baseline: number
+  effective_risk: number
+  total_contracts: number
+  total_value: number
+  contracts_by_risk_level: Record<RiskLevel, number>
+  avg_risk_score?: number
+}
+
+export interface InstitutionVendorItem {
+  vendor_id: number
+  vendor_name: string
+  rfc?: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score?: number
+  first_year?: number
+  last_year?: number
+}
+
+export interface InstitutionTopItem {
+  rank: number
+  institution_id: number
+  institution_name: string
+  institution_type?: string
+  metric_value: number
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score?: number
+}
+
+export interface InstitutionListResponse extends PaginatedResponse<InstitutionResponse> {
+  filters_applied: Record<string, unknown>
+  generated_at: string
+}
+
+export interface InstitutionTopListResponse {
+  data: InstitutionTopItem[]
+  metric: 'spending' | 'contracts' | 'risk'
+  total: number
+  generated_at: string
+}
+
+export interface InstitutionVendorListResponse {
+  institution_id: number
+  institution_name: string
+  data: InstitutionVendorItem[]
+  total: number
+  generated_at: string
+}
+
+// ─── Responsables de la Unidad Compradora (signing officers of record) ───────
+// Precomputed in official_risk_profiles from contracts.responsible_uc (2018+).
+export interface InstitutionOfficial {
+  official_name: string
+  total_contracts: number
+  first_contract_year: number | null
+  last_contract_year: number | null
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  direct_award_pct: number | null
+  avg_risk_score: number
+  vendor_diversity: number
+  hhi_vendors: number
+  interpretation: string
+}
+
+export interface InstitutionOfficialsResponse {
+  institution_id: number
+  officials: InstitutionOfficial[]
+  note: string
+  note_en?: string
+  note_es?: string
+  data_available: boolean
+}
+
+// ─── Cross-institution movers + per-official profile (GET /officials/*) ───────
+export interface OfficialMover {
+  official_name: string
+  institution_count: number
+  total_contracts: number
+  total_value_mxn: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  avg_risk_score: number
+  first_contract_year: number | null
+  last_contract_year: number | null
+}
+
+export interface OfficialMoversResponse {
+  movers: OfficialMover[]
+  note: string
+  data_available: boolean
+}
+
+export interface OfficialInstitutionRow {
+  institution_id: number
+  institution_name: string | null
+  total_contracts: number
+  total_value_mxn: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  avg_risk_score: number
+  vendor_diversity: number
+  hhi_vendors: number
+  first_contract_year: number | null
+  last_contract_year: number | null
+}
+
+export interface OfficialProfileResponse {
+  official_name: string
+  summary: {
+    total_contracts: number
+    total_value_mxn: number
+    institution_count: number
+    direct_award_pct: number | null
+    single_bid_pct: number | null
+    /** Single-award share of competitive procedures (D20) — the displayed rate. */
+    single_award_pct?: number | null
+    avg_risk_score: number
+    first_contract_year: number | null
+    last_contract_year: number | null
+  }
+  institutions: OfficialInstitutionRow[]
+  note: string
+}
+
+// ─── Z2 "La Captura" — vendor-pool dossier ──────────────────────────────────
+// Richer shape than InstitutionVendorListResponse: per-vendor HR/DA/SB counts,
+// ARIA tier/pattern badges, plus institution-level aggregates for the kicker.
+
+export interface VendorPoolItem {
+  rank: number
+  vendor_id: number
+  vendor_name: string
+  contract_count: number
+  total_value_mxn: number
+  share_of_institution_pct: number
+  first_year?: number | null
+  last_year?: number | null
+  avg_risk_score?: number | null
+  // Flag fields are nullable: since the 2026-06-12 at-rest backfill they
+  // arrive populated cold; null now means "row newer than the last backfill
+  // cut" and Z2Row renders a quiet pending glyph, never a permanent dash.
+  high_risk_count: number | null
+  high_risk_pct: number | null
+  direct_award_count: number | null
+  direct_award_pct: number | null
+  single_bid_count: number | null
+  single_bid_pct: number | null
+  /** Single-award share of competitive procedures (D20) — the displayed rate. */
+  single_award_pct?: number | null
+  ips_tier?: number | null
+  primary_pattern?: string | null
+  in_ground_truth: number
+  // Official-registry seals (aria_queue passthrough — documentary facts,
+  // not model output; null = vendor not in the ARIA queue)
+  is_efos_definitivo?: number | null
+  is_sfp_sanctioned?: number | null
+  is_disappeared?: number | null
+}
+
+export interface VendorPoolResponse {
+  institution_id: number
+  institution_name: string
+  siglas?: string | null
+  sector_id?: number | null
+  institution_total_value_mxn: number
+  institution_total_contracts: number
+  institution_vendor_count: number
+  institution_direct_award_pct: number | null
+  institution_high_risk_pct: number
+  institution_single_bid_pct: number | null
+  top1_vendor_id?: number | null
+  top1_vendor_name?: string | null
+  top1_share_pct: number
+  top10_share_pct: number
+  data: VendorPoolItem[]
+  total: number
+  generated_at: string
+}
+
+// ─── Institution risk waterfall (per-feature risk attribution) ──────────────
+// Average z-score × global coefficient across the institution's contracts.
+// Server returns label_en only (no label_es) — the ES label is mapped
+// client-side from `feature`. Shape matches WaterfallRiskChart's prop.
+
+export interface InstitutionWaterfallContribution {
+  feature: string
+  z_score: number
+  coefficient: number
+  contribution: number
+  label_en: string
+}
+
+export interface InstitutionWaterfallResponse {
+  institution_id: number
+  items: InstitutionWaterfallContribution[]
+  total_contracts: number
+}
+
+// ============================================================================
+// Fast Dashboard Types (from /stats/dashboard/fast precomputed endpoint)
+// ============================================================================
+
+export interface DashboardOverview {
+  total_contracts: number
+  total_value_mxn: number
+  total_vendors: number
+  total_institutions: number
+  avg_risk_score: number
+  high_risk_contracts: number
+  high_risk_value_mxn: number
+  high_risk_pct: number
+  critical_contracts?: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  min_year: number
+  max_year: number
+  years_covered?: number
+}
+
+export interface DashboardSectorItem {
+  id: number
+  code: string
+  name: string
+  total_contracts: number
+  total_value_mxn: number
+  total_vendors: number
+  avg_risk_score: number
+  low_risk_count: number
+  medium_risk_count: number
+  high_risk_count: number
+  critical_risk_count: number
+  direct_award_count: number
+  single_bid_count: number
+}
+
+export interface FastDashboardData {
+  overview: DashboardOverview
+  sectors: DashboardSectorItem[]
+  risk_distribution: RiskDistribution[]
+  yearly_trends: YearOverYearChange[]
+  december_spike?: Record<string, unknown> | null
+  monthly_2023?: Record<string, unknown> | null
+  cached_at: string | null
+  // P1 enrichment fields
+  multivariate_anomaly_count?: number | null
+  election_year_avg_risk?: number | null
+  non_election_year_avg_risk?: number | null
+  election_year_contract_count?: number | null
+  new_vendor_risk_count?: number | null
+  grade_a_pct?: number | null
+  grade_b_pct?: number | null
+  direct_award_pct?: number | null
+  sexenio_comparison?: {
+    amlo?: { avg_risk: number; contract_count?: number; contracts?: number; high_risk_pct?: number }
+    sheinbaum?: { avg_risk: number; contract_count?: number; contracts?: number; high_risk_pct?: number }
+  } | null
+}
+
+// ============================================================================
+// Analysis/Overview Types
+// ============================================================================
+
+export interface AnalysisOverview {
+  total_contracts: number
+  total_value_mxn: number
+  total_vendors: number
+  total_institutions: number
+  avg_risk_score: number
+  high_risk_contracts: number
+  high_risk_value_mxn: number
+  high_risk_pct: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  years_covered: number
+  min_year: number
+  max_year: number
+  sectors_count: number
+  top_sector_by_value: string
+  top_sector_by_risk: string
+}
+
+export interface RiskDistribution {
+  risk_level: RiskLevel
+  count: number
+  percentage: number
+  total_value_mxn: number
+}
+
+export interface YearOverYearChange {
+  year: number
+  contracts: number
+  total_value: number
+  value_mxn?: number
+  avg_risk: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  high_risk_pct: number
+  vendor_count: number
+  institution_count: number
+  contracts_change_pct?: number
+  value_change_pct?: number
+  risk_stddev?: number
+}
+
+export interface AnomalyItem {
+  anomaly_type: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  description: string
+  affected_contracts: number
+  affected_value_mxn: number
+  details: Record<string, unknown>
+}
+
+export interface SectorYearItem {
+  year: number
+  sector_id: number
+  contracts: number
+  total_value: number
+  avg_risk: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  high_risk_pct: number
+  vendor_count: number
+  institution_count: number
+}
+
+// ============================================================================
+// Money Flow Types
+// ============================================================================
+
+export interface MoneyFlowItem {
+  source_type: string
+  source_id: number
+  source_name: string
+  target_type: string
+  target_id: number
+  target_name: string
+  value: number
+  contracts: number
+  avg_risk: number | null
+  high_risk_pct: number | null
+}
+
+export interface MoneyFlowResponse {
+  flows: MoneyFlowItem[]
+  total_value: number
+  total_contracts: number
+}
+
+// ============================================================================
+// Risk Factor Analysis Types
+// ============================================================================
+
+export interface RiskFactorFrequency {
+  factor: string
+  count: number
+  percentage: number
+  avg_risk_score: number
+}
+
+export interface FactorCooccurrence {
+  factor_a: string
+  factor_b: string
+  count: number
+  expected_count: number
+  lift: number
+}
+
+export interface RiskFactorAnalysisResponse {
+  total_contracts_with_factors: number
+  factor_frequencies: RiskFactorFrequency[]
+  top_cooccurrences: FactorCooccurrence[]
+}
+
+// ============================================================================
+// Institution Health Types
+// ============================================================================
+
+export interface InstitutionHealthItem {
+  institution_id: number
+  institution_name: string
+  institution_type?: string
+  total_contracts: number
+  total_value: number
+  avg_risk_score: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  high_risk_pct: number
+  vendor_count: number
+  hhi: number
+  top_vendor_share: number
+}
+
+export interface InstitutionRankingsResponse {
+  data: InstitutionHealthItem[]
+  total_institutions: number
+}
+
+// ============================================================================
+// Procurement Intelligence — Collusion / Concentration / Year-End / Leads
+// ============================================================================
+
+export interface CoBiddingPair {
+  vendor_1_id: number
+  vendor_1_name: string
+  vendor_2_id: number
+  vendor_2_name: string
+  co_bid_count: number
+  co_bid_rate: number
+  combined_value: number
+  is_potential_collusion: boolean
+}
+
+export interface CoBiddingResponse {
+  total_pairs_analyzed: number
+  high_confidence_pairs: number
+  potential_collusion_pairs: number
+  pairs: CoBiddingPair[]
+}
+
+export interface ConcentrationAlert {
+  vendor_id: number
+  vendor_name: string
+  institution_id: number
+  institution_name: string
+  vendor_contracts: number
+  vendor_value: number
+  total_contracts: number
+  total_value: number
+  value_share_pct: number
+  avg_risk_score: number | null
+}
+
+export interface ConcentrationResponse {
+  institutions_analyzed: number
+  high_concentration_count: number
+  alerts: ConcentrationAlert[]
+}
+
+export interface YearEndPattern {
+  year: number
+  december_value: number
+  december_contracts: number
+  avg_monthly_value: number
+  spike_ratio: number | null
+  is_significant: boolean
+  december_risk: number | null
+}
+
+export interface YearEndResponse {
+  years_analyzed: number
+  years_with_spikes: number
+  average_spike_ratio: number
+  patterns: YearEndPattern[]
+}
+
+export interface InvestigationLead {
+  lead_type: string
+  priority: string
+  contract_id: number | null
+  vendor_id: number | null
+  vendor_name: string | null
+  institution_id: number | null
+  institution_name: string | null
+  amount_mxn: number | null
+  risk_score: number | null
+  risk_indicators: string[]
+  verification_steps: string[]
+}
+
+export interface InvestigationLeadsResponse {
+  total_leads: number
+  high_priority: number
+  leads: InvestigationLead[]
+}
+
+export interface FactorEffectivenessItem {
+  factor_name: string
+  trigger_rate_known_bad: number
+  trigger_rate_baseline: number
+  lift: number
+  effectiveness_score: number
+}
+
+export interface FactorAnalysisValidationResponse {
+  factors: FactorEffectivenessItem[]
+  sample_sizes: {
+    known_bad_contracts: number
+    baseline_contracts: number
+  }
+  recommendations: FactorEffectivenessItem[]
+}
+
+// ============================================================================
+// External Registry Types (SFP Sanctions + RUPC + ASF)
+// ============================================================================
+
+/** How a registry record was tied to a vendor (backend api/sanctions.py).
+ *  RFC is absent at source for most records, so most matches are by name. */
+export type SanctionMatchBasis = 'rfc' | 'name' | 'name_ambiguous'
+
+export interface SFPSanction {
+  id: number
+  match_basis?: SanctionMatchBasis
+  rfc: string | null
+  company_name: string
+  sanction_type: string | null
+  /** ISO, fecha de notificación */
+  sanction_start: string | null
+  /** ISO, notification + plazo; null = fine without inhabilitación */
+  sanction_end: string | null
+  resolution_date?: string | null
+  plazo_text?: string | null
+  plazo_months?: number | null
+  amount_mxn: number | null
+  authority: string | null
+}
+
+export interface RUPCVendor {
+  rfc: string
+  company_name: string
+  compliance_grade: string | null
+  status: string | null
+  registered_date: string | null
+  expiry_date: string | null
+}
+
+export interface ASFCaseItem {
+  id: number
+  asf_report_id: string | null
+  entity_name: string
+  finding_type: string
+  amount_mxn: number | null
+  report_year: number | null
+  report_url: string | null
+  summary: string | null
+}
+
+export interface SATEFOSRecord {
+  rfc: string
+  company_name: string
+  stage: 'presunto' | 'definitivo' | 'favorecido' | 'desvirtuado'
+  dof_date: string | null
+}
+
+export interface VendorExternalFlags {
+  vendor_id: number
+  sfp_sanctions: SFPSanction[]
+  rupc: RUPCVendor | null
+  asf_cases: ASFCaseItem[]
+  sat_efos: SATEFOSRecord | null
+}
+
+// ============================================================================
+// QQW (QuiénesQuién.wiki) Types
+// ============================================================================
+
+export interface QQWContract {
+  qqw_ocid: string | null
+  qqw_contract_id: string | null
+  qqw_supplier_id: string | null
+  qqw_supplier_name: string | null
+  supplier_rfc: string | null
+  buyer_name: string | null
+  buyer_institution: string | null
+  contact_person_id: string | null
+  contact_person_name: string | null
+  contract_value: number | null
+  contract_currency: string | null
+  contract_date: string | null
+}
+
+export interface QQWProcurementOfficial {
+  contact_person_id: string
+  contact_person_name: string
+  contract_count: number
+  buyer_institutions: string[]
+}
+
+export interface VendorQQWResponse {
+  vendor_id: number
+  vendor_name: string
+  qqw_contract_count: number
+  has_data: boolean
+  contracts: QQWContract[]
+  procurement_officials: QQWProcurementOfficial[]
+  note: string
+}
+
+// ============================================================================
+// Classification Types
+// ============================================================================
+
+export interface IndustryCoverage {
+  industry_id: number
+  industry_code: string
+  industry_name: string
+  vendor_count: number
+  percentage_of_verified: number
+}
+
+export interface ClassificationStatsResponse {
+  total_vendors: number
+  verified_vendors: number
+  unverified_vendors: number
+  coverage_percentage: number
+  total_patterns: number
+  total_industries: number
+  top_industries: IndustryCoverage[]
+  sector_coverage: Array<{
+    sector_id: number
+    sector_name: string
+    verified_vendor_count: number
+    industries_mapped: number
+  }>
+  last_updated?: string
+  methodology_version: string
+  generated_at: string
+}
+
+// ============================================================================
+// Filter Types
+// ============================================================================
+
+export interface VendorFilterParams {
+  industry_id?: number
+  sector_affinity?: number
+  sector_id?: number
+  min_contracts?: number
+  max_contracts?: number
+  min_value?: number
+  max_value?: number
+  has_rfc?: boolean
+  /** One level or a comma-separated list (e.g. "high,critical"). */
+  risk_level?: RiskLevel | (string & {})
+  search?: string
+  page?: number
+  per_page?: number
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+}
+
+export interface InstitutionFilterParams {
+  institution_type?: string
+  sector_id?: number
+  size_tier?: string
+  state_code?: string
+  min_contracts?: number
+  risk_level?: string
+  search?: string
+  page?: number
+  per_page?: number
+  sort_by?: string
+  sort_order?: 'asc' | 'desc'
+  /** Buyer scope (lib/scope.ts); the API defaults to federal. */
+  scope?: BuyerScope
+}
+
+// ============================================================================
+// Investigation Types
+// ============================================================================
+
+export type InvestigationValidationStatus = 'pending' | 'corroborated' | 'refuted' | 'inconclusive'
+
+export interface InvestigationCaseListItem {
+  id: number
+  case_id: string
+  case_type: string
+  sector_id: number
+  sector_name: string
+  suspicion_score: number
+  anomaly_score: number | null
+  confidence: number
+  title: string
+  total_contracts: number
+  total_value_mxn: number
+  estimated_loss_mxn: number
+  date_range_start: string | null
+  date_range_end: string | null
+  priority: number
+  is_reviewed: boolean
+  validation_status: InvestigationValidationStatus
+  vendor_count: number
+  signals_triggered: string[]
+}
+
+export interface InvestigationVendor {
+  vendor_id: number
+  name: string
+  rfc: string | null
+  role: string
+  contract_count: number | null
+  contract_value_mxn: number | null
+  avg_risk_score: number | null
+}
+
+export interface InvestigationQuestion {
+  id: number
+  question_type: string
+  question_text: string
+  priority: number
+  supporting_evidence: string[] | null
+}
+
+export interface ExternalEvidence {
+  source_url: string
+  source_title: string
+  source_type: string
+  summary: string
+  date_published: string | null
+  credibility: string
+}
+
+export interface InvestigationCaseDetail extends InvestigationCaseListItem {
+  summary: string | null
+  narrative: string | null
+  risk_factor_counts: Record<string, number>
+  vendors: InvestigationVendor[]
+  questions: InvestigationQuestion[]
+  external_sources: Array<Record<string, string>>
+  generated_at: string
+}
+
+export interface InvestigationCaseListResponse {
+  data: InvestigationCaseListItem[]
+  pagination: PaginationMeta
+}
+
+export interface InvestigationStats {
+  total_cases: number
+  by_sector: Record<string, number>
+  by_type: Record<string, number>
+  by_status: Record<string, number>
+  total_value_mxn: number
+  total_estimated_loss_mxn: number
+  avg_suspicion_score: number
+  critical_cases: number
+  high_cases: number
+}
+
+export interface InvestigationDashboardSummary {
+  total_cases: number
+  corroborated_cases: number
+  pending_cases: number
+  total_value_at_risk: number
+  hit_rate: {
+    checked: number
+    confirmed: number
+    rate: number
+  }
+  top_corroborated: Array<{
+    id?: number
+    case_id: string
+    title: string
+    score: number
+    value: number
+    total_value_mxn?: number
+    contracts: number
+    sector_code: string
+    sector_name: string
+    news_summary: string
+    summary?: string
+  }>
+  validation_funnel: {
+    detected: number
+    researched: number
+    corroborated: number
+    promoted_to_gt: number
+  }
+}
+
+// ============================================================================
+// Executive Summary Types
+// ============================================================================
+
+export interface ExecutiveSummaryHeadline {
+  total_contracts: number
+  total_value: number
+  total_value_usd?: number
+  total_value_real_mxn?: number
+  total_vendors: number
+  total_institutions: number
+  min_year: number
+  max_year: number
+}
+
+export interface ExecutiveSummaryRisk {
+  critical_count: number
+  critical_value: number
+  critical_pct: number
+  high_count: number
+  high_value: number
+  high_pct: number
+  medium_count: number
+  medium_value: number
+  medium_pct: number
+  low_count: number
+  low_value: number
+  low_pct: number
+  value_at_risk: number
+  value_at_risk_pct: number
+  high_risk_rate: number
+}
+
+export interface ExecutiveSectorItem {
+  code: string
+  name: string
+  contracts: number
+  value: number
+  avg_risk: number
+  high_plus_pct: number
+}
+
+export interface ExecutiveTopInstitution {
+  name: string
+  contracts: number
+  value: number
+  avg_risk: number
+}
+
+export interface ExecutiveTopVendor {
+  id: number
+  name: string
+  contracts: number
+  value_billions: number
+  avg_risk: number
+}
+
+export interface ExecutiveAdministration {
+  name: string
+  full_name: string
+  years: string
+  party: string
+  contracts: number
+  value: number
+  real_value?: number
+  avg_risk: number
+  high_risk_pct: number
+  /** null when procedure type is not coded in the term's years (Fox, 2002–06). */
+  direct_award_pct: number | null
+  /** Years the direct-award share covers ("2011-2012"); null when none. */
+  direct_award_years?: string | null
+}
+
+export interface ExecutiveYearlyTrend {
+  year: number
+  contracts: number
+  value_billions: number
+  real_value_billions?: number
+  avg_risk: number
+}
+
+export interface ExecutiveCaseDetail {
+  name: string
+  type: string
+  contracts: number
+  high_plus_pct: number
+  avg_score: number
+  sector: string
+}
+
+export interface ExecutiveGroundTruth {
+  cases: number
+  vendors: number
+  contracts: number
+  /** Independently sourced cases (press / official record / audit). */
+  independent?: number | null
+  /** Provenance tier A or B. */
+  tier_ab?: number | null
+  high_plus_rate: number
+  case_details: ExecutiveCaseDetail[]
+}
+
+export interface ExecutiveModelPredictor {
+  name: string
+  beta: number
+  direction: 'positive' | 'negative'
+}
+
+export interface ExecutiveModel {
+  version: string
+  auc: number
+  brier: number | null
+  train_auc?: number
+  pu_correction?: number | null
+  features?: number
+  sub_models?: number
+  lift?: number
+  top_predictors: ExecutiveModelPredictor[]
+  counterintuitive: string[]
+}
+
+export interface ExecutiveSummaryResponse {
+  headline: ExecutiveSummaryHeadline
+  risk: ExecutiveSummaryRisk
+  procedures: { direct_award_pct: number | null; single_bid_pct: number | null }
+  sectors: ExecutiveSectorItem[]
+  top_institutions: ExecutiveTopInstitution[]
+  top_vendors: ExecutiveTopVendor[]
+  administrations: ExecutiveAdministration[]
+  yearly_trends: ExecutiveYearlyTrend[]
+  ground_truth: ExecutiveGroundTruth
+  model: ExecutiveModel
+  generated_at: string
+}
+
+export interface InvestigationFilterParams {
+  sector_id?: number
+  case_type?: string
+  min_score?: number
+  validation_status?: InvestigationValidationStatus
+  priority?: number
+  page?: number
+  per_page?: number
+}
+
+// ============================================================================
+// Case Library Types
+// ============================================================================
+
+export type FraudType =
+  | 'ghost_company'
+  | 'bid_rigging'
+  | 'overpricing'
+  | 'conflict_of_interest'
+  | 'embezzlement'
+  | 'bribery'
+  | 'procurement_fraud'
+  | 'monopoly'
+  | 'emergency_fraud'
+  | 'tender_rigging'
+  | 'invoice_fraud'
+  | 'infrastructure_overrun'
+  | 'state_capture'
+  | 'cartel_infiltration'
+  | 'other'
+
+// 'multiple' = the case spans a sexenio boundary (4 live rows).
+export type Administration = 'fox' | 'calderon' | 'epn' | 'amlo' | 'sheinbaum' | 'multiple'
+
+export type LegalStatus =
+  | 'investigation'
+  | 'prosecuted'
+  | 'convicted'
+  | 'acquitted'
+  | 'dismissed'
+  | 'impunity'
+  | 'unresolved'
+  | 'ongoing'
+  | 'settled'
+
+// DB-verified enum (2026-06-10): high 22 · partial 13 · low 5 · none 3.
+// The previous 'invisible' member never occurs in the data.
+export type CompranetVisibility = 'high' | 'partial' | 'low' | 'none'
+
+export interface KeyActor {
+  name: string
+  role: 'vendor' | 'official' | 'institution' | 'journalist'
+  title?: string
+  note?: string
+  name_es?: string
+  title_es?: string
+  note_es?: string
+}
+
+export interface ScandalSource {
+  title: string
+  outlet: string
+  date?: string
+  type: 'journalism' | 'audit' | 'legal' | 'academic' | 'official'
+  url?: string
+}
+
+export interface ScandalListItem {
+  id: number
+  name_en: string
+  name_es: string
+  slug: string
+  fraud_type: FraudType
+  administration: Administration
+  sector_id?: number
+  sector_ids: number[]
+  contract_year_start?: number
+  contract_year_end?: number
+  discovery_year?: number
+  amount_mxn_low?: number
+  amount_mxn_high?: number
+  severity: number
+  legal_status: LegalStatus
+  compranet_visibility: CompranetVisibility
+  summary_en: string
+  summary_es?: string
+  is_verified: number
+  ground_truth_case_id?: number
+}
+
+export interface LinkedVendor {
+  vendor_id: number | null
+  vendor_name: string
+  role: string
+  evidence_strength: string
+  match_method: string
+  contract_count: number
+  avg_risk_score: number | null
+  /** ARIA tier when the vendor is in the investigation queue → its /aria/caso door */
+  ips_tier?: number | null
+}
+
+export interface ScandalDetail extends ScandalListItem {
+  amount_note?: string
+  legal_status_note?: string
+  compranet_note?: string
+  amount_note_es?: string | null
+  legal_status_note_es?: string | null
+  compranet_note_es?: string | null
+  summary_es?: string
+  key_actors: KeyActor[]
+  sources: ScandalSource[]
+  investigation_case_ids: number[]
+  linked_vendors: LinkedVendor[]
+}
+
+export interface ScandalStats {
+  total_cases: number
+  total_amount_mxn_low: number
+  cases_by_fraud_type: { fraud_type: string; count: number }[]
+  cases_by_administration: { administration: string; count: number }[]
+  cases_by_legal_status: { legal_status: string; count: number }[]
+  cases_by_severity: { severity: number; count: number }[]
+  gt_linked_count: number
+  compranet_visible_count: number
+}
+
+export interface CaseLibraryParams {
+  fraud_type?: FraudType
+  administration?: Administration
+  sector_id?: number
+  legal_status?: LegalStatus
+  severity_min?: number
+  compranet_visibility?: CompranetVisibility
+  search?: string
+}
+
+// Political Cycle Analysis
+export interface SexenioYearBreakdown {
+  sexenio_year: number
+  label: string
+  contracts: number
+  avg_risk: number
+  high_risk_pct: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+}
+
+export interface ElectionYearGroup {
+  contracts: number
+  avg_risk: number
+  high_risk_pct: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+}
+
+export interface PoliticalCycleResponse {
+  election_year_effect: {
+    election_year?: ElectionYearGroup
+    non_election_year?: ElectionYearGroup
+    risk_delta?: number
+    risk_delta_pct?: number
+  }
+  sexenio_year_breakdown: SexenioYearBreakdown[]
+  q4_election_interaction: Record<string, { contracts: number; avg_risk: number }>
+}
+
+// Publication Delay Transparency
+export interface DelayBucket {
+  label: string
+  count: number
+  pct: number
+  days_min?: number
+  days_max?: number | null
+}
+
+export interface PublicationDelayResponse {
+  total_with_delay_data: number
+  avg_delay_days: number
+  timely_pct: number
+  distribution: DelayBucket[]
+  by_year: { year: number; contracts_with_delay: number; avg_delay: number; timely_pct: number }[]
+}
+
+// Supplier Diversity / HHI (Prozorro analytics; Fazekas CRI)
+export interface SupplierDiversityHistory {
+  year: number
+  hhi: number
+  unique_vendors: number
+}
+
+export interface SupplierDiversity {
+  hhi_current_year: number
+  hhi_5yr_avg: number
+  unique_vendors_current_year: number
+  concentration_level: 'low' | 'medium' | 'high'
+  trend: 'increasing' | 'decreasing' | 'stable'
+  history: SupplierDiversityHistory[]
+  prozorro_note: string
+}
+
+export interface ConcentrationRankingItem {
+  institution_id: number
+  name: string
+  siglas?: string
+  sector_id?: number
+  hhi: number
+  unique_vendors: number
+  total_value_mxn: number
+  concentration_level: 'low' | 'medium' | 'high'
+}
+
+export interface ConcentrationRankingsResponse {
+  year: number
+  most_concentrated: ConcentrationRankingItem[]
+  least_concentrated: ConcentrationRankingItem[]
+  note: string
+}
+
+// Threshold Gaming (Szucs 2023 / Coviello et al. 2018)
+export interface ThresholdGamingSector {
+  sector_id: number
+  sector_name: string
+  flagged_contracts: number
+  total_value_mxn: number
+}
+
+export interface ThresholdGamingResponse {
+  total_flagged: number
+  pct_of_competitive_procedures: number
+  by_sector: ThresholdGamingSector[]
+}
+
+// ============================================================================
+// ASF Institution Findings Types
+// ============================================================================
+
+export interface ASFInstitutionFinding {
+  year: number
+  observations_total: number | null
+  amount_mxn: number | null
+  observations_solved: number | null
+  finding_type: string | null
+  recovery_rate: number | null
+}
+
+export interface ASFInstitutionResponse {
+  institution_id: number
+  ramo_code: number | null
+  findings: ASFInstitutionFinding[]
+  total_amount_mxn: number
+  years_audited: number
+}
+
+export interface SectorASFFinding {
+  year: number
+  total_observations: number
+  total_amount_mxn: number
+  institutions_audited: number
+  observations_solved: number
+}
+
+export interface SectorASFResponse {
+  sector_id: number
+  sector_name: string
+  findings: SectorASFFinding[]
+  total_amount_mxn: number
+  years_audited: number
+}
+
+export interface ASFInstitutionSummaryItem {
+  entity_name: string
+  finding_count: number
+  total_amount_mxn: number
+  earliest_year: number | null
+  latest_year: number | null
+  matched_risk_score: number | null
+  matched_institution_name: string | null
+}
+
+export interface ASFInstitutionSummaryResponse {
+  items: ASFInstitutionSummaryItem[]
+  total_findings: number
+  total_amount_mxn: number
+}
+
+// ============================================================================
+// Data Quality Types (moved from client.ts)
+// ============================================================================
+
+export interface GradeDistribution {
+  grade: string
+  count: number
+  percentage: number
+}
+
+export interface StructureQuality {
+  structure: string
+  years: string
+  contract_count: number
+  avg_quality_score: number
+  rfc_coverage: number
+  quality_description: string
+}
+
+export interface FieldCompleteness {
+  field_name: string
+  fill_rate: number
+  null_count: number
+  total_count: number
+}
+
+export interface KeyIssue {
+  field: string
+  issue_type: string
+  severity: string
+  description: string
+  affected_count: number
+}
+
+export interface DataQualityResponse {
+  overall_score: number
+  total_contracts: number
+  grade_distribution: GradeDistribution[]
+  by_structure: StructureQuality[]
+  field_completeness: FieldCompleteness[]
+  key_issues: KeyIssue[]
+  last_calculated: string | null
+  /** Contracts with 0 < amount < 100B MXN — the edition count (face spec § 9). Response-time read of precomputed `overview`. */
+  analyzed_contracts?: number | null
+}
+
+// ============================================================================
+// Monthly Breakdown Types (moved from client.ts)
+// ============================================================================
+
+export interface MonthlyDataPoint {
+  month: number
+  month_name: string
+  contracts: number
+  value: number
+  avg_risk: number
+  direct_award_count: number
+  single_bid_count: number
+  is_year_end: boolean
+}
+
+export interface MonthlyBreakdownResponse {
+  year: number
+  months: MonthlyDataPoint[]
+  total_contracts: number
+  total_value: number
+  avg_risk: number
+  december_spike: number | null
+}
+
+// ============================================================================
+// Structural Breakpoints Types (moved from client.ts)
+// ============================================================================
+
+export interface StructuralBreakpoint {
+  metric: string       // 'direct_award_pct' | 'single_bid_pct' | 'high_risk_pct'
+  year: number
+  delta: number        // percentage point change
+  direction: 'increase' | 'decrease'
+}
+
+export interface StructuralBreaksResponse {
+  breakpoints: StructuralBreakpoint[]
+  error?: string
+}
+
+// ============================================================================
+// Temporal Events Types (moved from client.ts)
+// ============================================================================
+
+export interface TemporalEvent {
+  id: string
+  date: string
+  year: number
+  month: number | null
+  type: string
+  title: string
+  description: string
+  impact: string
+  source: string | null
+}
+
+export interface TemporalEventsResponse {
+  events: TemporalEvent[]
+  total: number
+}
+
+// ============================================================================
+// Watchlist Types (moved from client.ts)
+// ============================================================================
+
+export interface WatchlistItem {
+  id: number
+  item_type: 'vendor' | 'institution' | 'contract'
+  item_id: number
+  item_name: string
+  reason: string
+  priority: 'high' | 'medium' | 'low'
+  status: 'watching' | 'investigating' | 'resolved'
+  notes: string | null
+  alert_threshold: number | null
+  alerts_enabled: boolean
+  risk_score: number | null
+  /** Alias for risk_score — current live score at query time */
+  current_risk_score?: number | null
+  risk_score_at_creation: number | null
+  created_at: string
+  updated_at: string
+  // Alias fields matching the entity_* naming convention used elsewhere
+  /** Alias for item_type */
+  entity_type?: 'vendor' | 'institution' | 'contract'
+  /** Alias for item_id */
+  entity_id?: number
+  /** Alias for item_name */
+  entity_name?: string
+}
+
+export interface WatchlistChanges {
+  watchlist_id: number
+  item_type: 'vendor' | 'institution' | 'contract'
+  item_id: number
+  risk_score_at_creation: number | null
+  current_risk_score: number | null
+  risk_change: number | null
+  recent_contracts: Array<{
+    id: number
+    amount_mxn: number
+    risk_score: number | null
+    contract_date: string | null
+    sector_id: number | null
+  }>
+}
+
+export interface WatchlistResponse {
+  data: WatchlistItem[]
+  total: number
+  by_status: {
+    watching: number
+    investigating: number
+    resolved: number
+  }
+  by_priority: {
+    high: number
+    medium: number
+    low: number
+  }
+  high_priority_count: number
+}
+
+export interface WatchlistItemCreate {
+  item_type: 'vendor' | 'institution' | 'contract'
+  item_id: number
+  reason: string
+  priority?: 'high' | 'medium' | 'low'
+  notes?: string
+  alert_threshold?: number
+}
+
+export interface WatchlistItemUpdate {
+  status?: 'watching' | 'investigating' | 'resolved'
+  priority?: 'high' | 'medium' | 'low'
+  notes?: string
+  alert_threshold?: number
+  alerts_enabled?: boolean
+}
+
+export interface WatchlistStats {
+  total: number
+  watching: number
+  investigating: number
+  resolved: number
+  high_priority: number
+  with_alerts: number
+}
+
+// ============================================================================
+// Network Graph Types (moved from client.ts)
+// ============================================================================
+
+export interface NetworkNode {
+  id: string
+  type: 'vendor' | 'institution'
+  name: string
+  value: number
+  contracts: number
+  risk_score: number | null
+  metadata?: Record<string, unknown>
+  community_id?: number | null
+  community_size?: number | null
+  pagerank?: number | null
+  // Co-bidding triangle clustering (Wachs, Fazekas & Kertész 2021)
+  cobid_clustering_coeff?: number | null
+  cobid_triangle_count?: number | null
+}
+
+export interface CommunityVendorItem {
+  vendor_id: number
+  vendor_name: string
+  pagerank: number
+  degree: number
+  avg_risk: number
+  contracts: number
+  total_value: number
+}
+
+export interface CommunityItem {
+  community_id: number
+  size: number
+  avg_risk: number
+  sector_count: number
+  top_vendors: CommunityVendorItem[]
+}
+
+export interface CommunitiesResponse {
+  communities: CommunityItem[]
+  total_communities: number
+  graph_ready: boolean
+}
+
+export interface NetworkLink {
+  source: string
+  target: string
+  value: number
+  contracts: number
+  avg_risk: number | null
+  relationship?: string
+}
+
+export interface NetworkGraphResponse {
+  nodes: NetworkNode[]
+  links: NetworkLink[]
+  total_nodes: number
+  total_links: number
+  total_value: number
+}
+
+export interface NetworkGraphParams {
+  vendor_id?: number
+  institution_id?: number
+  sector_id?: number
+  year?: number
+  min_value?: number
+  min_contracts?: number
+  depth?: number
+  limit?: number
+}
+
+export interface CoBidderItem {
+  vendor_id: number
+  vendor_name: string
+  co_bid_count: number
+  win_count: number
+  loss_count: number
+  same_winner_ratio: number
+  relationship_strength: 'weak' | 'moderate' | 'strong' | 'very_strong'
+}
+
+export interface CoBiddersResponse {
+  vendor_id: number
+  vendor_name: string
+  co_bidders: CoBidderItem[]
+  total_procedures: number
+  suspicious_patterns: Array<{
+    pattern: string
+    description: string
+    vendors: Array<{ id: number; name: string; [key: string]: unknown }>
+  }>
+}
+
+// ============================================================================
+// Price Hypothesis Types (moved from client.ts)
+// ============================================================================
+
+export interface PriceHypothesisItem {
+  id: number
+  hypothesis_id: string
+  contract_id: number
+  hypothesis_type: string
+  confidence: number
+  confidence_level: string
+  explanation: string
+  supporting_evidence: Array<{
+    evidence_type: string
+    description: string
+    value: unknown
+    comparison_value?: unknown
+    source?: string
+  }>
+  recommended_action: string
+  literature_reference: string
+  sector_id?: number
+  vendor_id?: number
+  amount_mxn?: number
+  is_reviewed: boolean
+  is_valid?: boolean
+  review_notes?: string
+  created_at: string
+}
+
+export interface PriceHypothesesResponse {
+  data: PriceHypothesisItem[]
+  pagination: {
+    page: number
+    per_page: number
+    total: number
+    total_pages: number
+  }
+  summary: {
+    total_hypotheses: number
+    by_confidence: {
+      very_high: number
+      high: number
+      medium: number
+      low: number
+    }
+    reviewed_count: number
+    confirmed_count: number
+    total_flagged_value: number
+  }
+}
+
+export interface PriceHypothesisDetailResponse {
+  hypothesis: PriceHypothesisItem
+  contract: Record<string, unknown>
+  sector_baseline?: {
+    sector_id: number
+    median: number
+    p75: number
+    p95: number
+    upper_fence: number
+    extreme_fence: number
+    mean: number
+    std_dev: number
+    sample_count: number
+  }
+  vendor_profile?: {
+    vendor_id: number
+    avg_contract_value: number
+    median_contract_value: number
+    contract_count: number
+    price_trend: string
+  }
+  similar_contracts: Array<Record<string, unknown>>
+}
+
+export interface MlAnomalyItem {
+  contract_id: number
+  anomaly_score: number
+  sector_id: number
+  sector_name: string
+  iqr_flagged: boolean
+  amount_mxn: number
+  vendor_name: string
+  contract_date: string
+}
+
+export interface MlAnomaliesResponse {
+  data: MlAnomalyItem[]
+  total: number
+  new_detections: number
+}
+
+// ============================================================================
+// Fast Dashboard Response Type (moved from client.ts)
+// ============================================================================
+
+export type FastDashboardResponse = FastDashboardData
+
+/** Top-5 institutional-capture leaders (P6) — GET /executive/capture-leaders. */
+export interface CaptureLeadersResponse {
+  leaders: Array<{
+    label: string
+    institution_name: string
+    top: number
+    second: number
+    gap: number
+    peak_year: number
+    captured: boolean
+  }>
+}
+
+/**
+ * GET /executive/dashboard-bundle — all 6 Dashboard blocks in one cached,
+ * server-side-concurrent call. Each block is the SAME shape as its standalone
+ * endpoint, or `null` if that block failed/timed out (per-section fallback).
+ */
+export interface DashboardBundleResponse {
+  fast_dashboard: FastDashboardResponse | null
+  recent_critical: ContractListResponse | null
+  aria_stats: AriaStatsResponse | null
+  executive_summary: ExecutiveSummaryResponse | null
+  case_stats: ScandalStats | null
+  capture_leaders: CaptureLeadersResponse | null
+}
+
+// ============================================================================
+// New Types for API expansion
+// ============================================================================
+
+export interface VendorGroundTruthCaseInfo {
+  case_id: number
+  case_name: string
+  case_type: string
+  role?: string | null
+  evidence_strength?: string | null
+  scandal_slug?: string | null
+  /** The case's own years (the ARIA case view marks year_start on its facts row). */
+  year_start?: number | null
+  year_end?: number | null
+}
+
+export interface VendorGroundTruthStatus {
+  /** Documented (sourced, high-confidence) cases only. */
+  is_known_bad: boolean
+  /** Linked only to unverified case leads — neutral copy, never the documented-case headline. */
+  has_unverified_lead?: boolean
+  cases: VendorGroundTruthCaseInfo[]
+}
+
+export interface LinkedScandalItem {
+  scandal_slug: string
+  scandal_title?: string
+  case_id?: number
+  case_name?: string
+  fraud_type?: string
+}
+
+export interface VendorLinkedScandalsResponse {
+  scandals?: LinkedScandalItem[]
+  cases?: LinkedScandalItem[]
+}
+
+export interface PeerComparisonMetric {
+  metric: string
+  value: number | null
+  peer_median: number | null
+  percentile: number | null
+  label_en: string
+}
+
+export interface VendorPeerComparisonResponse {
+  vendor_id: number
+  sector_id: number | null
+  metrics: PeerComparisonMetric[]
+}
+
+export interface VendorYearBucket {
+  year: number
+  count: number
+  amount: number
+  avg_risk: number
+}
+
+export interface VendorContractAggregate {
+  vendor_id: number
+  total_contracts: number
+  total_value_mxn: number
+  no_competition: number
+  direct_award: number
+  single_bid: number
+  year_min: number | null
+  year_max: number | null
+  by_year: VendorYearBucket[]
+  repeat_rows: number
+  repeat_distinct: number
+  peak_amount: number | null
+  peak_mult: number
+}
+
+export interface VendorWaterfallContribution {
+  feature: string
+  z_score: number
+  coefficient: number
+  contribution: number
+  label_es: string
+  label_en: string
+}
+
+export interface VendorReport {
+  vendor_id: number
+  vendor_name: string
+  generated_at: string
+  summary: string
+  risk_score: number
+  contract_count: number
+}
+
+export interface InstitutionReport {
+  institution_id: number
+  institution_name: string
+  generated_at: string
+  summary: string
+}
+
+export interface SectorReport {
+  sector_id: number
+  sector_name: string
+  generated_at: string
+  summary: string
+}
+
+export interface ThematicReport {
+  theme: string
+  generated_at: string
+  summary: string
+}
+
+export interface ReportTypeSummary {
+  vendor_count: number
+  institution_count: number
+  sector_count: number
+  thematic_count: number
+}
+
+export interface VendorAISummary {
+  vendor_id: number
+  vendor_name: string
+  summary: string
+  insights: string[]
+  total_contracts: number
+  avg_risk_score: number | null
+  generated_by: string
+}
+
+export interface FeatureImportanceItem {
+  feature: string
+  importance: number
+  description_es: string
+  description_en: string
+}
+
+export interface ModelComparisonItem {
+  model: string
+  auc: number
+  brier: number
+  high_rate: number
+}
+
+export interface CommunityDetailResponse {
+  community_id: number
+  size: number
+  avg_risk_score: number
+  members: Array<{
+    vendor_id: number
+    vendor_name: string
+    risk_score: number
+  }>
+}
+
+export interface ComparePeriodPeriod {
+  period: string
+  contracts: number
+  total_value: number
+  avg_contract_value: number
+  avg_risk_score: number
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  high_risk_pct: number
+  unique_vendors: number
+  unique_institutions: number
+}
+
+export interface ComparePeriodResponse {
+  period1: ComparePeriodPeriod
+  period2: ComparePeriodPeriod
+  changes: {
+    contracts: number
+    total_value: number
+    avg_contract_value: number
+    avg_risk_score: number
+    direct_award_pct: number | null
+    single_bid_pct: number | null
+    high_risk_pct: number
+    unique_vendors: number
+  }
+  significant_changes: string[]
+}
+
+export interface InstitutionRiskFactorResponse {
+  factor: string
+  value: number
+  sector_median: number
+  percentile: number
+}
+
+// ── Subnational / State Expenditure ───────────────────────────────────────────
+export interface SubnationalStateSummary {
+  state_code: string
+  state_name: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+  institution_count: number
+  vendor_count: number
+  direct_award_rate: number | null
+  single_bid_rate: number | null
+  top_institution: string | null
+}
+
+export interface SubnationalStatesResponse {
+  data: SubnationalStateSummary[]
+  coverage_note: string
+  total_contracts: number
+  total_value_mxn: number
+  total_vendors: number
+}
+
+// ============================================================================
+// v5.2 SHAP + PyOD types
+// ============================================================================
+
+export interface VendorSHAPFactor {
+  factor: string
+  shap: number
+  label_es: string
+}
+
+export interface VendorSHAPResponse {
+  vendor_id: number
+  sector_id: number
+  n_contracts: number
+  shap_values: Record<string, number>         // 16 factor SHAP values
+  top_risk_factors: VendorSHAPFactor[]        // top 3 positive contributors
+  top_protect_factors: VendorSHAPFactor[]     // top 3 negative contributors
+  base_value: number
+  risk_score: number
+  mean_z_vector: Record<string, number>
+  updated_at: string
+}
+
+export interface FeatureImportanceV52Item {
+  rank: number
+  factor_name: string
+  shap_mean_abs: number
+  coefficient: number
+  direction: 'risk' | 'protective'
+  sector_id: number | null
+}
+
+export interface FeatureImportanceResponse {
+  features: FeatureImportanceV52Item[]
+  total: number
+  sector_id: number | null
+  model_version: string
+}
+
+export interface PyodRiskLevelBreakdown {
+  risk_level: string
+  contracts: number
+  avg_anomaly_score: number
+  avg_risk_score: number
+}
+
+export interface PyodAgreementResponse {
+  total_contracts: number
+  v51_high_risk: number
+  v51_high_risk_pct: number
+  pyod_flagged: number
+  pyod_flagged_pct: number
+  both_flagged: number
+  both_flagged_pct: number
+  confirmation_rate: number
+  pyod_threshold: number
+  by_risk_level: PyodRiskLevelBreakdown[]
+}
+
+export interface DriftFeature {
+  feature: string
+  ks_stat: number
+  p_value: number
+  mean_shift: number
+  drifted: boolean
+}
+
+export interface DriftReportResponse {
+  id: number
+  reference_year_range: string
+  current_year: number
+  sector_id: number | null
+  dataset_drift: boolean
+  n_drifted: number
+  n_features: number
+  drifted_features: DriftFeature[]
+  stable_features: DriftFeature[]
+  created_at: string
+}
+
+export interface SubnationalYearTrend {
+  year: number
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+}
+
+export interface SubnationalTopInstitution {
+  institution_id: number
+  institution_name: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+  direct_award_rate: number | null
+}
+
+export interface SubnationalRiskDistribution {
+  critical: number
+  high: number
+  medium: number
+  low: number
+}
+
+export interface SubnationalStateDetail {
+  state_code: string
+  state_name: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+  institution_count: number
+  vendor_count: number
+  direct_award_rate: number | null
+  single_bid_rate: number | null
+  risk_distribution: SubnationalRiskDistribution
+  year_trend: SubnationalYearTrend[]
+  top_institutions: SubnationalTopInstitution[]
+  coverage_note: string
+}
+
+export interface SubnationalVendor {
+  vendor_id: number
+  vendor_name: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+  state_share_pct: number
+  state_concentration_pct: number
+  is_local_dominant: boolean
+}
+
+export interface SubnationalVendorsResponse {
+  state_code: string
+  state_name: string
+  data: SubnationalVendor[]
+  coverage_note: string
+}
+
+export interface SubnationalTopVendorByYear {
+  rank: number
+  vendor_id: number
+  vendor_name: string
+  total_value_mxn: number
+  contract_count: number
+  avg_risk_score: number
+}
+
+export interface SubnationalTopVendorsByYearResponse {
+  state_code: string
+  year: number
+  vendors: SubnationalTopVendorByYear[]
+}
+
+export interface SubnationalSectorItem {
+  sector_id: number
+  sector_code: string
+  sector_name: string
+  sector_color: string
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number
+  pct_of_state_total: number
+}
+
+export interface SubnationalSectorsResponse {
+  state_code: string
+  state_name: string
+  sectors: SubnationalSectorItem[]
+  total_value_mxn: number
+  coverage_note: string
+}
+
+// ============================================================================
+// ARIA Investigation Queue Types
+// ============================================================================
+
+export interface AriaQueueItem {
+  /** an individual supplier — named in full (transparency), labelled in the UI */
+  persona_fisica?: boolean
+  vendor_id: number
+  vendor_name: string | null  // null = no public name
+  /** Most of its contracts were scored with < 3 prior contracts (isThinHistoryLow) */
+  thin_history?: boolean | null
+  ips_final: number
+  ips_raw: number
+  ips_tier: 1 | 2 | 3 | 4
+  primary_pattern: string | null
+  pattern_confidence: number
+  pattern_confidences?: Record<string, number> | null
+  total_contracts: number
+  total_value_mxn: number
+  avg_risk_score: number
+  is_efos_definitivo: boolean
+  is_sfp_sanctioned: boolean
+  /** Public label (api/public_labels.py): true only for documented-case membership. */
+  in_ground_truth: boolean
+  /** Public label: linked to a case record that is not verified (an "unverified lead"). */
+  gt_lead?: boolean
+  new_vendor_risk: boolean
+  fp_penalty: number
+  fp_patent_exception?: boolean | null
+  fp_data_error?: boolean | null
+  fp_structural_monopoly?: boolean | null
+  burst_score: number
+  /**
+   * What review said, as the queue stores it.
+   *
+   * The PATCH endpoint only accepts the first four, but the pipeline and the
+   * CENTINELA passes write five more, and SD-05 has to tell a cleared vendor
+   * from a standing one: `false_positive` and `fp_excluded` are the two that
+   * rule a vendor out, `confirmed_corrupt` the one that rules it in. Typing
+   * this as the accepted four made every one of them invisible.
+   */
+  review_status:
+    | 'pending'
+    | 'confirmed'
+    | 'dismissed'
+    | 'reviewing'
+    | 'needs_review'
+    | 'reviewed'
+    | 'confirmed_corrupt'
+    | 'false_positive'
+    | 'fp_excluded'
+    | 'skipped'
+  primary_sector_name: string | null
+  direct_award_rate?: number | null
+  years_active?: number
+  // IPS component scores (also returned from queue list endpoint)
+  risk_score_norm?: number | null
+  ensemble_norm?: number | null
+  financial_scale_norm?: number | null
+  external_flags_score?: number | null
+  // Disappeared vendor
+  is_disappeared?: boolean | null
+  last_contract_year?: number | null
+  // Value per contract
+  value_per_contract?: number | null
+  // detail only:
+  mahalanobis_norm?: number
+  memo_text?: string | null
+  memo_generated_at?: string | null
+  activity_span_days?: number
+  single_bid_rate?: number | null
+  top_institution?: string | null
+  /** the buyer's institution id (siglas → busiest registration, server-side) */
+  top_institution_id?: number | null
+  top_institution_ratio?: number | null
+  reviewer_name?: string | null
+  reviewer_notes?: string | null
+  reviewed_at?: string | null
+  new_vendor_risk_score?: number | null
+  new_vendor_risk_triggers?: string | null
+  // CENTINELA web evidence (Google News RSS + keyword classifier)
+  web_evidence_score?: number | null
+  web_evidence_verdict?: 'SANCTION' | 'CORRUPTION_MENTION' | 'JOURNALISM' | 'SHELL_SIGNAL' | 'NEGATIVE' | null
+  web_evidence_updated_at?: string | null
+  /** S.3 memo provenance: 'llm_narrative' | 'template' | 'stub' | 'duplicate' */
+  memo_provenance?: string | null
+  first_contract_year?: number | null
+  /** S.7: GT-anchored overlay flag — true when vendor is in ground_truth_vendors.
+   *  Distinguishes "we already know this is corrupt" from "model discovered this". */
+  gt_overlay?: boolean | null
+  /** Detail endpoint only — the named documented case this lead is anchored to
+   *  (ground_truth_vendors ⨝ ground_truth_cases, added 2026-06-12). */
+  gt_case_name?: string | null
+  gt_case_type?: string | null
+}
+
+export interface AriaStats {
+  run_id: string | null
+  started_at: string | null
+  completed_at: string | null
+  status: string
+  vendors_processed: number
+  tier1_count: number
+  tier2_count: number
+  tier3_count: number
+  tier4_count: number
+  gt_auto_inserts: number
+  gt_flags: number
+}
+
+export interface AriaStatsResponse {
+  latest_run: AriaStats | null
+  review_stats: {
+    pending: number
+    confirmed: number
+    dismissed: number
+    reviewing: number
+  }
+  queue_total: number
+  new_vendor_count: number
+  pattern_counts: Record<string, number>
+  external_counts: { efos: number; sfp: number }
+  elevated_value_mxn: number
+  reviewed_count?: number
+  confirmed_count?: number
+  dismissed_count?: number
+  t1_reviewed_count?: number
+  /** Raw per-status counts for Tier 1 (e.g. {confirmed: 164, needs_review: 83, …}).
+   *  t1_reviewed_count is useless for progress UI — it counts any non-pending
+   *  status (=299/299); the UI buckets these raw statuses instead. May be
+   *  absent when served from a pre-upgrade persisted snapshot. */
+  t1_status_counts?: Record<string, number>
+  /** Live per-tier counts from aria_queue ({"1": n, …}) — the register's own
+   *  totals; latest_run's counts are the May run's (PARALLAX D14 § 7, H4). */
+  tier_counts?: Record<string, number>
+}
+
+/**
+ * One vendor inside a pattern group (SD-04, `/aria/patterns/:code/institutions`
+ * with `vendors > 0`). `top_institution_ratio` is the share of the VENDOR's own
+ * contracting that sits at the group's buyer — the direction P6 measures.
+ */
+export interface AriaPatternVendor {
+  vendor_id: number
+  vendor_name: string | null  // null = an RFC-shaped name (personas físicas are named + persona_fisica, policy 10-29)
+  total_value_mxn: number
+  total_contracts: number
+  top_institution_ratio: number | null
+  ips_tier: number | null
+  in_ground_truth: boolean
+  avg_risk_score: number | null
+  review_status: string
+}
+
+/**
+ * A pattern's vendors grouped by their top buyer or their primary sector.
+ *
+ * `total_value_mxn` is this pattern's slice; `flagged_value_mxn` is everything
+ * ARIA flags in the same group under ANY pattern — the denominator a share has
+ * to be taken against. `institution_id` is null when the acronym in the queue
+ * resolves to no institution row, and null by construction in sector mode.
+ */
+export interface AriaPatternGroupRow {
+  key: string
+  label: string
+  institution_id: number | null
+  institution_name: string | null
+  sector_id: number | null
+  vendor_count: number
+  total_value_mxn: number
+  flagged_vendor_count: number
+  flagged_value_mxn: number
+  vendors: AriaPatternVendor[]
+}
+
+export interface AriaPatternCohort {
+  total_vendors: number
+  total_value_mxn: number
+  in_ground_truth: number
+  reviewed: number
+  confirmed: number
+  tier1: number
+  tier2: number
+  tier3: number
+  tier4: number
+}
+
+export interface AriaPatternGroupsResponse {
+  code: string
+  label_en: string
+  label_es: string
+  group: 'institution' | 'sector'
+  cohort: AriaPatternCohort | null
+  rows: AriaPatternGroupRow[]
+  message?: string
+}
+
+export interface AriaQueueResponse {
+  data: AriaQueueItem[]
+  pagination: PaginationMeta
+  run_summary: AriaStats | null
+  message?: string
+  /** Ships on every /aria/queue response (60s server cache). Counted through
+   *  public_labels.label_sets — the same rule as each row's in_ground_truth /
+   *  gt_lead (PARALLAX D14 § 2): documented + lead + novel_leads = total. */
+  summary?: AriaQueueSummary
+}
+
+export interface AriaQueueSummary {
+  total_t1: number
+  documented_t1: number
+  lead_t1: number
+  novel_leads_t1: number
+  /** documented_t1 + lead_t1 (back-compat name). */
+  known_gt_t1: number
+  total_t2: number
+  documented_t2: number
+  lead_t2: number
+  novel_leads_t2: number
+}
+
+// ---------------------------------------------------------------------------
+// Ghost Company Confidence Scores
+// ---------------------------------------------------------------------------
+
+export interface GhostSuspect {
+  vendor_id: number
+  vendor_name: string | null
+  ghost_signal_count: number
+  ghost_confidence_score: number
+  ghost_confidence_tier: 'confirmed' | 'multi_signal' | 'behavioral'
+  sig_efos_definitivo: 0 | 1
+  sig_efos_soft: 0 | 1
+  sig_sfp_sanctioned: 0 | 1
+  sig_disappeared: 0 | 1
+  sig_p7_intersection: 0 | 1
+  sig_invalid_rfc: 0 | 1
+  sig_young_company: 0 | 1
+  sig_high_risk: 0 | 1
+  sig_ultra_micro: 0 | 1
+  sig_short_lived: 0 | 1
+  sig_temporal_burst: 0 | 1
+  total_contracts: number | null
+  total_value_mxn: number | null
+  years_active: number | null
+  avg_risk_score: number | null
+  primary_sector_name: string | null
+  top_institution: string | null
+  shell_flags: string[]
+  efos_stage: string | null
+}
+
+export interface GhostSuspectsResponse {
+  data: GhostSuspect[]
+  tier_summary: { confirmed: number; multi_signal: number; behavioral: number }
+  pagination: PaginationMeta
+}
+
+// ---------------------------------------------------------------------------
+// Story Packages
+// ---------------------------------------------------------------------------
+
+export interface StoryPackageExample {
+  vendor_id?: number
+  vendor_name?: string
+  total_value_mxn?: number
+  primary_sector_name?: string
+  avg_risk_score?: number
+  total_contracts?: number
+  direct_award_pct?: number | null
+  ips_final?: number
+  [key: string]: unknown
+}
+
+export interface StoryPackage {
+  id: string
+  title: string
+  subtitle: string
+  key_question: string
+  difficulty: 'rapida' | 'requiere_solicitud' | 'investigacion_larga'
+  difficulty_label: string
+  lede: string
+  examples: StoryPackageExample[]
+  defense: string
+  next_steps: string[]
+  summary: Record<string, unknown>
+  methodology: string
+}
+
+export interface StoryPackagesResponse {
+  packages: StoryPackage[]
+}
+
+// ---------------------------------------------------------------------------
+// Vendor Similar Cases
+// ---------------------------------------------------------------------------
+
+export interface VendorSimilarCase {
+  case_id: number
+  case_name: string
+  case_type: string
+  similarity_score: number
+  n_contracts: number
+  shared_features: string[]
+  divergent_features: string[]
+}
+
+export interface VendorSimilarCasesResponse {
+  vendor_id: number
+  similar_cases: VendorSimilarCase[]
+  message?: string
+}
+
+// ---------------------------------------------------------------------------
+// Vendor Narrative
+// ---------------------------------------------------------------------------
+
+export interface VendorNarrativeYear {
+  year: number
+  contract_count: number
+  total_value_mxn: number
+  avg_risk_score: number | null
+  direct_award_pct: number | null
+  single_bid_pct: number | null
+  institution_count: number
+}
+
+export interface VendorNarrativeResponse {
+  vendor_id: number
+  arc_shape: string
+  arc_label: string
+  peak_year: number | null
+  peak_value_mxn: number
+  active_years: number
+  first_year: number | null
+  last_year: number | null
+  total_value_mxn: number
+  years: VendorNarrativeYear[]
+}
+
+export interface AdminVendorEntry { vendor_name: string; total_mxn: number; contracts: number; avg_risk: number | null }
+export interface AdminEraStats { era: string; year_start: number; year_end: number; top_vendors: AdminVendorEntry[]; gt_case_count: number; est_fraud_mxn: number; hhi: number; dec_spike_pct: number }
+export interface AdminBreakdownResponse { eras: AdminEraStats[]; cached_at: string | null }
+
+/** GET /analysis/admin-scandals — tier A/B GT cases with a published /cases page,
+ *  filed under the term of the case's start year. Keyed by backend term key. */
+export interface AdminScandal {
+  slug: string
+  name_en: string
+  name_es: string
+  severity: 'critical' | 'high' | 'medium'
+  tier: 'A' | 'B'
+  year: number
+}
+export interface AdminScandalsResponse { administrations: Record<string, AdminScandal[]> }
+
+// ── Admin deep-drill response types (§IV top-100 + §V buyers) ───────────────
+
+export interface AdminVendorDeep {
+  vendor_id: number
+  vendor_name: string
+  total_mxn: number
+  contracts: number
+  avg_risk: number | null
+  high_risk_pct: number
+  direct_award_pct: number | null
+  share_pct: number
+  yearly: { year: number; total_mxn: number }[]
+}
+
+export interface AdminVendorsDeepResponse {
+  era: string
+  year_start: number
+  year_end: number
+  term_total_mxn: number
+  vendor_count: number
+  vendors: AdminVendorDeep[]
+  cached_at: string | null
+}
+
+export interface AdminInstitutionBuyer {
+  institution_id: number
+  institution_name: string
+  siglas: string | null
+  is_federal: number | null
+  total_mxn: number
+  contracts: number
+  avg_risk: number | null
+  direct_award_pct: number | null
+  share_pct: number
+  top_sector_id: number | null
+  top_sector_code: string | null
+}
+
+export interface AdminInstitutionsResponse {
+  era: string
+  year_start: number
+  year_end: number
+  term_total_mxn: number
+  institution_count: number
+  top_n_share_pct: number
+  institutions: AdminInstitutionBuyer[]
+  cached_at: string | null
+}
+
+// ============================================================================
+// Collusion / Co-bidding Types
+// ============================================================================
+
+export interface CollusionPair {
+  vendor_id_a: number
+  vendor_id_b: number
+  vendor_name_a: string
+  vendor_name_b: string
+  shared_procedures: number
+  vendor_a_procedures: number
+  vendor_b_procedures: number
+  co_bid_rate: number
+  is_potential_collusion: boolean
+}
+
+export interface CollusionPairsResponse {
+  data: CollusionPair[]
+  pagination: PaginationMeta
+}
+
+export interface CollusionStats {
+  total_pairs: number
+  potential_collusion_count: number
+  total_shared_procedures: number
+  max_co_bid_rate: number
+}
+
+// ============================================================================
+// Gap Endpoints — post-CompraNet 2025-2026 recovery (ComprasMX scrape)
+// ============================================================================
+
+/** GET /gap/field — every award as columns (index r across all arrays). */
+/** GET /contracts/field — «La escalera de montos». hist rows = [year, bin, n, critical, direct award, value, scored];
+ *  bin = floor(4·log10(amount)), -1 = no valid amount. col = the largest contracts, largest first. */
+export interface ContractsFieldResponse {
+  total: number
+  value: number
+  cap: number
+  n: number
+  hist: [number, number, number, number, number, number, number?][]
+  col: { id: number[]; amount: number[]; date: (string | null)[]; risk: (number | null)[]; sector: (number | null)[]; da: (number | null)[]; flag: number[] }
+}
+
+export type ContractsFieldParams = Pick<ContractFilterParams, 'sector_id' | 'year' | 'is_direct_award' | 'risk_level' | 'institution_id' | 'vendor_id' | 'search' | 'min_amount' | 'max_amount'> & { limit?: number }
+
+export interface GapFieldResponse {
+  available: boolean
+  n: number
+  rejected: number
+  /** 12 doors; article null = no exception cited, '*' = every other article. */
+  doors: { k: string; article: string | null }[]
+  inst: { id: number | null; s: string | null; n: string | null }[]
+  months: string[]
+  col: {
+    a: number[]           // door index
+    v: (number | null)[]  // amount MXN, null = none read
+    s: (0 | 1 | 2)[]      // 0 read off the letter · 1 estimated · 2 none
+    i: number[]           // buyer index
+    m: number[]           // month index, -1 undated
+    d: (0 | 1)[]          // direct award
+    x: (0 | 1)[]          // > 10B MXN, under review
+  }
+  /** [row, title, vendor as read] for awards ≥ 2,000 MDP. */
+  big: [number, string, string][]
+  data_window: string
+}
+
+/** GET /gap/months — CompraNet Apr–Sep 2025: rows[institution_id] = [awards, MXN, direct] × 6. */
+export interface GapMonthsResponse {
+  months: string[]
+  rows: Record<string, [number, number, number][]>
+}
+
+export interface GapExceptionArticle {
+  article: string
+  count: number
+  ocr_sum_mxn?: number
+  top_institution_id?: number | null
+  top_siglas?: string | null
+}
+
+/** The reading, measured. Keys are omitted when not derivable (e.g. letters_read needs `fallos`). */
+export interface GapFunnel {
+  listed: number
+  da_in_scope: number
+  letters_found?: number
+  letters_read?: number
+  amounts_read: number
+  amounts_read_sum: number
+  estimated: number
+  estimated_sum: number
+  vendor_named: number
+  self_buyer: number
+  self_buyer_top?: { institution_id: number | null; siglas: string; count: number }
+  illegible?: number
+  companies_rfc: number
+  companies_rfc_in_corpus: number
+  neither: number
+}
+
+export interface GapTopBuyer {
+  institution_id: number
+  siglas: string | null
+  name: string | null
+  count: number
+  da_pct: number
+  pre_da_pct: number | null
+  top_article: string | null
+  ocr_sum_mxn: number
+  avg_score: number | null
+}
+
+export interface GapSectorBreakdown {
+  sector_id: number
+  sector: string
+  count: number
+}
+
+export interface GapSummaryResponse {
+  available: boolean
+  total_contracts: number
+  direct_award_count: number
+  direct_award_pct: number | null
+  recovered_count: number
+  recovered_sum_mxn: number
+  best_available_sum_mxn: number
+  young_vendor_count: number
+  efos_count: number
+  by_exception_article: GapExceptionArticle[]
+  by_sector: GapSectorBreakdown[]
+  by_risk_level: { critical: number; high: number; medium: number; low: number }
+  /** Procedures per buyer level (federal / state / municipal / autonomous / unknown). */
+  by_buyer_level?: Record<string, number>
+  /** Direct awards among federal buyers only (null when buyer_level is absent). */
+  federal_direct_award_count?: number | null
+  federal_direct_award_pct?: number | null
+  worst_institutions: GapWorstInstitution[]
+  top_buyers?: GapTopBuyer[]
+  funnel?: GapFunnel
+  grade_methodology: string
+  data_window: string
+  source: string
+}
+
+export interface GapWorstInstitution {
+  siglas: string
+  avg_score: number
+  count: number
+}
+
+/** A «Nuevos» row from GET /aria/rosettes?set=nuevos — no ground-truth link, active 2019+. */
+export interface AriaNuevoItem {
+  vendor_id: number
+  vendor_name: string | null  // null = an RFC-shaped name (personas físicas are named + persona_fisica, policy 10-29)
+  ips_final: number
+  ips_tier: number
+  total_value_mxn: number
+  total_contracts: number
+  primary_pattern: string | null
+  top_institution: string | null
+  /** Busiest institution registration with that siglas (null = unresolved). */
+  top_institution_id?: number | null
+  top_institution_ratio: number | null
+  years_active: number | null
+  direct_award_rate: number | null
+  is_efos_definitivo: boolean | number | null
+  is_sfp_sanctioned: boolean | number | null
+  in_ground_truth: boolean
+  last_contract_year: number | null
+  /** Federal ComprasMX money after 2025-09-28 (open-data contracts); null = none found. */
+  post_blackout_mxn?: number | null
+  /** A persona física (named as published, labelled in the UI); absent on APIs before 2026-11-02. */
+  persona_fisica?: boolean
+  /** Mean indicator of its contracts (0–1). */
+  avg_risk_score?: number | null
+}
+
+/** «El relevo» segment: plain text · bold numeral · money (f = above 10B, flagged †) · counterpart key. */
+export type RelevoSeg = string | { b: string } | { m: number; f?: boolean } | { k: string }
+export interface RelevoPart {
+  key: string
+  id: number | null
+  name: string | null
+  siglas?: string | null
+  fam: 'here' | 'elsewhere' | 'newname' | 'pf'
+  pre_v: number
+  pre_n: number
+  pre_da_n?: number
+  post_v: number
+  post_n: number
+  post_da_n: number
+  post_da_v?: number
+  flag?: boolean
+  first_y?: number | null
+  life_n?: number
+  risk?: number | null
+}
+export interface RelevoBlock { key: string; v: number; n: number; k?: number }
+/** Weekly pulse: [week, contracts, money, direct-award contracts, biggest ref (number = CompraNet id · string = ComprasMX code), its amount, title, date] */
+export type RelevoPulse = [number, number, number, number, number | string | null, number, string | null, string | null]
+/** GET /gap/entity/{kind}/{id}/relevo — before (CompraNet, 12 months) vs after (ComprasMX APF). Never scored. */
+export interface GapRelevoResponse {
+  available: boolean
+  kind: 'institution' | 'vendor' | 'category'
+  id: number
+  cp: 'vendor' | 'institution'
+  k: number
+  pre: { n: number; v: number; da_n: number; da_v: number; k: number; unknown_v: number; from: string; to: string }
+  post: { n: number; v: number; da_n: number; da_v: number; k: number; flagged: number; no_amount: number; from: string; to: string; months: number }
+  fam: Record<'here' | 'elsewhere' | 'newname' | 'pf', { n: number; v: number; pesos: number }>
+  concentration: { pre: number; post: number }
+  left: RelevoBlock[]
+  right: RelevoBlock[]
+  ribbons: Array<{ key: string; from: string; to: string; kind: 'stay' | 'down' | 'up' }>
+  parts: Record<string, RelevoPart>
+  pulses: Record<string, RelevoPulse[]>
+  axis: { t0: string; seam_day: number; max_day: number }
+  sentences: Record<'es' | 'en', { claim: RelevoSeg[]; body: RelevoSeg[][] }>
+}
+
+/** One dossier's post-CompraNet slice (GET /gap/entity/{kind}/{id}). Never model-scored. */
+export interface GapEntityResponse {
+  available: boolean
+  kind: 'institution' | 'vendor' | 'category'
+  id: number
+  total: number
+  window?: string
+  source?: string
+  direct_award_count?: number
+  direct_award_pct?: number | null
+  with_amount?: number
+  amount_read_count?: number
+  money_known_mxn?: number
+  efos_count?: number
+  first_date?: string
+  last_date?: string
+  by_month?: Array<{ month: string; count: number; money_known_mxn: number; direct_award_count: number }>
+  /** Buyers (vendor slice) or suppliers (institution / category slice). Unlinked rows carry a null id. */
+  counterparts?: Array<{
+    institution_id?: number | null
+    vendor_id?: number | null
+    name: string | null
+    siglas?: string | null
+    count: number
+    money_known_mxn: number
+    direct_award_count: number
+    efos?: boolean
+  }>
+  unnamed_count?: number
+  by_category?: Array<{ category_id: number | null; name_es: string | null; name_en: string | null; count: number; money_known_mxn: number }>
+}
+
+/** GET /gap/carry-forward — read post-blackout money by the vendors' historical risk tier. */
+export interface GapCarryForwardResponse {
+  available: boolean
+  tiers?: Record<string, { count: number; with_amount: number; money_known_mxn: number; vendors: number }>
+  linked_money_known_mxn?: number
+  flagged_money_known_mxn?: number
+  flagged_share_pct?: number | null
+  window?: string
+  note?: string
+}
+
+export interface GapContractItem {
+  procedure_number: string
+  title: string
+  institution: string
+  institution_siglas: string
+  sector_id: number
+  sector: string
+  procedure_type: string
+  is_direct_award: boolean
+  exception_article: string | null
+  cucop: string | null
+  vendor: string | null
+  vendor_rfc: string | null
+  vendor_incorp_year: number | null
+  is_young_vendor: boolean
+  efos_flag: boolean
+  amount_recovered: number | null
+  amount_best: number | null
+  amount_source: 'fallo_ocr' | 'datos' | 'estimated' | 'none'
+  publication_date: string | null
+  character: string | null
+  contract_number: string | null
+  risk_score: number | null
+  risk_level: 'critical' | 'high' | 'medium' | 'low' | null
+  flag_no_amount: boolean
+  flag_big_amount: boolean
+  flag_concentration: boolean
+  institution_id?: number | null
+  vendor_display?: string | null
+  vendor_source?: 'canonical' | 'rfc_sibling' | 'segmented' | 'raw' | 'illegible' | 'self_buyer' | 'rfc_only' | null
+  vendor_id?: number | null
+  uuid?: string
+  expedient_code?: string | null
+  contracting_unit?: string | null
+  award_doc_type?: string | null
+  opening_date?: string | null
+  amount_review_flag?: string | null
+  is_emergency?: boolean
+}
+
+export interface GapContractFilterParams {
+  direct_award?: 0 | 1
+  sector_id?: number
+  recovered_only?: boolean
+  young_only?: boolean
+  art?: string
+  inst?: number
+  src?: 'ocr' | 'est' | 'none'
+  flag?: 'young' | 'efos' | 'review' | 'self_buyer'
+  vend?: 'rfc' | 'linked' | 'illegible'
+  risk_level?: 'critical' | 'high' | 'medium' | 'low'
+  q?: string
+  sort?: 'amount' | 'date' | 'risk'
+  page?: number
+  per_page?: number
+}
+
+export interface GapContractsResponse {
+  data: GapContractItem[]
+  pagination: PaginationMeta
+}
+
+// ---------------------------------------------------------------------------
+// Amount histogram — SD-07 `/stories/el-umbral-de-los-300k`
+//
+// `GET /analysis/amount-histogram`. The band is half-open on both the request
+// and the buckets: a bucket spans `[from, to)`, and the last one is truncated
+// at `max` when the width does not divide the band.
+// ---------------------------------------------------------------------------
+
+export interface AmountHistogramBucket {
+  from: number
+  to: number
+  count: number
+  direct_award_count: number
+}
+
+/** One exact amount, against the counts 1,000 pesos either side of it. */
+export interface AmountHistogramExact {
+  amount: number
+  count: number
+  direct_award_count: number
+  neighbours: { minus_1000: number; plus_1000: number }
+}
+
+export interface AmountHistogramYear {
+  year: number
+  /** Contracts written at one of the `exact` amounts that year. */
+  exact_total: number
+  /** Contracts anywhere in the band that year — the denominator. */
+  contracts_in_range: number
+}
+
+export interface AmountHistogramInstitution {
+  institution_id: number
+  institution: string
+  exact_count: number
+  exact_direct_award_count: number
+  range_count: number
+}
+
+export interface AmountHistogramResponse {
+  min: number
+  max: number
+  bucket: number
+  buckets: AmountHistogramBucket[]
+  exact: AmountHistogramExact[]
+  by_year: AmountHistogramYear[]
+  top_institutions: AmountHistogramInstitution[]
+  total_contracts: number
+  total_in_range: number
+  computed_at: string
+}
+
+export interface AmountHistogramParams {
+  min?: number
+  max?: number
+  bucket?: number
+  /** Comma-separated exact amounts; defaults to `210000,250000,300000`. */
+  exact?: string
+  year_from?: number
+  year_to?: number
+  institution_id?: number
+}
+
+/** One standout aspect of a fila vendor (GET /aria/mapa/vendors): what, its number, how extreme over the fila. */
+export interface AriaMapaAspect { k: 'ratio' | 'da' | 'sb' | 'risk' | 'vpc' | 'vol' | 'pr' | 'conc' | 'new' | 'gone' | 'efos' | 'sfp' | 'gt'; v: number; pct: number }
+
+/** A ranked row of «El mapa de la fila» — the queue's own fields plus its rank and aspects. */
+export interface AriaMapaVendor {
+  rank: number
+  vendor_id: number
+  vendor_name: string
+  persona_fisica?: boolean
+  ips_final: number
+  ips_tier: number
+  avg_risk_score: number | null
+  primary_pattern: string | null
+  pattern_confidences: Record<string, number> | null
+  primary_sector_id: number | null
+  total_value_mxn: number
+  total_contracts: number
+  top_institution: string | null
+  top_institution_id: number | null
+  top_institution_ratio: number | null
+  direct_award_rate: number | null
+  single_bid_rate: number | null
+  years_active: number | null
+  first_contract_year: number | null
+  last_contract_year: number | null
+  is_disappeared: boolean
+  is_efos_definitivo: boolean
+  is_sfp_sanctioned: boolean
+  in_ground_truth: boolean
+  gt_lead?: boolean
+  aspects: AriaMapaAspect[]
+}
+
+export interface AriaMapaInstitution {
+  siglas: string
+  institution_id: number | null
+  name: string | null
+  sector_id: number | null
+  vendors: number
+  value: number
+  worst_tier: number
+  tier1: number
+  top_vendor_id: number
+  top_vendor_name: string
+}
+
+export interface AriaMapaResponse {
+  run: { id: string; completed_at: string | null } | null
+  totals: { vendors: number; value: number; tier1: number; institutions: number }
+  sectors: Array<{ sector_id: number; vendors: number; value: number; tier1: number; institutions: number }>
+  institutions: AriaMapaInstitution[]
+}
+
+/** GET /aria/mapa/escenario — the whole fila as columns, each vendor with its money per sexenio (lib/aria/escenario). */
+export interface AriaEscenarioResponse {
+  run: { id: string; completed_at: string | null } | null
+  /** backend keys: fox · calderon · pena_nieto · amlo · sheinbaum */
+  sexenios: string[]
+  n: number
+  cols: {
+    id: number[]; name: string[]; pf: number[]; sec: number[]; pat: (string | null)[]; tier: number[]; ips: number[]
+    risk: (number | null)[]; inst: (number | null)[]; inst_name: (string | null)[]; value: number[]; n: number[]
+    y0: (number | null)[]; y1: (number | null)[]; da: (number | null)[]; sb: (number | null)[]; ratio: (number | null)[]
+    gone: number[]; efos: number[]; sfp: number[]; gt: number[]
+    /** 1 = RUBLI holds a case on it citing the press, a legal act or an audit (below the «documented» bar too); optional for older payloads */
+    pub?: number[]
+    /** money per sexenio, in `sexenios` order (all sectors) */
+    sx: number[][]
+    /** money per sexenio in each sector it sells in, [sector_id, [per sexenio]], the main sector first */
+    ss: [number, number[]][][]
+    /** ≤ 3 standout aspects as [k, v, pct] */
+    asp: [AriaMapaAspect['k'], number, number][][]
+  }
+}
+
+// «Predicción» tab — backend/api/routers/predictions.py (docs/PREDICTIONS_RESEARCH_2026-11-06.md)
+interface PredictionMeta { last_year: number; target_year: number; data_through: string }
+export interface InstitutionPrediction extends PredictionMeta {
+  available: boolean
+  reason: 'thin' | null
+  band: number
+  backtest: { year: number; n: number; mae: number | null; within_band: number | null }
+  point?: number
+  low?: number
+  high?: number
+  last_share?: number
+  n_last?: number
+}
+export interface PairPrediction extends PredictionMeta {
+  available: boolean
+  reason: 'persona_fisica' | 'no_data' | 'not_recent' | null
+  last_signed?: number
+  streak?: number
+  pair_class?: 'first' | 'repeat'
+  rate?: number
+  rate_n?: number
+  base_rate?: number
+  test?: string
+}
+interface PredictionTrack { n_test: number; base: number; auc: number; test: string }
+export interface VendorPrediction extends PredictionMeta, Partial<PredictionTrack> {
+  available: boolean
+  reason: 'persona_fisica' | 'thin' | null
+  decile?: number
+  rate?: number
+  top_buyer?: { id: number; name: string | null }
+  top_share?: number
+  dep90?: boolean
+  main_buyer_stays?: { rate: number; n: number }
+  dep90_stays?: { rate: number | null; n: number }
+}
+export interface ContractPrediction extends PredictionMeta, Partial<PredictionTrack> {
+  available: boolean
+  reason: 'persona_fisica' | 'no_data' | 'not_recent' | null
+  decile?: number
+  rate?: number
+}
+export interface CategoryPrediction extends PredictionMeta {
+  available: boolean
+  band: number
+  share?: number
+  suppliers?: number
+  suppliers_year: number
+  share_within_band: number
+  share_n: number
+  suppliers_within_25: number
+  suppliers_n: number
+  top_stays: number
+  top_n: number
+  test: string
+  sub_top_stays: { stay: number | null; n: number; test: string }
+}

@@ -1,0 +1,36 @@
+/* «De cada cien pesos» (components/administrations/CienPesos.tsx) — tokens only (DESIGN.md §2, §3, §6). */
+.cp-kicker { font-size: 13px; color: var(--ct-gray); }
+.ct-section > h2.cp-claim { margin-top: 4px; font: 600 24px/1.25 var(--font-serif); letter-spacing: -.01em; color: var(--ct-ink); text-wrap: balance; }
+.cp-skel { height: 420px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ct-ink); color: var(--ct-gray); }
+.cp-fig { margin: 12px 0 0; }
+.cp-rows { border-top: 1px solid var(--ct-ink); }
+.cp-row { display: grid; grid-template-columns: 280px minmax(0, 1fr) 264px; gap: 0 32px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--ct-rule); }
+.cp-who { display: flex; flex-direction: column; min-width: 0; }
+.cp-who b { font: 600 17px/1.25 var(--font-serif); color: var(--ct-ink); }
+.cp-who small { padding-left: 18px; font: 400 13px/1.45 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.cp-who small.cp-top a { color: var(--ct-ink); }
+.cp-pesos { display: grid; grid-template-columns: repeat(50, minmax(0, 1fr)); gap: 3px; }
+.cp-pesos i, .cp-legend i { display: block; aspect-ratio: 1; background: var(--ct-rule); }
+.cp-pesos i.is-s, .cp-legend i.is-s { background: var(--ct-ink); }
+.cp-pesos i.is-p, .cp-legend i.is-p { background: var(--color-background); box-shadow: inset 0 0 0 1px var(--ct-ink); }
+.cp-num { text-align: right; font-variant-numeric: tabular-nums; }
+.cp-num b { display: block; font: 600 24px/1.1 var(--font-serif); color: var(--ct-ink); }
+.cp-money { font: 400 13px/1.45 var(--font-serif); font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.cp-money > span { display: block; }
+.cp-legend { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 8px; font-size: 13px; line-height: 1.45; color: var(--ct-gray); }
+.cp-legend span { display: inline-flex; align-items: baseline; gap: 8px; }
+.cp-legend i { flex: none; width: 10px; height: 10px; }
+@media (max-width: 760px) {
+  .ct-section > h2.cp-claim { font-size: 20px; }
+  .cp-row { grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; padding: 12px 0; }
+  .cp-who { display: contents; }
+  .cp-who b { grid-column: 1; grid-row: 1; }
+  .cp-who small { grid-column: 1 / -1; grid-row: 2; padding-left: 18px; }
+  .cp-num { display: contents; }
+  .cp-num b { grid-column: 2; grid-row: 1; font-size: 20px; text-align: right; }
+  .cp-who small.cp-top { grid-row: 3; }
+  .cp-money { grid-column: 1 / -1; grid-row: 5; text-align: left; }
+  .cp-money > span { display: inline; }
+  .cp-money > span + span::before { content: ', '; }
+  .cp-pesos { grid-column: 1 / -1; grid-row: 4; grid-template-columns: repeat(25, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
+}

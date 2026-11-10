@@ -1,0 +1,45 @@
+/* Contract dossier «El Sumario» (/contracts/:id) on «El Contrato» — DESIGN.md §2 type,
+   §3 ladder, §4 measure, §8 table. Page-local pieces the shell does not own. Tokens only. */
+
+.contract-page .cs-hold { min-height: 640px; }
+.cs-aside { font-size: 13px; color: var(--ct-gray); }
+.cs-kicker { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); padding-bottom: 8px; border-bottom: 1px solid var(--ct-ink); margin-bottom: 8px; }
+.cs-muted { color: var(--ct-gray); }
+.cs-fact { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+
+/* prose 7fr | figure 5fr */
+.cs-split { display: grid; grid-template-columns: 7fr 5fr; gap: 48px; }
+.cs-split > * { min-width: 0; }
+/* the risk reading: prose, then the β·z rows at full measure — side by side the rows ran 300 px past the prose (proof:ui RAGGED) */
+.cs-split.is-stack { grid-template-columns: 1fr; gap: 24px; }
+.cs-split p { text-wrap: pretty; }
+.cs-split p + p { margin-top: 12px; }
+.cs-charge { font: 600 17px/1.5 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }
+.cs-seal { margin-top: 16px; }
+.cs-evidence { margin-top: 16px; }
+.cs-evidence p { margin-top: 8px; }
+
+/* recorded tags: name · severity in words, ruled rows, never a coloured pill */
+.cs-tags li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+.cs-sev { font: 600 13px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); white-space: nowrap; }
+
+/* the pair register */
+.cs-pair { margin-top: 24px; }
+.contract-page .ct-table tr.cs-self td:first-child { box-shadow: inset 3px 0 0 var(--ct-red); padding-left: 12px; }
+
+/* flags | cite */
+.cs-facts > div { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); align-items: baseline; }
+.cs-facts > div:first-child { border-top: 1px solid var(--ct-ink); }
+.cs-facts dt { font: 600 13px/1.45 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-gray); }
+.cs-facts dd { min-width: 0; overflow-wrap: anywhere; }
+.cs-cite { font: 400 13px/1.6 var(--font-mono); color: var(--ct-ink); overflow-wrap: anywhere; user-select: all; }
+.cs-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-top: 16px; }
+.cs-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; background: var(--ct-ink); color: var(--color-background); font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); transition: transform var(--dur-press) ease-out; }
+.cs-btn:active { transform: scale(.97); }
+.cs-btn.is-ghost { background: transparent; color: var(--ct-ink); border: 1px solid var(--ct-ink); }
+.cs-btn:disabled { opacity: .55; }
+
+@media (max-width: 900px) {
+  .cs-split { grid-template-columns: 1fr; gap: 24px; }
+}
+@media print { .cs-actions { display: none; } }

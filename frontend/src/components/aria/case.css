@@ -1,0 +1,49 @@
+/* The ARIA case view (/aria/caso/:id, pages/AriaCase): the vendor template + a case layer.
+   DESIGN.md §2 type · §3 ladder (rows 4–8, blocks 16, columns 32) · §6.1 seal red for the documented
+   case only · §6.2 red/amber for severity only · §9 no cards, rules not boxes. */
+
+/* the orbit is the case's signature: 280 px beside the cover (vendor dossier: 180 in a 220 column) */
+.ct-cover.vd-cover.ac-cover:not(.is-solo) { grid-template-columns: minmax(0, 1fr) 300px; }
+.vd-orbit.ac-orbit svg { width: 152px; height: 152px; } /* the head lost its h1 to kit/PageHead: the orbit stays small so the two columns end together (proof:ui) */
+div.vd-orbit.ac-orbit { height: 152px; }
+
+.ac-band { margin-top: 4px; padding-top: 12px; border-top: 1px solid var(--ct-rule); }
+/* the case leads with how its priority adds up (CRITIQUE 2026-10-28 §2: the head is the case's, not the vendor's) */
+.ac-lead { margin-top: 12px; } /* the ledger leads the case, under its lede; the orbit shrinks to 232 so both cover columns end together (proof:ui RAGGED) */
+.ac-cells { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1.5fr); }
+.ac-side { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--ct-rule); }
+.ac-cells > div { min-width: 0; padding: 0 16px; border-left: 1px solid var(--ct-rule); font: 400 15px/1.5 var(--font-serif); color: var(--ct-ink); }
+.ac-cells > div:first-child { padding-left: 0; border-left: 0; }
+.ac-cells h3 { margin-bottom: 4px; }
+.ac-fig { font: 600 24px/1.1 var(--font-serif); font-variant-numeric: tabular-nums; }
+.ac-fig > span:not(.ct-sq) { font: 400 13px/1 var(--font-mono); color: var(--ct-gray); }
+.ac-mono { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.ac-mute { color: var(--ct-gray); font-size: 14px; }
+.ac-factors > div { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 12px; padding: 2px 0; border-bottom: 1px solid var(--ct-rule); }
+.ac-factors dt { font: 400 14px/1.4 var(--font-serif); }
+.ac-factors dd { font: 400 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ct-gray); text-align: right; }
+.ac-signals li { padding: 2px 0; border-bottom: 1px solid var(--ct-rule); font-size: 14px; line-height: 1.45; }
+.ac-seal { font: 600 13px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-accent-text); }
+.ac-why { margin-top: 12px; border-top: 1px solid var(--ct-rule); }
+.ac-why > summary { display: flex; align-items: center; min-height: 40px; font: 600 14px/1.2 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); cursor: pointer; text-decoration: underline; text-decoration-color: var(--ct-rule); text-underline-offset: 3px; }
+.ac-why > summary:hover { text-decoration-color: currentColor; }
+.ac-why > summary:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.ac-why[open] > summary { margin-bottom: 8px; }
+.ac-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 24px; margin-top: 12px; }
+.ac-acts > .ac-mute { margin-left: auto; font: 400 13px/1.45 var(--font-mono); }
+
+@media (max-width: 1279px) {
+  .ac-cells { grid-template-columns: 1fr 1fr; row-gap: 16px; }
+  .ac-cells > div:nth-child(3) { grid-column: 1 / -1; padding-left: 0; border-left: 0; }
+}
+@media (max-width: 760px) {
+  .ct-cover.vd-cover.ac-cover:not(.is-solo) { grid-template-columns: 1fr; }
+  .vd-orbit.ac-orbit { display: block; }
+  .vd-orbit.ac-orbit svg { width: 100%; max-width: 280px; height: auto; aspect-ratio: 1; }
+  .ac-cells { grid-template-columns: 1fr; }
+  .ac-cells > div { padding: 0; border-left: 0; }
+  .ac-acts > .ac-mute { margin-left: 0; }
+}
+/* «El tablero» (lib/aria/tablero, components/aria/ElTablero): the case's facts on one board, under the band */
+.ac-board { margin-top: 20px; }
+.ac-board-claim { margin: 0 0 6px; font: 400 15px/1.45 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }

@@ -1,0 +1,81 @@
+/* Focos Rojos «Rayos X» modal (RayosX.tsx). DESIGN.md §2 type · §3 ladder · §6 tokens only · §7 motion via framer. */
+.rx-root { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.rx-scrim { position: absolute; inset: 0; background: color-mix(in srgb, var(--color-text-primary) 84%, transparent); }
+/* Fixed height on desktop: lists landing late never re-centre the window. */
+.rx-panel { position: relative; display: flex; flex-direction: column; width: min(1120px, 100%); height: min(940px, calc(100dvh - 48px)); overflow: hidden auto; overscroll-behavior: contain;
+  background: var(--color-background); border-top: 2px solid var(--color-text-primary); transform-origin: 50% 50%; outline: none; will-change: transform; }
+.rx-bar { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; padding: 8px 24px; border-bottom: 1px solid var(--color-border); background: var(--color-background); }
+.rx-kick { font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.rx-pos { font: 400 13px/1 var(--font-mono); color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+.rx-nav { display: flex; gap: 8px; margin-left: auto; }
+.rx-nav .ct-btn:disabled { opacity: .35; cursor: default; }
+/* ←/→ are labelled buttons, and the bar says who comes next (owner 2026-11-02: make walking discoverable) */
+.rx-step { gap: 4px; padding: 0 10px; }
+.rx-pos { flex: 0 1 auto; min-width: 0; line-height: 1.3; }
+.rx-next { font: 400 13px/1 var(--font-serif); }
+.rx-keys { font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); white-space: nowrap; }
+@media (pointer: coarse), (max-width: 1023px) { .rx-keys { display: none; } }
+
+.rx-body { display: flex; flex-direction: column; flex: 1 0 auto; padding: 16px 24px 24px; }
+.rx-name { font: 600 22px/1.25 var(--font-serif); text-wrap: balance; }
+.rx-sub { margin-top: 4px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+
+.rx-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 32px; margin-top: 16px; }
+.rx-ros { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 0; }
+.rx-ros figcaption { font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); text-align: center; }
+.rx-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.rx-figs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); }
+.rx-figs > div { padding: 12px; background: var(--color-background); min-width: 0; }
+.rx-figs dt { font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.rx-figs dd { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; margin-top: 4px; }
+.rx-figs b { font: 600 28px/1.1 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--color-text-primary); }
+.rx-figs b.is-money { font-size: 22px; }
+.rx-figs dd > span { font: 600 14px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.rx-cifra b { font-size: 36px; }
+
+.rx-h3 { font: 600 13px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); padding-bottom: 4px; border-bottom: 1px solid var(--color-text-primary); }
+
+.rx-strip { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); /* one column per year, 2002 → DATA_LAST_YEAR */ gap: 2px; height: 56px; margin-top: 8px; border-bottom: 1px solid var(--color-text-primary); }
+.rx-strip span { position: relative; display: flex; align-items: flex-end; }
+.rx-strip i { display: block; width: 100%; transform-origin: 50% 100%; }
+.rx-axis { display: flex; justify-content: space-between; margin-top: 4px; font: 400 12px/1 var(--font-mono); color: var(--color-text-muted); }
+
+.rx-lists { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; margin: 16px 0; }
+/* the one list standard (DESIGN.md §8.1): № · name 15/600 body face · figures right mono */
+.rx-ol li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: baseline; gap: 2px 12px; padding: 6px 0; border-bottom: 1px solid var(--color-border); font: 600 15px/1.35 var(--font-serif); }
+.rx-ol li.rx-wait { display: block; font-weight: 400; }
+.rx-no { font: 400 13px/1.45 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-primary); }
+@media (max-width: 639px) { .rx-ol li { grid-template-columns: 28px minmax(0, 1fr); } .rx-ol li .rx-n { grid-column: 2; } }
+.rx-n { font: 400 13px/1.4 var(--font-mono); color: var(--color-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rx-ct { color: var(--color-text-primary); text-decoration: underline; text-decoration-color: var(--color-border); text-underline-offset: 3px; overflow-wrap: anywhere; }
+.rx-ct:hover { text-decoration-color: currentColor; }
+.rx-wait { color: var(--color-text-muted); }
+
+.rx-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--color-text-primary); }
+.rx-case { flex: 1 1 360px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.rx-case b { color: var(--color-text-primary); font-weight: 600; }
+.rx-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.rx-copied { font: 400 13px/1 var(--font-serif); color: var(--color-text-muted); min-width: 1px; }
+
+@media (max-height: 960px) and (min-width: 640px) {
+  .rx-strip { height: 40px; }
+  .rx-figs > div { padding: 8px 12px; }
+  .rx-ol li { padding: 4px 0; }
+}
+@media (max-width: 899px) {
+  .rx-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .rx-lists { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 639px) {
+  .rx-root { padding: 0; }
+  .rx-panel { width: 100%; height: 100dvh; border-top: 0; }
+  .rx-bar { padding: 4px 16px; gap: 8px; }
+  .rx-kick, .rx-next { display: none; }
+  .rx-nav { gap: 4px; }
+  .rx-body { padding: 12px 16px 24px; }
+  .rx-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rx-figs b { font-size: 24px; }
+  .rx-cifra b { font-size: 28px; }
+  .rx-figs b.is-money { font-size: 17px; }
+}

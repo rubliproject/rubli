@@ -1,0 +1,82 @@
+old_id,new_id,relation,effective_date,source_url,note
+1327,3785,successor,2025-02-12,https://sidof.segob.gob.mx/notas/docFuente/5766909,Diconsa -> Alimentación para el Bienestar; shareholder rename 29-01-2025 protocolised 12-02-2025; CompraNet 2023-25 files already carry the new name retroactively
+345,3671,successor,2021-10-21,https://www.dof.gob.mx/nota_detalle.php?codigo=5633365&fecha=20/10/2021,SCT -> SICT (LOAPF reform DOF 20-10-2021; name only)
+345,3766,successor,2021-10-21,https://www.dof.gob.mx/nota_detalle.php?codigo=5633365&fecha=20/10/2021,SCT -> SICT (2023+ file spelling 'INFRAESTRUCTURA COMUNICACIONES Y TRANSPORTES')
+385,3779,successor,2024-11-29,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref75_28nov24.pdf,SFP -> Secretaría Anticorrupción y Buen Gobierno (LOAPF reform DOF 28-11-2024 vespertina)
+1274,3503,successor,2019-05-31,https://www.dof.gob.mx/nota_detalle.php?codigo=5561693&fecha=31/05/2019,PROSPERA coordination -> Coordinación Nacional de Becas para el Bienestar Benito Juárez
+1200,3794,successor,2023-11-14,https://www.innovabienestar.mx/transformacion-de-comimsa/,COMIMSA -> InnovaBienestar de México S.A.P.I. (shareholder assembly 13-11-2023; company source not DOF)
+443,3678,successor,2022-10-22,https://sidof.segob.gob.mx/notas/docFuente/5669253,Telecomm -> Financiera para el Bienestar (decree DOF 21-10-2022); re-sectorised ramo 09 -> 06 (UR KCZ kept)
+587,3679,successor,2020-01-23,https://www.diputados.gob.mx/LeyesBiblio/pdf/LFAEBSP.pdf,SAE -> Instituto para Devolver al Pueblo lo Robado (LFAEBSP reform DOF 22-01-2020)
+334,3692,successor,2020-01-15,https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf,Pronósticos para la Asistencia Pública absorbs Lotería Nacional and takes its name (merger decree DOF 14-01-2020); UR HJY is Pronósticos' code
+1205,3714,successor,2019-07-19,https://dof.gob.mx/nota_detalle.php?codigo=5566165&fecha=19/07/2019,BANSEFI -> Banco del Bienestar (Ley Orgánica reform DOF 19-07-2019)
+1205,3802,successor,2019-07-19,https://dof.gob.mx/nota_detalle.php?codigo=5566165&fecha=19/07/2019,BANSEFI -> Banco del Bienestar (2023+ spelling)
+1827,3788,successor,2023-12-05,https://www.dof.gob.mx/nota_detalle.php?codigo=5710272&fecha=04/12/2023,INAPESCA -> IMIPAS (LGPAS reform DOF 04-12-2023)
+1233,3506,successor,2015-05-05,https://www.diputados.gob.mx/LeyesBiblio/ref/lgtaip.htm,IFAI -> INAI (Ley General de Transparencia DOF 04-05-2015); re-coded ramo 06 HHE -> ramo 44
+155,3723,successor,2023-05-09,https://dof.gob.mx/nota_detalle.php?codigo=5688048&fecha=08/05/2023,CONACYT -> CONAHCYT (Ley General HCTI DOF 08-05-2023); later SECIHTI via LOAPF DOF 28-11-2024
+1631,3693,successor,,,FONATUR Mantenimiento Turístico -> FONATUR Infraestructura; shared UR W3S; no decree located
+180,3716,successor,,,Fideicomiso de Formación y Capacitación para el Personal de la Marina Mercante -> Fideicomiso Universidad Marítima y Portuaria; shared UR J4V; no decree located
+15,3668,successor,,,API Veracruz -> ASIPONA Veracruz (APIs renamed Administración del Sistema Portuario Nacional on transfer to SEMAR c.2021); shared UR; no decree located
+8,3712,successor,,,API Manzanillo -> ASIPONA Manzanillo; shared UR
+7,3729,successor,,,API Lázaro Cárdenas -> ASIPONA Lázaro Cárdenas; shared UR
+1,3731,successor,,,API Altamira -> ASIPONA Altamira; shared UR
+6,3689,successor,,,API Guaymas -> ASIPONA Guaymas; shared UR
+10,3724,successor,,,API Progreso -> ASIPONA Progreso; shared UR
+3,3728,successor,,,API Coatzacoalcos -> ASIPONA Coatzacoalcos; shared UR
+482,3700,successor,,,API Topolobampo -> ASIPONA Topolobampo; shared UR
+5,3734,successor,,,API Ensenada -> ASIPONA Ensenada; shared UR
+9,3688,successor,,,API Mazatlán -> ASIPONA Mazatlán; shared UR
+14,3699,successor,,,API Tuxpan -> ASIPONA Tuxpan; shared UR
+4,3722,successor,,,API Dos Bocas -> ASIPONA Dos Bocas; shared UR
+1538,3742,successor,,,API Tampico -> ASIPONA Tampico; shared UR
+12,3709,successor,,,API Salina Cruz -> ASIPONA Salina Cruz; shared UR
+11,3691,successor,,,API Puerto Vallarta -> ASIPONA Puerto Vallarta; shared UR
+1738,3705,successor,,,API Puerto Madero -> ASIPONA Puerto Chiapas; shared UR
+340,1288,successor,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,SAGARPA -> SADER (LOAPF reform DOF 30-11-2018); A-era id
+356,1324,successor,2018-12-01,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf/LOAPF_ref61_30nov18.pdf,SEDESOL -> Secretaría de Bienestar (LOAPF reform DOF 30-11-2018); A-era id
+386,1759,successor,2013-01-03,https://www.diputados.gob.mx/LeyesBiblio/ref/loapf.htm,Secretaría de la Reforma Agraria -> SEDATU (LOAPF reform DOF 02-01-2013); A-era id
+157,1259,successor,2015-12-18,https://dof.gob.mx/nota_detalle.php?codigo=5420363&fecha=17/12/2015,CONACULTA -> Secretaría de Cultura (DOF 17-12-2015); A-era id
+503,1255,successor,2018-12-05,https://www.dof.gob.mx/nota_detalle.php?codigo=5545778&fecha=04/12/2018,CDI -> INPI (Ley del INPI DOF 04-12-2018 keeps CDI legal personality); A-era id
+275,503,successor,2003-05-22,https://www.diputados.gob.mx/LeyesBiblio/abro/lcndpi.htm,Instituto Nacional Indigenista -> CDI (Ley de la CDI DOF 21-05-2003); A-era ids
+159,1274,successor,2014-09-06,https://dof.gob.mx/nota_detalle.php?codigo=5359088&fecha=05/09/2014,Oportunidades coordination -> PROSPERA coordination (DOF 05-09-2014); A-era id
+103,1238,successor,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,Comisión Federal de Competencia -> COFECE (constitutional reform DOF 11-06-2013; COFECE integrated 10-09-2013); A-era id
+105,1314,successor,2013-09-10,https://www.ift.org.mx/que-es-el-ift/reforma-constitucional,COFETEL -> IFT (constitutional reform DOF 11-06-2013); A-era id
+324,1170,successor,2009-06-02,https://www.dof.gob.mx/avisos/1888/SSP_010609/SSP_010609.htm,Policía Federal Preventiva -> Policía Federal (Ley de la Policía Federal DOF 01-06-2009); A-era id
+219,1196,successor,2016-06-24,https://dof.gob.mx/nota_detalle.php?codigo=5442434&fecha=24/06/2016,Instituto de Investigaciones Eléctricas -> INEEL (decree DOF 24-06-2016); A-era id
+124,2714,successor,2016-12-17,https://dof.gob.mx/nota_detalle.php?codigo=5465842&fecha=16/12/2016,CORETT -> INSUS (decree DOF 16-12-2016); A-era id
+264,1286,successor,2008-04-17,https://www.diputados.gob.mx/LeyesBiblio/ref/lsnieg.htm,INEGI 'Estadística Geografía e Informática' -> 'Estadística y Geografía' (LSNIEG DOF 16-04-2008); A-era id
+262,1422,successor,2012-06-07,https://www.diputados.gob.mx/LeyesBiblio/ref/lgcc.htm,Instituto Nacional de Ecología -> INECC (Ley General de Cambio Climático DOF 06-06-2012); A-era id
+20,1309,successor,,,Apoyos y Servicios a la Comercialización Agropecuaria -> Agencia de Servicios a la Comercialización y Desarrollo de Mercados Agropecuarios (same acronym ASERCA); no decree located
+191,1287,successor,,,Fondo de Información y Documentación para la Industria -> INFOTEC (same acronym); no decree located
+189,866,successor,2006-04-25,https://www.diputados.gob.mx/LeyesBiblio/ref/lifnct.htm,FONACOT -> INFONACOT (Ley del INFONACOT DOF 24-04-2006); A-era id
+518,1332,successor,2014-01-11,https://www.diputados.gob.mx/LeyesBiblio/ref/lofnd.htm,Financiera Rural -> Financiera Nacional de Desarrollo (reforma financiera DOF 10-01-2014); A-era id
+151,769,successor,2005-04-29,https://www.diputados.gob.mx/LeyesBiblio/ref/lmin.htm,Consejo de Recursos Minerales -> Servicio Geológico Mexicano (Ley Minera reform DOF 28-04-2005); A-era id
+487,1378,successor,,,Centro Nacional de Rehabilitación -> Instituto Nacional de Rehabilitación (2005); date/source not verified
+62,1261,successor,,,Centro Nacional de Vigilancia Epidemiológica -> CENAPRECE; date/source not verified
+84,1237,same,,,COFAA 'DEL IPN' abbreviation
+205,1273,same,,,Hospital General de México + honorific
+270,1198,same,,,INNN + 'DR.'
+272,1226,same,,,INPer short name
+54,1202,same,,,CINVESTAV 'DEL IPN' abbreviation
+112,1665,same,,,CONALITEG singular/plural
+309,1491,same,,,OADPRS (re-sectorised SSP -> SEGOB -> SSPC; UR D00 kept)
+446,1235,same,,,Tribunal Superior Agrario is the head of ramo 31 Tribunales Agrarios
+481,1919,same,,,XEIPN Canal 11
+70,1383,same,,,Colegio de Posgraduados spelling
+64,1577,same,,,CIATEQ
+618,1191,same,,,CIATEC
+47,1307,same,,,CICESE 'B.C.' abbreviation
+164,1327,branch,,,Diconsa regional branch (UC-level unit booked as its own dependency in 2002-10)
+166,1327,branch,,,Diconsa regional branch
+167,1327,branch,,,Diconsa regional branch
+168,1327,branch,,,Diconsa regional branch
+169,1327,branch,,,Diconsa regional branch
+170,1327,branch,,,Diconsa regional branch
+509,1327,branch,,,Diconsa regional branch
+317,1211,merged_into,,,Petroquímica Cangrejera S.A. de C.V. (PPQ filial) -> Pemex-Petroquímica; date/source not verified
+318,1211,merged_into,,,Petroquímica Cosoleacaque (PPQ filial); date/source not verified
+319,1211,merged_into,,,Petroquímica Escolín (PPQ filial); date/source not verified
+320,1211,merged_into,,,Petroquímica Morelos (PPQ filial); date/source not verified
+321,1211,merged_into,,,Petroquímica Pajaritos (PPQ filial); date/source not verified
+322,1211,merged_into,,,Petroquímica Tula (PPQ filial); date/source not verified
+299,,dissolved,2009-10-11,https://dof.gob.mx/nota_detalle.php?codigo=5114011&fecha=11/10/2009,Luz y Fuerza del Centro extinguished (decree DOF 11-10-2009); no successor buyer
+298,3692,merged_into,2020-01-15,https://www.loterianacional.gob.mx/Documentos/Legal/DOF/DOF14012020.pdf,Lotería Nacional para la Asistencia Pública (old UR) merged into Pronósticos (UR HJY) which took the Lotería Nacional name

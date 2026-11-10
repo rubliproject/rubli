@@ -1,0 +1,119 @@
+{
+  "title": "Workspace",
+  "subtitle": "Your saved vendors, contracts, and case leads — organized into dossiers.",
+  "addToWatchlist": "Add to watchlist",
+  "columns": {
+    "type": "Type",
+    "contracts": "Contracts",
+    "status": "Status",
+    "entity": "Entity",
+    "priority": "Priority",
+    "riskAtAdd": "Risk at Add",
+    "currentRisk": "Current Risk",
+    "change": "Change",
+    "added": "Added",
+    "actions": "Actions"
+  },
+  "types": {
+    "vendor": "Vendor",
+    "institution": "Institution",
+    "contract": "Contract",
+    "vendors": "Vendors",
+    "institutions": "Institutions",
+    "contracts": "Contracts"
+  },
+  "status": {
+    "all": "All Status",
+    "watching": "Watching",
+    "investigating": "Investigating",
+    "resolved": "Resolved",
+    "startInvestigating": "Start investigating",
+    "markResolved": "Mark resolved"
+  },
+  "priority": {
+    "all": "All Priority",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "filters": {
+    "allTypes": "All Types",
+    "allStatus": "All Status",
+    "allPriority": "All Priority"
+  },
+  "statCards": {
+    "watching": "Watching",
+    "investigating": "Investigating",
+    "highPriority": "High Priority",
+    "resolved": "Resolved"
+  },
+  "tabs": {
+    "entities": "Entities",
+    "dossiers": "Dossiers"
+  },
+  "table": {
+    "trackedEntities": "Tracked Entities",
+    "item": "item",
+    "items": "items"
+  },
+  "empty": "Your watchlist is empty.",
+  "noItemsMatch": "No items match your filters",
+  "noItemsMatchDescription": "Try adjusting or clearing the active filters to see more results.",
+  "clearFilters": "Clear filters",
+  "exportDossier": "Export Dossier",
+  "refresh": "Refresh",
+  "investigate": "Investigate",
+  "confirm": "Confirm",
+  "cancel": "Cancel",
+  "folders": "Folders",
+  "errorTitle": "Red Flags",
+  "errorDescription": "Track and investigate suspicious patterns",
+  "errorMessage": "Failed to load watchlist data",
+  "retry": "Retry",
+  "riskFactors": "Top risk factors",
+  "contractsAnalysed": "contracts analysed",
+  "loadingRiskFactors": "Loading risk factors…",
+  "noRiskFactorData": "No risk factor data available for this vendor.",
+  "dossierTab": {
+    "searchVendors": "Search vendors"
+  },
+  "dossierStatus": {
+    "all": "All",
+    "active": "Active",
+    "archived": "Archived",
+    "closed": "Closed"
+  },
+  "sort": {
+    "label": "Sort:",
+    "risk": "Risk",
+    "change": "Change",
+    "added": "Added",
+    "name": "Name"
+  },
+  "workspaceEmpty": {
+    "title": "Your investigation starts here.",
+    "description": "Save vendors, institutions, and contracts to track risk-score changes over time. Begin by watching a high-priority vendor, exploring the procurement data, or opening a documented case.",
+    "hint": "Use the eye icon on any vendor or institution profile to start tracking.",
+    "watchVendorTitle": "Watch a vendor",
+    "watchVendorDesc": "Track risk changes for high-priority vendors in the ARIA queue.",
+    "watchVendorCta": "Browse T1 queue",
+    "exploreTitle": "Explore contracts",
+    "exploreDesc": "Find vendors or institutions and click the eye icon to start tracking.",
+    "exploreCta": "Search vendors",
+    "caseTitle": "Open a documented case",
+    "caseDesc": "Browse {{n}} documented cases and add involved parties to your workspace.",
+    "caseCta": "View cases"
+  },
+  "dossierEmpty": {
+    "kicker": "WORKSPACE",
+    "title": "Your investigation starts here.",
+    "lede": "Create a dossier to begin tracking vendors, institutions, and contracts under a single case file.",
+    "steps": "Create a dossier  ·  Add vendors under investigation  ·  Export your findings",
+    "cta": "Create your first dossier"
+  },
+  "dossierTabHeader": {
+    "lede": "Organize your investigations into case folders. Each dossier holds vendors, institutions, and contracts — private to your account, exportable anytime.",
+    "new": "New dossier"
+  },
+  "tip": "Tip: open a vendor from the explorer or the ARIA queue, then use the eye icon to add them to your workspace."
+}

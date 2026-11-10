@@ -1,0 +1,55 @@
+/* /contracts/:id B2 (content doc v2): one column, four questions, the raw record in a drawer. Tokens only. */
+.cb2 .ph { margin-bottom: 8px; }
+.cb2-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0 0 16px; }
+.cb2-stats > div { border-top: 1px solid var(--color-border); padding-top: 8px; min-width: 0; }
+.cb2-stats dt { font: 600 12px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.cb2-stats dd { margin: 4px 0 0; font: 400 15px/1.4 var(--font-serif); color: var(--color-text-primary); overflow-wrap: anywhere; }
+.cb2-stats dd small { display: block; font: 400 12px/1.4 var(--font-serif); color: var(--color-text-muted); }
+.cb2-note { margin: 0 0 16px; font: 400 14px/1.5 var(--font-serif); color: var(--color-text-muted); }
+.cb2-risk { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start; margin: 16px 0; }
+.cb2-reasons { margin: 0; padding-left: 1.1em; font: 400 15px/1.5 var(--font-serif); color: var(--color-text-primary); }
+.cb2-why { margin: 8px 0 0; font: 400 14px/1.5 var(--font-serif); color: var(--color-text-muted); }
+.cb2-why b { color: var(--color-text-primary); }
+.cb2-who { margin: 16px 0; font: 400 15px/1.5 var(--font-serif); }
+.cb2-standing { color: var(--color-text-muted); }
+.cb2-drawer { margin: 24px 0; border-top: 1px solid var(--color-border); padding-top: 8px; }
+.cb2-drawer > summary { cursor: pointer; min-height: 32px; display: flex; align-items: center; font: 600 14px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.cb2-drawer > summary:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.cb2-drawer[open] > summary { margin-bottom: 16px; }
+@media (max-width: 900px) { .cb2-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .cb2-stats { grid-template-columns: minmax(0, 1fr); } }
+/* «Las monedas» centred under its lines (owner 11-06) */
+.cb2-means { margin: 0 0 16px; font: 600 17px/1.45 var(--font-serif); color: var(--color-text-primary); }
+.cb2-center { display: flex; flex-direction: column; align-items: center; }
+/* owner 11-06 «no big spaces»: two columns, no empty bands — block 1 stats | stamp card; block 4 sentence | coins */
+.cb2-two { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px 40px; align-items: start; }
+.cb2-two .cb2-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cb2-two.is-4 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; }
+.cb2-two .cb2-center { align-items: stretch; }
+.cb2-two .cb2-center > .cs-kicker { margin: 0 0 8px; }
+.cb2-coins { min-width: 0; }
+@media (max-width: 1023px) { .cb2-two, .cb2-two.is-4 { grid-template-columns: minmax(0, 1fr); } }
+.cb2-two.is-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.cb2-two.is-2 .cb2-risk { margin-top: 0; }
+.cb2-two.is-2 .cb2-why { margin: 0; font-size: 15px; }
+/* owner 11-06 «if we don't have enough data, just compact»: one compact column, no wide bands */
+.cb2 > .ct-wrap { max-width: 960px; margin-left: auto; margin-right: auto; }
+.cb2-two.is-1 { grid-template-columns: minmax(0, 1fr); }
+.cb2-two.is-1 .cb2-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cb2-two.is-1 .cb2-center { align-items: center; }
+@media (max-width: 900px) { .cb2-two.is-1 .cb2-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .cb2-two.is-1 .cb2-stats { grid-template-columns: minmax(0, 1fr); } }
+/* tidy (owner «still sloppy»): reasons flush under the gauge; block 4 sentence top-aligned with the coins */
+.cb2-reasons { padding-left: 0; list-style: none; }
+.cb2-reasons li { padding-left: 12px; position: relative; }
+.cb2-reasons li::before { content: '·'; position: absolute; left: 0; color: var(--color-text-muted); }
+.cb2-risk { flex-direction: column; gap: 8px; }
+.cb2-two.is-4 { align-items: start; }
+/* compact column (960): stack the pairs, nothing hangs short — proof:ui ragged/void 0 */
+.cb2-two.is-2, .cb2-two.is-4 { grid-template-columns: minmax(0, 1fr); }
+.cb2-two.is-2 .cb2-risk { flex-direction: row; align-items: flex-start; gap: 24px; }
+.cb2-two.is-2 .cb2-reasons { flex: 1; margin: 0; }
+.cb2-two.is-2 .cb2-why { margin-top: 8px; }
+.cb2-two.is-1 .cb2-center > .cs-kicker { align-self: stretch; border-bottom: 1px solid var(--color-border); padding-bottom: 4px; }
+.cb2-coins .obj-coins { --mn-max: 100% !important; }
+@media (max-width: 639px) { .cb2-two.is-2 .cb2-risk { flex-direction: column; } }

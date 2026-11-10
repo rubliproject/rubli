@@ -1,0 +1,244 @@
+{
+  "riskScore": {
+    "title": "Risk Score",
+    "description": "A statistical indicator (0-1) that ranks contracts by resemblance to the contracts of vendors later linked to documented cases. Higher = closer to them. It is not a probability of corruption, and the labels it learned from mark every contract of a case vendor in the case's years, not contracts proven corrupt."
+  },
+  "riskScoreDisclaimer": {
+    "title": "How to interpret this score",
+    "description": "This score measures statistical resemblance to the contracts of vendors later linked to documented cases — not a confirmed finding of wrongdoing. A high score means this entity's procurement characteristics resemble theirs. It is not a legal determination. Use for investigation triage only."
+  },
+  "riskLevel": {
+    "title": "Risk Level",
+    "description": "Categorization based on risk score: Critical (>=0.60), High (>=0.40), Medium (>=0.25), Low (<0.25). These thresholds are RUBLI's own, set in calibration (docs/RISK_METHODOLOGY_v6.md)."
+  },
+  "singleBid": {
+    "title": "Single award",
+    "description": "A competitive procedure (not a direct award) that ended with a single winner. CompraNet records winners, not bidders, so this cannot show how many firms bid; the rate is stated over competitive procedures only."
+  },
+  "directAward": {
+    "title": "Direct Award",
+    "description": "A contract awarded directly to a vendor without competitive bidding. Legal in Mexico under certain conditions (emergencies, sole source). Having one bid in a direct award is expected — it's NOT the same as a single award."
+  },
+  "vendorConcentration": {
+    "title": "Vendor Concentration",
+    "description": "How much of a sector's total procurement value goes to a single vendor. High concentration means one vendor dominates — a top predictor of corruption risk in our model (+0.327 coefficient)."
+  },
+  "mahalanobisDistance": {
+    "title": "Mahalanobis Distance",
+    "description": "A statistical measure of how unusual a contract is across ALL 16 risk dimensions simultaneously. Like asking: 'How far is this contract from normal?' Higher values = more anomalous."
+  },
+  "zScore": {
+    "title": "Z-Score",
+    "description": "A standardized measure showing how many standard deviations a value is from the sector/year average. A z-score of +2 means the value is unusually high compared to similar contracts."
+  },
+  "hhi": {
+    "title": "HHI (Herfindahl-Hirschman Index)",
+    "description": "A market concentration measure (0-10,000). Below 1,500 = competitive market. 1,500-2,500 = moderately concentrated. Above 2,500 = highly concentrated. Used to detect vendor monopolies."
+  },
+  "puLearning": {
+    "title": "PU Learning",
+    "description": "Positive-Unlabeled learning: a technique for training models when only some examples are labelled (here: contracts of vendors later linked to documented cases, inside each case's years) and the rest are unknown (unlabeled, not necessarily clean). Our model uses the Elkan & Noto (2008) correction."
+  },
+  "aucRoc": {
+    "title": "AUC-ROC",
+    "description": "Area Under the Receiver Operating Curve — how often the model ranks a vendor-year of a supplier later linked to a documented case above one without. 0.5 = random guessing, 1.0 = perfect. v0.9.2 scores 0.827 forward-chained: trained on earlier years and tested on the next year's vendors (2019–2025), 95% CI 0.763 to 0.883; 0.741 holding vendor size fixed. It measures how vendor-years are ranked, not detection of corrupt contracts. v0.9.1's published 0.852 came from a different test and used data from after each contract, so the two are not comparable."
+  },
+  "industryMismatch": {
+    "title": "Industry Mismatch",
+    "description": "When a vendor wins contracts in a sector that doesn't match their primary business. For example, a construction company winning health procurement contracts. Suggests shell company or favoritism."
+  },
+  "priceAnomaly": {
+    "title": "Amount anomaly",
+    "description": "Contract amount that is statistically unusual compared to similar contracts in the same sector and year. Detected using Tukey's IQR method — values beyond 1.5x the interquartile range are flagged."
+  },
+  "cobidding": {
+    "title": "Co-Bidding Pattern",
+    "description": "When two or more vendors consistently appear together in bidding procedures. Can indicate legitimate specialization, but high co-bid rates with alternating wins suggest bid rotation (a form of collusion)."
+  },
+  "clusteringCoefficient": {
+    "title": "Clustering Coefficient",
+    "description": "Wachs-Fazekas (2021) clustering coefficient: measures how interconnected this vendor's co-bidding partners are with each other. A value near 1.0 means all co-bidders also bid with each other — a hallmark of structured bid-rigging rings."
+  },
+  "yearEnd": {
+    "title": "Year-End Timing",
+    "description": "Contracts awarded in December, when agencies rush to spend remaining budget. This 'December dump' creates pressure to award quickly, reducing oversight and increasing corruption risk."
+  },
+  "thresholdSplitting": {
+    "title": "Threshold Splitting",
+    "description": "Multiple contracts awarded to the same vendor on the same day, potentially to keep each contract below a threshold that would require competitive bidding. A classic procurement fraud technique."
+  },
+  "networkRisk": {
+    "title": "Network Risk",
+    "description": "Risk from vendor relationships — companies that share addresses, legal representatives, or consistently bid together. Network membership can indicate shell company networks or coordinated bidding patterns."
+  },
+  "confidenceInterval": {
+    "title": "Confidence Interval",
+    "description": "The range within which the true risk score likely falls (95% confidence). A score of 0.35 [0.22, 0.48] means the risk indicator is 0.35, but given data uncertainty it could reasonably be between 0.22 and 0.48."
+  },
+  "calibratedProbability": {
+    "title": "Risk Score",
+    "description": "A statistical risk indicator measuring resemblance to the contracts of vendors later linked to documented cases. The score is derived from logistic regression and should be interpreted as a pattern-similarity signal, not a corruption probability estimate."
+  },
+  "perSectorModel": {
+    "title": "Sector Normalization",
+    "description": "v0.9.2 is a single global model. Sector differences enter through z-score normalization: each feature is compared with the baseline for the contract's sector and year. Earlier versions (v5.x) trained separate per-sector sub-models; v0.9.2 does not."
+  },
+  "groundTruth": {
+    "title": "Ground Truth",
+    "description": "RUBLI's labelled case set, used to train and evaluate the model: 1,417 cases today. 361 come from press reports, 25 from official records and 1 from an audit report; 989 are leads the model or ARIA surfaced and analysts wrote up. Most are not adjudicated findings, and not every linked vendor has been confirmed as a wrongdoer."
+  },
+  "adPeriod": {
+    "title": "Ad Period",
+    "description": "Days between publication of a procurement opportunity and the contract award. Very short periods (<15 days) may indicate the process was rushed to favor a predetermined vendor."
+  },
+  "rfc": {
+    "title": "RFC (Tax ID)",
+    "description": "Registro Federal de Contribuyentes — Mexico's tax identification number for businesses and individuals. Used to uniquely identify vendors. Coverage varies: 0.1% in 2002-2010 data to 47% in 2023-2025."
+  },
+  "compranet": {
+    "title": "COMPRANET",
+    "description": "Mexico's federal electronic procurement platform, operational since 1996 and mandatory for all purchases above threshold. Abolished by Congress on April 10, 2025, replaced by ComprasMX. Before the formal replacement, 1.9 million contracts from 2012–2023 were already removed from public access in August 2024. Source of every contract in this database."
+  },
+  "licitacionPublica": {
+    "title": "Licitación Pública (Open Tender)",
+    "description": "The most transparent procurement procedure under Mexican law. Required for contracts above legal value thresholds. Involves a public notice period (minimum 20 days), unlimited bidders, and mandatory publication on COMPRANET. In practice, only 29% of federal contracts use this procedure — the other 71% skip open competition."
+  },
+  "laassp": {
+    "title": "LAASSP",
+    "description": "Ley de Adquisiciones, Arrendamientos y Servicios del Sector Público — Mexico's federal procurement law, first enacted January 4, 2000. Defines when government agencies must use open competitive bidding vs. direct award, sets value thresholds, and establishes publication requirements. The original law was abrogated and replaced by a new version in April 2025."
+  },
+  "inai": {
+    "title": "INAI",
+    "description": "Instituto Nacional de Transparencia, Acceso a la Información y Protección de Datos Personales — Mexico's independent transparency watchdog, established 2002. Citizens and journalists could appeal to INAI when government agencies denied information requests. Constitutionally abolished December 20, 2024. Replaced by 'Transparencia para el Pueblo,' an agency under the executive branch, operating on approximately 2% of INAI's former budget."
+  },
+  "comprasmx": {
+    "title": "ComprasMX",
+    "description": "CompraNet's replacement platform, launched April 18, 2025. Built on the same technical architecture as 'Tianguis Digital,' Mexico City's procurement system previously used during Sheinbaum's tenure as head of government. The new platform operates under a 5-year data retention rule that could eventually remove historical contract records from public access."
+  },
+  "sector": {
+    "title": "Sector",
+    "description": "One of 12 federal government spending categories (Health, Education, Energy, etc.) classified from Mexico's 'Ramo' budget codes. Each sector has different procurement patterns and risk profiles."
+  },
+  "sfp": {
+    "title": "SFP (Ministry of Public Administration)",
+    "description": "Secretaría de la Función Pública — Mexico's government accountability ministry. Maintains the official registry of companies sanctioned from federal contracting (Proveedores y Contratistas Sancionados). Companies on this list are prohibited from winning government contracts for the sanction period."
+  },
+  "rupc": {
+    "title": "RUPC (Unified Vendor Registry)",
+    "description": "Registro Único de Proveedores y Contratistas — Mexico's unified registry of companies eligible for federal contracting. Companies receive compliance grades based on performance history. Was hosted on CompraNet (abolished April 2025); continuity under ComprasMX uncertain."
+  },
+  "risk_factors": {
+    "vendor_concentration": {
+      "label": "Vendor Concentration",
+      "coefficient": "+0.099",
+      "validation_strength": "Moderate in v0.9.2 (rank 7 of 16 non-zero features)",
+      "key_citation": "Fazekas & Tóth (2016), Political Research Quarterly",
+      "mexico_note": "Coefficient +0.099 in v0.9.2 (rank 7 of 16 non-zero features; v0.9.1: +0.242); a higher value raises the score."
+    },
+    "price_volatility": {
+      "label": "Uneven contract sizes",
+      "coefficient": "+0.505",
+      "validation_strength": "Strong in v0.9.2 (rank 2 of 16 non-zero features)",
+      "key_citation": "Porter & Zona (1993): Price manipulation detectable in bid distributions",
+      "mexico_note": "Second-strongest predictor in v0.9.2 (+0.505, after vendor breadth); it led v0.9.1 at +0.729. Vendors with wildly varying contract amounts relative to sector norms."
+    },
+    "institution_diversity": {
+      "label": "Institution Diversity",
+      "coefficient": "+0.269",
+      "validation_strength": "Strong in v0.9.2 (rank 3 of 16 non-zero features)",
+      "key_citation": "Coviello & Mariniello (2014): Competition and transparency reduce award concentration",
+      "mexico_note": "v0.9.2 measures institution concentration as of the contract: a Herfindahl index over the institutions the vendor sold to in years before the contract (1.0 when it has no history). Coefficient +0.269 (rank 3 of 16 non-zero features): at equal breadth, a vendor concentrated on few buyers scores higher. v0.9.1 used an all-time version of the index, which was negligible (+0.0004); in v0.8.5 it was −0.388."
+    },
+    "win_rate": {
+      "label": "Win Rate",
+      "coefficient": "+0.007",
+      "validation_strength": "Weak in v0.9.2 (rank 15 of 16 non-zero features)",
+      "key_citation": "Conley & Decarolis (2016): Bid rings detectable via win pattern analysis",
+      "mexico_note": "Coefficient +0.007 in v0.9.2 (rank 15 of 16 non-zero features; v0.9.1: −0.045); close to no effect."
+    },
+    "single_bid": {
+      "label": "Single award",
+      "coefficient": "+0.079",
+      "validation_strength": "Moderate in v0.9.2 (rank 9 of 16 non-zero features)",
+      "key_citation": "Charron et al. (2017), Journal of Politics",
+      "mexico_note": "Positive weight in v0.9.2 (+0.079; v0.9.1: +0.034). Not rare in Mexico: of the contracts signed in competitive procedures (direct awards excluded), 62.0% came from a procedure with a single winner under Peña Nieto (Dec 2012–Nov 2018) and 47.3% under López Obrador (Dec 2018–Sep 2024). Counted by contract, not by procedure; CompraNet records winners, not bidders."
+    },
+    "direct_award": {
+      "label": "Direct Award",
+      "coefficient": "+0.051",
+      "validation_strength": "Moderate in v0.9.2 (rank 12 of 16 non-zero features)",
+      "key_citation": "OECD (2016): Preventing Corruption in Public Procurement",
+      "mexico_note": "Small positive weight in v0.9.2 (+0.051; v0.9.1: −0.016). Mexico's 70%+ direct-award baseline makes the flag weak on its own when it is the norm."
+    },
+    "industry_mismatch": {
+      "label": "Industry Mismatch",
+      "coefficient": "—",
+      "validation_strength": "Not in v0.9.2",
+      "key_citation": "Fazekas & Kocsis (2020), British Journal of Political Science",
+      "mexico_note": "Dropped in v0.9.2 (pre-registration amendment 2): it can only fire for vendors with a verified industry, and case vendors have that coverage more often (22.6% vs 13.7%), so it would partly encode «already investigated». In v0.9.1 it weighed +0.032."
+    },
+    "same_day_count": {
+      "label": "Same-Day Award Count",
+      "coefficient": "+0.073",
+      "validation_strength": "Moderate in v0.9.2 (rank 10 of 16 non-zero features)",
+      "key_citation": "ISO 37001 Anti-Bribery Management Systems",
+      "mexico_note": "Coefficient +0.073 in v0.9.2 (rank 10 of 16 non-zero features; v0.9.1: +0.045); a higher value raises the score."
+    },
+    "network_member_count": {
+      "label": "Network Membership",
+      "coefficient": "+0.091",
+      "validation_strength": "Moderate in v0.9.2 (rank 8 of 16 non-zero features)",
+      "key_citation": "Fazekas, Skuhrovec & Wachs (2020): Network analysis of procurement graphs",
+      "mexico_note": "Coefficient +0.091 in v0.9.2 (rank 8 of 16 non-zero features; v0.9.1: +0.061); a higher value raises the score. v0.9.2 counts only network members active before the contract year."
+    },
+    "year_end": {
+      "label": "Year-End Award",
+      "coefficient": "0.000",
+      "validation_strength": "Regularized to zero in v0.9.2",
+      "key_citation": "IMCO (Mexico): Budget rushing in December",
+      "mexico_note": "Regularized to exactly zero by the ElasticNet penalty in v0.9.2 (v0.9.1: +0.005); it does not contribute to the score."
+    },
+    "institution_risk": {
+      "label": "Institution Risk Type",
+      "coefficient": "—",
+      "validation_strength": "Not in v0.9.2",
+      "key_citation": "IMF CRI Methodology",
+      "mexico_note": "Not in v0.9.2: the as-of rebuild dropped it. In v0.9.1 it was regularized to exactly zero."
+    },
+    "ad_period_days": {
+      "label": "Advertisement Period",
+      "coefficient": "—",
+      "validation_strength": "Not in v0.9.2",
+      "key_citation": "EU Directive 2014/24 minimum timelines",
+      "mexico_note": "Dropped in v0.9.2 (pre-registration amendment 1): opening dates exist only in ComprasMX records, so the feature would mark the data source rather than risk. In v0.9.1 it weighed +0.053."
+    },
+    "sector_spread": {
+      "label": "Sector Spread",
+      "coefficient": "−0.162",
+      "validation_strength": "Moderate in v0.9.2 (rank 5 of 16 non-zero features)",
+      "key_citation": "Fazekas & Kocsis (2020)",
+      "mexico_note": "Negative weight in v0.9.2 (−0.162; v0.9.1: −0.052): at equal breadth, presence across many sectors lowers the score."
+    },
+    "price_ratio": {
+      "label": "Amount vs similar contracts",
+      "coefficient": "+0.256",
+      "validation_strength": "Strong in v0.9.2 (rank 4 of 16 non-zero features)",
+      "key_citation": "World Bank INT (2019): Warning Signs of Fraud",
+      "mexico_note": "Coefficient +0.256 in v0.9.2 (rank 4 of 16 non-zero features; v0.9.1: +0.449); a higher value raises the score."
+    },
+    "co_bid_rate": {
+      "label": "Co-Bid Rate",
+      "coefficient": "—",
+      "validation_strength": "Not in v0.9.2",
+      "key_citation": "Porter & Zona (1993): Co-bidding as collusion indicator",
+      "mexico_note": "Not in v0.9.2: its source table is missing, so the as-of rebuild dropped it. In v0.9.1 it was regularized to exactly zero."
+    },
+    "price_hyp_confidence": {
+      "label": "Amount-outlier confidence",
+      "coefficient": "—",
+      "validation_strength": "Not in v0.9.2",
+      "key_citation": "Tukey IQR method for outlier detection",
+      "mexico_note": "Not in v0.9.2: its source column is missing, so the as-of rebuild dropped it. In v0.9.1 it was regularized to exactly zero."
+    }
+  }
+}

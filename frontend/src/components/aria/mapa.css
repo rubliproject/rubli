@@ -1,0 +1,102 @@
+/* Focos Rojos «El mapa de la fila» (/aria?ver=mapa) — rides El Mapa's sky (kit.css .pf-*) and adds
+   the ranking below it. Tokens only; sector and risk colours arrive as style={{color}}. */
+
+/* the sky is the first screen's object but not the whole screen: the names start inside it */
+.am .pf { height: auto; min-height: 0; }
+.am .pf-sky { flex: none; height: clamp(380px, 54svh, 540px); min-height: 380px; }
+.am .pf-figs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* ── the ranking ── */
+.am-rank { margin-top: 16px; }
+.am-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-bottom: 6px; border-bottom: 1px solid var(--color-text-primary); }
+.am-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.am-h i { display: inline-block; width: 10px; height: 10px; flex: none; align-self: center; }
+.am-h .kf-mono { font-size: 12px; }
+.am-scope { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.am-scope b { font-weight: 600; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.am-rule { margin: 6px 0 0; font: 400 12px/1.45 var(--font-serif); color: var(--color-text-muted); text-wrap: pretty; }
+.am-rule b { font-weight: 600; color: var(--color-text-primary); }
+
+.am-list { list-style: none; margin: 0; padding: 0; }
+.am-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.5fr) auto 32px; align-items: baseline; gap: 2px 12px; min-height: 40px; padding: 6px 0; border-bottom: 1px solid var(--color-border); font: 400 13px/1.4 var(--font-serif); color: var(--color-text-primary); cursor: pointer; }
+.am-row.is-on { background: var(--color-background-elevated); box-shadow: -8px 0 0 var(--color-background-elevated), 8px 0 0 var(--color-background-elevated); }
+.am-row.is-in { animation: ct-rise var(--dur-state) var(--ease-out) both; animation-delay: var(--d, 0ms); }
+@media (prefers-reduced-motion: reduce) { .am-row.is-in { animation: none; } }
+.am-rk { font: 700 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-primary); text-align: right; }
+.am-rk.is-t1 { color: var(--color-risk-critical); }
+.am-nm { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.am-nm i { display: inline-block; width: 8px; height: 8px; flex: none; align-self: center; }
+.am-nm small { font: 400 12px/1.4 var(--font-serif); color: var(--color-text-muted); }
+.am-tag { display: inline-flex; align-items: baseline; gap: 4px; font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); text-decoration: underline dotted; text-decoration-color: var(--color-border); text-underline-offset: 3px; cursor: help; }
+.am-tag .kf-mono { font-size: 12px; font-weight: 700; color: var(--color-text-muted); }
+.am-tag.is-off { color: var(--color-text-muted); }
+.am-asp { display: block; min-width: 0; font: 400 13px/1.4 var(--font-serif); color: var(--color-text-secondary, var(--color-text-primary)); text-wrap: pretty; }
+.am-asp b { font-weight: 600; color: var(--color-text-primary); font-variant-numeric: tabular-nums; }
+.am-asp > span:not(:last-child)::after { content: ' · '; color: var(--color-text-muted); }
+.am-fig { display: flex; flex-direction: column; align-items: flex-end; font: 400 13px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--color-text-primary); white-space: nowrap; }
+.am-fig small { font: 400 12px/1.4 var(--font-serif); color: var(--color-text-muted); }
+.am-open { min-height: 32px; font: 600 12px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--color-border); white-space: nowrap; }
+.am-row:hover .am-open, .am-open:focus-visible { color: var(--color-text-primary); text-decoration-color: currentColor; }
+.am-open:focus-visible { outline: 2px solid var(--color-text-primary); outline-offset: 2px; }
+.am-open:active { scale: .97; }
+.am-foot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; padding-top: 8px; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.am-empty { padding: 16px 0; font: 400 14px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.am-skel { min-height: 420px; }
+.am-skel li { height: 40px; border-bottom: 1px solid var(--color-border); }
+
+/* ── the vendor card (kit FieldCard) ── */
+.am-split { margin: 10px 0 8px; }
+.am-card .fw-dl dd { white-space: nowrap; }
+.am-split figcaption { font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.am-split-bar { display: flex; height: 10px; margin-top: 4px; background: var(--color-background-elevated); }
+.am-split-bar i { display: block; flex: 0 1 auto; min-width: 2px; }
+.am-split-bar i + i { margin-left: 2px; }
+.am-split ul { list-style: none; margin: 4px 0 0; padding: 0; font: 400 13px/1.45 var(--font-serif); color: var(--color-text-primary); }
+.am-split li { display: flex; align-items: baseline; gap: 8px; }
+.am-split li i { display: inline-block; width: 8px; height: 8px; flex: none; align-self: center; }
+.am-split li .kf-mono { margin-left: auto; font-size: 12px; color: var(--color-text-muted); }
+.am-card { font: 400 13px/1.45 var(--font-serif); color: var(--color-text-primary); }
+.am-kick { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.am-kick i { display: inline-block; width: 8px; height: 8px; flex: none; }
+.am-ch { margin-top: 4px; font: 600 15px/1.3 var(--font-serif); color: var(--color-text-primary); text-wrap: balance; }
+.am-ch small { display: block; font: 400 12px/1.4 var(--font-serif); color: var(--color-text-muted); }
+.am-gloss { margin-top: 4px; font: 400 12px/1.45 var(--font-serif); color: var(--color-text-muted); }
+.am-aspl { list-style: none; margin: 8px 0 0; padding: 0; }
+.am-aspl li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 3px 0; border-top: 1px solid var(--color-border); }
+.am-aspl li:first-child { border-top: 0; }
+.am-aspl .kf-mono { font-size: 12px; }
+.am-huella { display: grid; grid-template-columns: 160px minmax(0, 1fr); gap: 12px; align-items: start; margin-top: 10px; }
+.am-huella figure { margin: 0; }
+.am-huella figcaption { margin-top: 2px; font: 600 12px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); }
+.am-ros-skel { width: 160px; height: 160px; border-radius: 50%; background: var(--color-background-elevated); }
+.am-note { margin-top: 8px; font: 400 12px/1.45 var(--font-serif); color: var(--color-text-muted); text-wrap: pretty; }
+.am-stamps { display: inline-flex; gap: 4px; vertical-align: -2px; }
+.am-stamps i { display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 18px; padding: 0 4px; border: 1px solid var(--color-border); font: 700 12px/1 var(--font-mono); color: var(--color-text-muted); }
+.am-stamps i.is-on { border-color: var(--color-text-primary); color: var(--color-text-primary); }
+.am-cfoot { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--color-text-primary); }
+.am-np { display: inline-flex; gap: 12px; }
+.am-np button { min-height: 32px; font: 600 12px/1 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-primary); }
+.am-np button:disabled { color: var(--color-text-muted); }
+
+@media (max-width: 760px) {
+  .am .pf-sky { height: clamp(320px, 46svh, 420px); min-height: 320px; }
+  .am .pf-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .am .pf-figs > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .am-row { grid-template-columns: 24px minmax(0, 1fr) auto; gap: 2px 8px; }
+  .am-asp, .am-fig { grid-column: 2 / -1; }
+  .am-fig { flex-direction: row; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; white-space: normal; }
+  .am-open { grid-row: 1; grid-column: 3; min-height: 44px; }
+  .am-huella { grid-template-columns: 1fr; }
+}
+
+/* drilled in (a sector or a buyer): the names come first — a shorter sky, the fila's figures step aside */
+.am.is-in .pf-sky { height: clamp(300px, 38svh, 360px); min-height: 300px; }
+.am.is-in .pf-figs { display: none; }
+.am.is-in .am-rank { margin-top: 12px; }
+@media (max-width: 760px) { .am.is-in .pf-sky { height: 260px; min-height: 260px; } }
+
+/* the labels follow the camera: clip them to the frame (the phone sky keeps overflow visible for the search list) */
+.am .pf-labels { overflow: hidden; }
+
+/* a sector in focus: the other constellations' names leave (they overlapped at the frame edge and stayed clickable) */
+.am .pf-sec.is-dim, .am .pf-lm.is-dim { visibility: hidden; }

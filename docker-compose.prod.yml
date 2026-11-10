@@ -1,0 +1,188 @@
+# RUBLI Production Deployment
+# Uses the optimized deploy database (~2.4 GB vs 6 GB)
+#
+# Usage:
+#   docker-compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#
+# Prerequisites:
+#   1. Copy .env.prod.example → .env.prod and set CORS_ORIGINS + ACME_EMAIL
+#   2. Ensure backend/RUBLI_DEPLOY.db exists (run: python backend/scripts/create_deploy_db.py)
+#   3. Point rubli.xyz DNS A record → server IP before starting (Caddy needs domain reachable)
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rubli-backend
+    volumes:
+      # A DIRECTORY mount (2026-10-26): the WAL/-shm live next to the DB on the host.
+      # The old single-file mount kept the WAL in the container layer; a recreate
+      # mid-checkpoint dropped it and tore sqlite_master (prod outage 2026-10-26).
+      - /var/lib/rubli-db:/app/data
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_PATH=/app/data/RUBLI_DEPLOY.db
+      - RUBLI_ENV=production
+      # Error reporting: empty = off. --env-file alone does not inject it (prod audit 2026-10-26).
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      # Set CORS_ORIGINS in .env.prod (e.g. https://rubli.xyz,http://37.60.232.109)
+      # IMPORTANT: if CORS_ORIGINS is unset the backend Python fallback applies
+      # (localhost:3009 only).  Always set this in .env.prod for production.
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - RUBLI_WRITE_KEY=${RUBLI_WRITE_KEY:?RUBLI_WRITE_KEY must be set in .env.prod}
+      # JWT signing secret — MUST be injected from .env.prod. Without it the
+      # backend (auth_jwt.py) falls back to a literal that is public in the
+      # source repo → forgeable tokens. Fail the deploy if it is unset.
+      - RUBLI_JWT_SECRET=${RUBLI_JWT_SECRET:?RUBLI_JWT_SECRET must be set in .env.prod}
+      # Comma-separated analyst emails allowed to review/promote/triage (require_admin).
+      # Empty → only X-Rubli-Key passes (aria-cron, ops scripts).
+      - RUBLI_ADMIN_EMAILS=${RUBLI_ADMIN_EMAILS:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          # 4608M, was 1536M (PROD_IO_DIAGNOSIS_2026-10-30 § Root causes 1): page cache of the 8.7 GB
+          # DB counts against this cgroup; at 1.5 G it thrashed, swapped and memcg-OOM-killed workers.
+          # Host 11 GB: 4608 + frontend 256 + caddy 256 + backup 512 leaves ~5 GB for the host.
+          memory: 4608M
+          cpus: '3'
+    networks:
+      - rubli-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      # SECURITY: the frontend gets NO write key — not as a build arg, not at runtime.
+      # Mutations authenticate with the user's JWT + the backend's RUBLI_ADMIN_EMAILS
+      # allow-list (docs/security/WRITE_KEY_FIX_2026-10-02.md).
+    container_name: rubli-frontend
+    # No host port binding — Caddy proxies to this container internally
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '1'
+    networks:
+      - rubli-network
+
+  # magyar service removed (2026-04-30) — separate study app that
+  # didn't belong in the RUBLI compose. Every deploy hit recurring
+  # container-name conflicts with rubli-magyar requiring manual
+  # docker rm -f. Build context (../magyar-study-app) wasn't even
+  # in this repo. If it's needed later, it should run from its own
+  # compose file, not piggyback on RUBLI's.
+
+  caddy:
+    image: caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f  # pinned 2026-10-15 (security INF-11)
+    container_name: rubli-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data        # Persists TLS certificates across restarts
+      - caddy_config:/config
+    environment:
+      - ACME_EMAIL=${ACME_EMAIL:-admin@rubli.xyz}
+    depends_on:
+      - frontend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '1'
+    networks:
+      - rubli-network
+
+  # aria-cron RETIRED 2026-10-06: its daily 03:00 HTTP trigger had failed (422) since
+  # Oct 3, and an unreviewed daily ARIA run would change tiers without owner review.
+  # ARIA now runs on the source DB and is transferred to prod deliberately
+  # (see .claude/WEEKEND_2026-10-05-followups.md). Prod also lacks contract_z_features.
+
+  backup-cron:
+    image: keinos/sqlite3@sha256:94f55fa207ce76f6253a1a1e0739d1e4923557596e214eab8f78e5558d28dde0  # pinned 2026-10-15 (security INF-11)
+    container_name: rubli-backup-cron
+    volumes:
+      - /var/lib/rubli-db:/db  # same directory as the backend: .backup sees the WAL
+      - rubli_backups:/backups
+    user: "0:0"  # reads the 0660 app-owned DB and writes the backups volume
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "Backup cron started — daily at 02:00 UTC"
+        while true; do
+          now=$$(date -u +%s)
+          target=$$(awk 'BEGIN{t=systime(); m=t-(t%86400); r=m+7200; if(r<=t)r+=86400; print r}')
+          wait_secs=$$(( $$target - $$now ))
+          echo "Next backup in $${wait_secs}s"
+          sleep $$wait_secs
+          stamp=$$(date -u +%Y%m%d_%H%M%S)
+          out="/backups/rubli_$${stamp}.db"
+          echo "$$(date -u) — Starting backup $$out"
+          # .backup, not cp: a consistent snapshot that includes committed WAL frames.
+          if sqlite3 /db/RUBLI_DEPLOY.db ".backup '$$out'" && [ "$$(sqlite3 "$$out" 'PRAGMA quick_check;')" = "ok" ]; then
+            echo "Backup complete: $$out ($$(du -sh "$$out" | cut -f1)), quick_check ok"
+            echo "{\"last_backup\": \"$$(date -u +%Y-%m-%dT%H:%M:%S+00:00)\", \"files\": [\"$$(basename "$$out")\"], \"size_bytes\": $$(stat -c %s "$$out")}" > /db/LAST_BACKUP.json
+          else
+            echo "Backup FAILED"; rm -f "$$out"
+          fi
+          # Rotate: keep the 3 newest (8+ GB each; 7 days filled the disk — prod audit 2026-10-26)
+          # only the nightly rubli_<YYYYMMDD>_<HHMMSS>.db files rotate: weekly/export/manual copies matched the old
+          # rubli_*.db glob and pushed real nightlies out (2026-10-27/28: one nightly left)
+          ls -1t /backups/rubli_20*.db 2>/dev/null | tail -n +4 | xargs -r rm -f
+          echo "Rotation done — listing backups:"
+          ls -lh /backups/rubli_*.db 2>/dev/null || echo "(no backups yet)"
+        done
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+    deploy:
+      resources:
+        limits:
+          memory: 512M  # .backup + quick_check of an 8 GB DB took > 1 h at 128M / 0.25 CPU
+          cpus: '1.0'
+    networks:
+      - rubli-network
+
+volumes:
+  caddy_data:
+  caddy_config:
+  rubli_backups:
+
+networks:
+  rubli-network:
+    driver: bridge

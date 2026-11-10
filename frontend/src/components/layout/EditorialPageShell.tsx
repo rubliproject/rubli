@@ -1,0 +1,146 @@
+import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import { cn } from '@/lib/utils'
+import { Skeleton } from '@/components/ui/skeleton'
+
+interface StatItem {
+  value: ReactNode
+  label: string
+  color?: string
+  sub?: string
+}
+
+// Canonical publisher stamp — rendered as a dateline between headline and
+// lede on every page. Cold-open reviewers flagged that naked editorial
+// claims ("One vendor took 133.2 billion pesos") need a visible publisher,
+// data source, and last-updated date before a journalist will trust them.
+// Pages can override via the `dateline` prop; the default covers every page.
+//
+// PARALLAX D1 § Change 6: the old stamp read "UPDATED APR 2026" in English on
+// every Spanish page, and claimed a refresh date the data does not have. The
+// federal bulk feed froze at Sep 2025 — the honest statement is the data
+// horizon, not a build date.
+const DEFAULT_DATELINE = {
+  en: 'BUILT BY RUBLI · DATA: CompraNet + ComprasMX 2002–2026 · COMPRANET TO SEP 2025, THEN COMPRASMX · 2026 PARTIAL',
+  es: 'HECHO POR RUBLI · DATOS: CompraNet + ComprasMX 2002–2026 · COMPRANET HASTA SEP 2025, DESPUÉS COMPRASMX · 2026 PARCIAL',
+} as const
+
+interface EditorialPageShellProps {
+  kicker: string                    // "ARIA QUEUE · 17 APR 2026"
+  headline: ReactNode               // serif, can contain accented spans
+  paragraph?: ReactNode             // optional 2–3 sentence editorial paragraph
+  stats?: StatItem[]                // 3–4 inline stats
+  meta?: ReactNode                  // top-right "v0.8.5 · synced 2m ago"
+  actions?: ReactNode               // optional CTA row below stat strip
+  dateline?: ReactNode              // byline/publisher stamp; defaults to canonical
+  loading?: boolean
+  severity?: 'critical' | 'high' | 'medium' | 'low'
+  className?: string
+  children: ReactNode
+}
+
+export function EditorialPageShell({
+  kicker, headline, paragraph, stats, meta, actions, dateline, loading, severity, className, children
+}: EditorialPageShellProps) {
+  const { i18n } = useTranslation()
+  const defaultDateline = i18n.language?.startsWith('es') ? DEFAULT_DATELINE.es : DEFAULT_DATELINE.en
+  const severityAccent = {
+    critical: 'border-risk-critical',
+    high:     'border-risk-high',
+    medium:   'border-risk-medium',
+    low:      'border-border',
+  }[severity ?? 'low']
+
+  return (
+    <div className={cn('space-y-0', className)}>
+      {/* Lede block */}
+      <header className={cn(
+        'border-b border-border/30 pb-7 mb-8',
+        severity && severity !== 'low' && `border-l-4 pl-5 ${severityAccent}`
+      )}>
+        {/* Top row: kicker + meta */}
+        <div className="flex items-start justify-between gap-4 mb-3">
+          {loading ? (
+            <Skeleton className="h-3 w-40" />
+          ) : (
+            <span className="lede-dateline">{kicker}</span>
+          )}
+          {meta && (
+            <span className="font-mono text-[12px] tracking-widest uppercase text-text-muted hidden sm:block flex-shrink-0">
+              {meta}
+            </span>
+          )}
+        </div>
+
+        {/* Headline */}
+        {loading ? (
+          <div className="space-y-2 mb-4">
+            <Skeleton className="h-9 w-3/4" />
+            <Skeleton className="h-9 w-1/2" />
+          </div>
+        ) : (
+          <h1 className="lede-headline measure-headline mb-3">{headline}</h1>
+        )}
+
+        {/* Dateline — publisher / data source / updated date. A journalist
+            cold-reading the page needs to know who published this and what
+            the data window is before trusting the lede. */}
+        {!loading && (
+          <p className="font-mono text-[12px] tracking-[0.14em] uppercase text-text-muted mb-5">
+            {dateline ?? defaultDateline}
+          </p>
+        )}
+
+        {/* Paragraph */}
+        {loading ? (
+          <div className="space-y-2 mb-6">
+            <Skeleton className="h-4 w-full max-w-prose" />
+            <Skeleton className="h-4 w-5/6 max-w-prose" />
+            <Skeleton className="h-4 w-4/6 max-w-prose" />
+          </div>
+        ) : paragraph ? (
+          <p className="lede-paragraph mb-6">{paragraph}</p>
+        ) : null}
+
+        {/* Stat strip */}
+        {stats && stats.length > 0 && (
+          <div className="stat-strip border-t border-border/40 pt-5">
+            {loading ? (
+              <>
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} className="stat-strip-item">
+                    <Skeleton className="h-7 w-20 mb-1" />
+                    <Skeleton className="h-2.5 w-14" />
+                  </div>
+                ))}
+              </>
+            ) : (
+              stats.map((stat, i) => (
+                <div key={i} className="stat-strip-item">
+                  <span
+                    className="stat-strip-value"
+                    style={stat.color ? { color: stat.color } : undefined}
+                  >
+                    {stat.value}
+                  </span>
+                  <span className="stat-strip-label">{stat.label}</span>
+                  {stat.sub && (
+                    <span className="font-mono text-[13px] text-text-muted tracking-wide mt-0.5">{stat.sub}</span>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {/* Actions row */}
+        {actions && (
+          <div className="mt-4 flex items-center gap-2 flex-wrap">{actions}</div>
+        )}
+      </header>
+
+      {/* Page acts / content */}
+      {children}
+    </div>
+  )
+}

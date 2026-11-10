@@ -1,0 +1,44 @@
+# RUBLI Caddy Configuration
+# Handles HTTPS with automatic Let's Encrypt certificates.
+# ACME_EMAIL env var is used for cert renewal notifications.
+
+{
+    email {$ACME_EMAIL}
+}
+
+# Serve via domain with HTTPS (active once DNS is pointed at this server)
+rubli.xyz {
+    # audit 11-07 #22: the 502s were deploy windows — while `frontend` is recreated, Docker DNS fails
+    # («dial tcp: lookup frontend … server misbehaving») and Caddy answered 502 at once. Retry the dial for up to
+    # 20 s so a visitor during a deploy waits a few seconds instead of seeing an error.
+    reverse_proxy frontend:80 {
+        lb_try_duration 20s
+        lb_try_interval 500ms
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=(), serial=(), bluetooth=(), browsing-topics=()"
+        Cross-Origin-Opener-Policy "same-origin"
+        -Server
+    }
+}
+
+# HSTS preload rule: the www → apex redirect must carry the HSTS header too
+# (SECURITY_HARDENING_2026-10-28 § 3).
+www.rubli.xyz {
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        -Server
+    }
+    redir https://rubli.xyz{uri} permanent
+}
+
+# Bare-IP fallback: redirect all plain-HTTP requests to the canonical domain
+:80 {
+    header -Server
+    redir https://rubli.xyz{uri} permanent
+}

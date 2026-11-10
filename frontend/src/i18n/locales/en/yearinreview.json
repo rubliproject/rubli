@@ -1,0 +1,97 @@
+{
+  "yearSelector": "Select Year",
+  "noData": "No data available for this year",
+  "contracts": "contracts",
+  "riskLabel": "Risk",
+  "allYears": "All Years",
+  "goToYear": "View {{year}} in review",
+  "sexenioYear": "Year {{current}}/{{total}}",
+  "heroStats": {
+    "totalContracts": "Total Contracts",
+    "totalSpending": "Total Spending",
+    "highRiskRate": "High-Risk Rate",
+    "topSector": "Top Sector",
+    "yoyChange": "YoY Change"
+  },
+  "lede": {
+    "pandemic": "{{year}} was defined by the health emergency. With {{contracts}} contracts and {{directPct}}% awarded directly, emergency spending fundamentally reshaped public procurement patterns.",
+    "transition": "{{year}} was a year of presidential transition. {{contracts}} contracts totaling {{spending}} reflect the close of one administration and the start of another.",
+    "highRisk": "{{year}} recorded a high-risk rate of {{riskPct}}%. {{contracts}} contracts totaling {{spending}} warrant closer scrutiny.",
+    "default": "In {{year}}, the federal government processed {{contracts}} contracts totaling {{spending}}. The direct-award rate was {{directPct}}%."
+  },
+  "spotlight": {
+    "label": "Spotlight",
+    "topVendorLabel": "Top vendor by value in {{year}}"
+  },
+  "yoyDeltas": {
+    "directAward": "Direct Award",
+    "avgRisk": "Avg. Risk"
+  },
+  "findings": {
+    "highDirectAward": "{{pct}}% of contracts awarded directly — concentration of discretionary power"
+  },
+  "administrationBanner": {
+    "title": "Presidential Administration"
+  },
+  "sectorAll": {
+    "sectionLabel": "Full Sector Landscape",
+    "headline": "All 12 sectors in {{year}} — complete spending distribution",
+    "subtitle": "Total contracted value and contract count by sector. Click any bar to open the sector profile.",
+    "footerHint": "Click any sector to open its detailed profile"
+  },
+  "sectorGrowthFull": {
+    "sectionLabel": "Growth vs Contraction",
+    "headline": "Which sectors grew and which contracted vs {{prior}}",
+    "subtitle": "Year-over-year change in contracted value. Green = growth, red = contraction.",
+    "noComparison": "No prior-year data ({{prior}}) available for comparison."
+  },
+  "riskEvolution": {
+    "sectionLabel": "Risk Evolution",
+    "headline": "{{year}} risk profile vs historical average",
+    "subtitle": "Risk level distribution compared to the 2002-2026 average and RUBLI's calibration ceiling.",
+    "thisYear": "This year",
+    "historicalAvg": "2002-2026 average",
+    "oecdTarget": "calibration ceiling (15%)",
+    "aboveOECD": "Above the calibration ceiling",
+    "belowOECD": "Within the calibration target"
+  },
+  "procedureType": {
+    "sectionLabel": "Procedure Type",
+    "headline": "Direct award vs competitive bidding",
+    "subtitle": "In {{year}}, {{directPct}}% of contracts were awarded directly, without formal competition.",
+    "direct": "Direct Award",
+    "competitive": "Competitive",
+    "historicalContext": "The 2002-2026 historical average is {{avg}}%. The EU scoreboard rates 10% or more unsatisfactory.",
+    "oecdLimit": "EU scoreboard: 10%"
+  },
+  "topVendorsFull": {
+    "sectionLabel": "Top Beneficiaries",
+    "headline": "The biggest vendors of {{year}}",
+    "subtitle": "Ranked by total contracted value. RFC coverage is limited before 2018.",
+    "showAll": "Show all {{count}} vendors",
+    "showLess": "Show less",
+    "rankColumn": "#",
+    "vendorColumn": "Vendor",
+    "valueColumn": "Value",
+    "contractsColumn": "Contracts",
+    "riskColumn": "Risk"
+  },
+  "notableRisks": {
+    "sectionLabel": "Notable Risk Contracts",
+    "headline": "The 10 highest-risk contracts in {{year}}",
+    "subtitle": "Contracts with the highest risk scores under model v0.9.2. Not proof of wrongdoing — these are investigation priorities.",
+    "noRiskContracts": "No high-risk contracts found for this year.",
+    "vendor": "Vendor",
+    "institution": "Institution"
+  },
+  "monthly": {
+    "sectionLabel": "Month-by-Month Spending",
+    "headline": "When the money was spent in {{year}}",
+    "subtitle": "Monthly distribution of contracted spending. December is colored amber — the year-end spike is a classic red flag.",
+    "decemberSpike": "December spike",
+    "decemberSpikeNote": "{{pct}}% of annual spending concentrated in December — {{label}}",
+    "abnormal": "anomalous",
+    "elevated": "elevated",
+    "normal": "normal"
+  }
+}

@@ -1,0 +1,275 @@
+{
+  "chapters": {
+    "subject": "Sujeto",
+    "timeline": "Cronología",
+    "pattern": "Patrón",
+    "network": "Red",
+    "money": "Dinero",
+    "verdict": "Veredicto",
+    "headings": {
+      "subject": "Capítulo I · El sujeto",
+      "timeline": "Capítulo II · La cronología",
+      "network": "Capítulo III · La red",
+      "money": "Capítulo IV · El dinero",
+      "pattern": "Capítulo V · El patrón",
+      "verdict": "Capítulo VI · El veredicto"
+    }
+  },
+  "patterns": {
+    "P1": {
+      "label": "Monopolio institucional",
+      "description": "Concentra una proporción desproporcionada de contratos del sector — posible captura de mercado por medios no competitivos."
+    },
+    "P2": {
+      "label": "Proveedor de baja huella (sin RFC)",
+      "description": "Exhibe indicadores de empresa fachada: historial operativo corto, pocos contratos, adjudicaciones directas casi al 100%, presencia no verificable."
+    },
+    "P3": {
+      "label": "Intermediario",
+      "description": "Actúa como entidad de paso, ganando contratos fuera de su industria principal y probablemente revendiéndolos a proveedores reales."
+    },
+    "P4": {
+      "label": "Patrón de coadjudicación",
+      "description": "Múltiples proveedores muestran licitación coordinada — rotación, ofertas de cobertura, o asignación geográfica del mercado."
+    },
+    "P5": {
+      "label": "Monto fuera de rango",
+      "description": "El contrato es mucho más grande (o más chico) que los de su tipo: una señal de tamaño, no un precio unitario medido."
+    },
+    "P6": {
+      "label": "Dependencia de un solo comprador",
+      "description": "Recibe una proporción desproporcionada de una sola institución, típicamente mediante adjudicaciones directas."
+    },
+    "P7": {
+      "label": "Vinculado a un caso documentado",
+      "description": "Integrado en una red de co-contratación, sugiriendo anillos coordinados de proveedores."
+    }
+  },
+  "subject": {
+    "riskBadge": "riesgo {{level}}",
+    "ariaTier": "Nivel ARIA {{tier}}",
+    "scrollHint": "Continuar",
+    "introText": "Este hilo de investigación sigue la historia de contratación de {{name}}, trazando los patrones, relaciones y flujos financieros que activaron la detección automatizada. Desplázate para seguir la evidencia."
+  },
+  "kpi": {
+    "totalValue": "Valor total",
+    "contracts": "Contratos",
+    "directAwards": "Adjudicaciones directas",
+    "highRisk": "Alto riesgo"
+  },
+  "notes": {
+    "allContracts": "Todos los contratos adjudicados, 2002–2026",
+    "vsNational": "vs. ~48% promedio nacional",
+    "oecdBenchmark": "Meta de calibración: 2–15%"
+  },
+  "timeline": {
+    "heading": "{{total}} Contratos, {{minYear}}–{{maxYear}}",
+    "dotDescription": "Cada punto es un año. El tamaño refleja el valor total. El color refleja el riesgo promedio. Pase el cursor para más detalles.",
+    "hourglassDescription": "Una barra por año. La altura refleja el valor total de contratos (escala logarítmica); el color refleja el riesgo promedio. El punto pequeño debajo de cada barra muestra el número relativo de contratos — una barra alta sobre un punto pequeño significa que el dinero se concentró en pocos contratos; una barra corta sobre un punto grande significa muchos contratos pequeños.",
+    "hourglassLegend": "BARRA = VALOR TOTAL · COLOR = RIESGO PROMEDIO · PUNTO BAJO EL EJE = NÚMERO DE CONTRATOS",
+    "countAxis": "contratos",
+    "valueAxis": "log(valor)",
+    "era": {
+      "stable": "Era estable",
+      "watch": "Era de vigilancia",
+      "alert": "Era de alerta"
+    },
+    "eraAll": "Todos",
+    "eraNarrative": "abre en {{year}}. {{share}}% del valor total (≈ {{value}}) fluyó durante años de alto riesgo.",
+    "filter": "Filtrar:",
+    "unpin": "Desfijar año",
+    "detail": {
+      "hovering": "Año señalado",
+      "pinned": "Año fijado",
+      "spotlight": "Año destacado",
+      "contracts": "Contratos",
+      "value": "Valor",
+      "ofTotal": "del total",
+      "avgRisk": "Riesgo prom."
+    },
+    "legend": {
+      "sizeLabel": "Tamaño = valor anual de contratos"
+    },
+    "sourceFooter": "Fuente: COMPRANET · RUBLI v0.9.2"
+  },
+  "pattern": {
+    "heading": "Lo que encontró el algoritmo",
+    "description": "Las puntuaciones de riesgo se construyen a partir de 16 características z-score normalizadas contra los promedios del sector. Estos son los factores que impulsaron la puntuación de este proveedor.",
+    "raisesRisk": "▲ aumenta el riesgo",
+    "lowersRisk": "▼ reduce el riesgo",
+    "raises": "aumenta",
+    "lowers": "reduce",
+    "sectorReference": "p25–p75 del sector",
+    "diagnosis": "{{anomalous}} de {{total}} valores fuera del rango de referencia del sector",
+    "noData": "Datos de atribución de características no disponibles para este proveedor.",
+    "shapNote": "Los valores positivos aumentan la puntuación de riesgo (rojo). Los negativos la reducen (verde). Los valores son contribuciones de características estilo SHAP: β_i × (z_i − E[z_i]).",
+    "sourceFooter": "Fuente: COMPRANET · RUBLI v0.9.2"
+  },
+  "network": {
+    "heading": "Conexiones y relaciones",
+    "description": "Las redes de proveedores revelan anillos de co-contratación, entidades compartidas y dependencias institucionales invisibles en el análisis contrato por contrato.",
+    "constellationDescription": "Una topología de alcance. El anillo exterior marca las instituciones que este proveedor atendió; el interior marca los proveedores que licitaron junto a él. La forma revela si este proveedor opera dentro de una red o como fuente única.",
+    "topology": {
+      "tightSingleSource": "Perfil estrecho de fuente única. Sin co-licitantes, alcance institucional limitado — típico de captura o contratos de fuente exclusiva.",
+      "broadSingleSource": "Perfil amplio de fuente única. Sin licitación coordinada, pero contratos repartidos entre muchas instituciones — posible dominio por adjudicación directa.",
+      "thinNetwork": "Red de co-licitación delgada. El proveedor licita ocasionalmente junto a un grupo pequeño.",
+      "denseNetwork": "Red de co-licitación densa. El proveedor licita consistentemente con el mismo grupo — revisar por patrones de rotación o señuelo."
+    },
+    "noCoordinatedBidding": "── SIN LICITACIÓN COORDINADA ──",
+    "noCoordinatedBiddingNote": "fuente única / dominio por adjudicación directa",
+    "ringLabels": {
+      "institutions": "INSTITUCIONES",
+      "shown": "MOSTRADAS",
+      "sector": "SECTOR",
+      "sectors": "SECTORES",
+      "coBidder": "CO-LICITANTE",
+      "coBidders": "CO-LICITANTES"
+    },
+    "topologyRead": "Lectura",
+    "mostFrequent": "Co-licitante más frecuente:",
+    "sharedProcedures": "{{count}} procedimientos compartidos",
+    "institutionalRibbonLabel": "HUELLA INSTITUCIONAL",
+    "institutionalRibbonHeading": "A dónde aterrizaron las relaciones, año por año",
+    "institutionalRibbonDescription": "Cada carril es una institución. La cinta abarca los años en que esa institución recibió contratos de este proveedor; el grosor codifica el valor total, el color codifica el riesgo promedio. Ordenadas de mayor a menor valor. Haga clic en cualquier carril para abrir la institución.",
+    "ribbonSourceFooter": "Fuente: COMPRANET · RUBLI v0.9.2 · Instituciones con ≥1 contrato",
+    "institutionsServed": "Instituciones atendidas",
+    "sectorsActive": "Sectores activos",
+    "institutionsNote": {
+      "few": "Muy pocas instituciones — posible captura institucional.",
+      "many": "Amplio alcance institucional — perfil de proveedor diversificado.",
+      "moderate": "Diversidad institucional moderada."
+    },
+    "sectorsNote": {
+      "single": "Presencia en un solo sector — típico de especialistas.",
+      "multi": "Actividad multisectorial — puede indicar comportamiento de intermediario.",
+      "moderate": "Proveedor multisectorial."
+    },
+    "coBiddingPartners": "Socios en licitación",
+    "noCoBidders": "No se detectaron patrones de licitación coordinada.",
+    "openNetworkGraph": "Abrir gráfico de red completo",
+    "openNetworkGraphDesc": "Grafo interactivo con co-licitantes, entidades relacionadas y comunidades de proveedores.",
+    "coBidderAnalysis": "Análisis de co-licitantes",
+    "coBidderAnalysisDesc": "Proveedores que aparecen consistentemente en los mismos procedimientos — posibles anillos de coordinación."
+  },
+  "roles": {
+    "possibleDecoy": "Posible señuelo",
+    "rotationPattern": "Patrón de rotación",
+    "possibleAccomplice": "Posible cómplice",
+    "coBidder": "Co-licitante"
+  },
+  "money": {
+    "heading": "{{value}} a lo largo del tiempo",
+    "description": "Valor anual de contratos y trayectoria de riesgo — a dónde fue el dinero y cuándo aumentó el riesgo.",
+    "staircaseDescription": "El recorrido del dinero. Cada peldaño es un año. El color del peldaño es el riesgo promedio de ese año. Cuanto más alto el peldaño, mayor el salto interanual — las anotaciones marcan los tres mayores. La cifra final es el total acumulado.",
+    "flowedIn": "fluyó en {{year}}",
+    "peakRiskYearShort": "año pico de riesgo",
+    "byYear": "para {{year}}",
+    "detail": {
+      "delta": "Aporte del año",
+      "cumulative": "Acumulado",
+      "toDate": "hasta la fecha"
+    },
+    "peakByValue": "Año pico por valor",
+    "peakByRisk": "Año pico por riesgo",
+    "peakValueLabel": "{{year}} — {{value}}",
+    "peakRiskLabel": "{{year}} — {{pct}}% puntuación prom.",
+    "chartValueLabel": "Valor de Contratos por Año (millones MXN)",
+    "chartRiskLabel": "Puntuación de riesgo promedio por año (%)",
+    "riskNote": "Umbrales de riesgo: Crítico ≥60%, Alto ≥40%, Medio ≥25%. Meta de calibración: 2–15% de alto riesgo."
+  },
+  "verdict": {
+    "heading": "Resumen de investigación",
+    "description": "Las señales estadísticas justifican atención. Una puntuación alta no es prueba de irregularidades — significa que este proveedor se asemeja estrechamente a patrones de corrupción documentados.",
+    "theQuestion": "La pregunta",
+    "theEvidence": "La evidencia",
+    "theFinding": "El hallazgo",
+    "theNextStep": "El siguiente paso",
+    "questionText": "¿La historia de contratación de este proveedor amerita investigación?",
+    "finding": {
+      "critical": "Los datos justifican una investigación urgente.",
+      "high": "Las señales estadísticas justifican escrutinio.",
+      "medium": "Anomalías presentes. Se recomienda verificación.",
+      "low": "Sin señales destacadas frente a la línea base del sector."
+    },
+    "evidence": {
+      "signal": "Señal estadística",
+      "pattern": "Patrón detectado",
+      "aria": "Clasificación ARIA",
+      "external": "Validación externa",
+      "network": "Red"
+    },
+    "tierIps": "Nivel {{tier}} · IPS {{ips}}",
+    "networkRow": "{{coBidders}} co-licitante{{coBiddersPlural}} · {{institutions}} inst. · {{sectors}} sector{{sectorsPlural}}",
+    "readFullMemo": "+ Leer memorándum completo",
+    "collapseMemo": "— Contraer",
+    "riskIndicatorScore": "Puntuación de indicador de riesgo",
+    "outOf100": "sobre 100",
+    "ariaIps": "IPS ARIA: {{ips}} · Nivel {{tier}}",
+    "efosLabel": "SAT EFOS Definitivo",
+    "sfpLabel": "Sancionado por SFP",
+    "groundTruthLabel": "En la base de casos",
+    "groundTruthShort": "GT",
+    "ariaMemoTitle": "Memorándum de inteligencia ARIA",
+    "fullVendorProfile": "Perfil completo del proveedor",
+    "exportPdf": "Exportar Informe PDF",
+    "addToWorkspace": "Agregar al espacio de trabajo",
+    "methodologyNote": "Las puntuaciones de riesgo miden la similitud con casos etiquetados en contratos federales mexicanos (2002–2026). Las puntuaciones son indicadores estadísticos para la clasificación de investigaciones — no son prueba de irregularidades. Modelo v0.9.2, AUC encadenado hacia adelante 0.827 (entrenado con años anteriores, probado en el siguiente). Ver",
+    "methodologyLink": "metodología completa",
+    "viewArticle": "Ver artículo →",
+    "webEvidence": "Evidencia web",
+    "webEvidenceCentinela": "Evidencia web · prensa y registros",
+    "webVerdictSanction": "SANCIÓN",
+    "webVerdictCorruption": "CORRUPCIÓN",
+    "webVerdictRisk": "RIESGO",
+    "webVerdictExculpatory": "EXCULP.",
+    "webVerdictNeutral": "NEUTRAL",
+    "documentedSanction": "Sanción documentada",
+    "newsMention": "Mención en noticias",
+    "pressCoverage": "Cobertura periodística",
+    "noCoverageFound": "Sin cobertura encontrada",
+    "riskIndicatorLabel": "Indicador de riesgo",
+    "riskLevelLabel": "Nivel de riesgo",
+    "assessmentLabel": "Evaluación"
+  },
+  "press": {
+    "heading": "Menciones en prensa y registros externos",
+    "description": "Evidencia web — menciones en prensa obtenidas de fuentes de noticias públicas y registros gubernamentales.",
+    "noResults": "No se encontró cobertura de prensa externa para este proveedor.",
+    "listLabel": "Menciones en prensa",
+    "allNeutral": "Todos los artículos recuperados fueron clasificados como neutrales — no se detectó lenguaje de corrupción o riesgo.",
+    "chapterLabel": "§ PRENSA · REGISTROS"
+  },
+  "institutional": {
+    "label": "Institución",
+    "valueContracts": "Valor · contratos",
+    "concentration": "Concentración",
+    "likelyCapture": "(captura institucional probable)",
+    "footprintLabel": "§ HUELLA INSTITUCIONAL",
+    "totalMxn": "MXN total",
+    "numContracts": "# Contratos",
+    "yearRange": "Período"
+  },
+  "diagnostic": {
+    "diagnosisLabel": "Diagnóstico",
+    "featureLabel": "Característica",
+    "shapLabel": "SHAP",
+    "tailRaisesRisk": "fila (|z| ≥ 1) aumenta riesgo",
+    "withinRange": "dentro del rango o protector"
+  },
+  "disclosure": {
+    "label": "Lo que este hilo no puede decirte",
+    "body": "El conjunto de datos COMPRANET tiene vacíos estructurales conocidos. La cobertura de RFC (identificación fiscal del proveedor) es desigual entre periodos (0.1% en 2002–2010, 47% en 2023+). Los datos de beneficiario controlador no se rastrean. Los documentos contractuales (alcance real del trabajo, entregables, modificaciones) no están en este conjunto. Las relaciones de subcontratación no están expuestas. La puntuación de riesgo mide similitud estadística con patrones de corrupción documentados — no es prueba de irregularidades. Trata cada alerta como una hipótesis a verificar, no como un veredicto."
+  },
+  "nav": {
+    "back": "Atrás",
+    "redThread": "Hilo Rojo",
+    "fullProfile": "Perfil completo"
+  },
+  "loading": "Construyendo hilo de investigación…",
+  "errors": {
+    "invalidId": "ID de proveedor no válido.",
+    "loadFailed": "No se pudo cargar la información. Vuelva a intentarlo más tarde.",
+    "goBack": "Volver",
+    "vendorNotFound": "Proveedor no encontrado."
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "kicker": "INSTITUCIONES · LA CALIFICACIÓN",
+  "meta": "FEDERAL · 2002–2025 · v0.9.2",
+  "headline": {
+    "beforeNone": "De {{total}} {{who}}, ",
+    "accentNone": "ninguno alcanza Excelente",
+    "afterNone": " — y {{failing}} operan en deficiencia o peor.",
+    "beforeSome": "De {{total}} {{who}}, solo ",
+    "accentSome": "{{n}} alcanzan Excelente",
+    "afterSome": " — y {{failing}} operan en deficiencia o peor."
+  },
+  "lede": "{{name}} concentra {{money}} en contratos de riesgo alto y crítico — la exposición más alta {{where}}. La posición en la placa de abajo es el puntaje de integridad (más a la derecha, mejor); la altura del trazo es el dinero en riesgo.",
+  "ledeScorecard": "Las calificaciones son de la ficha de transparencia de RUBLI. En {{total}} {{who}}, el pilar más débil es {{pillar}}: en promedio obtienen el {{pct}}% de sus puntos.",
+  "ledeScorecardShort": "Las calificaciones son de la ficha de transparencia de RUBLI.",
+  "tableKicker": "Tabla general",
+  "tableHeadline": "Clasificación completa — {{total}} instituciones",
+  "acts": {
+    "one": "LAS CABEZAS DE SERIE",
+    "two": "LA CLASIFICACIÓN COMPLETA"
+  },
+  "histogram": {
+    "kicker": "LA FORMA DE LA RENDICIÓN DE CUENTAS",
+    "headline": "Distribución de puntuaciones entre {{total}} instituciones federales",
+    "sub": "Cada institución cae en una de cinco bandas. La mediana es {{median}}.",
+    "bandLabel": "{{min}}–{{max}}",
+    "ariaLabel": "Histograma de distribución de puntuaciones agrupadas en bandas de 20 puntos"
+  },
+  "boleta": {
+    "title": "La boleta — cinco pilares"
+  },
+  "peerPercentileLine": "Peor que el {{pct}}% de su sector",
+  "confidenceLine": "Confianza: {{band}}",
+  "p90Line": "Indicador de riesgo P90 {{score}}",
+  "moneyAtRiskLine": "{{money}} en riesgo",
+  "expandRow": "Mostrar desglose de pilares — {{name}}",
+  "collapseRow": "Ocultar desglose de pilares — {{name}}",
+  "openDossier": "Abrir expediente completo",
+  "finding": {
+    "critical": "Solo el {{pct}}% de instituciones alcanza nivel Satisfactorio o superior. {{failing}} se encuentran en nivel Crítico.",
+    "normal": "Solo el {{pct}}% de las {{total}} instituciones evaluadas alcanza nivel Satisfactorio o superior."
+  },
+  "scope": {
+    "label": "Alcance",
+    "federal": "Federal (APF)",
+    "subnational": "Subnacional",
+    "all": "Todas",
+    "federalOnly": "Federal (APF)",
+    "disclaimerFederal": "Alcance federal — las dependencias de la Administración Pública Federal validadas (IMSS · PEMEX · CFE · secretarías). Las calificaciones son absolutas, no en curva: ninguna dependencia federal mexicana alcanza 'Excelente' por mérito. El Cuadro de Honor y las Banderas Rojas excluyen instituciones con menos de 30 contratos.",
+    "disclaimerSubnational": "Instituciones estatales y municipales, en su propio tablero — sus muestras pequeñas y procedimientos locales no son comparables con los estándares federales. Nunca se mezclan con la clasificación federal.",
+    "disclaimerAll": "Todas las instituciones de CompraNet, federales y subnacionales juntas. Use los tableros separados para clasificaciones comparables."
+  },
+  "filters": {
+    "searchPlaceholder": "Buscar instituciones…",
+    "sectorLabel": "Sector",
+    "allSectors": "Todos los sectores",
+    "allTiers": "Todas las calificaciones",
+    "adjustFilters": "Ajuste los filtros o la búsqueda.",
+    "search": "Buscar instituciones",
+    "tier": "Nivel",
+    "results": "{{num}} instituciones"
+  },
+  "stats": {
+    "totalScored": "Instituciones evaluadas",
+    "medianScore": "Puntuación mediana",
+    "topPerformer": "Mejor institución",
+    "worstPerformer": "Institución más débil",
+    "outOfHundred": "/ 100",
+    "evaluated": "Instituciones evaluadas",
+    "critical": "Deficientes o críticas",
+    "median": "Puntuación mediana",
+    "tiers": "Niveles",
+    "tiersRange": "Excelente → Crítico"
+  },
+  "statsAriaLabel": "Estadísticas generales",
+  "pagination": {
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "pageOf": "Página {{page}} de {{total}}",
+    "ariaLabel": "Paginación",
+    "previousAriaLabel": "Página anterior",
+    "nextAriaLabel": "Página siguiente"
+  },
+  "hallazgo": "HALLAZGO",
+  "columns": {
+    "institution": "Institución",
+    "grade": "Nivel",
+    "score": "Calificación",
+    "moneyAtRisk": "Dinero en riesgo",
+    "trend": "Tendencia",
+    "percentile": "Percentil nacional"
+  },
+  "tiers": {
+    "Excelente": "Excelente",
+    "Satisfactorio": "Satisfactorio",
+    "Regular": "Regular",
+    "Deficiente": "Deficiente",
+    "Critico": "Crítico"
+  },
+  "distribution": {
+    "title": "Distribución por nivel de transparencia",
+    "ariaLabel": "Distribución por nivel de transparencia"
+  },
+  "trend": {
+    "improving": "Mejorando",
+    "stable": "Estable",
+    "declining": "Deteriorando",
+    "none": "Sin datos de tendencia"
+  },
+  "percentileLabel": "Percentil {{n}}",
+  "tableAriaLabel": "Clasificación de instituciones",
+  "empty": "Ninguna institución coincide con los filtros actuales.",
+  "loadingShort": "Cargando…",
+  "error": "Error al cargar las clasificaciones. Vuelva a intentarlo.",
+  "sortAriaLabel": "Ordenar por {{label}}",
+  "dossierLinkAriaLabel": "Abrir expediente completo de {{name}}",
+  "dossierLinkTitle": "Abrir expediente completo",
+  "methodologyFootnote": "Índice de Salud de Contrataciones de RUBLI v0.9.2 · COMPRANET 2002–2025 · Metodología OCDE / FMI · Fuente: COMPRANET / SHCP",
+  "tabs": {
+    "ranking": "Clasificación",
+    "fichas": "Fichas",
+    "reporte": "Reporte",
+    "ariaLabel": "Vistas de instituciones"
+  },
+  "exposure": {
+    "kicker": "Dinero en riesgo",
+    "headline": "Las mayores exposiciones que la calificación no revela",
+    "sub": "Ordenado por el valor que fluye por contratos de riesgo alto y crítico — un eje distinto de la transparencia. Instituciones con 100+ contratos."
+  },
+  "plate": {
+    "eyebrow": "PLACA · I — EL ESPECTRO DEL PADRÓN",
+    "emptyExcelente": "Ninguna institución federal alcanza esta banda",
+    "medianTag": "MEDIANA {{score}}",
+    "tooltipScore": "Puntuación {{score}}/100",
+    "tooltipContracts": "{{n}} contratos",
+    "unavailableSubnational": "El Espectro del Padrón solo grafica el tablero federal — las instituciones estatales y municipales tienen tamaños de muestra y procedimientos incomparables. Cambie al alcance Federal para ver la placa.",
+    "unavailableAll": "El Espectro del Padrón solo grafica el tablero federal. Cambie al alcance Federal para ver la placa.",
+    "emptyExcelenteBand": "Ninguna institución federal alcanza la banda Excelente (80–100).",
+    "bandsLegend": "Bandas, de izquierda a derecha"
+  },
+  "methodologyLink": "Metodología",
+  "zeroMoneyAtRisk": "Sin contratos de riesgo alto o crítico",
+  "thinSample": "Debajo del piso de confiabilidad de {{n}} contratos — se lista aquí, pero queda fuera del titular, la placa, el cuadro de honor y las banderas rojas",
+  "confidenceBands": {
+    "wide": "baja",
+    "medium": "media",
+    "narrow": "alta",
+    "high": "muy alta"
+  },
+  "lastContract": "último contrato {{year}}",
+  "lastContractTitle": "Sin contratos desde {{year}} — fuera de la ventana de funcionarios 2018+",
+  "lowestInSector": "La más baja de su sector",
+  "redSignalsLine_one": "{{count}} señal en rojo",
+  "redSignalsLine_other": "{{count}} señales en rojo",
+  "listStatus": "{{num}} instituciones · página {{page}} de {{total}} · ordenadas por {{label}}",
+  "scopeWho": {
+    "federal": "compradores federales",
+    "subnational": "compradores estatales y municipales",
+    "all": "compradores en CompraNet"
+  },
+  "scopeWhere": {
+    "federal": "del padrón federal",
+    "subnational": "del padrón subnacional",
+    "all": "en todo CompraNet"
+  }
+}

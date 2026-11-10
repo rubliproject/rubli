@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+  <!-- RUBLI «El Expediente Abierto»: three records, the middle one pulled out in risk red -->
+  <rect width="40" height="40" rx="8" fill="#1a1714"/>
+  <g transform="translate(4 4) scale(.8)">
+    <rect x="5" y="6" width="24" height="7" fill="#f5f2ed"/>
+    <rect x="11" y="16.5" width="24" height="7" fill="#ef4444"/>
+    <rect x="5" y="27" width="24" height="7" fill="#f5f2ed"/>
+  </g>
+</svg>

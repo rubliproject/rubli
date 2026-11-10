@@ -1,0 +1,143 @@
+/* «Plataforma» reading pages (Plataforma.tsx). Tokens only; 12 px floor; --font-serif / --font-sc / --font-mono. */
+
+/* the sheet is a flex item in the app shell: let the wrap shrink to the viewport (the sticky index scrolls inside it) */
+.plt > .ct-wrap { min-width: 0; width: 100%; }
+/* focus and anchors land below the sticky index, never under it (WCAG 2.4.11) */
+html:has(.plt) { scroll-padding-top: 64px; }
+
+/* head: title column 7fr | figures ledger 5fr (the dossier cover's tracks) */
+.plt-head { display: grid; grid-template-columns: 7fr 5fr; gap: 16px 48px; align-items: start; padding-top: 24px; }
+/* left column: the lede, the sibling pages, the figures ledger */
+.plt-head > div { display: flex; flex-direction: column; gap: 8px; }
+.plt-head.is-solo { grid-template-columns: 1fr; }
+.plt-head > * { min-width: 0; }
+.plt-lede { font-size: 15px; line-height: 1.5; color: var(--ct-ink); text-wrap: pretty; }
+.plt-pages { display: flex; flex-wrap: wrap; gap: 0 24px; }
+.plt-pages a { display: inline-flex; align-items: center; min-height: 32px; font-size: 15px; color: var(--ct-gray); text-decoration: none; box-shadow: inset 0 -2px 0 transparent; transition: color var(--dur-press) ease-out, box-shadow var(--dur-state) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .plt-pages a:hover { color: var(--ct-ink); } }
+.plt-pages a[aria-current] { color: var(--ct-ink); font-weight: 600; box-shadow: inset 0 -2px 0 var(--ct-ink); }
+.plt-pages a:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+
+/* the figures: label left, value right, one tab stop */
+.plt-facts { border-top: 2px solid var(--ct-ink); }
+.plt-facts > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 16px; align-items: baseline; padding: 2px 0; border-bottom: 1px solid var(--ct-rule); }
+.plt-facts dt { font-size: 14px; line-height: 1.4; color: var(--color-text-secondary); }
+.plt-facts dd { margin: 0; text-align: right; font: 600 var(--text-fig)/1.2 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ct-ink); }
+/* sub-labels are words («16 carry weight», «calibration target»): the body face, not mono (review 2026-10-29) */
+.plt-facts dt small { margin-left: 8px; font: 400 13px/1.4 var(--font-serif); font-variant-numeric: lining-nums tabular-nums; color: var(--ct-gray); }
+.plt-facts a { color: inherit; }
+
+/* a layer: h2 | its answer, over a 2px ink rule */
+.plt-sec { margin-top: 32px; }
+.plt-sec-head { display: grid; grid-template-columns: minmax(200px, 3fr) 9fr; gap: 4px 48px; align-items: baseline; padding-top: 12px; border-top: 2px solid var(--ct-ink); }
+.plt-sec-head.is-solo { grid-template-columns: 1fr; }
+.plt-sec-head h2 { font: 600 22px/1.2 var(--font-serif); letter-spacing: -.01em; color: var(--ct-ink); text-wrap: balance; }
+.plt-claim { font-size: 18px; line-height: 1.45; color: var(--ct-ink); text-wrap: pretty; }
+.plt-body { margin-top: 16px; font-size: 16px; line-height: 1.6; color: var(--ct-ink); }
+.plt-body > * + * { margin-top: 16px; }
+.plt-body p { text-wrap: pretty; }
+.plt-body h3 { font: 600 16px/1.4 var(--font-serif); color: var(--ct-ink); text-wrap: balance; }
+.plt-body h3 + * { margin-top: 8px; }
+
+/* prose: two balanced columns, whole blocks per column */
+.plt-prose { columns: 2; column-gap: 48px; }
+.plt-prose > * { break-inside: avoid; }
+.plt-prose > * + * { margin-top: 12px; }
+.plt-prose h3 { break-after: avoid; }
+/* a lone paragraph spans both columns (never split mid-sentence) */
+.plt-prose > :only-child { column-span: all; }
+/* /methodology balance: tighter findings beside the ledger so both columns end together */
+/* side notes at the 15 px body size, so the findings end with the ledger (Source Serif runs taller than Spectral) */
+.plt .mt-aside p { font-size: 15px; line-height: 1.45; }
+
+.plt-mono { font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+
+/* label–value ledgers inside a layer */
+.plt-ledger { border-top: 1px solid var(--ct-ink); }
+.plt-ledger > div { display: grid; grid-template-columns: minmax(180px, 4fr) 8fr; gap: 4px 24px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--ct-rule); }
+.plt-ledger dt { font-weight: 600; overflow-wrap: anywhere; }
+.plt-ledger dd { margin: 0; overflow-wrap: anywhere; }
+.plt-ledger dt.plt-mono { font-weight: 400; color: var(--ct-ink); }
+
+/* the distribution strip: one proportional bar, 2px surface gaps, labelled key under it */
+.plt-strip { margin: 0; }
+.plt-strip-bar { display: flex; gap: 2px; height: 16px; }
+.plt-strip-bar > span { flex-basis: 0; min-width: 3px; }
+.plt-strip-bar > span:first-child { border-radius: 4px 0 0 4px; }
+.plt-strip-bar > span:last-child { border-radius: 0 4px 4px 0; }
+.plt-strip-key { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px 24px; margin-top: 12px; }
+.plt-strip-key li { display: grid; grid-template-columns: 12px auto 1fr; gap: 0 8px; align-items: baseline; }
+.plt-sw { width: 12px; height: 12px; border-radius: 2px; align-self: center; }
+.plt-strip-key b { font-weight: 600; }
+.plt-strip-key .plt-mono { justify-self: start; }
+.plt-strip-pct { grid-column: 2 / -1; font: 600 var(--text-fig)/1.2 var(--font-serif); /* no hero numerals (DESIGN.md §0.1) */ font-variant-numeric: lining-nums tabular-nums; }
+.plt-strip-n { grid-column: 2 / -1; font: 400 13px/1.45 var(--font-mono); color: var(--ct-gray); }
+.plt-strip-hold { height: 96px; background: var(--ct-tint); }
+
+/* a pulled statement (the citation formula, the reading rule): 3px seal rule, not italics */
+.plt-pull { position: relative; padding: 4px 0 4px 24px; font-size: 18px; line-height: 1.5; color: var(--ct-ink); text-wrap: pretty; overflow-wrap: anywhere; }
+.plt-pull::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--ct-ink); }
+
+.plt-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; background: var(--ct-ink); color: var(--color-background); font-size: 15px; font-weight: 600; transition: transform var(--dur-press) ease-out; }
+.plt-btn:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) { .plt-btn:hover { opacity: .86; } }
+.plt-btn:focus-visible { outline: 2px solid var(--ct-ink); outline-offset: 2px; }
+.plt-btn svg { width: 16px; height: 16px; }
+
+@media (max-width: 1100px) {
+  .plt-strip-key { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .plt-head, .plt-sec-head { grid-template-columns: 1fr; }
+  .plt-prose { columns: 1; }
+  /* the shell's items row shows Methodology · The data · Press here; keep only the pages it lacks */
+  .plt-pages a[data-shell] { display: none; }
+  .plt-lede, .plt-claim { font-size: 17px; }
+}
+@media (max-width: 600px) {
+  .plt-ledger > div { grid-template-columns: 1fr; }
+}
+
+/* ordered steps: a real list, the order matters */
+.plt-steps { list-style: decimal; padding-left: 24px; }
+.plt-steps > li { padding-left: 4px; }
+.plt-steps > li + li { margin-top: 8px; }
+.plt-steps > li::marker { font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.ct-index + .plt-sec { margin-top: 12px; } /* the first layer sits under the index (DESIGN.md §3.1) */
+
+/* «La lectura» in the head (the dossier rail, vendor.css .vd-lec): plain statements, then the figures */
+.plt-lec { min-width: 0; }
+.plt-lec-h { padding-bottom: 4px; border-bottom: 1px solid var(--ct-ink); font: 600 14px/1.4 var(--font-sc); letter-spacing: var(--track-sc); color: var(--ct-ink); }
+.plt-lec-c { margin-top: 8px; font: 400 15px/1.5 var(--font-serif); color: var(--ct-ink); text-wrap: pretty; }
+.plt-lec-c b { font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+
+/* PfFlow: connected boxes, labelled orthogonal connectors (diagram-design look). Hairlines, 4 px grid,
+   one focal box on an ink rule; the arrow's label sits under its line on the paper (never on it). */
+.plt-flow { margin: 0; }
+.plt-flow > ol { display: flex; list-style: none; margin: 0; padding: 0; }
+.plt-flow > ol > li { display: flex; flex: 1 1 0; min-width: 0; }
+.plt-flow-via { position: relative; flex: 0 0 88px; align-self: flex-start; height: 40px; } /* a connector, not a column: its label hangs under the line */
+.plt-flow-via::before { content: ''; position: absolute; left: 4px; right: 8px; top: 20px; border-top: 1px solid var(--color-text-muted); }
+.plt-flow-via::after { content: ''; position: absolute; right: 4px; top: 16px; border-left: 8px solid var(--color-text-muted); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+.plt-flow-via > span { position: absolute; left: 4px; right: 4px; top: 28px; font: 600 12px/1.3 var(--font-sc); letter-spacing: var(--track-sc); color: var(--color-text-muted); text-align: center; text-wrap: balance; }
+.plt-flow-box { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 8px 12px 12px; border: 1px solid var(--color-border); border-radius: 2px; background: var(--color-background); }
+.plt-flow > ol > li.is-focal .plt-flow-box { border-color: var(--ct-ink); border-top-width: 3px; padding-top: 6px; }
+.plt-flow-n { font: 400 12px/1.4 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ct-gray); }
+.plt-flow-box > b { font: 600 15px/1.35 var(--font-serif); color: var(--ct-ink); text-wrap: balance; }
+.plt-flow-note { font: 400 13px/1.45 var(--font-serif); color: var(--color-text-secondary); text-wrap: pretty; }
+.plt-flow figcaption { margin-top: 8px; }
+/* the levels inside a box: a 12 px square + word + floor, one per line */
+.plt-flow-lv { display: grid; gap: 2px; margin: 4px 0 0; padding: 0; list-style: none; }
+.plt-flow-lv li { display: flex; align-items: center; gap: 8px; font: 400 13px/1.4 var(--font-serif); color: var(--ct-ink); }
+.plt-flow-lv .plt-mono { margin-left: auto; font-size: 12px; }
+@media (max-width: 1023px) {
+  .plt-flow > ol, .plt-flow > ol > li { flex-direction: column; }
+  .plt-flow-via { flex: 0 0 auto; align-self: stretch; height: auto; min-height: 40px; }
+  .plt-flow-via::before { left: 24px; right: auto; top: 4px; bottom: 12px; border-top: 0; border-left: 1px solid var(--color-text-muted); }
+  .plt-flow-via::after { left: 20px; right: auto; top: auto; bottom: 4px; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 8px solid var(--color-text-muted); border-bottom: 0; }
+  .plt-flow-via > span { position: static; display: block; padding: 10px 0 10px 40px; text-align: left; }
+}
+.plt-flow-lv a { display: inline-flex; align-items: center; min-height: 24px; } /* WCAG 2.5.8 target */
+/* every box the same width: items 2…n also carry the 88 px connector (review 2026-11-05) */
+.plt-flow > ol > li + li { flex-grow: 1; flex-basis: 88px; }
+.plt-flow + .plt-ledger { margin-top: 16px; }
