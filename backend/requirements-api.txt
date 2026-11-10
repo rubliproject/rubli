@@ -22,7 +22,7 @@ scikit-learn==1.7.2       # scripts/precompute_predictions.py (LogisticRegressio
 ruptures==1.1.10            # Change-point detection (graceful fallback if missing)
 
 # AI explanation endpoint
-anthropic==2.3.0          # ai_explain.py — lazy import, needs ANTHROPIC_API_KEY at runtime
+anthropic==2.6.0          # ai_explain.py — lazy import, needs ANTHROPIC_API_KEY at runtime
 
 # Authentication
 PyJWT==2.15.0  # JWT encode/decode (HS256 pinned at every decode)
