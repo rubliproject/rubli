@@ -37,7 +37,7 @@
     "@remotion/layout-utils": "4.0.535",
     "@remotion/paths": "4.0.535",
     "@remotion/player": "4.0.535",
-    "@remotion/shapes": "4.0.535",
+    "@remotion/shapes": "4.0.541",
     "@remotion/transitions": "4.0.535",
     "@sentry/react": "^8.0.0",
     "@tailwindcss/postcss": "^4.1.18",
